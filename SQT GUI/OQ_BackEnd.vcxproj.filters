@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{11afcea2-210c-4b75-8ad8-ebdda9c955a7}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{5a148e80-b6f4-464a-ba22-43d49914cf38}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="TestCases">
+      <UniqueIdentifier>{ac5057d6-179b-4681-b899-fd738e9349d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{258961ce-da31-4618-98e5-e3275156cd58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{eab4448c-f739-4214-81a4-7194e6fa8831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{8542b36f-8161-4159-9a6a-517152c0d213}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="MicroHttp">
+      <UniqueIdentifier>{5d439b8d-ee6e-4ad0-9032-d3b41735a4dd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ResponseFormatter.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="TestBackEnd.cpp">
+      <Filter>TestCases</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OQ_BackEnd.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="OQAPI.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="JSONFormatter.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="JSONValWriters.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="OQ_HTTP_API.cpp">
+      <Filter>MicroHttp</Filter>
+    </ClCompile>
+    <ClCompile Include="OQ_HTTP_Server.cpp">
+      <Filter>MicroHttp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OQ_BackEnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResponseFormatter.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="TestBackEnd.h">
+      <Filter>TestCases</Filter>
+    </ClInclude>
+    <ClInclude Include="OQAPI.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="JSONFormatter.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Microhttp\microhttpd.h">
+      <Filter>MicroHttp</Filter>
+    </ClInclude>
+    <ClInclude Include="OQ_HTTP_API.h">
+      <Filter>MicroHttp</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="version.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Microhttp\libmicrohttpd-dll.dll">
+      <Filter>MicroHttp</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OQ_BackEndNeutral.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Microhttp\libmicrohttpd-dll.lib">
+      <Filter>MicroHttp</Filter>
+    </Library>
+  </ItemGroup>
+</Project>

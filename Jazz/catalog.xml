@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><oslc_disc:ServiceProviderCatalog xmlns:oslc_disc="http://open-services.net/xmlns/discovery/1.0/" rdf:about="https://clm1.waters.com/ccm/oslc/workitems/catalog.xml" xmlns:dc="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:jfs_proc="http://jazz.net/xmlns/prod/jazz/process/1.0/">
+<dc:title>Project Areas</dc:title>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Informatics Kanbans</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_WsB9xFflEeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_WsB9xFflEeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_WsB9xFflEeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>z_accordion_v1.5_(ccm)</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_UK5uFXgAEeWmVruyoJ4qwA"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_UK5uFXgAEeWmVruyoJ4qwA/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_UK5uFXgAEeWmVruyoJ4qwA/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Informatics Development Environment Initiative Project</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_hCnIFUdzEeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_hCnIFUdzEeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_hCnIFUdzEeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Empower</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_iuExptyGEeSq5roSWjBJ5Q"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_iuExptyGEeSq5roSWjBJ5Q/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>z_waters_master_v1.3_(ccm)</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_nT9bMUXPEeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_nT9bMUXPEeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_nT9bMUXPEeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>z_csv_tools_master_v1.1_(ccm)</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_Xf7JURtfEeWq-boSWjBJ5Q"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_Xf7JURtfEeWq-boSWjBJ5Q/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_Xf7JURtfEeWq-boSWjBJ5Q/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>UNIFI (CCM)</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_XD7NMS8QEeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_XD7NMS8QEeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_XD7NMS8QEeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Engineering Effectiveness Initiative</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_uGJxdkgkEeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_uGJxdkgkEeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_uGJxdkgkEeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Informatics User Experience</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_qCIKFV4XEeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_qCIKFV4XEeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_qCIKFV4XEeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Informatics Database Team (CCM)</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_6pMrNUg4EeWMFv4X77SNyw"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_6pMrNUg4EeWMFv4X77SNyw/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_6pMrNUg4EeWMFv4X77SNyw/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+<oslc_disc:entry>
+<oslc_disc:ServiceProvider>
+<dc:title>Jazz Global BT (CCM)</dc:title>
+<oslc_disc:details rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_bPJJx8KOEeSq5roSWjBJ5Q"/>
+<oslc_disc:services rdf:resource="https://clm1.waters.com/ccm/oslc/contexts/_bPJJx8KOEeSq5roSWjBJ5Q/workitems/services.xml"/>
+<jfs_proc:consumerRegistry rdf:resource="https://clm1.waters.com/ccm/process/project-areas/_bPJJx8KOEeSq5roSWjBJ5Q/links"/>
+</oslc_disc:ServiceProvider>
+</oslc_disc:entry>
+</oslc_disc:ServiceProviderCatalog>

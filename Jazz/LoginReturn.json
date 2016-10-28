@@ -1,0 +1,110 @@
+{
+    "soapenv:Body": {
+        "response": {
+            "returnValue": {
+                "value": {
+                    "com.ibm.team.apt.service.planningWebUIInitializer": {
+                        "fetchOutplacedChildrenOnDemand": true,
+                        "planAttributeInitializationLoopTime": 50
+                    },
+                    "com.ibm.team.dashboard.service.dashboardInitializationData": {
+                        "allowRestore": false,
+                        "currentContributor": {
+                            "itemId": "_2mWJkHNVEeWGtM_gwKfR8A",
+                            "name": "Istvan Jozsa",
+                            "userId": "roijoz"
+                        },
+                        "currentContributorUri": "https:\/\/clm1.waters.com\/jts\/users\/roijoz",
+                        "dashboardQueryServiceUri": "https:\/\/clm1.waters.com\/jts\/dashboard-query",
+                        "dashboardServiceUri": "https:\/\/clm1.waters.com\/jts\/dashboards"
+                    },
+                    "com.ibm.team.process.service.hideAccessGroupManagement": null,
+                    "com.ibm.team.process.service.hideNewPermissionsTab": {
+                        "value": false
+                    },
+                    "com.ibm.team.process.service.hideOperationBehaviorTab": {
+                        "value": false
+                    },
+                    "com.ibm.team.process.service.hidePagesWebUIInitializationDataService": null,
+                    "com.ibm.team.process.service.projectAreaWebUIInitializionData": null,
+                    "com.ibm.team.repository.service.canGrantPermissionInitializer": {
+                        "canGrantPermission": false
+                    },
+                    "com.ibm.team.repository.service.compatibility.util.serverMessages": {
+                        "cacheCreationTime": 1460892128000,
+                        "cacheExpireTime": 32503680000000,
+                        "identifier": "itemId",
+                        "items": [
+                        ],
+                        "label": "description"
+                    },
+                    "com.ibm.team.repository.service.configPropertyInitializer": {
+                        "com.ibm.team.repository.web.helpuri": "\/clmhelp\/index.jsp",
+                        "com.ibm.team.repository.web.logouturi": null,
+                        "com.ibm.team.repository.web.suppressedPages": "{\"com.ibm.team.repository.web.admin\": [\"com.ibm.team.repository.provision\"]}"
+                    },
+                    "com.ibm.team.repository.service.currentContributorInitializer": {
+                        "currentContributor": {
+                            "_eQualifiedClassName": "com.ibm.team.repository:Contributor",
+                            "archived": false,
+                            "com.ibm.team.repository.typeName": "com.ibm.team.repository.Contributor",
+                            "contextId": "_8lNyYNwSEd2pIJ5QVwgQGg",
+                            "details": {
+                                "_eQualifiedClassName": "com.ibm.team.repository:ContributorDetailsHandle",
+                                "com.ibm.team.repository.typeName": "com.ibm.team.repository.ContributorDetails",
+                                "itemId": "_5Z4BIHNVEeWmVruyoJ4qwA"
+                            },
+                            "emailAddress": "Istvan_Jozsa@waters.com",
+                            "immutable": true,
+                            "itemId": "_2mWJkHNVEeWGtM_gwKfR8A",
+                            "mergePredecessor": null,
+                            "modified": "2015-11-24T15:50:37.031Z",
+                            "modifiedBy": {
+                                "_eQualifiedClassName": "com.ibm.team.repository:ContributorHandle",
+                                "com.ibm.team.repository.typeName": "com.ibm.team.repository.Contributor",
+                                "itemId": "_KGRY4CFWEdq-WY5y7lROQw"
+                            },
+                            "name": "Istvan Jozsa",
+                            "predecessor": "_GsYnYpLDEeWz7anIocJoIg",
+                            "stateId": "_Gsdf4ZLDEeWz7anIocJoIg",
+                            "userId": "roijoz"
+                        },
+                        "currentContributorRoles": [
+                            "JazzUsers",
+                            "JazzGuests"
+                        ],
+                        "currentContributorUri": "https:\/\/clm1.waters.com\/jts\/users\/roijoz"
+                    },
+                    "com.ibm.team.repository.service.hidePagesWebUIInitializationDataService": {
+                        "value": true
+                    },
+                    "com.ibm.team.repository.service.hideUserGroupAdminUIInitializationDataService": null,
+                    "com.ibm.team.repository.service.serverInfoInitializer": {
+                        "mode": "APPLICATION"
+                    },
+                    "com.ibm.team.rtc.common.service.componentConfigurations": {
+                        "configurations": [
+                            {
+                                "componentId": "com.ibm.team.workitem",
+                                "configurations": [
+                                    {
+                                        "name": "oldlinks.presentation",
+                                        "value": "false"
+                                    },
+                                    {
+                                        "name": "enableVoting",
+                                        "value": "false"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "com.ibm.team.rtc.common.service.projectAreaWebInitializer": null,
+                    "com.ibm.team.rtc.common.service.spriteWebInitializer": {
+                        "state": "_i_SIEASMEeae-L0ICLrO5A"
+                    }
+                }
+            }
+        }
+    }
+}

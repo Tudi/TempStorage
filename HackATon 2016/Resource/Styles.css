@@ -1,0 +1,12 @@
+<style style="text/css">
+  	.hoverTable{
+		width:100%; 
+		border-collapse:collapse; 
+	}
+	.hoverTable tr{
+		background: #FFFFFF;
+	}
+	.hoverTable tr:hover {
+          background-color: #F0F0F0;
+    }
+</style>

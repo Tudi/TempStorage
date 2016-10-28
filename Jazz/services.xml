@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><oslc_cm:ServiceDescriptor xmlns:oslc_cm="http://open-services.net/xmlns/cm/1.0/" rdf:about="https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/services.xml" xmlns:dc="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:calm="http://jazz.net/xmlns/prod/jazz/calm/1.0/">
+<dc:title>Empower</dc:title>
+<dc:description>IBM Rational Team Concert OSLC CM Service Description for Project 'Empower'</dc:description>
+<dc:contributor>
+<dc:title>IBM Rational Team Concert Work Items</dc:title>
+<dc:identifier>com.ibm.team.workitem</dc:identifier>
+<oslc_cm:icon>https://clm1.waters.com/ccm/web/com.ibm.team.rtc.web/ui/graphics/UICustomizations/RationalTeamConcert.ico</oslc_cm:icon>
+</dc:contributor>
+<oslc_cm:changeRequests oslc_cm:version="1.0">
+<oslc_cm:home>
+<dc:title>Work Items Home</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/web/projects/Empower#action=com.ibm.team.workitem.viewWelcome</oslc_cm:url>
+</oslc_cm:home>
+<oslc_cm:factory oslc_cm:default="true" calm:id="defect">
+<dc:title>Location for creation of Defect change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/defect</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="requirementChangeRequest">
+<dc:title>Location for creation of Task change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/task</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="planItem">
+<dc:title>Location for creation of Story change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/com.ibm.team.apt.workItemType.story</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="com.ibm.team.apt.workItemType.epic">
+<dc:title>Location for creation of Epic change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/com.ibm.team.apt.workItemType.epic</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="com.ibm.team.workItemType.buildtrackingitem">
+<dc:title>Location for creation of Track Build Item change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/com.ibm.team.workItemType.buildtrackingitem</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="com.ibm.team.workitem.workItemType.impediment">
+<dc:title>Location for creation of Impediment change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/com.ibm.team.workitem.workItemType.impediment</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="com.ibm.team.workItemType.adoption">
+<dc:title>Location for creation of Adoption Item change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/com.ibm.team.workItemType.adoption</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="com.ibm.team.workitem.workItemType.retrospective">
+<dc:title>Location for creation of Retrospective change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/com.ibm.team.workitem.workItemType.retrospective</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="enhancement">
+<dc:title>Location for creation of Enhancement change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/enhancement</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="review">
+<dc:title>Location for creation of Review change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/review</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="suggestion">
+<dc:title>Location for creation of Suggestion change requests </dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems/suggestion</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory>
+<dc:title>Location for creation of change requests</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:factory calm:id="drafts">
+<dc:title>Location for creation of draft change requests</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/drafts/workitems</oslc_cm:url>
+</oslc_cm:factory>
+<oslc_cm:simpleQuery>
+<dc:title>Change request queries</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/workitems</oslc_cm:url>
+</oslc_cm:simpleQuery>
+<oslc_cm:creationDialog oslc_cm:default="true" calm:id="defect" oslc_cm:hintWidth="680px" oslc_cm:hintHeight="505px">
+<dc:title>New Defect</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/modules/com.ibm.team.workitem.WICreationDialog?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;dc%3Atype=defect</oslc_cm:url>
+</oslc_cm:creationDialog>
+<oslc_cm:creationDialog calm:id="planItem" oslc_cm:hintWidth="680px" oslc_cm:hintHeight="545px">
+<dc:title>New Plan Item</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/modules/com.ibm.team.workitem.WICreationDialog?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;dc%3Atype=com.ibm.team.apt.workItemType.story</oslc_cm:url>
+</oslc_cm:creationDialog>
+<oslc_cm:creationDialog calm:id="task" oslc_cm:hintWidth="680px" oslc_cm:hintHeight="505px">
+<dc:title>New Task</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/modules/com.ibm.team.workitem.WICreationDialog?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;dc%3Atype=task</oslc_cm:url>
+</oslc_cm:creationDialog>
+<oslc_cm:creationDialog calm:id="requirementChangeRequest" oslc_cm:hintWidth="680px" oslc_cm:hintHeight="505px">
+<dc:title>New Requirement Change Request</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/oslc/contexts/_iuExptyGEeSq5roSWjBJ5Q/modules/com.ibm.team.workitem.WICreationDialog?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;dc%3Atype=task</oslc_cm:url>
+</oslc_cm:creationDialog>
+<oslc_cm:selectionDialog oslc_cm:default="true" oslc_cm:hintWidth="550px" oslc_cm:hintHeight="460px">
+<dc:title>Select Change Request</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/_ajax-modules/com.ibm.team.workitem.WIPicker?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;allowsMultiple=true</oslc_cm:url>
+</oslc_cm:selectionDialog>
+<oslc_cm:selectionDialog calm:id="defect" oslc_cm:hintWidth="550px" oslc_cm:hintHeight="460px">
+<dc:title>Select Defect</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/_ajax-modules/com.ibm.team.workitem.WIPicker?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;allowsMultiple=true&amp;dc%3Atype=defect</oslc_cm:url>
+</oslc_cm:selectionDialog>
+<oslc_cm:selectionDialog calm:id="planItem" oslc_cm:hintWidth="550px" oslc_cm:hintHeight="460px">
+<dc:title>Select Plan Item</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/_ajax-modules/com.ibm.team.workitem.WIPicker?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;allowsMultiple=true&amp;dc%3Atype=com.ibm.team.apt.workItemType.story</oslc_cm:url>
+</oslc_cm:selectionDialog>
+<oslc_cm:selectionDialog calm:id="task" oslc_cm:hintWidth="550px" oslc_cm:hintHeight="460px">
+<dc:title>Select Task</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/_ajax-modules/com.ibm.team.workitem.WIPicker?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;allowsMultiple=true&amp;dc%3Atype=task</oslc_cm:url>
+</oslc_cm:selectionDialog>
+<oslc_cm:selectionDialog calm:id="requirementChangeRequest" oslc_cm:hintWidth="550px" oslc_cm:hintHeight="460px">
+<dc:title>Requirement Change Request</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/_ajax-modules/com.ibm.team.workitem.WIPicker?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true&amp;allowsMultiple=true&amp;dc%3Atype=task</oslc_cm:url>
+</oslc_cm:selectionDialog>
+<calm:filter calm:id="openItems">
+<dc:title>Open Change Requests Filter</dc:title>
+<calm:url>https://clm1.waters.com/ccm/oslc/calm-filter/_iuExptyGEeSq5roSWjBJ5Q/openItems</calm:url>
+</calm:filter>
+<calm:filter calm:id="resolvedItems">
+<dc:title>Resolved Change Requests Filter</dc:title>
+<calm:url>https://clm1.waters.com/ccm/oslc/calm-filter/_iuExptyGEeSq5roSWjBJ5Q/resolvedItems</calm:url>
+</calm:filter>
+<calm:filter calm:id="readyForTesting">
+<dc:title>Ready for Testing Change Requests Filter</dc:title>
+<calm:url>https://clm1.waters.com/ccm/oslc/calm-filter/_iuExptyGEeSq5roSWjBJ5Q/readyForTesting</calm:url>
+</calm:filter>
+<calm:module calm:id="embedded-cm">
+<dc:title>Embeddable Work Item Web Module</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/web/com.ibm.team.workitem.web/ui/internal/module/WorkItemGadget.xml?projectAreaItemId=_iuExptyGEeSq5roSWjBJ5Q</oslc_cm:url>
+</calm:module>
+<calm:rpc calm:id="home">
+<dc:title>Work Items Home</dc:title>
+<calm:rpcService>OSLC_requestAction</calm:rpcService>
+<calm:rpcArg>action=com.ibm.team.workitem.viewWelcome</calm:rpcArg>
+</calm:rpc>
+<calm:rpc calm:id="defect">
+<dc:title>Create Defect</dc:title>
+<calm:rpcService>OSLC_requestAction</calm:rpcService>
+<calm:rpcArg>action=com.ibm.team.workitem.newWorkItem&amp;type=defect</calm:rpcArg>
+</calm:rpc>
+<calm:rpc calm:id="task">
+<dc:title>Create Task</dc:title>
+<calm:rpcService>OSLC_requestAction</calm:rpcService>
+<calm:rpcArg>action=com.ibm.team.workitem.newWorkItem&amp;type=task</calm:rpcArg>
+</calm:rpc>
+<calm:rpc calm:id="query-page">
+<dc:title>Queries</dc:title>
+<calm:rpcService>OSLC_requestAction</calm:rpcService>
+<calm:rpcArg>action=com.ibm.team.workitem.viewQueries</calm:rpcArg>
+</calm:rpc>
+</oslc_cm:changeRequests>
+<oslc_cm:plans oslc_cm:version="1.0">
+<oslc_cm:home>
+<dc:title>Plans Home</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/web/projects/Empower#action=com.ibm.team.apt.welcome</oslc_cm:url>
+</oslc_cm:home>
+<oslc_cm:selectionDialog oslc_cm:default="true" oslc_cm:hintWidth="550px" oslc_cm:hintHeight="360px">
+<dc:title>Plan</dc:title>
+<oslc_cm:url>https://clm1.waters.com/ccm/_ajax-modules/com.ibm.team.apt.PlanSelectionDialog?projectAreaId=_iuExptyGEeSq5roSWjBJ5Q&amp;showLoginLink=true</oslc_cm:url>
+</oslc_cm:selectionDialog>
+</oslc_cm:plans>
+</oslc_cm:ServiceDescriptor>

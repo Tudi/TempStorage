@@ -1,0 +1,71 @@
+﻿<metro:MetroWindow x:Class="JazzBurnReport.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:local="clr-namespace:JazzBurnReport"
+        xmlns:op="http://oxyplot.org/wpf"
+        mc:Ignorable="d"
+        Title="Jazz Burn Report" Height="350" Width="525"
+        GlowBrush="{DynamicResource AccentColorBrush}" Padding="10">
+    <metro:MetroWindow.IconTemplate>
+        <DataTemplate>
+            <Rectangle Width="20" Height="20"
+                   Fill="White">
+                <Rectangle.OpacityMask>
+                    <VisualBrush Stretch="Fill"
+                         Visual="{StaticResource appbar_graph_line_up}" />
+                </Rectangle.OpacityMask>
+            </Rectangle>
+        </DataTemplate>
+    </metro:MetroWindow.IconTemplate>
+    <metro:MetroWindow.CommandBindings>
+        <CommandBinding Command="Refresh" Executed="Refresh_OnExecuted" CanExecute="Refresh_OnCanExecute" />
+        <CommandBinding Command="Save" Executed="Save_OnExecuted" CanExecute="Save_OnCanExecute" />
+        <CommandBinding Command="Copy" Executed="Copy_OnExecuted" CanExecute="Copy_OnCanExecute" />
+    </metro:MetroWindow.CommandBindings>
+    <metro:MetroWindow.RightWindowCommands>
+        <metro:WindowCommands>
+            <Button Command="Refresh" ToolTip="Refresh data from Jazz">
+                <Rectangle Width="20" Height="20"
+                   Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                    <Rectangle.OpacityMask>
+                        <VisualBrush Stretch="Fill"
+                         Visual="{StaticResource appbar_refresh}" />
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+            </Button>
+            <Button Command="Copy" ToolTip="Copy image to clipboard">
+                <Rectangle Width="20" Height="20"
+                   Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                    <Rectangle.OpacityMask>
+                        <VisualBrush Stretch="Fill"
+                         Visual="{StaticResource appbar_page_copy}" />
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+            </Button>
+            <Button Command="Save" ToolTip="Save">
+                <Rectangle Width="20" Height="20"
+                   Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}">
+                    <Rectangle.OpacityMask>
+                        <VisualBrush Stretch="Fill"
+                         Visual="{StaticResource appbar_save}" />
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+            </Button>
+        </metro:WindowCommands>
+    </metro:MetroWindow.RightWindowCommands>
+    <Grid>
+        <op:PlotView x:Name="plot" />
+        <Grid x:Name="overlay" Visibility="Hidden">
+            <Grid.Background>
+                <SolidColorBrush Color="White" Opacity="0.75" />
+            </Grid.Background>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="message" FontSize="50" HorizontalAlignment="Center">Loading</TextBlock>
+                <metro:MetroProgressBar IsIndeterminate="True" Height="20" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</metro:MetroWindow>

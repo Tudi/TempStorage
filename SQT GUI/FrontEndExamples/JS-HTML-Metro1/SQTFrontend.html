@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="author" content="Jozsa Bodnar Istvan">
+    <title>Empower SQT</title>
+
+    <link href="css/metro.css" rel="stylesheet">
+    <link href="css/metro-icons.css" rel="stylesheet">
+    <link href="css/metro-responsive.css" rel="stylesheet">
+    <link href="css/metro-schemes.css" rel="stylesheet">
+	
+    <link href="css/docs.css" rel="stylesheet">
+
+    <script src="js/jquery.js"></script>	
+    <script src="js/metro.js"></script>	
+</head>
+
+<div id="LoginSection" >
+	Username : <input type="text" id="Username" value="">
+	<br>
+	<input type=button value="Login" onclick="CheckLogin()" class="button primary" >
+</div>
+
+<div id="PerformSQTSection" style="display:none" >
+	<div id="RestoreLinkSection" >
+		<a href="http://localhost:8081/Restore" target="blank" >Restore projects from CD</a>
+	</div>
+	
+	<table id="NodeListTable" border=1>
+		<thead>
+			<tr>
+				<th>Node</th>
+				<th>IQ</th>
+				<th>OQ</th>
+				<th>OQMVM</th>
+				<th>Perform SQT</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+		<tfoot>
+			<tr>
+				<td>
+					<input type=button value="Perform SQT" onclick="PerformSQT()" class="button primary" >
+				</td>
+			</tr>
+		<tfoot>
+	</table>
+</div>	
+		
+<script>
+
+//document.getElementById('PerformSQTSection').style.display = "block";
+//	document.getElementById('Username').value = "niamh08";	
+//	CheckLogin();
+//AddRowForNode( "test1" );
+//AddRowForNode( "test2" );
+
+function CheckLogin()
+{
+	if( document.getElementById('Username').value.localeCompare( "niamh08" ) == 0 )
+	{
+		document.getElementById('LoginSection').style.display = "none";
+		document.getElementById('PerformSQTSection').style.display = "block";
+		InitNodeTable();
+	}
+	else
+		alert("Invalid username");
+}
+
+function InitNodeTable()
+{
+	//get the list of nodes
+	var Nodelist = loadXMLDoc( "http://localhost:8081/NodeList" );
+	var NodeListObj = JSON.parse( Nodelist );
+
+	//if we need to restore
+	if( NodeListObj.CanDoIQ == 0 && NodeListObj.CanDoOQ == 0 && NodeListObj.CanDoOQMVM == 0 )
+		document.getElementById( 'RestoreLinkSection' ).style.display = "block";
+	else
+		document.getElementById( 'RestoreLinkSection' ).style.display = "none";
+
+	//populate our table with node names
+	for( var i = 0; i < NodeListObj.NodeNameList.length; i++ )
+		AddRowForNode( NodeListObj.NodeNameList[i] );
+}
+
+function PerformNodeSQT( NodeName )
+{
+	//clear labels just in case 
+	document.getElementById( NodeName + "_IQ_Result" ).innerHTML = "";
+	document.getElementById( NodeName + "_OQ_Result" ).innerHTML = "";
+	document.getElementById( NodeName + "_OQMVM_Result" ).innerHTML = "";
+	
+	var DoIQ = 0;
+	var DoOQ = 0;
+	var DoOQMVM = 0;
+	var checkbox = document.getElementById( NodeName + "_IQ" );
+	if( checkbox.checked )
+		DoIQ = 1;
+	checkbox = document.getElementById( NodeName + "_OQ" );
+	if( checkbox.checked )
+		DoOQ = 1;
+	checkbox = document.getElementById( NodeName + "_OQMVM" );
+	if( checkbox.checked )
+		DoOQMVM = 1;
+		
+	if( DoIQ == 0 && DoOQ == 0 && DoOQMVM == 0 )
+		return;
+		
+	//build URL to call
+	var Url = "http://localhost:8081/PerformSQT?NodeName="+NodeName+"&DoIQ="+DoIQ+"&DoOQ="+DoOQ+"&DoOQMVM="+DoOQMVM;
+	var Result = loadXMLDoc( Url );
+	
+	//process result
+	var ResulArr = JSON.parse( Result );
+	var ActionsTaken = 0;
+	if( DoIQ )
+		document.getElementById( NodeName + "_IQ_Result" ).innerHTML = ResulArr.Errors[ActionsTaken++].Error;
+	if( DoOQ )
+		document.getElementById( NodeName + "_OQ_Result" ).innerHTML = ResulArr.Errors[ActionsTaken++].Error;
+	if( DoOQMVM )
+		document.getElementById( NodeName + "_OQMVM_Result" ).innerHTML = ResulArr.Errors[ActionsTaken++].Error;
+}
+
+//if user clicks the perform button, we iterate row by row the table and perform SQT on each node	
+function PerformSQT()
+{
+	//clear all result labels
+	var x = document.querySelectorAll("label.ResultLabel");
+	for( var i=0;i<x.length;i++)
+		x[i].innerHTML = ""; 
+
+	//perform SQTs and assign new label content
+	var tableRef = document.getElementById('NodeListTable').getElementsByTagName('tbody')[0];
+	for( var i=0;i<tableRef.rows.length;i++)
+	{
+		var NodeName = tableRef.rows[i].cells[0].innerHTML;
+		PerformNodeSQT( NodeName );
+	}
+}
+
+function AddRowForNode( NodeName )
+{
+	var tableRef = document.getElementById('NodeListTable').getElementsByTagName('tbody')[0];
+
+	// Insert a row in the table at the last row
+	var newRow   = tableRef.insertRow(tableRef.rows.length);
+
+	// Insert cells
+	var newCell5  = newRow.insertCell(0);
+	var newCell4  = newRow.insertCell(0);
+	var newCell3  = newRow.insertCell(0);
+	var newCell2  = newRow.insertCell(0);
+	var newCell1  = newRow.insertCell(0);
+
+	// Append a text node to the cell
+	var newText  = document.createTextNode( NodeName );
+	newCell1.appendChild( newText );
+	
+	var checkbox = document.createElement('input');
+	checkbox.type = "checkbox";
+	checkbox.name = NodeName + "_IQ";
+	checkbox.id = checkbox.name;
+	newCell2.appendChild( checkbox );
+	
+	checkbox = document.createElement('input');
+	checkbox.type = "checkbox";
+	checkbox.name = NodeName + "_OQ";
+	checkbox.id = checkbox.name;
+	newCell3.appendChild( checkbox );
+
+	checkbox = document.createElement('input');
+	checkbox.type = "checkbox";
+	checkbox.name = NodeName + "_OQMVM";
+	checkbox.id = checkbox.name;
+	newCell4.appendChild( checkbox );
+	
+	var label = document.createElement('label');
+	label.id = NodeName + "_IQ_Result";
+	label.className='ResultLabel';
+	newCell2.appendChild( label );
+
+	label = document.createElement('label');
+	label.id = NodeName + "_OQ_Result";
+	label.className='ResultLabel';
+	newCell3.appendChild( label );
+
+	label = document.createElement('label');
+	label.id = NodeName + "_OQMVM_Result";
+	label.className='ResultLabel';
+	newCell4.appendChild( label );
+	
+	var button = document.createElement('button');
+	button.innerHTML = 'SQT';
+	button.onclick = function (){ PerformNodeSQT(NodeName); };
+//	alert( button.onclick );
+	button.className='button success block-shadow-success text-shadow';
+	newCell5.appendChild( button );
+}
+
+//copy pasted from example
+function loadXMLDoc(theURL)
+{
+	if (window.XMLHttpRequest)
+		xmlhttp=new XMLHttpRequest();// code for IE7+, Firefox, Chrome, Opera, Safari, SeaMonkey
+	else
+		xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");// code for IE6, IE5
+	xmlhttp.open("GET", theURL, false);
+	xmlhttp.send();
+	return xmlhttp.responseText;
+}
+</script>

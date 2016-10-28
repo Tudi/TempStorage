@@ -1,0 +1,12 @@
+
+#if !defined(AFX_OQ_BackEnd_H__3449CDD1_776B_11D3_92FF_00104B315D91__INCLUDED_)
+#define AFX_OQ_BackEnd_H__3449CDD1_776B_11D3_92FF_00104B315D91__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+#include "resource.h"
+
+
+#endif // !defined(AFX_OQ_BackEnd_H__3449CDD1_776B_11D3_92FF_00104B315D91__INCLUDED_)

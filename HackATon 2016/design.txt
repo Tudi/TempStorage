@@ -1,0 +1,65 @@
+Session is not a must. User is stored locally and not server side ?
+
+user : 	
+		id
+		name
+		passowrd
+		email
+		rights
+		last token to confirm account
+		isaccountconfirmed
+		
+idea : 
+		id
+		idea itself
+		allow voting
+		only registered votes
+		allow commenting
+		fingerprint
+		added date
+		added by user
+		edit token
+		upvote count
+		downvote count
+		status
+		HandledByAdmin
+		
+comment :
+		IdeaID
+		comment
+		fingerprint
+		added date
+		added by user
+		edit token
+		
+userswipes :
+		userid
+		ideaid
+		swiperesult
+		
+user tokens :
+		user id
+		token
+
+user fingerprints :
+		user id
+		fingerprint
+		
+user last view :
+		id
+		user id
+		idea id
+		comment id
+		
+user votes :
+		session id
+		ideaid
+		vote result
+sessions :
+		id
+		session token
+		timeout stamp
+		user ID	- unique
+		last idea id
+		last idea comment id
+		
