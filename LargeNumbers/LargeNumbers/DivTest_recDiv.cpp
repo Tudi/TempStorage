@@ -75,7 +75,7 @@ void DivTest_RecDiv( __int64 iA, __int64 iB)
     // m1 < k1      m2 < k2     k1 < k2     len(k1)+len(a)-1 < len( SQ(N ) )
     // k1 = [ 1, SQ(N) ] best SQ(SQ(N))
     // k1 * k2 * a * b + m2 * k1 * a + m1 * k2 * b + m1 * m2 = N
-    LargeNumber N, tN;
+    LargeNumber tN;
     unsigned int iN = (unsigned int) ( iA * iB );
     int isqn = isqrt( iN );
 //    int ik1 = isqrt( isqn );

@@ -80,6 +80,7 @@
     <ClCompile Include="DivTest_99_11ab.cpp" />
     <ClCompile Include="DivTest_ab.cpp" />
     <ClCompile Include="DivTest_abc.cpp" />
+    <ClCompile Include="DivTest_abSQ.cpp" />
     <ClCompile Include="DivTest_Decrement.cpp" />
     <ClCompile Include="DivTest_edef.cpp" />
     <ClCompile Include="DivTest_recDiv.cpp" />

@@ -74,6 +74,12 @@ void ToIntLN( LargeNumber *N, int *n )
         *n = *n * USE_BASE + N->Digits[ i ];
 }
 void ToIntLN( LargeNumber &N, int &n ) { ToIntLN( &N, &n ); }
+int ToIntLN( LargeNumber *N ) 
+{ 
+    int n;
+    ToIntLN( N, &n ); 
+    return n;
+}
 
 void CopyLN( LargeNumber *From, LargeNumber *To )
 {

@@ -37,7 +37,7 @@ void DivTest6( __int64 iA, __int64 iB)
     unsigned int iN = (unsigned int) ( iA * iB );
     SetLN( N, iN ); 
 
-    LargeNumber a1, a2, a3, b1, b2, b3;
+    LargeNumber a1, a2, a3, b1, b2;
 
     SetLN( tN, iN );
 

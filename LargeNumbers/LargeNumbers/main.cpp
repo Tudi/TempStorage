@@ -4,7 +4,7 @@ void main()
 {
 
 //    TestSetAddMull();
-    DivTest99ab();
+//    DivTest99ab();
 //    DivTestab();
 //    DivTest9911ab();
 //    DivTestabc();
@@ -12,6 +12,7 @@ void main()
 //    DivTest6parts();
 //    DivTestRecDiv();
 //    DivTestDecrement();
+    DivTestabSQ();
 
     printf("All done\n");
 }

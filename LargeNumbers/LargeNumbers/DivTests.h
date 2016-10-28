@@ -14,3 +14,4 @@ void DivTest_SQNM();
 void DivTest6parts();
 void DivTestRecDiv();
 void DivTestDecrement();
+void DivTestabSQ();

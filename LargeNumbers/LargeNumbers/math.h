@@ -26,6 +26,7 @@ void MulLN( LargeNumber *A, LargeNumber *B, LargeNumber *C );
 void MulLN( LargeNumber &A, LargeNumber &B, LargeNumber &C );
 void ToIntLN( LargeNumber *N, int *n );
 void ToIntLN( LargeNumber &N, int &n );
+int ToIntLN( LargeNumber *N );
 void CopyLN( LargeNumber *From, LargeNumber *To );
 void CopyLN( LargeNumber &From, LargeNumber &To );
 void HalfLN( LargeNumber *N );
