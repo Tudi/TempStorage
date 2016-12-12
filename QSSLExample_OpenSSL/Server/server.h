@@ -3,12 +3,9 @@
 
 #include <QList.h>
 #include <QSslSocket.h>
-#include <QMainWindow.h>
 #include "sslserver.h"
 
-namespace Ui {
-  class Server;
-}
+class FragmentedNetworkPacket;
 
 class Server : public QObject
 {
@@ -19,9 +16,8 @@ public:
   ~Server();
 
   // Slots to receive signals from UI
-  void startStopButtonClicked();
-
-  void checkFileStatus();
+  void ToggleStartStopListening(const QHostAddress &address = QHostAddress::Any, quint16 port = 0);
+  void LoadCertificates(QString KeyAndCertPath);
 
 protected slots:
 
@@ -34,12 +30,13 @@ protected slots:
   void connectionFailure();
 
 private:
- 
-private:
-  QString key;
-  QString certificate;
-  SslServer server;
-  QList<QSslSocket *> sockets;
+  QString				key;
+  QString				certificate;
+  SslServer				server;
+  QList<QSslSocket *>	sockets;
+
+  //good enough for a simple speed tested
+  FragmentedNetworkPacket	*IncommingPacket;
 };
 
 #endif // SERVER_H

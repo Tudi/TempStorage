@@ -1,98 +1,107 @@
+#include "StdAfx.h"
 #include <cassert>
 #include <QDateTime.h>
 #include <QFileDialog.h>
 #include <QFileInfo.h>
+#include <qapplication.h>
 #include "server.h"
 #include <iostream>
-
-const QString INVALID_FILE_MESSAGE = "Existing and readable key and certificate files must be specified.";
+#include "NetworkPacket.h"
 
 Server::Server()
 {
-
-  // Check for SSL support.  If SSL support is not available, show a
-  // message to the user describing what to do to enable SSL support.
-  if (QSslSocket::supportsSsl())
-  {
-  }
-  else
-  {
-
-	std::cout << "missing SSL" << std::endl;
-  }
+  if (QSslSocket::supportsSsl()==false)
+	std::cout << "Missing SSL. Please install it." << std::endl;
 
   connect(&server, SIGNAL(newConnection()), this, SLOT(acceptConnection()));
+
 }
 
 Server::~Server()
 {
   if (server.isListening())
-  {
     server.close();
-  }
 
   foreach (QSslSocket *socket, sockets)
-  {
     delete socket;
-  }
+  sockets.clear();
 
+  if (IncommingPacket != NULL)
+  {
+	  delete IncommingPacket;
+	  IncommingPacket = NULL;
+  }
 }
 
-void Server::startStopButtonClicked()
+void Server::ToggleStartStopListening(const QHostAddress &address, quint16 port)
 {
   if (server.isListening())
-  {
     server.close();
-  }
-  else
-  {
-	if (server.listen(QHostAddress::Any, 8081))
-    {
-    }
-	else
-	{
-		std::cout << "Could not bind" << std::endl;
-	}
-  }
+  else if (server.listen(address, port)==false)
+	std::cout << "Could not bind" << std::endl;
 }
 
-void Server::checkFileStatus()
+void Server::LoadCertificates( QString KeyAndCertPath )
 {
-	key = "../../Certificates/server_.key";
-	certificate = "../../Certificates/server_.csr";
+	key = KeyAndCertPath + "server_.key";
+	certificate = KeyAndCertPath + "server_.csr";
 
   QFileInfo keyInfo(key);
   QFileInfo certificateInfo(certificate);
-  if (keyInfo.exists() && keyInfo.isReadable() &&
-      certificateInfo.exists() && certificateInfo.isReadable())
+
+  if (keyInfo.exists() == false)
   {
+	  std::cout << "Key file does not exist" << key.toStdString() << keyInfo.exists() << " " << keyInfo.isReadable() << std::endl;
+	  return;
   }
-  else
+  if (keyInfo.isReadable() == false)
   {
-	  std::cout << "invalid key file" << key.toStdString() << keyInfo.exists() << " " << keyInfo.isReadable() << std::endl;
-	  std::cout << "invalid certificate file" << certificate.toStdString() << certificateInfo.exists() << " " << certificateInfo.isReadable() << std::endl;
+	  std::cout << "Key file is not readable" << key.toStdString() << keyInfo.exists() << " " << keyInfo.isReadable() << std::endl;
+	  return;
+  }
+  if ( certificateInfo.exists() == false )
+  {
+	  std::cout << "certificate file does not exist" << certificate.toStdString() << certificateInfo.exists() << " " << certificateInfo.isReadable() << std::endl;
+	  return;
+  }
+  if ( certificateInfo.isReadable() == false )
+  {
+	  std::cout << "certificate file is not readable" << certificate.toStdString() << certificateInfo.exists() << " " << certificateInfo.isReadable() << std::endl;
+	  return;
   }
 }
 
 // Accept connection from server and initiate the SSL handshake
 void Server::acceptConnection()
 {
+	if (sockets.empty() == false)
+		std::cout << "Server is mad efor 1 connection also. Need to update to handle multiple connections" << std::endl;
+
   QSslSocket *socket = dynamic_cast<QSslSocket *>(server.nextPendingConnection());
   assert(socket);
 
-  // QSslSocket emits the encrypted() signal after the encrypted connection is established
-  connect(socket, SIGNAL(encrypted()), this, SLOT(handshakeComplete()));
 
   // Report any SSL errors that occur
   connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(sslErrors(const QList<QSslError> &)));
 
   connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(connectionFailure()));
 
+  
+  // QSslSocket emits the encrypted() signal after the encrypted connection is established
+#define _USE_ENCRYPTION
+#ifdef _USE_ENCRYPTION
+  connect(socket, SIGNAL(encrypted()), this, SLOT(handshakeComplete()));
   socket->setPrivateKey(key);
   socket->setLocalCertificate(certificate);
 
   socket->setPeerVerifyMode(QSslSocket::VerifyNone);
   socket->startServerEncryption();
+#else
+  connect(socket, SIGNAL(disconnected()), this, SLOT(connectionClosed()));
+  connect(socket, SIGNAL(readyRead()), this, SLOT(receiveMessage()));
+  sockets.push_back(socket);
+  std::cout << "Accepted connection from " << socket->peerAddress().toString().toStdString() << ":" << socket->peerPort() << " .Encrypted : " << socket->isEncrypted() << std::endl;
+#endif
 }
 
 // Receive notification that the SSL handshake has completed successfully
@@ -104,7 +113,7 @@ void Server::handshakeComplete()
   connect(socket, SIGNAL(disconnected()), this, SLOT(connectionClosed()));
   connect(socket, SIGNAL(readyRead()), this, SLOT(receiveMessage()));
 
-  std::cout << "Accepted connection from " << socket->peerAddress().toString().toStdString() << ":" << socket->peerPort() << std::endl;
+  std::cout << "Accepted connection from " << socket->peerAddress().toString().toStdString() << ":" << socket->peerPort() << " .Encrypted : " << socket->isEncrypted() << std::endl;
 
   sockets.push_back(socket);
 }
@@ -113,18 +122,8 @@ void Server::sslErrors(const QList<QSslError> &errors)
 {
   QSslSocket *socket = dynamic_cast<QSslSocket *>(sender());
   assert(socket);
-
-  QString errorStrings;
   foreach (QSslError error, errors)
-  {
-    errorStrings += error.errorString();
-    if (error != errors.last())
-    {
-      errorStrings += ';';
-    }
-  }
-
-  std::cout << "SSL error " << errorStrings.toStdString() << std::endl;
+	  std::cout << "SSL error : " << error.errorString().toStdString() << std::endl; 
 }
 
 void Server::receiveMessage()
@@ -132,23 +131,20 @@ void Server::receiveMessage()
   QSslSocket *socket = dynamic_cast<QSslSocket *>(sender());
   assert(socket);
 
-  if (socket->canReadLine())
-  {
-    QByteArray message = socket->readLine();
-    QString sender = QString("%1:%2")
-        .arg(socket->peerAddress().toString())
-        .arg(socket->peerPort());
+  //create new packet reader. Should be socket specific !
 
-	QString Message = message;
-	std::cout << "got message " << Message.toStdString() << std::endl;
+  //create resource on demand
+  if (IncommingPacket == NULL)
+	  IncommingPacket = new FragmentedNetworkPacket;
+  else if (IncommingPacket->IsReadComplete())
+	  IncommingPacket->ReInit();
 
-    sender += " -> ";
-    foreach (QSslSocket *s, sockets)
-    {
-      s->write(sender.toLocal8Bit().constData());
-      s->write(message);
-    }
-  }
+  //read data. Might be a fragmented packet
+  IncommingPacket->ReadFromSocket(socket);
+
+  //if we read the whole packet. Send it back to the client
+  if (IncommingPacket->IsReadComplete())
+	  FragmentedNetworkPacket::SendPacket( socket, IncommingPacket->GetData(), IncommingPacket->GetDataLen());
 }
 
 void Server::connectionClosed()

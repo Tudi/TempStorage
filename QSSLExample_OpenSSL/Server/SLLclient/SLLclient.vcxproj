@@ -20,12 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\NetworkPacket.cpp" />
     <ClCompile Include="..\server.cpp" />
     <ClCompile Include="..\sslserver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\NetworkPacket.h" />
     <ClInclude Include="..\server.h" />
     <ClInclude Include="..\sslserver.h" />
+    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9FF71D01-6730-401E-A7E5-0F5744EDE4DC}</ProjectGuid>
@@ -155,7 +158,7 @@
     <ProjectReference />
     <PreBuildEvent>
       <Command>
-CALL ..\..\MocCreator\generic_mocgen.cmd "d:\Projects\QSSL Example\Server\"</Command>
+CALL ..\..\MocCreator\generic_mocgen.cmd "d:\Projects\QSSLExample_OpenSSL\Server\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -150,11 +150,16 @@ CALL ..\..\MocCreator\generic_mocgen.cmd "d:\Projects\QSSL Example\Client\"</Com
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Server\NetworkPacket.cpp" />
     <ClCompile Include="..\client.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="PreciseClock.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Server\NetworkPacket.h" />
     <ClInclude Include="..\client.h" />
+    <ClInclude Include="PreciseClock.h" />
+    <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

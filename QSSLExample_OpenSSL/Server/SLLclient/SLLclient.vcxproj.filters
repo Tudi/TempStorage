@@ -24,12 +24,21 @@
     <ClCompile Include="..\sslserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\NetworkPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\server.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sslserver.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NetworkPacket.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
