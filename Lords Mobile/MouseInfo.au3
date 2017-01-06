@@ -34,6 +34,7 @@ WinSetOnTop($GUI, "", 1) ;make GUI stay on top of other windows
 
 global $MonitoredMousePos = MouseGetPos()
 HotKeySet("-", "RegisterMonitoredPixelPos")
+HotKeySet("7", "TakeScreenshotAroundMouse")
 HotKeySet("9", "DumpPixelsAroundMouse")
 
 Func RegisterMonitoredPixelPos()
@@ -43,26 +44,43 @@ Func RegisterMonitoredPixelPos()
 EndFunc 
 
 Func DumpPixelsAroundMouse()
-	FileDelete( "PixelsAroundMouse.txt" )
+	FileDelete( "PixelsAroundMouse_Info.txt" )
 	local $mpos = MouseGetPos()
 	Local $KoData = GetKoPlayerAndPos()
-	FileWriteLine ( "PixelsAroundMouse.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
-	FileWriteLine ( "PixelsAroundMouse.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "," & ($mpos[1] - $KoData[1]) )
-	FileWriteLine ( "PixelsAroundMouse.txt", "Pixel at : 0x" & Hex( PixelGetColor( $mpos[0], $mpos[1] ) ) )
+	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
+	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "," & ($mpos[1] - $KoData[1]) )
+	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Pixel at : 0x" & Hex( PixelGetColor( $mpos[0], $mpos[1] ) ) )
 	for $y = $mpos[1] - 10 to $mpos[1] + 10
 		for $x = $mpos[0] - 10 to $mpos[0] + 10
 			$PixelColor = PixelGetColor( $x, $y )
-			;FileWriteLine ( "PixelsAroundMouse.txt", "Pixel at [" & $x & "," & $y & "]=" & Hex( $PixelColor ) );
-			FileWrite ( "PixelsAroundMouse.txt", " " & Hex( $PixelColor ) );
+			;FileWriteLine ( "PixelsAroundMouse_Info.txt", "Pixel at [" & $x & "," & $y & "]=" & Hex( $PixelColor ) );
+			FileWrite ( "PixelsAroundMouse_Info.txt", " " & Hex( $PixelColor ) );
 		next
-		FileWriteLine ( "PixelsAroundMouse.txt", "" )
+		FileWriteLine ( "PixelsAroundMouse_Info.txt", "" )
 	next
+EndFunc
+
+Func TakeScreenshotAroundMouse()
+	FileDelete( "ImageAroundMouse_Info.txt" )
+	local $mpos = MouseGetPos()
+	Local $KoData = GetKoPlayerAndPos()
+	FileWriteLine ( "ImageAroundMouse_Info.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
+	FileWriteLine ( "ImageAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "," & ($mpos[1] - $KoData[1]) )
+	; save original
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - 10,"int",$mpos[1] - 10,"int",$mpos[0] + 10,"int",$mpos[1] + 10)
+	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	; save reduced precision
+	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
+	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	; save edgedetected
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - 10,"int",$mpos[1] - 10,"int",$mpos[0] + 10,"int",$mpos[1] + 10)
 EndFunc
 
 ;Register callback 
 $hKey_Proc = DllCallbackRegister("_Mouse_Proc", "int", "int;ptr;ptr") 
 $hM_Module = DllCall("kernel32.dll", "hwnd", "GetModuleHandle", "ptr", 0) 
 $hM_Hook = DllCall("user32.dll", "hwnd", "SetWindowsHookEx", "int", $WH_MOUSE_LL, "ptr", DllCallbackGetPtr($hKey_Proc), "hwnd", $hM_Module[0], "dword", 0) 
+global $dllhandle = DllOpen ( "ImageSearchDLL_x86.dll" )
 
 While 1     
 	If $GUI_EVENT_CLOSE = GUIGetMsg() Then Exit ;idle until exit is pressed 
@@ -139,4 +157,5 @@ Func OnAutoItExit()
 	$hM_Hook[0] = 0     
 	DllCallbackFree($hKey_Proc)     
 	$hKey_Proc = 0 
+	DllClose ( $dllhandle )
 EndFunc ;==>OnAutoItExit
