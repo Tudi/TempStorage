@@ -64,16 +64,23 @@ Func TakeScreenshotAroundMouse()
 	FileDelete( "ImageAroundMouse_Info.txt" )
 	local $mpos = MouseGetPos()
 	Local $KoData = GetKoPlayerAndPos()
+	Local $Radius = 16
 	FileWriteLine ( "ImageAroundMouse_Info.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
-	FileWriteLine ( "ImageAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "," & ($mpos[1] - $KoData[1]) )
+	FileWriteLine ( "ImageAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "_" & ($mpos[1] - $KoData[1]) )
 	; save original
-	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - 10,"int",$mpos[1] - 10,"int",$mpos[0] + 10,"int",$mpos[1] + 10)
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; save reduced precision
 	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
-	; save edgedetected
-	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - 10,"int",$mpos[1] - 10,"int",$mpos[0] + 10,"int",$mpos[1] + 10)
+	; save edgedetected. Not used Atm. Maybe Later
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
+	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
+	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
+	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )
+	$result = DllCall( $dllhandle, "NONE", "EdgeKeepLocalMaximaMaximaOnly", "int", 2 )
+	$result = DllCall( $dllhandle, "NONE", "EdgeCopyOriginalForEdges" )
+	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 EndFunc
 
 ;Register callback 

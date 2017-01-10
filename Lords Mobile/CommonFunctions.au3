@@ -68,12 +68,17 @@ func LMIsZoomInButtonVisible()
 endfunc
 
 func CloseLordsMobilePopupWindows()
-	Local $aPos = GetKoPlayerAndPos()
-	Local $InfinitLoopBreak = 10
-	while( IsPixelAroundPos( $aPos[0] + 986, $aPos[1] + 36, 0x00FFBE38 ) == 1 and $InfinitLoopBreak > 0 )
+	;Local $aPos = GetKoPlayerAndPos()
+	Local $InfinitLoopBreak = 3
+;	while( IsPixelAroundPos( $aPos[0] + 986, $aPos[1] + 36, 0x00FFBE38 ) == 1 and $InfinitLoopBreak > 0 )
+	local $Pos = ImageIsAt("Images/Close_Help_Red_986_37.bmp",986,37)
+	;MsgBox( 64, "", "found at " & $Pos[0] & " " & $Pos[1] & " SAD " & $Pos[2])
+	while( $Pos[2] == 0 and $InfinitLoopBreak > 0 )
+	
 		;MouseMove( $aPos[0] + 986, $aPos[1] + 36 )
 		;WinActivate( $aPos[4] )
-		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 986, $aPos[1] + 36, 1, 0 )
+		;MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 986, $aPos[1] + 36, 1, 0 )
+		MouseClick( $MOUSE_CLICK_LEFT, $Pos[0] + 16, $Pos[1] + 16, 1, 0 )
 		;ControlClick( $aPos[4],"", "", "left", 1, 986, 36)
 		;_MouseClickPlus($aPos[4], "left", $aPos[0] + 986, $aPos[1] + 36 )
 		;MouseDown($MOUSE_CLICK_LEFT)
@@ -81,6 +86,7 @@ func CloseLordsMobilePopupWindows()
 		;MouseUp($MOUSE_CLICK_LEFT)
 		Sleep( 500 ) ; wait for the window to refresh
 		$InfinitLoopBreak = $InfinitLoopBreak - 1
+		$Pos = ImageIsAt("Images/Close_Help_Red_986_37.bmp",986,37)
 	wend
 endfunc
 
@@ -141,3 +147,35 @@ EndFunc  ;==>_MouseClickPlus
 Func _MakeLong($LoWord, $HiWord)
     Return BitOR($HiWord * 0x10000, BitAND($LoWord, 0xFFFF))
 EndFunc  ;==>_MakeLong
+
+Func ImageIsAt( $ImgName, $x, $y )
+	global $dllhandle
+	Local $AcceptedMisplaceError = 2
+	Local $Radius = 16 + $AcceptedMisplaceError
+	Local $aPos = GetKoPlayerAndPos()
+	local $x2 = $x + $aPos[0]
+	local $y2 = $y + $aPos[1]
+	local $result = DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $x2 - $Radius, "int", $y2 - $Radius, "int", $x2 + $Radius, "int", $y2 + $Radius)
+	$result = DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
+	$result = DllCall( $dllhandle, "str", "ImageSearch_SAD", "str", $ImgName)
+	local $res = SearchResultToVect( $result )
+	return $res
+endfunc
+
+func SearchResultToVect( $result )
+	local $array = StringSplit($result[0],"|")
+	local $resCount = Number( $array[1] )
+	;MsgBox( 64, "", "res count " & $resCount )
+	local $ret[3]
+	$ret[0]=-1
+	$ret[1]=-1
+	$ret[2]=-1
+	if( $resCount > 0 ) then
+		$ret[0]=Int(Number($array[2]))
+		$ret[1]=Int(Number($array[3]))
+		$ret[2]=Int(Number($array[4]))	; SAD
+		;MouseMove( $ret[0], $ret[1] );
+		;MsgBox( 64, "", "found at " & $ret[0] & " " & $ret[1] & " SAD " & $ret[2])
+	endif
+	return $ret
+endfunc
