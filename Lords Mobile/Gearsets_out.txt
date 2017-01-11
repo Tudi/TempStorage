@@ -1,35 +1,43 @@
 cavalry + ranged 
 	Best score :
-	0)item name ancient in slot helm from set reaper
+	0)item name wyrmbone in slot helm from set wyrm
 	1)item name firewall in slot body from set mecha
 	2)item name gargantuan in slot feet from set garg
 	3)item name skullcrusher in slot mhand from set helldrider
-	4)item name winter in slot ohand from set snowbeast
+	4)item name eternal in slot ohand from set reaper
 	5)item name blight in slot trinket from set megamagot
 	6)item name blight in slot trinket from set megamagot
-	cdef=85,ratk=101,catk=67.5,chp=97.5,Sumscore=7516
+	cdef=45,ratk=130,catk=107,chp=104,Sumscore=387
 
 	Best collectable :
 	0)item name deathgazer in slot helm from set 1
-	1)item name regal in slot body from set 1
+	1)item name odysseus in slot body from set 1
 	2)item name durable in slot feet from set 1
 	3)item name falcon in slot mhand from set 1
-	4)item name noah in slot ohand from set 1
+	4)item name lunar in slot ohand from set 1
 	5)item name lost in slot trinket from set 1
 	6)item name lost in slot trinket from set 1
-	cdef=26,ratk=22.5,catk=19.5,chp=10,Sumscore=337
+	cdef=32,ratk=30,catk=14,chp=15,Sumscore=92
 
 	Best multiset :
-	0)item name ancient in slot helm from set reaper
+	0)item name wyrmbone in slot helm from set wyrm
 	1)item name firewall in slot body from set mecha
 	2)item name gargantuan in slot feet from set garg
 	3)item name skullcrusher in slot mhand from set helldrider
-	4)item name winter in slot ohand from set snowbeast
+	4)item name eternal in slot ohand from set reaper
 	5)item name dragon in slot trinket from set blackwing
 	6)item name blight in slot trinket from set megamagot
-	cdef=70,ratk=97,catk=77.5,chp=92.5,Sumscore=6976
+	cdef=30,ratk=126,catk=117,chp=99,Sumscore=373
 
 	Best craftables :
+	0)item name deathgazer in slot helm from set 1
+	1)item name odysseus in slot body from set 1
+	2)item name durable in slot feet from set 1
+	3)item name falcon in slot mhand from set 1
+	4)item name lunar in slot ohand from set 1
+	5)item name lost in slot trinket from set 1
+	6)item name lost in slot trinket from set 1
+	cdef=32,ratk=30,catk=14,chp=15,Sumscore=92
 	0)item name deathgazer in slot helm from set 1
 	1)item name odysseus in slot body from set 1
 	2)item name durable in slot feet from set 1
@@ -37,108 +45,145 @@ cavalry + ranged
 	4)item name lunar in slot ohand from set 1
 	5)item name lost in slot trinket from set 1
 	6)item name lost in slot trinket from set 1
-	cdef=32.2,ratk=25.5,catk=14.5,chp=5,Sumscore=243
-	0)item name deathgazer in slot helm from set 1
-	1)item name regal in slot body from set 1
-	2)item name durable in slot feet from set 1
-	3)item name falcon in slot mhand from set 1
-	4)item name lunar in slot ohand from set 1
-	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=26,ratk=25.5,catk=14.5,chp=10,Sumscore=310
-	0)item name deathgazer in slot helm from set 1
-	1)item name regal in slot body from set 1
-	2)item name durable in slot feet from set 1
-	3)item name falcon in slot mhand from set 1
-	4)item name noah in slot ohand from set 1
-	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=26,ratk=22.5,catk=19.5,chp=10,Sumscore=337
+	cdef=32,ratk=28,catk=14,chp=15,Sumscore=90
 
-cavalry
+cavalry max score	
 	Best score :
 	0)item name beast in slot helm from set saber
-	1)item name predator in slot body from set saber
+	1)item name firewall in slot body from set mecha
 	2)item name gargantuan in slot feet from set garg
 	3)item name horn in slot mhand from set garg
 	4)item name winter in slot ohand from set snowbeast
 	5)item name blight in slot trinket from set megamagot
 	6)item name blight in slot trinket from set megamagot
-	cdef=85,catk=102.5,chp=117.5,Sumscore=1011
+	cdef=85,catk=122,chp=112,Sumscore=320
 
 	Best collectable :
 	0)item name deathgazer in slot helm from set 1
-	1)item name regal in slot body from set 1
+	1)item name odysseus in slot body from set 1
 	2)item name durable in slot feet from set 1
 	3)item name falcon in slot mhand from set 1
-	4)item name noah in slot ohand from set 1
-	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=26,catk=19.5,chp=10,Sumscore=71
+	4)item name lunar in slot ohand from set 1
+	5)item name sentinel in slot trinket from set 1
+	6)item name sentinel in slot trinket from set 1
+	cdef=32,catk=22,chp=11,Sumscore=66
 
 	Best multiset :
 	0)item name beast in slot helm from set saber
 	1)item name firewall in slot body from set mecha
 	2)item name gargantuan in slot feet from set garg
-	3)item name frostwing in slot mhand from set frost
+	3)item name skullcrusher in slot mhand from set helldrider
 	4)item name winter in slot ohand from set snowbeast
 	5)item name dragon in slot trinket from set blackwing
 	6)item name blight in slot trinket from set megamagot
-	cdef=55,catk=122.5,chp=107.5,Sumscore=851
+	cdef=55,catk=122,chp=107,Sumscore=285
 
 	Best craftables :
 	0)item name deathgazer in slot helm from set 1
 	1)item name odysseus in slot body from set 1
 	2)item name durable in slot feet from set 1
-	3)item name fiery in slot mhand from set 1
+	3)item name falcon in slot mhand from set 1
+	4)item name lunar in slot ohand from set 1
+	5)item name sentinel in slot trinket from set 1
+	6)item name sentinel in slot trinket from set 1
+	cdef=32,catk=22,chp=11,Sumscore=66
+	0)item name deathgazer in slot helm from set 1
+	1)item name odysseus in slot body from set 1
+	2)item name durable in slot feet from set 1
+	3)item name falcon in slot mhand from set 1
 	4)item name lunar in slot ohand from set 1
 	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=32.2,catk=14.5,chp=5,Sumscore=48
+	6)item name sentinel in slot trinket from set 1
+	cdef=32,catk=18,chp=13,Sumscore=64
 	0)item name deathgazer in slot helm from set 1
-	1)item name regal in slot body from set 1
+	1)item name odysseus in slot body from set 1
 	2)item name durable in slot feet from set 1
 	3)item name falcon in slot mhand from set 1
 	4)item name lunar in slot ohand from set 1
 	5)item name lost in slot trinket from set 1
 	6)item name lost in slot trinket from set 1
-	cdef=26,catk=14.5,chp=10,Sumscore=61
-	0)item name deathgazer in slot helm from set 1
-	1)item name regal in slot body from set 1
-	2)item name durable in slot feet from set 1
-	3)item name falcon in slot mhand from set 1
-	4)item name noah in slot ohand from set 1
-	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=26,catk=19.5,chp=10,Sumscore=71
+	cdef=32,catk=14,chp=15,Sumscore=62
 
 ranged
 	Best score :
 	0)item name wyrmbone in slot helm from set wyrm
+	Array ( [slot] => helm [GearSet] => wyrm [name] => wyrmbone [rdef] => 20 [cdef] => 0 [ratk] => 32 [catk] => 0 [rhp] => 12 [chp] => 12 [SumScore] => 32 [ScroreGroups] => Array ( [ratk] => 32 ) )
 	1)item name deathly in slot body from set reaper
+	Array ( [slot] => body [GearSet] => reaper [name] => deathly [rdef] => 15 [cdef] => 15 [ratk] => 20 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 20 [ScroreGroups] => Array ( [ratk] => 20 ) )
 	2)item name dragon in slot feet from set blackwing
+	Array ( [slot] => feet [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 30 [catk] => 0 [rhp] => 15 [chp] => 15 [SumScore] => 30 [ScroreGroups] => Array ( [ratk] => 30 ) )
 	3)item name skullcrusher in slot mhand from set helldrider
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [SumScore] => 35 [ScroreGroups] => Array ( [ratk] => 35 ) )
 	4)item name eternal in slot ohand from set reaper
+	Array ( [slot] => ohand [GearSet] => reaper [name] => eternal [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 20 [SumScore] => 35 [ScroreGroups] => Array ( [ratk] => 35 ) )
 	5)item name wyrm in slot trinket from set wyrm
+	Array ( [slot] => trinket [GearSet] => wyrm [name] => wyrm [rdef] => 0 [cdef] => 0 [ratk] => 16 [catk] => 0 [rhp] => 8 [chp] => 8 [SumScore] => 16 [ScroreGroups] => Array ( [ratk] => 16 ) )
 	6)item name wyrm in slot trinket from set wyrm
-	ratk=184.5,Sumscore=13
+	Array ( [slot] => trinket [GearSet] => wyrm [name] => wyrm [rdef] => 0 [cdef] => 0 [ratk] => 16 [catk] => 0 [rhp] => 8 [chp] => 8 [SumScore] => 16 [ScroreGroups] => Array ( [ratk] => 16 ) )
+	ratk=184,Sumscore=185
 
 	Best collectable :
 	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 0 [ScroreGroups] => Array ( [ratk] => 0 ) )
 	1)item name summoner in slot body from set 1
-	2)item name durable in slot feet from set 1
-	3)item name wrath in slot mhand from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => summoner [rdef] => 5 [cdef] => 5 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 0 [ScroreGroups] => Array ( [ratk] => 0 ) )
+	2)item name sylph in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => sylph [rdef] => 0 [cdef] => 0 [ratk] => 4 [catk] => 2 [rhp] => 0 [chp] => 0 [SumScore] => 4 [ScroreGroups] => Array ( [ratk] => 4 ) )
+	3)item name falcon in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => falcon [rdef] => 0 [cdef] => 0 [ratk] => 5 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 5 [ScroreGroups] => Array ( [ratk] => 5 ) )
 	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 9 [ScroreGroups] => Array ( [ratk] => 9 ) )
 	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
 	6)item name lost in slot trinket from set 1
-	ratk=25.5,Sumscore=5
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
+	ratk=30,Sumscore=31
 
 	Best multiset :
 	0)item name wyrmbone in slot helm from set wyrm
+	Array ( [slot] => helm [GearSet] => wyrm [name] => wyrmbone [rdef] => 20 [cdef] => 0 [ratk] => 32 [catk] => 0 [rhp] => 12 [chp] => 12 [SumScore] => 32 [ScroreGroups] => Array ( [ratk] => 32 ) )
 	1)item name frostwing in slot body from set frost
+	Array ( [slot] => body [GearSet] => frost [name] => frostwing [rdef] => 0 [cdef] => 0 [ratk] => 8 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 8 [ScroreGroups] => Array ( [ratk] => 8 ) )
 	2)item name dragon in slot feet from set blackwing
+	Array ( [slot] => feet [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 30 [catk] => 0 [rhp] => 15 [chp] => 15 [SumScore] => 30 [ScroreGroups] => Array ( [ratk] => 30 ) )
 	3)item name skullcrusher in slot mhand from set helldrider
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [SumScore] => 35 [ScroreGroups] => Array ( [ratk] => 35 ) )
 	4)item name eternal in slot ohand from set reaper
+	Array ( [slot] => ohand [GearSet] => reaper [name] => eternal [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 20 [SumScore] => 35 [ScroreGroups] => Array ( [ratk] => 35 ) )
 	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
 	6)item name blight in slot trinket from set megamagot
-	ratk=160.5,Sumscore=12
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [SumScore] => 14 [ScroreGroups] => Array ( [ratk] => 14 ) )
+	ratk=160,Sumscore=161
+
+	Best craftables :
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 0 [ScroreGroups] => Array ( [ratk] => 0 ) )
+	1)item name summoner in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => summoner [rdef] => 5 [cdef] => 5 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 0 [ScroreGroups] => Array ( [ratk] => 0 ) )
+	2)item name sylph in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => sylph [rdef] => 0 [cdef] => 0 [ratk] => 4 [catk] => 2 [rhp] => 0 [chp] => 0 [SumScore] => 4 [ScroreGroups] => Array ( [ratk] => 4 ) )
+	3)item name falcon in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => falcon [rdef] => 0 [cdef] => 0 [ratk] => 5 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 5 [ScroreGroups] => Array ( [ratk] => 5 ) )
+	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 9 [ScroreGroups] => Array ( [ratk] => 9 ) )
+	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
+	6)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
+	ratk=30,Sumscore=31
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 0 [ScroreGroups] => Array ( [ratk] => 0 ) )
+	1)item name summoner in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => summoner [rdef] => 5 [cdef] => 5 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 0 [ScroreGroups] => Array ( [ratk] => 0 ) )
+	2)item name sylph in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => sylph [rdef] => 0 [cdef] => 0 [ratk] => 4 [catk] => 2 [rhp] => 0 [chp] => 0 [SumScore] => 4 [ScroreGroups] => Array ( [ratk] => 4 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 3 [ScroreGroups] => Array ( [ratk] => 3 ) )
+	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 9 [ScroreGroups] => Array ( [ratk] => 9 ) )
+	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
+	6)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
+	ratk=28,Sumscore=29
