@@ -65,7 +65,7 @@ if($f)
 	fclose($f);
 }
 //print_r($items);
-unlink("gearsOut.txt");
+@unlink("gearsOut.txt");
 GenGearSet();
 
 function PrintItemInfo( $item )

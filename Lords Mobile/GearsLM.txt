@@ -1,5 +1,5 @@
 helm 1 deathgazer 16 def
-helm garg blood 8 catk 8 cdef 8 chp
+helm 1 bloodstained-Garg 8 catk 8 cdef 8 chp
 helm frost frostwing 9 ratk 11.5 hp
 helm reaper ancient 28% ratk 25% rdef 15% def
 helm wyrm wyrmbone 32.5 ratk 20 rdef 12.5 hp
@@ -22,7 +22,7 @@ body mecha firewall 30 catk 15 hp
 feet reaper nether 15 ratk 10 rdef 15 def
 feet 1 durable 4.5 catk 4.5 ratk 10 def
 feet 1 amethyst 4.5 catk 4.5 ratk
-feet frost frostwing 6 catk 
+feet 1 frostwing 6 catk 
 feet 1 seafarer 4 catk
 feet 1 sylph 2.5 catk 4 ratk
 feet 1 cobra 3.5 ratk 3.5 catk
@@ -34,6 +34,7 @@ feet blackwing dragon 30 ratk 15 hp
 
 mhand 1 fiery 10 catk 3.5 ratk
 mhand 1 falcon 10 catk 5 ratk
+mhand 1 Dragon_sBite 10 hp
 mhand reaper harbringer 8 ratk 10 rdef 10 cdef
 mhand 1 wrath 8 catk 4 ratk
 mhand saber ripper 20 catk 20 cdef
@@ -42,9 +43,10 @@ mhand garg horn 30 catk 15 cdef
 mhand frost frostwing 20 catk 12.5 ratk
 mhand helldrider skullcrusher 15 ratk 20 ratk 20 catk
 
+ohand 1 crusader 6.5 ratk
 ohand blackwing dragon 22 catk 20 chp 20 rhp
-ohand frost frostwing 12.5 rdef 12.5 cdef 8.5 rhp 8.5 chp
-ohand wyrm wyrm 10 ratk 5 cdef 9 rhp
+ohand 1 frostwing 12.5 rdef 12.5 cdef 8.5 rhp 8.5 chp
+ohand 1 wyrm 10 ratk 5 cdef 9 rhp
 ohand 1 lunar 9 ratk 11.5 rhp 11.5 chp
 ohand 1 noah 5 catk 6 ratk 
 ohand megamagot orb 11 catk 
@@ -53,7 +55,7 @@ ohand reaper eternal 20 catk 35 ratk 20 chp
 
 trinket 1 lost 6 ratk 2.5 hp
 trinket 1 sentinel 4 catk
-trinket saber ivory 8 catk
+trinket 1 ivoryChoker 8 catk
 trinket garg fear 16 catk 5.5 chp
 trinket wyrm wyrm 16 ratk 8 hp
 trinket helldrider burning 8 atk 9 hp
