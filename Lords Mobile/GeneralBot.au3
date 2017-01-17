@@ -4,7 +4,8 @@
 Opt("PixelCoordMode",1)
 Opt("MustDeclareVars", 1)
 HotKeySet("9", "ExitBot")
-HotKeySet("5", "CloseLordsMobilePopupWindows")
+HotKeySet("{Esc}", "ExitBot")
+HotKeySet("5", "SearchForResources")
 
 global $BotIsRunning = 1
 global $dllhandle = DllOpen ( "ImageSearchDLL_x86.dll" )
@@ -17,4 +18,10 @@ DllClose ( $dllhandle )
 
 func ExitBot()
 	global $BotIsRunning = 0
+endfunc
+
+func TempFunc()
+	;MsgBox( 64, "", "Digitcount " & CountDigits(1234 ) & " " & GetNthDigit(1234,0) &"-" & GetNthDigit(1234,1) &"-" & GetNthDigit(1234,2) &"-")
+	JumpToKingdomCoord( 67, 123, 456 )
+	JumpToKingdomCoord( 67, 789, 10 )
 endfunc

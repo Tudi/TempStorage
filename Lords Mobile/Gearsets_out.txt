@@ -1,51 +1,307 @@
-cavalry + ranged 
+=====================================================================================================================================================	
+infantry + cavalry + ranged -> for defense ( stats evened out between types to not attack with counter )
 	Best score :
-	0)item name wyrmbone in slot helm from set wyrm
-	1)item name firewall in slot body from set mecha
+	0)item name beast in slot helm from set saber
+	Array ( [slot] => helm [GearSet] => saber [name] => beast [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 25 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 30 [SumScore] => 85 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 25 [chp] => 15 [ihp] => 15 [iatk] => 30 ) )
+	1)item name terror in slot body from set terrorthorn
+	Array ( [slot] => body [GearSet] => terrorthorn [name] => terror [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 40 [iatk] => 35 [SumScore] => 90 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 15 [ihp] => 40 [iatk] => 35 ) )
 	2)item name gargantuan in slot feet from set garg
+	Array ( [slot] => feet [GearSet] => garg [name] => gargantuan [rdef] => 15 [cdef] => 15 [ratk] => 0 [catk] => 37 [rhp] => 0 [chp] => 27 [idef] => 15 [SumScore] => 94 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 0 [catk] => 37 [chp] => 27 [idef] => 15 ) )
 	3)item name skullcrusher in slot mhand from set helldrider
-	4)item name eternal in slot ohand from set reaper
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [idef] => 25 [SumScore] => 80 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 0 [idef] => 25 ) )
+	4)item name winter in slot ohand from set snowbeast
+	Array ( [slot] => ohand [GearSet] => snowbeast [name] => winter [rdef] => 25 [cdef] => 25 [ratk] => 10 [catk] => 0 [rhp] => 25 [chp] => 25 [idef] => 57 [ihp] => 25 [SumScore] => 142 [ScroreGroups] => Array ( [cdef] => 25 [ratk] => 10 [catk] => 0 [chp] => 25 [idef] => 57 [ihp] => 25 ) )
 	5)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 74 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 [idef] => 15 [ihp] => 15 ) )
 	6)item name blight in slot trinket from set megamagot
-	cdef=45,ratk=130,catk=107,chp=104,Sumscore=387
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 74 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 [idef] => 15 [ihp] => 15 ) )
+	cdef=70,ratk=73,catk=82,chp=112,ihp=110,iatk=65,idef=127,Sumscore=6528016.8835566
 
 	Best collectable :
 	0)item name deathgazer in slot helm from set 1
-	1)item name odysseus in slot body from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name regal in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => regal [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 5 [chp] => 5 [ihp] => 5 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 5 [ihp] => 5 ) )
 	2)item name durable in slot feet from set 1
-	3)item name falcon in slot mhand from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
 	4)item name lunar in slot ohand from set 1
-	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=32,ratk=30,catk=14,chp=15,Sumscore=92
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 9 [catk] => 0 [chp] => 11 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=26,ratk=28,catk=14,chp=20,idef=26,ihp=9,iatk=18,Sumscore=29301.434777157
 
 	Best multiset :
-	0)item name wyrmbone in slot helm from set wyrm
-	1)item name firewall in slot body from set mecha
+	0)item name beast in slot helm from set saber
+	Array ( [slot] => helm [GearSet] => saber [name] => beast [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 25 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 30 [SumScore] => 85 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 25 [chp] => 15 [ihp] => 15 [iatk] => 30 ) )
+	1)item name terror in slot body from set terrorthorn
+	Array ( [slot] => body [GearSet] => terrorthorn [name] => terror [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 40 [iatk] => 35 [SumScore] => 90 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 15 [ihp] => 40 [iatk] => 35 ) )
 	2)item name gargantuan in slot feet from set garg
+	Array ( [slot] => feet [GearSet] => garg [name] => gargantuan [rdef] => 15 [cdef] => 15 [ratk] => 0 [catk] => 37 [rhp] => 0 [chp] => 27 [idef] => 15 [SumScore] => 94 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 0 [catk] => 37 [chp] => 27 [idef] => 15 ) )
 	3)item name skullcrusher in slot mhand from set helldrider
-	4)item name eternal in slot ohand from set reaper
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [idef] => 25 [SumScore] => 80 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 0 [idef] => 25 ) )
+	4)item name winter in slot ohand from set snowbeast
+	Array ( [slot] => ohand [GearSet] => snowbeast [name] => winter [rdef] => 25 [cdef] => 25 [ratk] => 10 [catk] => 0 [rhp] => 25 [chp] => 25 [idef] => 57 [ihp] => 25 [SumScore] => 142 [ScroreGroups] => Array ( [cdef] => 25 [ratk] => 10 [catk] => 0 [chp] => 25 [idef] => 57 [ihp] => 25 ) )
 	5)item name dragon in slot trinket from set blackwing
+	Array ( [slot] => trinket [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 10 [catk] => 10 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 40 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 10 [catk] => 10 [chp] => 10 [ihp] => 10 ) )
 	6)item name blight in slot trinket from set megamagot
-	cdef=30,ratk=126,catk=117,chp=99,Sumscore=373
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 74 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 [idef] => 15 [ihp] => 15 ) )
+	cdef=55,ratk=69,catk=92,chp=107,ihp=105,iatk=65,idef=112,Sumscore=5343822.5936122
 
 	Best craftables :
 	0)item name deathgazer in slot helm from set 1
-	1)item name odysseus in slot body from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name regal in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => regal [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 5 [chp] => 5 [ihp] => 5 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 5 [ihp] => 5 ) )
 	2)item name durable in slot feet from set 1
-	3)item name falcon in slot mhand from set 1
-	4)item name lunar in slot ohand from set 1
-	5)item name lost in slot trinket from set 1
-	6)item name lost in slot trinket from set 1
-	cdef=32,ratk=30,catk=14,chp=15,Sumscore=92
-	0)item name deathgazer in slot helm from set 1
-	1)item name odysseus in slot body from set 1
-	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
 	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
 	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 9 [catk] => 0 [chp] => 11 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=26,ratk=28,catk=14,chp=20,idef=26,ihp=9,iatk=18,Sumscore=29301.434777157
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name regal in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => regal [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 5 [chp] => 5 [ihp] => 5 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 5 [ihp] => 5 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name frostwing in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => frostwing [rdef] => 12 [cdef] => 12 [ratk] => 0 [catk] => 0 [rhp] => 8 [chp] => 8 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 12 [ratk] => 0 [catk] => 0 [chp] => 8 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=38,ratk=19,catk=14,chp=17,idef=26,ihp=9,iatk=18,Sumscore=26903.033880958
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name Dragon_sBite in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => Dragon_sBite [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 10 [ihp] => 10 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=24,ratk=22,catk=12,chp=22,idef=16,ihp=14,iatk=16,Sumscore=22351.307075874
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name regal in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => regal [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 5 [chp] => 5 [ihp] => 5 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 5 [ihp] => 5 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=26,ratk=25,catk=14,chp=9,idef=26,ihp=9,iatk=22,Sumscore=20533.416666498
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=24,ratk=25,catk=22,chp=12,idef=16,iatk=22,ihp=4,Sumscore=14934.09521866
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=32,ratk=25,catk=14,chp=4,idef=32,iatk=22,ihp=4,Sumscore=11231.954415862
+	0)item name barbarian in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => barbarian [rdef] => 4 [cdef] => 4 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 2 [idef] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 4 [ratk] => 0 [catk] => 0 [chp] => 0 [iatk] => 2 [idef] => 4 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=20,ratk=25,catk=14,chp=4,iatk=24,idef=20,ihp=4,Sumscore=7332.1211119293
+
+=====================================================================================================================================================	
+cavalry + ranged 
+	Best score :
+	0)item name wyrmbone in slot helm from set wyrm
+	Array ( [slot] => helm [GearSet] => wyrm [name] => wyrmbone [rdef] => 20 [cdef] => 0 [ratk] => 32 [catk] => 0 [rhp] => 12 [chp] => 12 [SumScore] => 44 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 32 [catk] => 0 [chp] => 12 ) )
+	1)item name firewall in slot body from set mecha
+	Array ( [slot] => body [GearSet] => mecha [name] => firewall [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 30 [rhp] => 15 [chp] => 15 [SumScore] => 45 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 30 [chp] => 15 ) )
+	2)item name gargantuan in slot feet from set garg
+	Array ( [slot] => feet [GearSet] => garg [name] => gargantuan [rdef] => 15 [cdef] => 15 [ratk] => 0 [catk] => 37 [rhp] => 0 [chp] => 27 [SumScore] => 79 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 0 [catk] => 37 [chp] => 27 ) )
+	3)item name skullcrusher in slot mhand from set helldrider
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [SumScore] => 55 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 0 ) )
+	4)item name eternal in slot ohand from set reaper
+	Array ( [slot] => ohand [GearSet] => reaper [name] => eternal [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 20 [SumScore] => 75 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 20 ) )
+	5)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [SumScore] => 44 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 ) )
+	6)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [SumScore] => 44 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 ) )
+	cdef=45,ratk=130,catk=107,chp=104,Sumscore=387
+
+	Best collectable :
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name falcon in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => falcon [rdef] => 0 [cdef] => 0 [ratk] => 5 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 15 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 5 [catk] => 10 [chp] => 0 ) )
+	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 9 [catk] => 0 [chp] => 11 ) )
+	5)item name ivoryChoker in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => ivoryChoker [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 0 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 8 [chp] => 0 ) )
+	6)item name ivoryChoker in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => ivoryChoker [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 0 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 8 [chp] => 0 ) )
+	cdef=24,ratk=18,catk=38,chp=19,Sumscore=100
+
+	Best multiset :
+	0)item name wyrmbone in slot helm from set wyrm
+	Array ( [slot] => helm [GearSet] => wyrm [name] => wyrmbone [rdef] => 20 [cdef] => 0 [ratk] => 32 [catk] => 0 [rhp] => 12 [chp] => 12 [SumScore] => 44 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 32 [catk] => 0 [chp] => 12 ) )
+	1)item name firewall in slot body from set mecha
+	Array ( [slot] => body [GearSet] => mecha [name] => firewall [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 30 [rhp] => 15 [chp] => 15 [SumScore] => 45 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 30 [chp] => 15 ) )
+	2)item name gargantuan in slot feet from set garg
+	Array ( [slot] => feet [GearSet] => garg [name] => gargantuan [rdef] => 15 [cdef] => 15 [ratk] => 0 [catk] => 37 [rhp] => 0 [chp] => 27 [SumScore] => 79 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 0 [catk] => 37 [chp] => 27 ) )
+	3)item name skullcrusher in slot mhand from set helldrider
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [SumScore] => 55 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 0 ) )
+	4)item name eternal in slot ohand from set reaper
+	Array ( [slot] => ohand [GearSet] => reaper [name] => eternal [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 20 [SumScore] => 75 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 20 ) )
+	5)item name dragon in slot trinket from set blackwing
+	Array ( [slot] => trinket [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 10 [catk] => 10 [rhp] => 10 [chp] => 10 [SumScore] => 30 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 10 [catk] => 10 [chp] => 10 ) )
+	6)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [SumScore] => 44 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 ) )
+	cdef=30,ratk=126,catk=117,chp=99,Sumscore=373
+
+	Best craftables :
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name falcon in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => falcon [rdef] => 0 [cdef] => 0 [ratk] => 5 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 15 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 5 [catk] => 10 [chp] => 0 ) )
+	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 9 [catk] => 0 [chp] => 11 ) )
+	5)item name ivoryChoker in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => ivoryChoker [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 0 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 8 [chp] => 0 ) )
+	6)item name ivoryChoker in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => ivoryChoker [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 0 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 8 [chp] => 0 ) )
+	cdef=24,ratk=18,catk=38,chp=19,Sumscore=100
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 13 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 ) )
+	4)item name frostwing in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => frostwing [rdef] => 12 [cdef] => 12 [ratk] => 0 [catk] => 0 [rhp] => 8 [chp] => 8 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 12 [ratk] => 0 [catk] => 0 [chp] => 8 ) )
 	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
 	6)item name lost in slot trinket from set 1
-	cdef=32,ratk=28,catk=14,chp=15,Sumscore=90
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	cdef=36,ratk=19,catk=22,chp=20,Sumscore=98
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 13 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 ) )
+	4)item name frostwing in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => frostwing [rdef] => 12 [cdef] => 12 [ratk] => 0 [catk] => 0 [rhp] => 8 [chp] => 8 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 12 [ratk] => 0 [catk] => 0 [chp] => 8 ) )
+	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	6)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	cdef=44,ratk=19,catk=14,chp=12,Sumscore=90
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name falcon in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => falcon [rdef] => 0 [cdef] => 0 [ratk] => 5 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 15 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 5 [catk] => 10 [chp] => 0 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 ) )
+	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	6)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	cdef=24,ratk=27,catk=22,chp=12,Sumscore=86
+	0)item name bloodstained-Garg in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => bloodstained-Garg [rdef] => 0 [cdef] => 8 [ratk] => 0 [catk] => 8 [rhp] => 0 [chp] => 8 [SumScore] => 24 [ScroreGroups] => Array ( [cdef] => 8 [ratk] => 0 [catk] => 8 [chp] => 8 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 13 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 ) )
+	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	6)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	cdef=24,ratk=25,catk=22,chp=12,Sumscore=84
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [SumScore] => 18 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [SumScore] => 13 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [SumScore] => 6 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 ) )
+	5)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	6)item name lost in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 8 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 ) )
+	cdef=32,ratk=25,catk=14,chp=4,Sumscore=76
 
 cavalry max score	
 	Best score :
@@ -304,3 +560,232 @@ ranged
 	6)item name lost in slot trinket from set 1
 	Array ( [slot] => trinket [GearSet] => 1 [name] => lost [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [SumScore] => 6 [ScroreGroups] => Array ( [ratk] => 6 ) )
 	ratk=28,Sumscore=29
+	
+infantry
+	Best score :
+	0)item name beast in slot helm from set saber
+	Array ( [slot] => helm [GearSet] => saber [name] => beast [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 25 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 30 [SumScore] => 45 [ScroreGroups] => Array ( [ihp] => 15 [iatk] => 30 ) )
+	1)item name terror in slot body from set terrorthorn
+	Array ( [slot] => body [GearSet] => terrorthorn [name] => terror [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 40 [iatk] => 35 [SumScore] => 75 [ScroreGroups] => Array ( [ihp] => 40 [iatk] => 35 ) )
+	2)item name dragon in slot feet from set blackwing
+	Array ( [slot] => feet [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 30 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 20 [SumScore] => 35 [ScroreGroups] => Array ( [ihp] => 15 [iatk] => 20 ) )
+	3)item name malicious in slot mhand from set mecha
+	Array ( [slot] => mhand [GearSet] => mecha [name] => malicious [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 25 [idef] => 15 [SumScore] => 40 [ScroreGroups] => Array ( [iatk] => 25 [idef] => 15 ) )
+	4)item name winter in slot ohand from set snowbeast
+	Array ( [slot] => ohand [GearSet] => snowbeast [name] => winter [rdef] => 25 [cdef] => 25 [ratk] => 10 [catk] => 0 [rhp] => 25 [chp] => 25 [idef] => 57 [ihp] => 25 [SumScore] => 82 [ScroreGroups] => Array ( [idef] => 57 [ihp] => 25 ) )
+	5)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 30 [ScroreGroups] => Array ( [idef] => 15 [ihp] => 15 ) )
+	6)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 30 [ScroreGroups] => Array ( [idef] => 15 [ihp] => 15 ) )
+	ihp=125,iatk=110,idef=102,Sumscore=338
+
+	Best collectable :
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 16 [ScroreGroups] => Array ( [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 6 [ScroreGroups] => Array ( [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 10 [ScroreGroups] => Array ( [idef] => 10 ) )
+	3)item name Dragon_sBite in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => Dragon_sBite [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 10 [ScroreGroups] => Array ( [ihp] => 10 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 4 [ScroreGroups] => Array ( [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	idef=32,ihp=14,iatk=16,Sumscore=63
+
+	Best multiset :
+	0)item name beast in slot helm from set saber
+	Array ( [slot] => helm [GearSet] => saber [name] => beast [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 25 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 30 [SumScore] => 45 [ScroreGroups] => Array ( [ihp] => 15 [iatk] => 30 ) )
+	1)item name terror in slot body from set terrorthorn
+	Array ( [slot] => body [GearSet] => terrorthorn [name] => terror [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 40 [iatk] => 35 [SumScore] => 75 [ScroreGroups] => Array ( [ihp] => 40 [iatk] => 35 ) )
+	2)item name dragon in slot feet from set blackwing
+	Array ( [slot] => feet [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 30 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 20 [SumScore] => 35 [ScroreGroups] => Array ( [ihp] => 15 [iatk] => 20 ) )
+	3)item name malicious in slot mhand from set mecha
+	Array ( [slot] => mhand [GearSet] => mecha [name] => malicious [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 25 [idef] => 15 [SumScore] => 40 [ScroreGroups] => Array ( [iatk] => 25 [idef] => 15 ) )
+	4)item name winter in slot ohand from set snowbeast
+	Array ( [slot] => ohand [GearSet] => snowbeast [name] => winter [rdef] => 25 [cdef] => 25 [ratk] => 10 [catk] => 0 [rhp] => 25 [chp] => 25 [idef] => 57 [ihp] => 25 [SumScore] => 82 [ScroreGroups] => Array ( [idef] => 57 [ihp] => 25 ) )
+	5)item name burning in slot trinket from set helldrider
+	Array ( [slot] => trinket [GearSet] => helldrider [name] => burning [rdef] => 0 [cdef] => 0 [ratk] => 8 [catk] => 8 [rhp] => 9 [chp] => 9 [iatk] => 8 [ihp] => 9 [SumScore] => 17 [ScroreGroups] => Array ( [iatk] => 8 [ihp] => 9 ) )
+	6)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 30 [ScroreGroups] => Array ( [idef] => 15 [ihp] => 15 ) )
+	ihp=119,iatk=118,idef=87,Sumscore=325
+
+	Best craftables :
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 16 [ScroreGroups] => Array ( [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 6 [ScroreGroups] => Array ( [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 10 [ScroreGroups] => Array ( [idef] => 10 ) )
+	3)item name Dragon_sBite in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => Dragon_sBite [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 10 [ScroreGroups] => Array ( [ihp] => 10 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 4 [ScroreGroups] => Array ( [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	idef=32,ihp=14,iatk=16,Sumscore=63
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 16 [ScroreGroups] => Array ( [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 6 [ScroreGroups] => Array ( [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 10 [ScroreGroups] => Array ( [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 6 [ScroreGroups] => Array ( [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 4 [ScroreGroups] => Array ( [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	idef=32,iatk=22,ihp=4,Sumscore=59
+	0)item name barbarian in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => barbarian [rdef] => 4 [cdef] => 4 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 2 [idef] => 4 [SumScore] => 6 [ScroreGroups] => Array ( [iatk] => 2 [idef] => 4 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 6 [ScroreGroups] => Array ( [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 10 [ScroreGroups] => Array ( [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 6 [ScroreGroups] => Array ( [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 4 [ScroreGroups] => Array ( [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 8 [ScroreGroups] => Array ( [ihp] => 2 [iatk] => 6 ) )
+	iatk=24,idef=20,ihp=4,Sumscore=49	
+	
+=====================================================================================================================================================	
+infantry + cavalry + ranged
+	Best score :
+	0)item name beast in slot helm from set saber
+	Array ( [slot] => helm [GearSet] => saber [name] => beast [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 25 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 30 [SumScore] => 85 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 25 [chp] => 15 [ihp] => 15 [iatk] => 30 ) )
+	1)item name terror in slot body from set terrorthorn
+	Array ( [slot] => body [GearSet] => terrorthorn [name] => terror [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 40 [iatk] => 35 [SumScore] => 90 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 15 [ihp] => 40 [iatk] => 35 ) )
+	2)item name gargantuan in slot feet from set garg
+	Array ( [slot] => feet [GearSet] => garg [name] => gargantuan [rdef] => 15 [cdef] => 15 [ratk] => 0 [catk] => 37 [rhp] => 0 [chp] => 27 [idef] => 15 [SumScore] => 94 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 0 [catk] => 37 [chp] => 27 [idef] => 15 ) )
+	3)item name skullcrusher in slot mhand from set helldrider
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [idef] => 25 [SumScore] => 80 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 0 [idef] => 25 ) )
+	4)item name winter in slot ohand from set snowbeast
+	Array ( [slot] => ohand [GearSet] => snowbeast [name] => winter [rdef] => 25 [cdef] => 25 [ratk] => 10 [catk] => 0 [rhp] => 25 [chp] => 25 [idef] => 57 [ihp] => 25 [SumScore] => 142 [ScroreGroups] => Array ( [cdef] => 25 [ratk] => 10 [catk] => 0 [chp] => 25 [idef] => 57 [ihp] => 25 ) )
+	5)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 74 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 [idef] => 15 [ihp] => 15 ) )
+	6)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 74 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 [idef] => 15 [ihp] => 15 ) )
+	cdef=70,ratk=73,catk=82,chp=112,ihp=110,iatk=65,idef=127,Sumscore=640
+
+	Best collectable :
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name Dragon_sBite in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => Dragon_sBite [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 10 [ihp] => 10 ) )
+	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 9 [catk] => 0 [chp] => 11 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=32,ratk=25,catk=4,chp=25,idef=32,ihp=14,iatk=12,Sumscore=145
+
+	Best multiset :
+	0)item name beast in slot helm from set saber
+	Array ( [slot] => helm [GearSet] => saber [name] => beast [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 25 [rhp] => 15 [chp] => 15 [ihp] => 15 [iatk] => 30 [SumScore] => 85 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 25 [chp] => 15 [ihp] => 15 [iatk] => 30 ) )
+	1)item name terror in slot body from set terrorthorn
+	Array ( [slot] => body [GearSet] => terrorthorn [name] => terror [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 15 [chp] => 15 [ihp] => 40 [iatk] => 35 [SumScore] => 90 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 15 [ihp] => 40 [iatk] => 35 ) )
+	2)item name gargantuan in slot feet from set garg
+	Array ( [slot] => feet [GearSet] => garg [name] => gargantuan [rdef] => 15 [cdef] => 15 [ratk] => 0 [catk] => 37 [rhp] => 0 [chp] => 27 [idef] => 15 [SumScore] => 94 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 0 [catk] => 37 [chp] => 27 [idef] => 15 ) )
+	3)item name skullcrusher in slot mhand from set helldrider
+	Array ( [slot] => mhand [GearSet] => helldrider [name] => skullcrusher [rdef] => 0 [cdef] => 0 [ratk] => 35 [catk] => 20 [rhp] => 0 [chp] => 0 [idef] => 25 [SumScore] => 80 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 35 [catk] => 20 [chp] => 0 [idef] => 25 ) )
+	4)item name winter in slot ohand from set snowbeast
+	Array ( [slot] => ohand [GearSet] => snowbeast [name] => winter [rdef] => 25 [cdef] => 25 [ratk] => 10 [catk] => 0 [rhp] => 25 [chp] => 25 [idef] => 57 [ihp] => 25 [SumScore] => 142 [ScroreGroups] => Array ( [cdef] => 25 [ratk] => 10 [catk] => 0 [chp] => 25 [idef] => 57 [ihp] => 25 ) )
+	5)item name dragon in slot trinket from set blackwing
+	Array ( [slot] => trinket [GearSet] => blackwing [name] => dragon [rdef] => 0 [cdef] => 0 [ratk] => 10 [catk] => 10 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 40 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 10 [catk] => 10 [chp] => 10 [ihp] => 10 ) )
+	6)item name blight in slot trinket from set megamagot
+	Array ( [slot] => trinket [GearSet] => megamagot [name] => blight [rdef] => 15 [cdef] => 15 [ratk] => 14 [catk] => 0 [rhp] => 15 [chp] => 15 [idef] => 15 [ihp] => 15 [SumScore] => 74 [ScroreGroups] => Array ( [cdef] => 15 [ratk] => 14 [catk] => 0 [chp] => 15 [idef] => 15 [ihp] => 15 ) )
+	cdef=55,ratk=69,catk=92,chp=107,ihp=105,iatk=65,idef=112,Sumscore=606
+
+	Best craftables :
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name Dragon_sBite in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => Dragon_sBite [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 10 [ihp] => 10 ) )
+	4)item name lunar in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => lunar [rdef] => 0 [cdef] => 0 [ratk] => 9 [catk] => 0 [rhp] => 11 [chp] => 11 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 9 [catk] => 0 [chp] => 11 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=32,ratk=25,catk=4,chp=25,idef=32,ihp=14,iatk=12,Sumscore=145
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name frostwing in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => frostwing [rdef] => 12 [cdef] => 12 [ratk] => 0 [catk] => 0 [rhp] => 8 [chp] => 8 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 12 [ratk] => 0 [catk] => 0 [chp] => 8 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=44,ratk=19,catk=14,chp=12,idef=32,iatk=18,ihp=4,Sumscore=144
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name Dragon_sBite in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => Dragon_sBite [rdef] => 0 [cdef] => 0 [ratk] => 0 [catk] => 0 [rhp] => 10 [chp] => 10 [ihp] => 10 [SumScore] => 20 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 0 [catk] => 0 [chp] => 10 [ihp] => 10 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=32,ratk=22,catk=4,chp=14,idef=32,ihp=14,iatk=16,Sumscore=135
+	0)item name deathgazer in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => deathgazer [rdef] => 16 [cdef] => 16 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 16 [SumScore] => 32 [ScroreGroups] => Array ( [cdef] => 16 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 16 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=32,ratk=25,catk=14,chp=4,idef=32,iatk=22,ihp=4,Sumscore=134
+	0)item name barbarian in slot helm from set 1
+	Array ( [slot] => helm [GearSet] => 1 [name] => barbarian [rdef] => 4 [cdef] => 4 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 2 [idef] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 4 [ratk] => 0 [catk] => 0 [chp] => 0 [iatk] => 2 [idef] => 4 ) )
+	1)item name odysseus in slot body from set 1
+	Array ( [slot] => body [GearSet] => 1 [name] => odysseus [rdef] => 6 [cdef] => 6 [ratk] => 0 [catk] => 0 [rhp] => 0 [chp] => 0 [idef] => 6 [SumScore] => 12 [ScroreGroups] => Array ( [cdef] => 6 [ratk] => 0 [catk] => 0 [chp] => 0 [idef] => 6 ) )
+	2)item name durable in slot feet from set 1
+	Array ( [slot] => feet [GearSet] => 1 [name] => durable [rdef] => 10 [cdef] => 10 [ratk] => 4 [catk] => 4 [rhp] => 0 [chp] => 0 [idef] => 10 [SumScore] => 28 [ScroreGroups] => Array ( [cdef] => 10 [ratk] => 4 [catk] => 4 [chp] => 0 [idef] => 10 ) )
+	3)item name fiery in slot mhand from set 1
+	Array ( [slot] => mhand [GearSet] => 1 [name] => fiery [rdef] => 0 [cdef] => 0 [ratk] => 3 [catk] => 10 [rhp] => 0 [chp] => 0 [iatk] => 6 [SumScore] => 19 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 3 [catk] => 10 [chp] => 0 [iatk] => 6 ) )
+	4)item name crusader in slot ohand from set 1
+	Array ( [slot] => ohand [GearSet] => 1 [name] => crusader [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 0 [chp] => 0 [iatk] => 4 [SumScore] => 10 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 0 [iatk] => 4 ) )
+	5)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	6)item name lostislandic in slot trinket from set 1
+	Array ( [slot] => trinket [GearSet] => 1 [name] => lostislandic [rdef] => 0 [cdef] => 0 [ratk] => 6 [catk] => 0 [rhp] => 2 [chp] => 2 [ihp] => 2 [iatk] => 6 [SumScore] => 16 [ScroreGroups] => Array ( [cdef] => 0 [ratk] => 6 [catk] => 0 [chp] => 2 [ihp] => 2 [iatk] => 6 ) )
+	cdef=20,ratk=25,catk=14,chp=4,iatk=24,idef=20,ihp=4,Sumscore=112

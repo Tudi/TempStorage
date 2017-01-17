@@ -5,6 +5,7 @@
 ;for $GUI_EVENT_CLOSE 
 #Include <WinAPI.au3> 
 #Include "CommonFunctions.au3"
+#RequireAdmin
 ;for HIWORD 
 ;These constants found in the helpfile under Windows Message Codes 
 ;Global Const $WM_MOUSEMOVE = 0x0200 ;mouse move 
@@ -28,7 +29,8 @@ $_XYpos = GUICtrlCreateLabel("X=     Y=", 8, 32, 157, 17)
 $_XYposRel = GUICtrlCreateLabel("Rel X=     Y=", 8, 56, 165, 17) 
 $_Pixel = GUICtrlCreateLabel("Pixel: ", 8, 80, 167, 17) 
 $_PixelPos = GUICtrlCreateLabel("Mark: ", 8, 104, 167, 17) 
-$_PixelAtPos = GUICtrlCreateLabel("Pixel At Mark: ", 8, 128, 167, 17) 
+$_PixelPosRel = GUICtrlCreateLabel("MonitoredPosRel: ", 8, 128, 167, 17) 
+$_PixelAtPos = GUICtrlCreateLabel("Pixel At Mark: ", 8, 152, 167, 17) 
 GUISetState() 
 WinSetOnTop($GUI, "", 1) ;make GUI stay on top of other windows 
 
@@ -41,6 +43,9 @@ Func RegisterMonitoredPixelPos()
 	$MonitoredMousePos = MouseGetPos()
 	GUICtrlSetData($_PixelPos, "MonitoredPos: " & $MonitoredMousePos[0] & " " & $MonitoredMousePos[1] )     
 	GUICtrlSetData($_PixelAtPos, "Pixel at mark: " & PixelGetColor( $MonitoredMousePos[0], $MonitoredMousePos[1] ) & " " & Hex( PixelGetColor( $MonitoredMousePos[0], $MonitoredMousePos[1] ), 6 ) )     
+	
+	Local $KoData = GetKoPlayerAndPos()
+	GUICtrlSetData($_PixelPosRel, "MonitoredPosRel: " & ($MonitoredMousePos[0] - $KoData[0]) & " " & ($MonitoredMousePos[1] - $KoData[1]) )     
 EndFunc 
 
 Func DumpPixelsAroundMouse()
@@ -66,7 +71,7 @@ Func TakeScreenshotAroundMouse()
 	Local $KoData = GetKoPlayerAndPos()
 	Local $Radius = 16
 	FileWriteLine ( "ImageAroundMouse_Info.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
-	FileWriteLine ( "ImageAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "_" & ($mpos[1] - $KoData[1]) )
+	FileWriteLine ( "ImageAroundMouse_Info.txt", "Rel Mouse at : _" & ($mpos[0] - $KoData[0]) & "_" & ($mpos[1] - $KoData[1]) )
 	; save original
 	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
