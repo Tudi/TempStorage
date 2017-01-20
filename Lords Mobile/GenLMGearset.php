@@ -13,6 +13,7 @@ if($f)
 		if(strlen($line)>5)
 	{
 		$line = str_replace( "\t", " ", $line );
+		$line = str_replace( "  ", " ", $line );
 		$line = str_replace( "\n", "", $line );
 		$line = str_replace( "\r", "", $line );
         $parts = explode(" ",$line);
@@ -42,25 +43,31 @@ if($f)
 					{
 						$item["chp"] += $IndVal;
 						$item["rhp"] += $IndVal;
+						$item["ihp"] += $IndVal;
 					}					
 					else if( strcmp( $IndName, "def" ) == 0 || $IndName[0] == 'd' )
 					{
 						$item["cdef"] += $IndVal;
 						$item["rdef"] += $IndVal;
+						$item["idef"] += $IndVal;
 					}					
 					else if( strcmp( $IndName, "atk" ) == 0 || $IndName[0] == 'a')
 					{
 						$item["catk"] += $IndVal;
 						$item["ratk"] += $IndVal;
+						$item["iatk"] += $IndVal;
 					}					
 					else
 						$item[$IndName] += $IndVal;
 				}
 			}
 		$item = GetItemScore( $item );
-		PrintItemInfo( $item );
-		$items[ $itemcount++ ] = $item;
-		$itemsCat[$item["slot"]][count($itemsCat[$item["slot"]])] = $item;
+		if($item["SumScore"] != 0)
+		{
+			PrintItemInfo( $item );
+			$items[ $itemcount++ ] = $item;
+			$itemsCat[$item["slot"]][count($itemsCat[$item["slot"]])] = $item;
+		}
     }	
 	fclose($f);
 }
@@ -84,12 +91,18 @@ function IsParamKnown( $IndexName )
 }
 function IsParamImportant( $IndexName )
 {
+	// cavalry + ranged + infantry
+	$InterestedParams = array("chp","cdef","catk","ratk", "ihp","idef","iatk");
 	// cavalry + ranged
 //	$InterestedParams = array("chp","cdef","catk","ratk");
+	// infantry + ranged
+//	$InterestedParams = array("ihp","idef","iatk","ratk");
 	// cavalry
-	$InterestedParams = array("chp","cdef","catk");
+//	$InterestedParams = array("chp","cdef","catk");
+	// infantry
+//	$InterestedParams = array("ihp","idef","iatk");
 	// ranged
-//	$InterestedParams = array("ratk");
+	$InterestedParams = array("rdef", "rhp", "ratk");
 	foreach( $InterestedParams as $key => $val )
 		if( strpos( "#".$val, $IndexName ) == 1 )
 			return 1;
@@ -183,7 +196,7 @@ function IsCollectable( $GearSet )
 		$CurSlotIndex = $val;
 		$CurItem = $itemsCat[ $CurSlotName ][ $CurSlotIndex ];
 //echo $CurSlotName." ".$CurSlotIndex." ".$CurItem["GearSet"][0];
-		if( $CurItem["GearSet"][0] != '1' )
+		if( $CurItem["GearSet"][0] != '1' && $CurItem["GearSet"][0] != '2' )
 			return 0;
 	}
 	return 1;
@@ -200,7 +213,7 @@ function CountDifferentSets( $GearSet )
 		$CurSlotIndex = $val;
 //echo $CurSlotName." ".$CurSlotIndex;
 		$CurItem = $itemsCat[ $CurSlotName ][ $CurSlotIndex ];
-		if( $CurItem["GearSet"][0] == '1' || !isset( $unique[ $CurItem["GearSet"] ]) )
+		if( $CurItem["GearSet"][0] == '1' || $CurItem["GearSet"][0] == '2' || !isset( $unique[ $CurItem["GearSet"] ]) )
 		{
 			$unique[ $CurItem["GearSet"] ] = 1;
 			$DiffSetCount++;
