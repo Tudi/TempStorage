@@ -38,6 +38,7 @@ global $MonitoredMousePos = MouseGetPos()
 HotKeySet("-", "RegisterMonitoredPixelPos")
 HotKeySet("7", "TakeScreenshotAroundMouse")
 HotKeySet("9", "DumpPixelsAroundMouse")
+HotKeySet("5", "TakeScreenshotOfWholeGame")
 
 Func RegisterMonitoredPixelPos()
 	$MonitoredMousePos = MouseGetPos()
@@ -80,6 +81,24 @@ Func TakeScreenshotAroundMouse()
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; save edgedetected. Not used Atm. Maybe Later
 	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
+	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
+	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
+	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )
+	$result = DllCall( $dllhandle, "NONE", "EdgeKeepLocalMaximaMaximaOnly", "int", 2 )
+	$result = DllCall( $dllhandle, "NONE", "EdgeCopyOriginalForEdges" )
+	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+EndFunc
+
+Func TakeScreenshotOfWholeGame()
+	Local $KoData = GetKoPlayerAndPos()
+	; save original
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$KoData[0],"int",$KoData[1],"int",$KoData[0] + $KoData[2],"int",$KoData[1] + $KoData[3])
+	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	; save reduced precision
+	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
+	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	; save edgedetected. Not used Atm. Maybe Later
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$KoData[0],"int",$KoData[1],"int",$KoData[0] + $KoData[2],"int",$KoData[1] + $KoData[3])
 	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
 	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
 	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )

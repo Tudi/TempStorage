@@ -162,6 +162,8 @@ Func ImageIsAt( $ImgName, $x, $y )
 	local $result = DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $x2 - $Radius, "int", $y2 - $Radius, "int", $x2 + $Radius, "int", $y2 + $Radius)
 	$result = DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle, "str", "ImageSearch_SAD", "str", $ImgName)
+	; put back previous screenshot. Maybe we were parsing it
+	$result = DllCall( $dllhandle, "str", "CycleScreenshots")
 	local $res = SearchResultToVectSingleRes( $result )
 	return $res
 endfunc
@@ -225,10 +227,12 @@ endfunc
 
 func GoToKingdomViewScreen()
 	ClickButtonIfAvailable("Images/KingdomViewButton_31_568.bmp",31,568, 4000)
+	WaitScreenFinishLoading()
 endfunc
 
 func ZoomOutKingdomView()
 	ClickButtonIfAvailable("Images/ZoomOutKingView_27_482.bmp",27,482)
+	WaitScreenFinishLoading()
 endfunc
 
 func PushCoordDigit( $Digit )
@@ -319,7 +323,7 @@ func EnterCoord( $Coord )
 endfunc
 
 ; We presume we on kingdom view screen
-func JumpToKingdomCoord( $k, $x, $y, $IsZoomedOut = 1 )
+func JumpToKingdomCoord( $Kingdom, $x, $y, $IsZoomedOut = 1 )
 	Local $aPos = GetKoPlayerAndPos()
 	; Open the coord window
 	if( $IsZoomedOut == 1 ) then 
@@ -333,7 +337,7 @@ func JumpToKingdomCoord( $k, $x, $y, $IsZoomedOut = 1 )
 	; open edit Kigndom 
 	;MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 410, $aPos[1] + 220, 1, 0 )
 	; Enter kingdom
-	;EnterCoord( $k )
+	;EnterCoord( $Kingdom )
 	; Open Edit X
 	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 510, $aPos[1] + 220, 1, 0 )
 	; allow the window to open
@@ -346,9 +350,10 @@ func JumpToKingdomCoord( $k, $x, $y, $IsZoomedOut = 1 )
 	; click the GO button
 	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 510, $aPos[1] + 310, 1, 0 )
 	; allow the window to update it's content
-	Sleep(500)
+	WaitScreenFinishLoading()
 endfunc
 
+; about 12 coord units / screen
 func DragScreenToLeft()
 	Local $MarginUndragged = 0	; maybe around 50 pixels
 	Local $DragLatency = 0 ; might require even 100 to fully drag the screen
@@ -357,19 +362,35 @@ func DragScreenToLeft()
 	MouseDown($MOUSE_CLICK_LEFT)
 	MouseMove( $aPos[0] + $aPos[2] + $DragLatency - $MarginUndragged , $aPos[1] + $aPos[3] / 2, 9 )
 	MouseUp($MOUSE_CLICK_LEFT)
+	; make sure latency does not affect our search
+	WaitScreenFinishLoading()
 endfunc
 
-; about 12 coord units / screen
-func DragScreenToRight()
+; it may take variable time for the screen to finish loading
+; there should be a spinning circle in the lower left corner. Or maybe the screen will fade from black to colored ...
+; if the circle goes away, we can presume the game loaded the screen
+func WaitScreenFinishLoading()
+ ; repeat taking screenshots until there is no change between the screens
+ ; there is a chance that snow wil make our screenshot change all the time
+	global $dllhandle
+	Local $Radius = 16
+	Local $AntiInfiniteLoop = 10000 ; timeout the function after this amount of mseconds
 	Local $aPos = GetKoPlayerAndPos()
-	MouseMove( $aPos[0] + $aPos[2] - 100, $aPos[1], 0 )
-	MouseDown($MOUSE_CLICK_LEFT)
-	Sleep(100)
-	MouseMove( $aPos[0] + 100 , $aPos[1], 0 )
-	MouseUp($MOUSE_CLICK_LEFT)
+	local $x2 = 11 + $aPos[0]
+	local $y2 = 12 + $aPos[1]
+	local $result = DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $x2 - $Radius, "int", $y2 - $Radius, "int", $x2 + $Radius, "int", $y2 + $Radius)
+	DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
+	$result = "1|0|0"
+	while ( $result[0] == '1' and $AntiInfiniteLoop > 0 )
+		Sleep( 100 )
+		$AntiInfiniteLoop = $AntiInfiniteLoop - 100
+		DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $x2 - $Radius, "int", $y2 - $Radius, "int", $x2 + $Radius, "int", $y2 + $Radius)
+		DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
+		$result = DllCall( $dllhandle, "NONE", "IsAnythingChanced", "int", 0, "int", 0, "int", 0, "int", 0)
+	wend
 endfunc
 
-func SearchForResources()
+func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 200, $EndY = 200, $CallFunctionPerScreen = "SearchFoodOnScreen")
 	Local $aPos = GetKoPlayerAndPos()
 	; search patterns : 
 	; - starting from a specific location, we try to increase radius
@@ -380,21 +401,54 @@ func SearchForResources()
 	; zoom out the map to see as much as possible
 	ZoomOutKingdomView()
 	; jump to a specific coord on the map
-	for $row=0 to 12 step 12 
-		JumpToKingdomCoord( 69, 0, $row )
-		for $col=0 to 2 step 1
-			SearchFoodOnScreen()
+	for $row=$StartY to $EndY step 12
+		JumpToKingdomCoord( $Kingdom, 0, $row, 1 )
+		for $col=$StartX to $EndX step 1
+			Call( $CallFunctionPerScreen )
 			DragScreenToLeft()
 		next
 	next
 endfunc
 
-func SearchGoldOnScreen()
+func ParseResourceInfo()
+endfunc
+
+func ParseCastleInfo()
+endfunc
+
+func ParsePopupInfo()
 	global $dllhandle
 	Local $aPos = GetKoPlayerAndPos()
-	; get a list of all possible gold locations
-	local $result = DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0], "int", $aPos[1], "int", $aPos[0] + $aPos[2], "int", $aPos[1]+$aPos[3])
-	$result = DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
-	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_ExactMatch", "str", "Ruins_gold.bmp")
-	local $res = SearchResultToVectMultiRes( $result )
+	; take screenshot of popup. We do not know what kind of popup
+	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0], "int", $aPos[1], "int", $aPos[0] + $aPos[2], "int", $aPos[1] + $aPos[3])
+	; is it a castle ?
+	if( ImageIsAt( "castleicon.bp", 1, 1) == 1 ) then
+		ParseCastleInfo()
+	else
+		ParseResourceInfo()
+	endif
+	; put back previous screenshot as current screenshot
+	$result = DllCall( $dllhandle, "str", "CycleScreenshots" )
+endfunc
+
+func ExtractPlayerNamesCordsMightFromKingdomScreen()
+	global $dllhandle
+	Local $aPos = GetKoPlayerAndPos()
+	; take screenshot of kingdom view
+	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 100, "int", $aPos[1] + 100, "int", $aPos[0] + 200, "int", $aPos[1] + 200)
+	$result = DllCall( $dllhandle, "NONE", "KeepColor3SetBoth", "int", 0x00FFFFFF, "int", 0x00000000)
+	; search for all the "Level" tags in the screen
+	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_Transparent", "str", "LevelTag.bmp")
+	; click on all the tags
+	; now parse the locations we found on the screen
+	local $array = StringSplit($result[0],"|")
+	local $resCount = Number( $array[1] )
+	;MsgBox( 64, "", "res count " & $resCount )
+    For $i = 0 To $resCount
+		$x=Int(Number($array[$i * 2 + 1]))
+		$y=Int(Number($array[$i * 2 + 2]))
+		; open up to check for level, location, occupier
+		MouseMove( $x - 30, $y - 30 );
+		;MsgBox( 64, "", "found at " & $ret[0] & " " & $ret[1] & " SAD " & $ret[2])
+	next
 endfunc
