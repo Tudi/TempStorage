@@ -7,20 +7,23 @@ helm wyrm wyrmbone 32.5 ratk 20 rdef 12.5 hp
 helm saber beast 25 catk 15 hp 30 iatk
 helm 1 devil 14.5 def
 helm 1 berserker 5 iatk 10.5 def
+helm queen nectar-orb 30 catk 30 ratk 20 hp
 
+body 2 grimy 8 iatk 9 ihp
 body reaper deathly 20 ratk 15 def
 body 1 odysseus 6.2 def
 body 1 regal 5 hp
 body 1 centaur 5.7 def
 body megamagot grimmy 8 iatk 9 ihp
 body wyrm wyvrn 2.6 hp
-body helldrider abyss 5 chp 5 atk 5 idef
+body 2 helldrider-abyss 5 chp 5 atk 5 idef
 body frost frostwing 8 ratk 8 iatk
 body snowbeast winter 25 cdef 15 hp 12.5 iatk 
 body reaper death 20 ratk 15 def
 body saber predator 10 catk 20 chp 15 def
 body terrorthorn terror 15 hp 35 iatk 25 ihp
 body mecha firewall 30 catk 15 hp 20 iatk 
+body queen hardened 25 catk 25 ratk 10 def
 
 feet reaper nether 15 ratk 10 rdef 15 def
 feet 1 durable 4.5 catk 4.5 ratk 10 def
@@ -34,6 +37,7 @@ feet helldrider deceiver 5 ratk 15 rdef 12 atk
 feet saber untamed 20 catk 15 cdef 15 hp
 feet garg gargantuan 37.5 catk 27.5 chp 15 def
 feet blackwing dragon 30 ratk 15 hp 20 iatk
+feet 2 QueenHoneycomb 12 catk 12 ratk 5rdef
 
 mhand 1 fiery 10 catk 3.5 ratk 6.5 iatk
 mhand 1 falcon 10 catk 5 ratk
@@ -47,12 +51,13 @@ mhand garg horn 30 catk 15 cdef
 mhand mecha malicious 25 iatk 15 idef 
 mhand frost frostwing 20 catk 12.5 ratk 20 iatk
 mhand helldrider skullcrusher 15 ratk 20 ratk 20 catk 25 idef
+mhand queen bumblehelm 25 catk 25 ratk 10 cdef 10 rhp
 
 ohand 1 crusader 6.5 ratk 4.5 iatk
 ohand blackwing dragon 22 catk 20 chp 20 rhp
 ohand 2 frostwing 12.5 rdef 12.5 cdef 8.5 rhp 8.5 chp
 ohand 2 wyrm 10 ratk 5 cdef 9 rhp
-ohand terrorthorn terrorblade 9 iatk 12 idef
+ohand 2 terrorblade 9 iatk 12 idef
 ohand 1 lunar 9 ratk 11.5 rhp 11.5 chp
 ohand 1 noah 5 catk 6 ratk 
 ohand megamagot orb 11 catk 
