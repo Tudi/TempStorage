@@ -6,8 +6,8 @@ research per army : 135% Atk + 135% def + 135% Hp = +405%
 talents troop specific : 5 + 7 + 13 + 13 + 10 + 53 + 87 + 87 = +275%
 Hero composition : 
 for cavalry : death knight +  child of light + icarus + rose + sage = +380%
-Best case army boost sum = 3000%
-
+for ranged : alice + tracker + black crow + rose + goblin = 300%
+Best case total army boost = 3000% ( in theory 1 trop beats 30 enemy troops ... )
 =====================================================================================================================================================
 *Army composition : infantry + cavalry + ranged
 Looking for item combinations to maximize stats : chp cdef catk ratk ihp idef iatk
@@ -25,12 +25,12 @@ Item set attribute summary : cdef +70%, ratk +103%, catk +87%, chp +117%, ihp +1
 Best item set if you are a casual player that hardly spends money on the game :
 0)item name deathgazer in slot helm from set 1
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : cdef +29%, ratk +17%, catk +12%, chp +19%, idef +46%, iatk +26%, ihp +14%, Total army boost = 163 %
+Item set attribute summary : cdef +41%, ratk +17%, catk +12%, chp +27%, idef +46%, iatk +27%, ihp +22%, Total army boost = 192 %
 
 Best item set if you invest a lot in monster hunting :
 0)item name nectar-orb in slot helm from set queen
@@ -45,36 +45,44 @@ Item set attribute summary : cdef +55%, ratk +99%, catk +97%, chp +112%, ihp +11
 Top x item sets that you can craft from resource gathering and monster hunting :
 0)item name deathgazer in slot helm from set 1
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : cdef +29%, ratk +17%, catk +12%, chp +19%, idef +46%, iatk +26%, ihp +14%, Total army boost = 163 %
-0)item name deathgazer in slot helm from set 1
-1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name fiery in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
-5)item name lostislandic in slot trinket from set 1
-6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : cdef +29%, ratk +20%, catk +22%, chp +9%, idef +46%, iatk +32%, ihp +4%, Total army boost = 162 %
+Item set attribute summary : cdef +41%, ratk +17%, catk +12%, chp +27%, idef +46%, iatk +27%, ihp +22%, Total army boost = 192 %
 0)item name devil in slot helm from set 1
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name fiery in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : cdef +27%, ratk +20%, catk +22%, chp +9%, idef +44%, iatk +32%, ihp +4%, Total army boost = 158 %
+Item set attribute summary : cdef +39%, ratk +17%, catk +12%, chp +27%, idef +44%, iatk +27%, ihp +22%, Total army boost = 188 %
 0)item name berserker in slot helm from set 1
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name fiery in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : cdef +23%, ratk +20%, catk +22%, chp +9%, iatk +37%, idef +40%, ihp +4%, Total army boost = 155 %
+Item set attribute summary : cdef +35%, ratk +17%, catk +12%, chp +27%, iatk +32%, idef +40%, ihp +22%, Total army boost = 185 %
+0)item name deathgazer in slot helm from set 1
+1)item name helldrider-abyss in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
+5)item name lostislandic in slot trinket from set 1
+6)item name lostislandic in slot trinket from set 1
+Item set attribute summary : cdef +28%, ratk +17%, catk +5%, chp +27%, idef +43%, iatk +37%, ihp +22%, Total army boost = 179 %
+0)item name devil in slot helm from set 1
+1)item name helldrider-abyss in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
+5)item name lostislandic in slot trinket from set 1
+6)item name lostislandic in slot trinket from set 1
+Item set attribute summary : cdef +26%, ratk +17%, catk +5%, chp +27%, idef +41%, iatk +37%, ihp +22%, Total army boost = 175 %
 
 
 =====================================================================================================================================================
@@ -92,14 +100,14 @@ Best item set score you can get by heavy monster hunting + buying item packs:
 Item set attribute summary : cdef +65%, ratk +143%, catk +137%, chp +97%, Total army boost = 442 %
 
 Best item set if you are a casual player that hardly spends money on the game :
-0)item name bloodstained-Garg in slot helm from set 2
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
 2)item name QueenHoneycomb in slot feet from set 2
-3)item name falcon in slot mhand from set 1
+3)item name harbringer in slot mhand from set 2
 4)item name lunar in slot ohand from set 1
 5)item name ivoryChoker in slot trinket from set 2
 6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +8%, ratk +31%, catk +51%, chp +24%, Total army boost = 114 %
+Item set attribute summary : cdef +18%, ratk +34%, catk +41%, chp +24%, Total army boost = 117 %
 
 Best item set if you invest a lot in monster hunting :
 0)item name nectar-orb in slot helm from set queen
@@ -112,46 +120,46 @@ Best item set if you invest a lot in monster hunting :
 Item set attribute summary : cdef +30%, ratk +124%, catk +147%, chp +107%, Total army boost = 408 %
 
 Top x item sets that you can craft from resource gathering and monster hunting :
-0)item name bloodstained-Garg in slot helm from set 2
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
 2)item name QueenHoneycomb in slot feet from set 2
-3)item name falcon in slot mhand from set 1
+3)item name harbringer in slot mhand from set 2
 4)item name lunar in slot ohand from set 1
 5)item name ivoryChoker in slot trinket from set 2
 6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +8%, ratk +31%, catk +51%, chp +24%, Total army boost = 114 %
-0)item name bloodstained-Garg in slot helm from set 2
+Item set attribute summary : cdef +18%, ratk +34%, catk +41%, chp +24%, Total army boost = 117 %
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
 2)item name QueenHoneycomb in slot feet from set 2
-3)item name falcon in slot mhand from set 1
+3)item name harbringer in slot mhand from set 2
 4)item name frostwing in slot ohand from set 2
 5)item name ivoryChoker in slot trinket from set 2
 6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +20%, ratk +22%, catk +51%, chp +21%, Total army boost = 114 %
-0)item name bloodstained-Garg in slot helm from set 2
+Item set attribute summary : cdef +30%, ratk +25%, catk +41%, chp +21%, Total army boost = 117 %
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
 2)item name QueenHoneycomb in slot feet from set 2
-3)item name falcon in slot mhand from set 1
+3)item name harbringer in slot mhand from set 2
 4)item name lunar in slot ohand from set 1
 5)item name lostislandic in slot trinket from set 1
 6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +8%, ratk +37%, catk +43%, chp +26%, Total army boost = 114 %
-0)item name bloodstained-Garg in slot helm from set 2
+Item set attribute summary : cdef +18%, ratk +40%, catk +33%, chp +26%, Total army boost = 117 %
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
 2)item name QueenHoneycomb in slot feet from set 2
-3)item name falcon in slot mhand from set 1
+3)item name harbringer in slot mhand from set 2
 4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +20%, ratk +28%, catk +43%, chp +23%, Total army boost = 114 %
-0)item name bloodstained-Garg in slot helm from set 2
+Item set attribute summary : cdef +30%, ratk +31%, catk +33%, chp +23%, Total army boost = 117 %
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
 2)item name QueenHoneycomb in slot feet from set 2
-3)item name falcon in slot mhand from set 1
+3)item name harbringer in slot mhand from set 2
 4)item name lunar in slot ohand from set 1
 5)item name ivoryChoker in slot trinket from set 2
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : cdef +8%, ratk +37%, catk +43%, chp +26%, Total army boost = 114 %
+Item set attribute summary : cdef +18%, ratk +40%, catk +33%, chp +26%, Total army boost = 117 %
 
 
 =====================================================================================================================================================
@@ -170,13 +178,13 @@ Item set attribute summary : ratk +133%, ihp +130%, iatk +55%, idef +112%, Total
 
 Best item set if you are a casual player that hardly spends money on the game :
 0)item name deathgazer in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name durable in slot feet from set 1
-3)item name Dragon_sBite in slot mhand from set 1
+1)item name Grimmy_Plate in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : ratk +16%, idef +38%, iatk +29%, ihp +23%, Total army boost = 106 %
+Item set attribute summary : ratk +12%, idef +38%, iatk +49%, ihp +23%, Total army boost = 122 %
 
 Best item set if you invest a lot in monster hunting :
 0)item name nectar-orb in slot helm from set queen
@@ -190,45 +198,45 @@ Item set attribute summary : ratk +119%, ihp +130%, iatk +62%, idef +104%, Total
 
 Top x item sets that you can craft from resource gathering and monster hunting :
 0)item name deathgazer in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name durable in slot feet from set 1
-3)item name Dragon_sBite in slot mhand from set 1
+1)item name Grimmy_Plate in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : ratk +16%, idef +38%, iatk +29%, ihp +23%, Total army boost = 106 %
-0)item name berserker in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name durable in slot feet from set 1
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
-5)item name lostislandic in slot trinket from set 1
-6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : ratk +16%, iatk +34%, idef +32%, ihp +23%, Total army boost = 105 %
+Item set attribute summary : ratk +12%, idef +38%, iatk +49%, ihp +23%, Total army boost = 122 %
 0)item name deathgazer in slot helm from set 1
 1)item name grimy in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : ratk +12%, idef +41%, iatk +29%, ihp +23%, Total army boost = 105 %
-0)item name deathgazer in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name durable in slot feet from set 1
-3)item name fiery in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
-5)item name lostislandic in slot trinket from set 1
-6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : ratk +19%, idef +38%, iatk +35%, ihp +13%, Total army boost = 105 %
+Item set attribute summary : ratk +12%, idef +38%, iatk +49%, ihp +23%, Total army boost = 122 %
 0)item name berserker in slot helm from set 1
 1)item name grimy in slot body from set 2
-2)item name durable in slot feet from set 1
-3)item name fiery in slot mhand from set 1
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : ratk +19%, iatk +40%, idef +32%, ihp +13%, Total army boost = 104 %
+Item set attribute summary : ratk +12%, iatk +54%, idef +32%, ihp +23%, Total army boost = 121 %
+0)item name deathgazer in slot helm from set 1
+1)item name helldrider-abyss in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name terrorblade in slot ohand from set 2
+5)item name lostislandic in slot trinket from set 1
+6)item name lostislandic in slot trinket from set 1
+Item set attribute summary : ratk +17%, idef +43%, iatk +46%, ihp +14%, Total army boost = 120 %
+0)item name berserker in slot helm from set 1
+1)item name helldrider-abyss in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name terrorblade in slot ohand from set 2
+5)item name lostislandic in slot trinket from set 1
+6)item name lostislandic in slot trinket from set 1
+Item set attribute summary : ratk +17%, iatk +51%, idef +37%, ihp +14%, Total army boost = 119 %
 
 
 =====================================================================================================================================================
@@ -246,9 +254,9 @@ Best item set score you can get by heavy monster hunting + buying item packs:
 Item set attribute summary : cdef +85%, catk +127%, chp +117%, Total army boost = 329 %
 
 Best item set if you are a casual player that hardly spends money on the game :
-0)item name bloodstained-Garg in slot helm from set 2
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
+2)item name Winter_Stompers in slot feet from set 2
 3)item name falcon in slot mhand from set 1
 4)item name frostwing in slot ohand from set 2
 5)item name ivoryChoker in slot trinket from set 2
@@ -266,46 +274,46 @@ Best item set if you invest a lot in monster hunting :
 Item set attribute summary : cdef +75%, catk +127%, chp +112%, Total army boost = 314 %
 
 Top x item sets that you can craft from resource gathering and monster hunting :
-0)item name bloodstained-Garg in slot helm from set 2
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
+2)item name Winter_Stompers in slot feet from set 2
 3)item name falcon in slot mhand from set 1
 4)item name frostwing in slot ohand from set 2
 5)item name ivoryChoker in slot trinket from set 2
 6)item name ivoryChoker in slot trinket from set 2
 Item set attribute summary : cdef +33%, catk +46%, chp +21%, Total army boost = 100 %
-0)item name bloodstained-Garg in slot helm from set 2
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name frostwing in slot ohand from set 2
-5)item name ivoryChoker in slot trinket from set 2
-6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +33%, catk +36%, chp +31%, Total army boost = 100 %
-0)item name bloodstained-Garg in slot helm from set 2
-1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
+2)item name Winter_Stompers in slot feet from set 2
 3)item name fiery in slot mhand from set 1
 4)item name frostwing in slot ohand from set 2
 5)item name ivoryChoker in slot trinket from set 2
 6)item name ivoryChoker in slot trinket from set 2
 Item set attribute summary : cdef +33%, catk +46%, chp +21%, Total army boost = 100 %
-0)item name bloodstained-Garg in slot helm from set 2
+0)item name bloodstained_Garg in slot helm from set 2
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
+5)item name ivoryChoker in slot trinket from set 2
+6)item name ivoryChoker in slot trinket from set 2
+Item set attribute summary : cdef +43%, catk +36%, chp +21%, Total army boost = 100 %
+0)item name bloodstained_Garg in slot helm from set 2
+1)item name helldrider-abyss in slot body from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
+5)item name ivoryChoker in slot trinket from set 2
+6)item name ivoryChoker in slot trinket from set 2
+Item set attribute summary : cdef +33%, catk +36%, chp +31%, Total army boost = 100 %
+0)item name bloodstained_Garg in slot helm from set 2
+1)item name helldrider-abyss in slot body from set 2
+2)item name Winter_Stompers in slot feet from set 2
 3)item name falcon in slot mhand from set 1
 4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name ivoryChoker in slot trinket from set 2
 Item set attribute summary : cdef +33%, catk +38%, chp +23%, Total army boost = 94 %
-0)item name bloodstained-Garg in slot helm from set 2
-1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name frostwing in slot ohand from set 2
-5)item name lostislandic in slot trinket from set 1
-6)item name ivoryChoker in slot trinket from set 2
-Item set attribute summary : cdef +33%, catk +28%, chp +33%, Total army boost = 94 %
 
 
 =====================================================================================================================================================
@@ -324,13 +332,13 @@ Item set attribute summary : ihp +125%, iatk +110%, idef +102%, Total army boost
 
 Best item set if you are a casual player that hardly spends money on the game :
 0)item name deathgazer in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+1)item name Grimmy_Plate in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : idef +41%, iatk +29%, ihp +23%, Total army boost = 93 %
+Item set attribute summary : idef +38%, iatk +49%, ihp +23%, Total army boost = 110 %
 
 Best item set if you invest a lot in monster hunting :
 0)item name beast in slot helm from set saber
@@ -344,45 +352,45 @@ Item set attribute summary : ihp +119%, iatk +118%, idef +87%, Total army boost 
 
 Top x item sets that you can craft from resource gathering and monster hunting :
 0)item name deathgazer in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+1)item name Grimmy_Plate in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : idef +41%, iatk +29%, ihp +23%, Total army boost = 93 %
-0)item name berserker in slot helm from set 1
-1)item name grimy in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name terrorblade in slot ohand from set 2
-5)item name lostislandic in slot trinket from set 1
-6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : iatk +34%, idef +35%, ihp +23%, Total army boost = 92 %
+Item set attribute summary : idef +38%, iatk +49%, ihp +23%, Total army boost = 110 %
 0)item name deathgazer in slot helm from set 1
 1)item name grimy in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name fiery in slot mhand from set 1
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : idef +41%, iatk +35%, ihp +13%, Total army boost = 89 %
+Item set attribute summary : idef +38%, iatk +49%, ihp +23%, Total army boost = 110 %
 0)item name berserker in slot helm from set 1
 1)item name grimy in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name fiery in slot mhand from set 1
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : iatk +40%, idef +35%, ihp +13%, Total army boost = 88 %
+Item set attribute summary : iatk +54%, idef +32%, ihp +23%, Total army boost = 109 %
 0)item name deathgazer in slot helm from set 1
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name fiery in slot mhand from set 1
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
 4)item name terrorblade in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : idef +46%, iatk +32%, ihp +4%, Total army boost = 82 %
+Item set attribute summary : idef +43%, iatk +46%, ihp +14%, Total army boost = 103 %
+0)item name berserker in slot helm from set 1
+1)item name helldrider-abyss in slot body from set 2
+2)item name corrupted in slot feet from set 2
+3)item name Dragon_sBite in slot mhand from set 2
+4)item name terrorblade in slot ohand from set 2
+5)item name lostislandic in slot trinket from set 1
+6)item name lostislandic in slot trinket from set 1
+Item set attribute summary : iatk +51%, idef +37%, ihp +14%, Total army boost = 102 %
 
 
 =====================================================================================================================================================
@@ -391,7 +399,7 @@ Looking for item combinations to maximize stats : rdef rhp ratk
 
 Best item set score you can get by heavy monster hunting + buying item packs:
 0)item name ancient in slot helm from set reaper
-1)item name deathly in slot body from set reaper
+1)item name deathlymantle in slot body from set reaper
 2)item name dragon in slot feet from set blackwing
 3)item name wyrm in slot mhand from set wyrm
 4)item name winter in slot ohand from set snowbeast
@@ -402,12 +410,12 @@ Item set attribute summary : rdef +110%, ratk +141%, rhp +87%, Total army boost 
 Best item set if you are a casual player that hardly spends money on the game :
 0)item name deathgazer in slot helm from set 1
 1)item name odysseus in slot body from set 1
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
 4)item name lunar in slot ohand from set 1
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : rdef +60%, ratk +21%, rhp +25%, Total army boost = 106 %
+Item set attribute summary : rdef +70%, ratk +29%, rhp +15%, Total army boost = 114 %
 
 Best item set if you invest a lot in monster hunting :
 0)item name ancient in slot helm from set reaper
@@ -422,43 +430,43 @@ Item set attribute summary : rdef +90%, ratk +140%, rhp +81%, Total army boost =
 Top x item sets that you can craft from resource gathering and monster hunting :
 0)item name deathgazer in slot helm from set 1
 1)item name odysseus in slot body from set 1
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
 4)item name lunar in slot ohand from set 1
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : rdef +60%, ratk +21%, rhp +25%, Total army boost = 106 %
+Item set attribute summary : rdef +70%, ratk +29%, rhp +15%, Total army boost = 114 %
 0)item name deathgazer in slot helm from set 1
 1)item name odysseus in slot body from set 1
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
 4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : rdef +72%, ratk +12%, rhp +22%, Total army boost = 106 %
+Item set attribute summary : rdef +82%, ratk +20%, rhp +12%, Total army boost = 114 %
 0)item name deathgazer in slot helm from set 1
 1)item name regal in slot body from set 1
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
 4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : rdef +66%, ratk +12%, rhp +27%, Total army boost = 105 %
+Item set attribute summary : rdef +76%, ratk +20%, rhp +17%, Total army boost = 113 %
 0)item name deathgazer in slot helm from set 1
 1)item name helldrider-abyss in slot body from set 2
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
 4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : rdef +66%, ratk +17%, rhp +22%, Total army boost = 105 %
-0)item name deathgazer in slot helm from set 1
-1)item name odysseus in slot body from set 1
-2)item name winter in slot feet from set 2
-3)item name Dragon_sBite in slot mhand from set 1
-4)item name wyrm in slot ohand from set 2
+Item set attribute summary : rdef +76%, ratk +25%, rhp +12%, Total army boost = 113 %
+0)item name devil in slot helm from set 1
+1)item name helldrider-abyss in slot body from set 2
+2)item name Winter_Stompers in slot feet from set 2
+3)item name harbringer in slot mhand from set 2
+4)item name frostwing in slot ohand from set 2
 5)item name lostislandic in slot trinket from set 1
 6)item name lostislandic in slot trinket from set 1
-Item set attribute summary : rdef +60%, ratk +22%, rhp +23%, Total army boost = 105 %
+Item set attribute summary : rdef +74%, ratk +25%, rhp +12%, Total army boost = 111 %
 
 
