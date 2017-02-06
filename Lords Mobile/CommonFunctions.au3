@@ -28,12 +28,17 @@ func GetKoPlayerAndPos()
 endfunc
 
 ; just in case our positioning is not perfect, Pixel getcolor should still work okish
-func IsPixelAroundPos( $x, $y, $Color, $Mask = 0, $Radius = 0 )
+func IsPixelAroundPos( $x, $y, $Color, $Mask = 0, $Radius = 0, $RelativeCords = 0 )
 	if( $Radius == 0 ) then
 		$Radius = 2
 	endif
 	if( $Mask == 0 ) then
 		$Mask = 0x00FCFCFC
+	endif
+	if( $RelativeCords <> 0) then
+		Local $aPos = GetKoPlayerAndPos()
+		$x = $x + $aPos[0];
+		$y = $y + $aPos[1];
 	endif
 	$Color = ReduceColorPrecision( $Color, $Mask )
 	for $y2 = $y - $Radius to $y + $Radius
@@ -52,13 +57,11 @@ func IsPixelAroundPos( $x, $y, $Color, $Mask = 0, $Radius = 0 )
 endfunc
 
 func LMIsCastleScreen()
-	Local $aPos = GetKoPlayerAndPos()
-	return ( IsPixelAroundPos( $aPos[0] + 114, $aPos[1] + 80, 0x00EFB489 ) == 1 )
+	return ( IsPixelAroundPos( 114, 80, 0x00EFB489, 0, 0, 1 ) == 1 )
 endfunc
 
 func LMIsRealmScreen()
-	Local $aPos = GetKoPlayerAndPos()
-	return ( IsPixelAroundPos( $aPos[0] + 115, $aPos[1] + 81, 0x00DEC152 ) == 1 )
+	return ( IsPixelAroundPos( 115, 81, 0x00DEC152, 0, 0, 1 ) == 1 )
 endfunc
 
 ; pushing this button will make screen less clutered
@@ -67,7 +70,24 @@ func LMIsZoomInButtonVisible()
 	return ( IsPixelAroundPos( $aPos[0] + 18, $aPos[1] + 498, 0x00CAA84D ) == 1 )
 endfunc
 
-func ClickButtonIfAvailable( $ImageName, $X, $Y, $Sleep = 500 )
+; used for loading screens
+func WaitImageAppear( $ImageName, $X = -1, $Y = -1, $Sleep = 500, $Timout = 3000 )
+	if( $x == -1 ) then
+		GetCoordFromImageFileName( $ImageName, $x, $y, 0 )
+	endif
+	local $Pos = ImageIsAt($ImageName, $X, $Y)
+	;MsgBox( 64, "", "found at " & $Pos[0] & " " & $Pos[1] & " SAD " & $Pos[2])
+	while( $Pos[2] == 0 and $Timout > 0 )
+		Sleep( $Sleep ) ; wait for the window to refresh
+		$Pos = ImageIsAt($ImageName, $X, $Y)
+		$Timout = $Timout - $Sleep
+	wend
+endfunc
+
+func ClickButtonIfAvailable( $ImageName, $X = -1, $Y = -1, $Sleep = 500 )
+	if( $x == -1 ) then
+		GetCoordFromImageFileName( $ImageName, $x, $y, 1 )
+	endif
 	;Local $aPos = GetKoPlayerAndPos()
 	Local $InfinitLoopBreak = 3
 ;	while( IsPixelAroundPos( $aPos[0] + 986, $aPos[1] + 36, 0x00FFBE38 ) == 1 and $InfinitLoopBreak > 0 )
@@ -152,7 +172,23 @@ Func _MakeLong($LoWord, $HiWord)
     Return BitOR($HiWord * 0x10000, BitAND($LoWord, 0xFFFF))
 EndFunc  ;==>_MakeLong
 
-Func ImageIsAt( $ImgName, $x, $y )
+Func GetCoordFromImageFileName( $ImgName, ByRef $x, ByRef $y, $AbsoluteCoord = 0 )
+	local $array = StringSplit($ImgName,"_")
+	local $resCount = $array[0]
+	$x=Int(Number($array[$resCount-1]))
+	$y=Int(Number($array[$resCount-0]))
+	if( $AbsoluteCoord <> 0 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		$x=$aPos[0] + $x
+		$y=$apos[1] + $y
+	endif
+endfunc
+
+Func ImageIsAt( $ImgName, $x = -1, $y = -1 )
+	; in case the image file name in a common sense format we can extract the coordinate of it
+	if( $x == -1 ) then
+		GetCoordFromImageFileName( $ImgName, $x, $y )
+	endif
 	global $dllhandle
 	Local $AcceptedMisplaceError = 2
 	Local $Radius = 16 + $AcceptedMisplaceError
@@ -163,7 +199,7 @@ Func ImageIsAt( $ImgName, $x, $y )
 	$result = DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle, "str", "ImageSearch_SAD", "str", $ImgName)
 	; put back previous screenshot. Maybe we were parsing it
-	$result = DllCall( $dllhandle, "str", "CycleScreenshots")
+	;DllCall( $dllhandle, "str", "CycleScreenshots")
 	local $res = SearchResultToVectSingleRes( $result )
 	return $res
 endfunc
@@ -226,12 +262,12 @@ func SearchFoodOnScreen()
 endfunc
 
 func GoToKingdomViewScreen()
-	ClickButtonIfAvailable("Images/KingdomViewButton_31_568.bmp",31,568, 4000)
+	ClickButtonIfAvailable("Images/KingdomViewButton_31_568.bmp",-1,-1, 4000)
 	WaitScreenFinishLoading()
 endfunc
 
 func ZoomOutKingdomView()
-	ClickButtonIfAvailable("Images/ZoomOutKingView_27_482.bmp",27,482)
+	ClickButtonIfAvailable("Images/ZoomOutKingView_27_482.bmp")
 	WaitScreenFinishLoading()
 endfunc
 
@@ -411,44 +447,86 @@ func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 200
 endfunc
 
 func ParseResourceInfo()
+	MsgBox( 64, "", "parsing rss" )
+endfunc
+
+func SavePlayerInfo($Name,$Might,$Kills,$Guild,$x,$y)
+	FileWriteLine( "Players.txt", $Name & "\t" & $Might & "\t" & $Kills & "\t" & $Guild & "\t" & $x & "\t" & $y)
 endfunc
 
 func ParseCastleInfo()
+	global $dllhandle
+	Local $aPos = GetKoPlayerAndPos()
+	; take screenshot of popup
+	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 0, "int", $aPos[1] + 0, "int", $aPos[0] + $aPos[2] - 0, "int", $aPos[1] + $aPos[3] - 0)
+	; remove font bleeding
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 182, "int", 680, "int", 205, "int", 0x31A0AB)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 223, "int", 680, "int", 240, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 249, "int", 680, "int", 265, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 405, "int", 276, "int", 680, "int", 295, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 502, "int", 469, "int", 529, "int", 482, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 543, "int", 469, "int", 570, "int", 482, "int", 0x9F9E9A)
+	; try to read the text from those locations
+	Local $Name = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 446, "int", 182, "int", 680, "int", 205) ; player name
+	Local $Might = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 446, "int", 223, "int", 680, "int", 240) ; might
+	Local $Kills = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 446, "int", 249, "int", 680, "int", 265) ; kill count
+	Local $Guild = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 405, "int", 276, "int", 680, "int", 295) ; guild name
+	Local $x = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 502, "int", 469, "int", 529, "int", 482) ; x
+	Local $y = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 543, "int", 469, "int", 570, "int", 482) ; y
+	; our allmighty DB !
+	SavePlayerInfo( $Name,$Might,$Kills,$Guild,$x,$y)
+	MsgBox( 64, "", "parsing castle" )
+endfunc
+
+func IsCastlePopupVisible()
+	return ( IsPixelAroundPos( 410, 178, 0x00F8DE47, 0, 0, 1 ) == 1 ) ; there is golden star around VIP level
+endfunc
+
+func IsResourcePopupVisible()
+;	if( ImageIsAt( "rss_info_660_246.bmp") == 1 ) then
+;		return 1
+;	endif
+	return ( IsPixelAroundPos( 660, 248, 0x00EFC470, 0, 0, 1 ) == 1 ) ; there is a golden 'i' on resource nodes
 endfunc
 
 func ParsePopupInfo()
-	global $dllhandle
-	Local $aPos = GetKoPlayerAndPos()
-	; take screenshot of popup. We do not know what kind of popup
-	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0], "int", $aPos[1], "int", $aPos[0] + $aPos[2], "int", $aPos[1] + $aPos[3])
+	; wait fot the popup to appear
+	WaitImageAppear( "Images/Close_Kingdom_Popup_986_37.bmp" )
 	; is it a castle ?
-	if( ImageIsAt( "castleicon.bp", 1, 1) == 1 ) then
-		ParseCastleInfo()
-	else
+	if( IsResourcePopupVisible() ) then
 		ParseResourceInfo()
+	elseif ( IsCastlePopupVisible() ) then
+		ParseCastleInfo()	; could check for VIP icon for example
 	endif
 	; put back previous screenshot as current screenshot
-	$result = DllCall( $dllhandle, "str", "CycleScreenshots" )
+	;DllCall( $dllhandle, "str", "CycleScreenshots" )
+	ClickButtonIfAvailable("Images/Close_Kingdom_Popup_986_37.bmp")
 endfunc
 
 func ExtractPlayerNamesCordsMightFromKingdomScreen()
 	global $dllhandle
 	Local $aPos = GetKoPlayerAndPos()
+	Local $result;
 	; take screenshot of kingdom view
-	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 100, "int", $aPos[1] + 100, "int", $aPos[0] + 200, "int", $aPos[1] + 200)
-	$result = DllCall( $dllhandle, "NONE", "KeepColor3SetBoth", "int", 0x00FFFFFF, "int", 0x00000000)
+	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 88, "int", $aPos[1] + 88, "int", $aPos[0] + $aPos[2] - 88, "int", $aPos[1] + $aPos[3] - 88)
+	$result = DllCall( $dllhandle,"NONE","KeepGradient", "int", 0x00946A21, "FLOAT", 0.4)
+;DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; search for all the "Level" tags in the screen
-	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_Transparent", "str", "LevelTag.bmp")
+	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_PixelCount", "int", 0, "int", 75, "int", 30, "int", 15)
+MsgBox( 64, "", "result `" & $result[0])
 	; click on all the tags
 	; now parse the locations we found on the screen
 	local $array = StringSplit($result[0],"|")
-	local $resCount = Number( $array[1] )
-	;MsgBox( 64, "", "res count " & $resCount )
+	local $resCount = Number( $array[1] ) - 1
+	MsgBox( 64, "", "res count " & $resCount )
     For $i = 0 To $resCount
-		$x=Int(Number($array[$i * 2 + 1]))
-		$y=Int(Number($array[$i * 2 + 2]))
+		local $x=Int(Number($array[$i * 2 + 1]))
+		local $y=Int(Number($array[$i * 2 + 2]))
 		; open up to check for level, location, occupier
-		MouseMove( $x - 30, $y - 30 );
-		;MsgBox( 64, "", "found at " & $ret[0] & " " & $ret[1] & " SAD " & $ret[2])
+		;MouseMove( $aPos[0] + $x, $aPos[1] + $y );
+		;MsgBox( 64, "", "found at " & $x & " " & $y)
+		MouseClick( $MOUSE_CLICK_LEFT, $Pos[0] + 16, $Pos[1] + 16, 1, 0 )
+		;sleep( 200 ) ; these sleeps should be converted to some dynamic waits. Not today ...
+		ParsePopupInfo()
 	next
 endfunc

@@ -54,7 +54,7 @@ Func DumpPixelsAroundMouse()
 	local $mpos = MouseGetPos()
 	Local $KoData = GetKoPlayerAndPos()
 	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
-	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & "," & ($mpos[1] - $KoData[1]) )
+	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Rel Mouse at : " & ($mpos[0] - $KoData[0]) & ", " & ($mpos[1] - $KoData[1]) & ", 0x" & Hex( PixelGetColor( $mpos[0], $mpos[1] ) ) & " ")
 	FileWriteLine ( "PixelsAroundMouse_Info.txt", "Pixel at : 0x" & Hex( PixelGetColor( $mpos[0], $mpos[1] ) ) )
 	for $y = $mpos[1] - 10 to $mpos[1] + 10
 		for $x = $mpos[0] - 10 to $mpos[0] + 10
@@ -64,6 +64,7 @@ Func DumpPixelsAroundMouse()
 		next
 		FileWriteLine ( "PixelsAroundMouse_Info.txt", "" )
 	next
+	RegisterMonitoredPixelPos()
 EndFunc
 
 Func TakeScreenshotAroundMouse()
@@ -71,22 +72,31 @@ Func TakeScreenshotAroundMouse()
 	local $mpos = MouseGetPos()
 	Local $KoData = GetKoPlayerAndPos()
 	Local $Radius = 16
+	Local $Radius2 = 8
 	FileWriteLine ( "ImageAroundMouse_Info.txt", "Mouse at : " & $mpos[0] & "," & $mpos[1] )
 	FileWriteLine ( "ImageAroundMouse_Info.txt", "Rel Mouse at : _" & ($mpos[0] - $KoData[0]) & "_" & ($mpos[1] - $KoData[1]) )
 	; save original
 	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
-	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	;$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; save reduced precision
 	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
-	; save edgedetected. Not used Atm. Maybe Later
-	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
-	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
-	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
-	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )
-	$result = DllCall( $dllhandle, "NONE", "EdgeKeepLocalMaximaMaximaOnly", "int", 2 )
-	$result = DllCall( $dllhandle, "NONE", "EdgeCopyOriginalForEdges" )
+
+	; save original
+	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius2,"int",$mpos[1] - $Radius2,"int",$mpos[0] + $Radius2,"int",$mpos[1] + $Radius2)
+	;$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	; save reduced precision
+	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+
+	; save edgedetected. Not used Atm. Maybe Later
+;	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$mpos[0] - $Radius,"int",$mpos[1] - $Radius,"int",$mpos[0] + $Radius,"int",$mpos[1] + $Radius)
+;	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
+;	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
+;	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )
+;	$result = DllCall( $dllhandle, "NONE", "EdgeKeepLocalMaximaMaximaOnly", "int", 2 )
+;	$result = DllCall( $dllhandle, "NONE", "EdgeCopyOriginalForEdges" )
+;	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 EndFunc
 
 Func TakeScreenshotOfWholeGame()
@@ -97,14 +107,17 @@ Func TakeScreenshotOfWholeGame()
 	; save reduced precision
 	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
-	; save edgedetected. Not used Atm. Maybe Later
-	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$KoData[0],"int",$KoData[1],"int",$KoData[0] + $KoData[2],"int",$KoData[1] + $KoData[3])
-	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
-	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
-	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )
-	$result = DllCall( $dllhandle, "NONE", "EdgeKeepLocalMaximaMaximaOnly", "int", 2 )
-	$result = DllCall( $dllhandle, "NONE", "EdgeCopyOriginalForEdges" )
+	; save reduced precision
+	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 8 )
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	; save edgedetected. Not used Atm. Maybe Later
+;	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$KoData[0],"int",$KoData[1],"int",$KoData[0] + $KoData[2],"int",$KoData[1] + $KoData[3])
+;	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )
+;	$result = DllCall( $dllhandle, "NONE", "EdgeDetectRobertCross3Channels" )
+;	$result = DllCall( $dllhandle, "NONE", "ConvertToGrayScaleMaxChannel" )
+;	$result = DllCall( $dllhandle, "NONE", "EdgeKeepLocalMaximaMaximaOnly", "int", 2 )
+;	$result = DllCall( $dllhandle, "NONE", "EdgeCopyOriginalForEdges" )
+;	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 EndFunc
 
 ;Register callback 
