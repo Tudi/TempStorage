@@ -5,7 +5,7 @@ Opt("PixelCoordMode",1)
 Opt("MustDeclareVars", 1)
 HotKeySet("1", "ExitBot")
 HotKeySet("{Esc}", "ExitBot")
-HotKeySet("3", "TempFunc")
+HotKeySet("3", "ExtractPlayerNamesCordsMightFromKingdomScreen")
 
 global $BotIsRunning = 1
 global $dllhandle = DllOpen ( "ImageSearchDLL_x86.dll" )

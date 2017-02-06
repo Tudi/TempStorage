@@ -77,7 +77,7 @@ func WaitImageAppear( $ImageName, $X = -1, $Y = -1, $Sleep = 500, $Timout = 3000
 	endif
 	local $Pos = ImageIsAt($ImageName, $X, $Y)
 	;MsgBox( 64, "", "found at " & $Pos[0] & " " & $Pos[1] & " SAD " & $Pos[2])
-	while( $Pos[2] == 0 and $Timout > 0 )
+	while( $Pos[2] > 32 * 32 * 3 * 10 and $Timout > 0 )
 		Sleep( $Sleep ) ; wait for the window to refresh
 		$Pos = ImageIsAt($ImageName, $X, $Y)
 		$Timout = $Timout - $Sleep
@@ -86,7 +86,7 @@ endfunc
 
 func ClickButtonIfAvailable( $ImageName, $X = -1, $Y = -1, $Sleep = 500 )
 	if( $x == -1 ) then
-		GetCoordFromImageFileName( $ImageName, $x, $y, 1 )
+		GetCoordFromImageFileName( $ImageName, $x, $y )
 	endif
 	;Local $aPos = GetKoPlayerAndPos()
 	Local $InfinitLoopBreak = 3
@@ -199,7 +199,7 @@ Func ImageIsAt( $ImgName, $x = -1, $y = -1 )
 	$result = DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
 	$result = DllCall( $dllhandle, "str", "ImageSearch_SAD", "str", $ImgName)
 	; put back previous screenshot. Maybe we were parsing it
-	;DllCall( $dllhandle, "str", "CycleScreenshots")
+	DllCall( $dllhandle, "str", "CycleScreenshots")
 	local $res = SearchResultToVectSingleRes( $result )
 	return $res
 endfunc
@@ -447,6 +447,7 @@ func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 200
 endfunc
 
 func ParseResourceInfo()
+	ClickButtonIfAvailable("Images/Close_Kingdom_Popup_690_104.bmp")
 	MsgBox( 64, "", "parsing rss" )
 endfunc
 
@@ -458,8 +459,10 @@ func ParseCastleInfo()
 	global $dllhandle
 	Local $aPos = GetKoPlayerAndPos()
 	; take screenshot of popup
-	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 0, "int", $aPos[1] + 0, "int", $aPos[0] + $aPos[2] - 0, "int", $aPos[1] + $aPos[3] - 0)
+	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 400, "int", $aPos[1] + 165, "int", $aPos[0] + 680, "int", $aPos[1] + 490)
+	DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; remove font bleeding
+	#cs
 	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 182, "int", 680, "int", 205, "int", 0x31A0AB)
 	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 223, "int", 680, "int", 240, "int", 0x9F9E9A)
 	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 249, "int", 680, "int", 265, "int", 0x9F9E9A)
@@ -475,6 +478,9 @@ func ParseCastleInfo()
 	Local $y = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 543, "int", 469, "int", 570, "int", 482) ; y
 	; our allmighty DB !
 	SavePlayerInfo( $Name,$Might,$Kills,$Guild,$x,$y)
+	#ce
+	; close the popup window
+	ClickButtonIfAvailable("Images/Close_Kingdom_Popup_690_104.bmp")
 	MsgBox( 64, "", "parsing castle" )
 endfunc
 
@@ -491,7 +497,7 @@ endfunc
 
 func ParsePopupInfo()
 	; wait fot the popup to appear
-	WaitImageAppear( "Images/Close_Kingdom_Popup_986_37.bmp" )
+	WaitImageAppear( "Images/Close_Kingdom_Popup_690_104.bmp" )
 	; is it a castle ?
 	if( IsResourcePopupVisible() ) then
 		ParseResourceInfo()
@@ -500,7 +506,6 @@ func ParsePopupInfo()
 	endif
 	; put back previous screenshot as current screenshot
 	;DllCall( $dllhandle, "str", "CycleScreenshots" )
-	ClickButtonIfAvailable("Images/Close_Kingdom_Popup_986_37.bmp")
 endfunc
 
 func ExtractPlayerNamesCordsMightFromKingdomScreen()
@@ -509,23 +514,24 @@ func ExtractPlayerNamesCordsMightFromKingdomScreen()
 	Local $result;
 	; take screenshot of kingdom view
 	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 88, "int", $aPos[1] + 88, "int", $aPos[0] + $aPos[2] - 88, "int", $aPos[1] + $aPos[3] - 88)
+	; remove most content. Leave only resource and player level tags on the sreen
 	$result = DllCall( $dllhandle,"NONE","KeepGradient", "int", 0x00946A21, "FLOAT", 0.4)
 ;DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; search for all the "Level" tags in the screen
 	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_PixelCount", "int", 0, "int", 75, "int", 30, "int", 15)
-MsgBox( 64, "", "result `" & $result[0])
+;MsgBox( 64, "", "result `" & $result[0])
 	; click on all the tags
 	; now parse the locations we found on the screen
 	local $array = StringSplit($result[0],"|")
 	local $resCount = Number( $array[1] ) - 1
-	MsgBox( 64, "", "res count " & $resCount )
+	;MsgBox( 64, "", "res count " & $resCount )
     For $i = 0 To $resCount
-		local $x=Int(Number($array[$i * 2 + 1]))
-		local $y=Int(Number($array[$i * 2 + 2]))
+		local $x=Int(Number($array[$i * 2 + 2]))
+		local $y=Int(Number($array[$i * 2 + 3]))
 		; open up to check for level, location, occupier
-		;MouseMove( $aPos[0] + $x, $aPos[1] + $y );
+		;MouseMove( $x, $y );
 		;MsgBox( 64, "", "found at " & $x & " " & $y)
-		MouseClick( $MOUSE_CLICK_LEFT, $Pos[0] + 16, $Pos[1] + 16, 1, 0 )
+		MouseClick( $MOUSE_CLICK_LEFT, $x - 16, $y - 16, 1, 0 )
 		;sleep( 200 ) ; these sleeps should be converted to some dynamic waits. Not today ...
 		ParsePopupInfo()
 	next
