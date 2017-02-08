@@ -33,7 +33,7 @@ func IsPixelAroundPos( $x, $y, $Color, $Mask = 0, $Radius = 0, $RelativeCords = 
 		$Radius = 2
 	endif
 	if( $Mask == 0 ) then
-		$Mask = 0x00FCFCFC
+		$Mask = 0x00F0F0F0
 	endif
 	if( $RelativeCords <> 0) then
 		Local $aPos = GetKoPlayerAndPos()
@@ -458,17 +458,25 @@ endfunc
 func ParseCastleInfo()
 	global $dllhandle
 	Local $aPos = GetKoPlayerAndPos()
+	Local $PopupStartX = 400
+	Local $PopupStartY = 165
+	Local $PopupWidth = 680
+	Local $PopupHeight = 490
 	; take screenshot of popup
-	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 400, "int", $aPos[1] + 165, "int", $aPos[0] + 680, "int", $aPos[1] + 490)
+	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + $PopupStartX, "int", $aPos[1] + $PopupStartY, "int", $aPos[0] + $PopupWidth, "int", $aPos[1] + $PopupHeight)
+	;DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", 0 + $PopupStartX, "int", 0 + $PopupStartY, "int", 0 + $PopupWidth, "int", 0 + $PopupHeight)
+	;DllCall( $dllhandle, "NONE", "LoadCacheOverScreenshot", "str", "Screenshot_0003_0280_0325.bmp", "int", 0, "int", 0)
 	DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; remove font bleeding
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446 - $PopupStartX, "int", 182 - $PopupStartY, "int", 680 - $PopupStartX, "int", 205 - $PopupStartY, "int", 0x31A0AB)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446 - $PopupStartX, "int", 223 - $PopupStartY, "int", 680 - $PopupStartX, "int", 240 - $PopupStartY, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446 - $PopupStartX, "int", 249 - $PopupStartY, "int", 680 - $PopupStartX, "int", 265 - $PopupStartY, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 405 - $PopupStartX, "int", 276 - $PopupStartY, "int", 680 - $PopupStartX, "int", 295 - $PopupStartY, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 502 - $PopupStartX, "int", 469 - $PopupStartY, "int", 529 - $PopupStartX, "int", 482 - $PopupStartY, "int", 0x9F9E9A)
+	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 543 - $PopupStartX, "int", 469 - $PopupStartY, "int", 570 - $PopupStartX, "int", 482 - $PopupStartY, "int", 0x9F9E9A)
+	DllCall( $dllhandle,"NONE","SaveScreenshot")
 	#cs
-	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 182, "int", 680, "int", 205, "int", 0x31A0AB)
-	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 223, "int", 680, "int", 240, "int", 0x9F9E9A)
-	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446, "int", 249, "int", 680, "int", 265, "int", 0x9F9E9A)
-	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 405, "int", 276, "int", 680, "int", 295, "int", 0x9F9E9A)
-	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 502, "int", 469, "int", 529, "int", 482, "int", 0x9F9E9A)
-	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 543, "int", 469, "int", 570, "int", 482, "int", 0x9F9E9A)
+	return;	
 	; try to read the text from those locations
 	Local $Name = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 446, "int", 182, "int", 680, "int", 205) ; player name
 	Local $Might = DllCall( $dllhandle, "NONE", "OCR_ReadTextLeftToRightSaveUnknownChars", "int", 446, "int", 223, "int", 680, "int", 240) ; might
@@ -481,7 +489,7 @@ func ParseCastleInfo()
 	#ce
 	; close the popup window
 	ClickButtonIfAvailable("Images/Close_Kingdom_Popup_690_104.bmp")
-	MsgBox( 64, "", "parsing castle" )
+	;MsgBox( 64, "", "parsing castle" )
 endfunc
 
 func IsCastlePopupVisible()
@@ -498,14 +506,21 @@ endfunc
 func ParsePopupInfo()
 	; wait fot the popup to appear
 	WaitImageAppear( "Images/Close_Kingdom_Popup_690_104.bmp" )
+	
+	; also wait for the text to load up. It seems to have a "fade" effect which kinda messes up our speed
+	Local $Timout = 3000
+	Local $Sleep = 100
+	while( IsPixelAroundPos(451,225,0x00FDFDFD,0,0,1) == 0 and IsPixelAroundPos(360,215,0x00FDFDFD,0,0,1) == 0 and $Timout > 0 )
+		Sleep( $Sleep ) ; wait for the window to refresh
+		$Timout = $Timout - $Sleep
+	wend
+	
 	; is it a castle ?
 	if( IsResourcePopupVisible() ) then
 		ParseResourceInfo()
 	elseif ( IsCastlePopupVisible() ) then
 		ParseCastleInfo()	; could check for VIP icon for example
 	endif
-	; put back previous screenshot as current screenshot
-	;DllCall( $dllhandle, "str", "CycleScreenshots" )
 endfunc
 
 func ExtractPlayerNamesCordsMightFromKingdomScreen()
@@ -514,11 +529,13 @@ func ExtractPlayerNamesCordsMightFromKingdomScreen()
 	Local $result;
 	; take screenshot of kingdom view
 	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + 88, "int", $aPos[1] + 88, "int", $aPos[0] + $aPos[2] - 88, "int", $aPos[1] + $aPos[3] - 88)
+	; remove water zones as they are very similar to player level gradient
+	DllCall( $dllhandle,"NONE","SetGradientToColor", "int", 0x00A59B63, "FLOAT", 0.162, 0x00FFFFFF)
 	; remove most content. Leave only resource and player level tags on the sreen
 	$result = DllCall( $dllhandle,"NONE","KeepGradient", "int", 0x00946A21, "FLOAT", 0.4)
 ;DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; search for all the "Level" tags in the screen
-	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_PixelCount", "int", 0, "int", 75, "int", 30, "int", 15)
+	$result = DllCall( $dllhandle, "str", "ImageSearch_Multiple_PixelCount", "int", 0, "int", 50, "int", 33, "int", 21)
 ;MsgBox( 64, "", "result `" & $result[0])
 	; click on all the tags
 	; now parse the locations we found on the screen
