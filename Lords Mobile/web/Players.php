@@ -16,6 +16,8 @@
 		<td>VIP</td>
 		<td>Castle</td>
 		<td>Distance to hive</td>
+		<td>Active at X hours</td>
+		<td>Active Y hours a day</td>
 	</tr>
 </table>
 <br>Show list of players and the gathered data about them<br>

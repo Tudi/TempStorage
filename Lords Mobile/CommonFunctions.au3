@@ -84,6 +84,20 @@ func WaitImageAppear( $ImageName, $X = -1, $Y = -1, $Sleep = 500, $Timout = 3000
 	wend
 endfunc
 
+; used for loading screens
+func WaitImageDisappear( $ImageName, $X = -1, $Y = -1, $Sleep = 500, $Timout = 3000 )
+	if( $x == -1 ) then
+		GetCoordFromImageFileName( $ImageName, $x, $y, 0 )
+	endif
+	local $Pos = ImageIsAt($ImageName, $X, $Y)
+	;MsgBox( 64, "", "found at " & $Pos[0] & " " & $Pos[1] & " SAD " & $Pos[2])
+	while( $Pos[2] <= 32 * 32 * 3 * 10 and $Timout > 0 )
+		Sleep( $Sleep ) ; wait for the window to refresh
+		$Pos = ImageIsAt($ImageName, $X, $Y)
+		$Timout = $Timout - $Sleep
+	wend
+endfunc
+
 func ClickButtonIfAvailable( $ImageName, $X = -1, $Y = -1, $Sleep = 500 )
 	if( $x == -1 ) then
 		GetCoordFromImageFileName( $ImageName, $x, $y )
@@ -274,37 +288,37 @@ endfunc
 func PushCoordDigit( $Digit )
 	Local $aPos = GetKoPlayerAndPos()
 	if( $Digit == 1 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 700, $aPos[1] + 250, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 870, $aPos[1] + 295, 1, 0 )
 	endif
 	if( $Digit == 2 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 775, $aPos[1] + 250, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 955, $aPos[1] + 295, 1, 0 )
 	endif
 	if( $Digit == 3 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 850, $aPos[1] + 250, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 1045, $aPos[1] + 295, 1, 0 )
 	endif
 	
 	if( $Digit == 4 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 700, $aPos[1] + 300, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 870, $aPos[1] + 360, 1, 0 )
 	endif
 	if( $Digit == 5 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 775, $aPos[1] + 300, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 955, $aPos[1] + 360, 1, 0 )
 	endif
 	if( $Digit == 6 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 850, $aPos[1] + 300, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 1045, $aPos[1] + 360, 1, 0 )
 	endif
 	
 	if( $Digit == 7 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 700, $aPos[1] + 350, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 870, $aPos[1] + 425, 1, 0 )
 	endif
 	if( $Digit == 8 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 775, $aPos[1] + 350, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 955, $aPos[1] + 425, 1, 0 )
 	endif
 	if( $Digit == 9 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 850, $aPos[1] + 350, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 1045, $aPos[1] + 425, 1, 0 )
 	endif
 	
 	if( $Digit == 0 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 700, $aPos[1] + 400, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 890, $aPos[1] + 490, 1, 0 )
 	endif
 
 	; allow the window to update
@@ -353,7 +367,7 @@ func EnterCoord( $Coord )
 		$DigitCount = $DigitCount - 1
 	wend
 	; push the ok button 
-	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 800, $aPos[1] + 400, 1, 0 )
+	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 1020, $aPos[1] + 490, 1, 0 )
 	; allow the window to update
 	Sleep(500)
 endfunc
@@ -363,10 +377,10 @@ func JumpToKingdomCoord( $Kingdom, $x, $y, $IsZoomedOut = 1 )
 	Local $aPos = GetKoPlayerAndPos()
 	; Open the coord window
 	if( $IsZoomedOut == 1 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 550, $aPos[1] + 20, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 700, $aPos[1] + 25, 1, 0 )
 	endif
 	if( $IsZoomedOut == 0 ) then 
-		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 450, $aPos[1] + 80, 1, 0 )
+		MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 700, $aPos[1] + 100, 1, 0 )
 	endif
 	; allow the window to open
 	Sleep(500)
@@ -375,29 +389,37 @@ func JumpToKingdomCoord( $Kingdom, $x, $y, $IsZoomedOut = 1 )
 	; Enter kingdom
 	;EnterCoord( $Kingdom )
 	; Open Edit X
-	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 510, $aPos[1] + 220, 1, 0 )
+	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 650, $aPos[1] + 255, 1, 0 )
 	; allow the window to open
 	Sleep(500)
 	EnterCoord( $x )
-	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 610, $aPos[1] + 220, 1, 0 )
+	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 775, $aPos[1] + 255, 1, 0 )
 	; allow the window to update it's content
 	Sleep(500)
 	EnterCoord( $y )
 	; click the GO button
-	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 510, $aPos[1] + 310, 1, 0 )
+	MouseClick($MOUSE_CLICK_LEFT, $aPos[0] + 645, $aPos[1] + 375, 1, 0 )
 	; allow the window to update it's content
 	WaitScreenFinishLoading()
 endfunc
 
 ; about 12 coord units / screen
-func DragScreenToLeft()
-	Local $MarginUndragged = 0	; maybe around 50 pixels
+func DragScreenToRight()
+	Local $MarginUndragged = 2	; maybe around 50 pixels
 	Local $DragLatency = 0 ; might require even 100 to fully drag the screen
 	Local $aPos = GetKoPlayerAndPos()
-	MouseMove( $aPos[0] + $MarginUndragged, $aPos[1] + $aPos[3] / 2, 0 )
+	; this should drag about  tiles if used with speed 9
+	MouseMove( $aPos[0] + $aPos[2] - $MarginUndragged, $aPos[1] + $aPos[3] / 2, 0 )
 	MouseDown($MOUSE_CLICK_LEFT)
-	MouseMove( $aPos[0] + $aPos[2] + $DragLatency - $MarginUndragged , $aPos[1] + $aPos[3] / 2, 9 )
+	MouseMove( $aPos[0] - $DragLatency + $MarginUndragged , $aPos[1] + $aPos[3] / 2, 9 )
 	MouseUp($MOUSE_CLICK_LEFT)
+	
+	local $SecondDragSize = 150
+	MouseMove( $aPos[0] + $aPos[2] - $MarginUndragged, $aPos[1] + $aPos[3] / 2, 0 )
+	MouseDown($MOUSE_CLICK_LEFT)
+	MouseMove( $aPos[0] + $aPos[2] - $SecondDragSize , $aPos[1] + $aPos[3] / 2, 9 )
+	MouseUp($MOUSE_CLICK_LEFT)	
+	
 	; make sure latency does not affect our search
 	WaitScreenFinishLoading()
 endfunc
@@ -408,6 +430,8 @@ endfunc
 func WaitScreenFinishLoading()
  ; repeat taking screenshots until there is no change between the screens
  ; there is a chance that snow wil make our screenshot change all the time
+	sleep(500)
+	return;
 	global $dllhandle
 	Local $Radius = 16
 	Local $AntiInfiniteLoop = 10000 ; timeout the function after this amount of mseconds
@@ -416,7 +440,7 @@ func WaitScreenFinishLoading()
 	local $y2 = 12 + $aPos[1]
 	local $result = DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $x2 - $Radius, "int", $y2 - $Radius, "int", $x2 + $Radius, "int", $y2 + $Radius)
 	DllCall( $dllhandle, "NONE", "ApplyColorBitmask", "int", 0x00F0F0F0)
-	$result = "1|0|0"
+	$result[ = "1|0|0"
 	while ( $result[0] == '1' and $AntiInfiniteLoop > 0 )
 		Sleep( 100 )
 		$AntiInfiniteLoop = $AntiInfiniteLoop - 100
@@ -426,7 +450,8 @@ func WaitScreenFinishLoading()
 	wend
 endfunc
 
-func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 200, $EndY = 200, $CallFunctionPerScreen = "SearchFoodOnScreen")
+func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 500, $EndY = 1000, $CallFunctionPerScreen = "SearchFoodOnScreen")
+	global $BotIsRunning
 	Local $aPos = GetKoPlayerAndPos()
 	; search patterns : 
 	; - starting from a specific location, we try to increase radius
@@ -437,19 +462,25 @@ func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 200
 	; zoom out the map to see as much as possible
 	ZoomOutKingdomView()
 	; jump to a specific coord on the map
-	for $row=$StartY to $EndY step 12
-		JumpToKingdomCoord( $Kingdom, 0, $row, 1 )
-		for $col=$StartX to $EndX step 1
+	for $row=$StartY to $EndY step 10
+		JumpToKingdomCoord( $Kingdom, $StartX, $row, 1 )
+		Sleep(1000)
+		Call( $CallFunctionPerScreen )
+		for $col=$StartX to $EndX step 10
+			DragScreenToRight()
 			Call( $CallFunctionPerScreen )
-			DragScreenToLeft()
+			if($BotIsRunning == 0) then
+				return
+			endif
 		next
 	next
 endfunc
 
 func ParseResourceInfo()
 	ClickButtonIfAvailable("Images/Close_resource_popup_853_125.bmp")
-	sleep(200)
-	MsgBox( 64, "", "parsing rss" )
+	WaitImageDisappear("Images/Close_resource_popup_853_125.bmp")
+	;sleep(200)
+	;MsgBox( 64, "", "parsing rss" )
 endfunc
 
 func SavePlayerInfo($Name,$Might,$Kills,$Guild,$x,$y)
@@ -465,7 +496,7 @@ func ParseCastleInfo()
 	Local $PopupEndY = 580
 	
 	; also wait for the text to load up. It seems to have a "fade" effect which kinda messes up our speed
-	Local $Timout = 3000
+	Local $Timout = 2000
 	Local $Sleep = 100
 	while( IsPixelAroundPos(566,270,0x00FFFFFF,0,0,1) == 0 and IsPixelAroundPos(569,301,0x00FFFFFF,0,0,1) == 0 and $Timout > 0 )
 		Sleep( $Sleep ) ; wait for the window to refresh
@@ -476,10 +507,12 @@ func ParseCastleInfo()
 	; land click
 	; take screenshot of popup
 	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + $PopupStartX, "int", $aPos[1] + $PopupStartY, "int", $aPos[0] + $PopupEndX, "int", $aPos[1] + $PopupEndY)
-	ClickButtonIfAvailable("Images/Close_Kingdom_castle_853_127.bmp")
+	;ClickButtonIfAvailable("Images/Close_Kingdom_castle_853_127.bmp")
 	;DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", 0 + $PopupStartX, "int", 0 + $PopupStartY, "int", 0 + $PopupWidth, "int", 0 + $PopupHeight)
 	;DllCall( $dllhandle, "NONE", "LoadCacheOverScreenshot", "str", "Screenshot_0003_0280_0325.bmp", "int", 0, "int", 0)
 	DllCall( $dllhandle,"NONE","SaveScreenshot")
+	MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 852, $aPos[1] + 124, 1, 0 )
+	Sleep(500) ; wait for the popup to close
 	#cs
 	; remove font bleeding
 	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446 - $PopupStartX, "int", 181 - $PopupStartY, "int", 680 - $PopupStartX, "int", 205 - $PopupStartY, "int", 0x31A0AB)
@@ -501,7 +534,15 @@ func ParseCastleInfo()
 	SavePlayerInfo( $Name,$Might,$Kills,$Guild,$x,$y)
 	#ce
 	; close the popup window
-	;Sleep(200)
+	#cs
+	;WaitImageDisappear("Images/Close_Kingdom_castle_853_127.bmp")
+	Sleep(2000)
+	$Timout = 1000
+	while( CloseCastleClick() == 1 and $Timout > 0 )
+		Sleep( $Sleep ) ; wait for the window to refresh
+		$Timout = $Timout - $Sleep
+	wend
+	#ce
 	;MsgBox( 64, "", "parsing castle" )
 endfunc
 
@@ -516,14 +557,92 @@ func IsResourcePopupVisible()
 	return ( IsPixelAroundPos( 817, 297, 0x00EFC471, 0, 0, 1 ) == 1 ) ; there is a golden 'i' on resource nodes
 endfunc
 
+func CloseLandClick()
+	if( IsPixelAroundPos( 853, 126, 0x00FFBD36, 0, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 853, $aPos[1] + 126, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
+func CloseResourceClick()
+	if( IsPixelAroundPos( 853, 127, 0x00FFBD36, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 853, $aPos[1] + 127, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
+func CloseCastleClick()
+	if( IsPixelAroundPos( 852, 124, 0x00FFBE39, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 852, $aPos[1] + 124, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
+func CloseLargeScreenClick()
+	if( IsPixelAroundPos( 1255, 43, 0x00FFBE38, 0, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 1255, $aPos[1] + 43, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
+func CloseArmyClick()
+	Local $Pos = GetKoPlayerAndPos()
+	if( IsPixelAroundPos( 819, 431, 0x00FFBA31, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 819, $aPos[1] + 431, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
+func CloseRallyAttackBattleHallClick()
+	if( IsPixelAroundPos( 853, 118, 0x00FFBE39, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 853, $aPos[1] + 118, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
+func CloseScoutClick()
+	if( IsPixelAroundPos( 852, 119, 0x00FFBD37, 0, 1 ) == 1 ) then
+		Local $aPos = GetKoPlayerAndPos()
+		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 852, $aPos[1] + 119, 1, 0 )
+		Sleep(500)
+		return 1
+	endif
+	return 0
+endfunc
+
 func ParsePopupInfo()
-	; just in case we clicked on a army. close that popup
-	ClickButtonIfAvailable("Images/Close_Kingdom_Army_818_431.bmp",-1,-1,100)
-	; just in case we clicked on some random stuff. close that popup
-	ClickButtonIfAvailable("Images/Close_LargePopup_1232_44.bmp",-1,-1,100)
+	Local $WrongScreenOpen = CloseLargeScreenClick() + CloseArmyClick() + CloseRallyAttackBattleHallClick() + CloseScoutClick()
 	
+	if( $WrongScreenOpen > 0 ) then
+		return
+	endif
+
 	; wait fot the popup to appear
-	WaitImageAppear( "Images/Close_Kingdom_castle_853_127.bmp" )
+	;WaitImageAppear( "Images/Close_Kingdom_castle_853_127.bmp" )
+	Local $Timout = 1000
+	Local $Sleep = 100
+	while( IsPixelAroundPos(852,126,0x00FFBD36,0,0,1) == 0 and $Timout > 0 )
+		Sleep( $Sleep ) ; wait for the window to refresh
+		$Timout = $Timout - $Sleep
+	wend
 	
 	; is it a castle ?
 	if( IsResourcePopupVisible() ) then
@@ -533,15 +652,13 @@ func ParsePopupInfo()
 	else
 		sleep( 200 ) ; should wait for whatever image we clicked on to dissapear
 	endif
-	
-	; just in case we clicked on some random stuff. close that popup
-	ClickButtonIfAvailable("Images/CloseBattleHall_853_120.bmp",-1,-1,100)
-	; just in case we clicked on land. close that popup
-	ClickButtonIfAvailable("Images/Close_kingdom_land_853_121.bmp",-1,-1,100)
+
+	CloseResourceClick()
 endfunc
 
 func ExtractPlayerNamesCordsMightFromKingdomScreen()
 	global $dllhandle
+	global $BotIsRunning
 	Local $aPos = GetKoPlayerAndPos()
 	Local $result;
 	Local $TurfJumpIconSize = 110
@@ -572,8 +689,14 @@ func ExtractPlayerNamesCordsMightFromKingdomScreen()
 		; open up to check for level, location, occupier
 		;MouseMove( $x, $y );
 		;MsgBox( 64, "", "found at " & $x & " " & $y)
-		MouseClick( $MOUSE_CLICK_LEFT, $x - 32, $y - 32, 1, 0 )
+		;MouseClick( $MOUSE_CLICK_LEFT, $x - 32, $y - 32, 1, 0 )
+		MouseClick( $MOUSE_CLICK_LEFT, $x, $y, 1, 0 ) ; could click outside of the screen if we use -
+		; avoid mouse causing overlay popups
+		MouseMove( 0, 0, 0 )
 		;sleep( 200 ) ; these sleeps should be converted to some dynamic waits. Not today ...
 		ParsePopupInfo()
+		if($BotIsRunning == 0) then
+			return
+		endif		
 	next
 endfunc

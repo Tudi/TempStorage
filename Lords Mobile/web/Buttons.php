@@ -11,4 +11,5 @@
 	<tr><td><a href="NewResourceTracking.php" target="IFShowContent">New Resource Tracking</a></td></tr>
 	<tr><td><a href="HideGuild.php" target="IFShowContent">Hide Guild Tracking</a></td></tr>
 	<tr><td><a href="HidePlayer.php" target="IFShowContent">Hide Player Tracking</a></td></tr>
+	<tr><td><a href="GameInfo.php" target="IFShowContent">InfoHut</a></td></tr>
 </table>
