@@ -105,11 +105,11 @@ Func TakeScreenshotOfWholeGame()
 	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$KoData[0],"int",$KoData[1],"int",$KoData[0] + $KoData[2],"int",$KoData[1] + $KoData[3])
 	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; save reduced precision
-	$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
-	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	;$result = DllCall( $dllhandle,"NONE","ApplyColorBitmask","int", 0x00F0F0F0)
+	;$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; save reduced precision
-	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 8 )
-	$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
+	;$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 8 )
+	;$result = DllCall( $dllhandle,"NONE","SaveScreenshot")
 	; save edgedetected. Not used Atm. Maybe Later
 ;	$result = DllCall( $dllhandle,"NONE","TakeScreenshot","int",$KoData[0],"int",$KoData[1],"int",$KoData[0] + $KoData[2],"int",$KoData[1] + $KoData[3])
 ;	$result = DllCall( $dllhandle, "NONE", "DecreaseColorCount", "int", 32 )

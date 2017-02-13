@@ -1,0 +1,1 @@
+This site uses the eye of sauron implanted into an underfed kid to tracks player data. Unless you feed him eough rice he will typo a lot of player names and your underpants will implode
