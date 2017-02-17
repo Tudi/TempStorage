@@ -14,10 +14,12 @@
 		<td>Guild ranks</td>
 		<td>Level</td>
 		<td>VIP</td>
-		<td>Castle</td>
+		<td>Castle lvl</td>
+		<td>Bounty</td>
+		<td>Prisoners</td>
 		<td>Distance to hive</td>
 		<td>Active at X hours</td>
 		<td>Active Y hours a day</td>
 	</tr>
 </table>
-<br>Show list of players and the gathered data about them<br>
+<br>Show list of players and the gathered data about them. Only gets updated every X minutes. Last update was<br>

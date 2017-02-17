@@ -1,0 +1,10 @@
+- maps 10x20 : might, pcount, innactive count, castle level, player level, free rss node count over time, avg rss level free
+- site feature : gold give to burn someone( bounty without kills )
+- live parse player data
+- upload player data somehow
+- new bot project with : parse thread with queued commands, pause capability, console access for commands
+- create minimalistic site
+- wait for screeen to stop moving before we start searching and clicking player flags
+- install webserver
+- put online minimalistic site
+- parse offline data as test
