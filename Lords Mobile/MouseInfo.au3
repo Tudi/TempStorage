@@ -30,7 +30,8 @@ $_XYposRel = GUICtrlCreateLabel("Rel X=     Y=", 8, 56, 165, 17)
 $_Pixel = GUICtrlCreateLabel("Pixel: ", 8, 80, 167, 17) 
 $_PixelPos = GUICtrlCreateLabel("Mark: ", 8, 104, 167, 17) 
 $_PixelPosRel = GUICtrlCreateLabel("MonitoredPosRel: ", 8, 128, 167, 17) 
-$_PixelAtPos = GUICtrlCreateLabel("Pixel At Mark: ", 8, 152, 167, 17) 
+$_PixelAtPos = GUICtrlCreateLabel("Pixel At Mark: ", 8, 152, 167, 17)
+$_PixelAtPos2 = GUICtrlCreateLabel("Pixel At Mark2: ", 8, 176, 167, 17) 
 GUISetState() 
 WinSetOnTop($GUI, "", 1) ;make GUI stay on top of other windows 
 
@@ -190,7 +191,7 @@ Func _Mouse_Proc($nCode, $wParam, $lParam) ;function called for mouse events..
 
 	GUICtrlSetData($_Pixel, "Pixel: " & PixelGetColor( $ptx, $pty ) & " " & Hex( PixelGetColor( $ptx, $pty ), 6 ) )     
 	;GUICtrlSetData($_PixelPos, "MonitoredPos: " & $MonitoredMousePos[0] & " " & $MonitoredMousePos[1] )     
-	;GUICtrlSetData($_PixelAtPos, "Pixel at mark: " & PixelGetColor( $MonitoredMousePos[0], $MonitoredMousePos[1] ) & " " & Hex( PixelGetColor( $MonitoredMousePos[0], $MonitoredMousePos[1] ), 6 ) )     
+	GUICtrlSetData($_PixelAtPos2, "Pixel at mark: " & PixelGetColor( $MonitoredMousePos[0], $MonitoredMousePos[1] ) & " " & Hex( PixelGetColor( $MonitoredMousePos[0], $MonitoredMousePos[1] ), 6 ) )     
 
 	$ret = DllCall("user32.dll", "long", "CallNextHookEx", "hwnd", $hM_Hook[0], "int", $nCode, "ptr", $wParam, "ptr", $lParam)     
 	Return $ret[0] 

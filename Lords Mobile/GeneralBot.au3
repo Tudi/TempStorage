@@ -38,7 +38,12 @@ func TempFunc()
 	;ParseKingdomMapRegion(69,0,0,37,10,"ScreenshotCleanRegion");
 	;ExtractPlayerNamesCordsMightFromKingdomScreen()
 	;ParseKingdomMapRegion(69,0,30,37,37,"ExtractPlayerNamesCordsMightFromKingdomScreen");
-	ParseKingdomMapRegion(69,0,0,500,1000,"ExtractPlayerNamesCordsMightFromKingdomScreen");
+	ParseKingdomMapRegion(69,10,27,500,1000,"ExtractPlayerNamesCordsMightFromKingdomScreenDLL");
+endfunc
+
+func ExtractPlayerNamesCordsMightFromKingdomScreenDLL()
+	global $dllhandle
+	DllCall( $dllhandle, "NONE", "CaptureVisibleScreenGetPlayerLabels")
 endfunc
 
 func ScreenshotCleanRegion()

@@ -1,0 +1,1 @@
+put in your guild name to not show it in statistics of this site.This feature gets reset from time to time.

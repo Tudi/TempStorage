@@ -1,0 +1,1 @@
+Put in your nickname to stop showing it to other players. This feature gets reset from time to time.

@@ -430,7 +430,7 @@ endfunc
 func WaitScreenFinishLoading()
  ; repeat taking screenshots until there is no change between the screens
  ; there is a chance that snow wil make our screenshot change all the time
-	sleep(500)
+	sleep(1000)
 	return;
 	global $dllhandle
 	Local $Radius = 16
@@ -477,10 +477,11 @@ func ParseKingdomMapRegion( $Kingdom = 69, $StartX = 0, $StartY = 0, $EndX = 500
 endfunc
 
 func ParseResourceInfo()
-	ClickButtonIfAvailable("Images/Close_resource_popup_853_125.bmp")
-	WaitImageDisappear("Images/Close_resource_popup_853_125.bmp")
+	;ClickButtonIfAvailable("Images/Close_resource_popup_853_125.bmp")
+	;WaitImageDisappear("Images/Close_resource_popup_853_125.bmp")
 	;sleep(200)
 	;MsgBox( 64, "", "parsing rss" )
+	CloseResourceClick()
 endfunc
 
 func SavePlayerInfo($Name,$Might,$Kills,$Guild,$x,$y)
@@ -512,7 +513,7 @@ func ParseCastleInfo()
 	;DllCall( $dllhandle, "NONE", "LoadCacheOverScreenshot", "str", "Screenshot_0003_0280_0325.bmp", "int", 0, "int", 0)
 	DllCall( $dllhandle,"NONE","SaveScreenshot")
 	MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 852, $aPos[1] + 124, 1, 0 )
-	Sleep(500) ; wait for the popup to close
+	Sleep(1500) ; wait for the popup to close
 	#cs
 	; remove font bleeding
 	DllCall( $dllhandle, "NONE", "KeepColorsMinInRegion", "int", 446 - $PopupStartX, "int", 181 - $PopupStartY, "int", 680 - $PopupStartX, "int", 205 - $PopupStartY, "int", 0x31A0AB)
@@ -571,7 +572,7 @@ func CloseResourceClick()
 	if( IsPixelAroundPos( 853, 127, 0x00FFBD36, 0, 1 ) == 1 ) then
 		Local $aPos = GetKoPlayerAndPos()
 		MouseClick( $MOUSE_CLICK_LEFT, $aPos[0] + 853, $aPos[1] + 127, 1, 0 )
-		Sleep(500)
+		Sleep(1500)
 		return 1
 	endif
 	return 0
@@ -628,13 +629,7 @@ func CloseScoutClick()
 	return 0
 endfunc
 
-func ParsePopupInfo()
-	Local $WrongScreenOpen = CloseLargeScreenClick() + CloseArmyClick() + CloseRallyAttackBattleHallClick() + CloseScoutClick()
-	
-	if( $WrongScreenOpen > 0 ) then
-		return
-	endif
-
+func WaitPopupDataLoad()
 	; wait fot the popup to appear
 	;WaitImageAppear( "Images/Close_Kingdom_castle_853_127.bmp" )
 	Local $Timout = 1000
@@ -643,6 +638,16 @@ func ParsePopupInfo()
 		Sleep( $Sleep ) ; wait for the window to refresh
 		$Timout = $Timout - $Sleep
 	wend
+endfunc
+
+func ParsePopupInfo()
+	Local $WrongScreenOpen = CloseLargeScreenClick() + CloseArmyClick() + CloseRallyAttackBattleHallClick() + CloseScoutClick()
+	
+	if( $WrongScreenOpen > 0 ) then
+		return
+	endif
+	
+	WaitPopupDataLoad()
 	
 	; is it a castle ?
 	if( IsResourcePopupVisible() ) then
@@ -661,7 +666,7 @@ func ExtractPlayerNamesCordsMightFromKingdomScreen()
 	global $BotIsRunning
 	Local $aPos = GetKoPlayerAndPos()
 	Local $result;
-	Local $TurfJumpIconSize = 110
+	Local $TurfJumpIconSize = 80
 	; take screenshot of kingdom view
 	DllCall( $dllhandle, "NONE", "TakeScreenshot", "int", $aPos[0] + $TurfJumpIconSize, "int", $aPos[1] + $TurfJumpIconSize, "int", $aPos[0] + $aPos[2] - $TurfJumpIconSize, "int", $aPos[1] + $aPos[3] - $TurfJumpIconSize)
 ;DllCall( $dllhandle,"NONE","SaveScreenshot")	
