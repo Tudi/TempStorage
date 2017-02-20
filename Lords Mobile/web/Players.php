@@ -17,20 +17,26 @@ include("db_connection.php");
 		<td>Aprox troops available</td>
 		<td>Last active at</td>
 		<td>Nodes gathering from</td>
-		<td>Guild ranks</td>
+		<td>Guild rank</td>
 		<td>Level</td>
-		<td>VIP</td>
+		<td>VIP Level</td>
 		<td>Castle lvl</td>
 		<td>Bounty</td>
 		<td>Prisoners</td>
 		<td>Distance to hive</td>
 		<td>Active at X hours</td>
 		<td>Active Y hours a day</td>
+		<td>Last seen with prisoners</td>
 	</tr>
 <?php
 	$query1 = "select k,x,y,name,guild,might,kills,lastupdated from players";
+	if($FilterK)
+		$Filter = " k='".mysql_real_escape_string($FilterK)."' ";
+	if($Filter)
+		$query1 .= " where $Filter ";
+	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated ) = mysql_fetch_row( $result ))
+	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated ) = mysql_fetch_row( $result1 ))
 	{
 		$LastUpdatedHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);
 		?>

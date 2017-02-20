@@ -1,12 +1,7 @@
 <?php
-//force all post / get / request variables to become global
 foreach($_REQUEST as $foreachname=>$foreachvalue)
 	$$foreachname = $foreachvalue;
-/*
-foreach($_SESSION as $foreachname=>$foreachvalue)
-	$$foreachname = $foreachvalue;
-*/
-
+	
 $dbhost = "localhost";
 $dbname = "LordsMobile";
 $dbuname = "root";

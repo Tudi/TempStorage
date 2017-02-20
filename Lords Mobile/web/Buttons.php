@@ -1,5 +1,6 @@
 <table>
-	<tr><td><a href="Players.php" target="IFShowContent">Players</a></td></tr>
+	<tr><td><a href="Players.php?FilterK=67" target="IFShowContent">Players</a></td></tr>
+	<tr><td><a href="maps.php?FilterK=67" target="IFShowContent">Minimaps</a></td></tr>
 	<tr><td><a href="PlayersInactive.php" target="IFShowContent">Innactive Players</a></td></tr>
 	<tr><td><a href="KillFarming.php" target="IFShowContent">Kill Farming locations</a></td></tr>
 	<tr><td><a href="NamechangeTracking.php" target="IFShowContent">Namechange History</a></td></tr>
