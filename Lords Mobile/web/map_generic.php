@@ -1,25 +1,33 @@
 <?php
-include("db_connection.php");
+if(!isset($dbi))
+	include("db_connection.php");
+
+ob_start();
+
 if(!isset($k))
 	$k = 67;
-if(!isset($TrackWhat))
-	$TrackWhat = "might";
 if(!isset($YStep))
 	$YStep = 40;
 if(!isset($XStep))
 	$XStep = 20;
 $ExtraFilter="";
+if(!isset($TrackWhat))
+	$TrackWhat = "might";
+if($TrackWhat == "might")
+	$SelectWhat = "might";
+if($TrackWhat == "kills")
+	$SelectWhat = "kills";
 if($TrackWhat == "pcount")
-	$TrackWhat = "count(*)";
+	$SelectWhat = "count(*)";
 if($TrackWhat == "guildless")
 {
-	$TrackWhat = "count(*)";
+	$SelectWhat = "count(*)";
 	$ExtraFilter = " and guild='none'";
 }
 if($TrackWhat == "guildless_innactive")
 {
 	echo "Players who's might did not change in the past X days<br>. Only works if it has recent data updated. Check manually !";
-	$TrackWhat = "count(*)";
+	$SelectWhat = "count(*)";
 	$ExtraFilter = " and guild='none' and innactive!=0";
 }
 ?>
@@ -43,7 +51,7 @@ if($TrackWhat == "guildless_innactive")
 		{
 			//fetch players in this cell
 			$MightSum[$x][$y] = 0;
-			$query1 = "select $TrackWhat from players where k=$k and x>=".($x-$XStep)." and x<=".($x+$XStep)." and y>=".($y-$YStep)." and y<=".($y+$YStep)."$ExtraFilter";		
+			$query1 = "select $SelectWhat from players where k=$k and x>=".($x-$XStep)." and x<=".($x+$XStep)." and y>=".($y-$YStep)." and y<=".($y+$YStep)."$ExtraFilter";		
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 			while( list( $might ) = mysql_fetch_row( $result1 ))
 				$MightSum[$x][$y] += $might;
@@ -71,3 +79,17 @@ if($TrackWhat == "guildless_innactive")
 	}
 ?>
 </table>
+<?php
+$StaticFileContent = ob_get_contents();
+ob_end_clean();
+//dump page content to file
+$f = fopen("${TrackWhat}_$k.html","wt");
+if($f)
+{
+	fwrite($f,$StaticFileContent);
+	fclose($f);
+	$f = 0;
+}
+else
+	echo "$StaticFileContent";
+?>

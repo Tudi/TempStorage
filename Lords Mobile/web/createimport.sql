@@ -20,6 +20,28 @@ CREATE TABLE IF NOT EXISTS `access_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Data exporting was unselected.
+-- Dumping structure for table lordsmobile.guilds_hidden
+CREATE TABLE IF NOT EXISTS `guilds_hidden` (
+  `Name` varchar(50) DEFAULT NULL,
+  `StartStamp` int(11) DEFAULT NULL,
+  `EndStamp` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Data exporting was unselected.
+-- Dumping structure for table lordsmobile.guild_hives
+CREATE TABLE IF NOT EXISTS `guild_hives` (
+  `k` int(11) DEFAULT NULL,
+  `x` int(11) DEFAULT NULL,
+  `y` int(11) DEFAULT NULL,
+  `guild` varchar(250) DEFAULT NULL,
+  `radius` int(11) DEFAULT NULL,
+  `HiveCastles` int(11) DEFAULT NULL,
+  `TotalCastles` int(11) DEFAULT NULL,
+  `HiveMight` int(11) DEFAULT NULL,
+  `TotalMight` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Data exporting was unselected.
 -- Dumping structure for table lordsmobile.players
 CREATE TABLE IF NOT EXISTS `players` (
   `k` int(11) DEFAULT NULL,
@@ -50,6 +72,14 @@ CREATE TABLE IF NOT EXISTS `players_archive` (
   `LastUpdated` int(11) DEFAULT NULL,
   `innactive` int(11) DEFAULT NULL,
   `HasPrisoners` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Data exporting was unselected.
+-- Dumping structure for table lordsmobile.players_hidden
+CREATE TABLE IF NOT EXISTS `players_hidden` (
+  `Name` varchar(50) DEFAULT NULL,
+  `StartStamp` int(11) DEFAULT NULL,
+  `EndStamp` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Data exporting was unselected.

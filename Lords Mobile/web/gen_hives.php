@@ -1,5 +1,6 @@
 <?php
-include("db_connection.php");
+if(!isset($dbi))
+	include("db_connection.php");
 
 // ditch old data 
 $query1 = "delete from guild_hives";		

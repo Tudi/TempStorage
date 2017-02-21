@@ -3,7 +3,7 @@ set_time_limit(60 * 30);
 	
 include("db_connection.php");
 
-$f = fopen("Players.txt","rt");
+$f = fopen("Players5.txt","rt");
 if(!$f)
 	exit("Could not open file");
 
@@ -149,4 +149,19 @@ while( list( $k,$x,$y,$name,$might,$lastupdated ) = mysql_fetch_row( $result1 ))
 //		echo "Player's $name might did not change<br>";
 	}
 }
+//generate new hives
+include("gen_hives.php");
+
+//generate static minimaps
+$k=67;
+$TrackWhat = "might";
+include("map_generic.php");
+$TrackWhat = "kills";
+include("map_generic.php");
+$TrackWhat = "pcount";
+include("map_generic.php");
+$TrackWhat = "guildless";
+include("map_generic.php");
+$TrackWhat = "guildless_innactive";
+include("map_generic.php");
 ?>
