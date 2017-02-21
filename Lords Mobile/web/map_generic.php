@@ -1,6 +1,7 @@
 <?php
 include("db_connection.php");
-$k = 67;
+if(!isset($k))
+	$k = 67;
 if(!isset($TrackWhat))
 	$TrackWhat = "might";
 if(!isset($YStep))
@@ -8,6 +9,8 @@ if(!isset($YStep))
 if(!isset($XStep))
 	$XStep = 20;
 $ExtraFilter="";
+if($TrackWhat == "pcount")
+	$TrackWhat = "count(*)";
 if($TrackWhat == "guildless")
 {
 	$TrackWhat = "count(*)";
