@@ -15,10 +15,18 @@ if(!isset($k))
 		<td>Might total</td>
 	</tr>
 <?php
+	$HiddenGuilds = "";
+	$query1 = "select name from guilds_hidden where EndStamp > ".time();
+	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
+	while( list( $name ) = mysql_fetch_row( $result1 ) )
+		$HiddenGuilds .= "####$name####";
+
 	$query1 = "select x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight from guild_hives where k=$k order by HiveCastles desc";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	while( list( $x,$y,$guild,$radius,$HiveCastles,$TotalCastles,$HiveMight,$TotalMight ) = mysql_fetch_row( $result1 ))
 	{
+		if( strpos($HiddenGuilds,$guild) != 0 )
+			continue;
 		?>
 		<tr>
 			<td><?php echo $x;?></td>

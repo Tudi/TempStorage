@@ -23,8 +23,9 @@ CREATE TABLE IF NOT EXISTS `access_logs` (
 -- Dumping structure for table lordsmobile.guilds_hidden
 CREATE TABLE IF NOT EXISTS `guilds_hidden` (
   `Name` varchar(50) DEFAULT NULL,
-  `StartStamp` int(11) DEFAULT NULL,
-  `EndStamp` int(11) DEFAULT NULL
+  `EndStamp` int(11) DEFAULT NULL,
+  `RequestCount` int(11) DEFAULT NULL,
+  `IPs` longtext
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Data exporting was unselected.
@@ -78,8 +79,10 @@ CREATE TABLE IF NOT EXISTS `players_archive` (
 -- Dumping structure for table lordsmobile.players_hidden
 CREATE TABLE IF NOT EXISTS `players_hidden` (
   `Name` varchar(50) DEFAULT NULL,
-  `StartStamp` int(11) DEFAULT NULL,
-  `EndStamp` int(11) DEFAULT NULL
+  `EndStamp` int(11) DEFAULT NULL,
+  `RequestCount` int(11) DEFAULT NULL,
+  `IPs` longtext,
+  KEY `Index 1` (`Name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Data exporting was unselected.

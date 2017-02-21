@@ -30,6 +30,20 @@ include("db_connection.php");
 		<td>First seen ever(age)</td>
 	</tr>
 <?php
+	// do not show hidden players
+	$HiddenNames = "";
+	$query1 = "select name from players_hidden where EndStamp > ".time();
+//echo "$query1<br>";
+	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
+	while( list( $name ) = mysql_fetch_row( $result1 ) )
+		$HiddenNames .= "####$name####";
+	$HiddenGuilds = "";
+	$query1 = "select name from guilds_hidden where EndStamp > ".time();
+//echo "$query1<br>";
+	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
+	while( list( $name ) = mysql_fetch_row( $result1 ) )
+		$HiddenGuilds .= "####$name####";
+		
 	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners from ";
 	if(isset($FilterN))
 		$query1 .= "players_archive ";
@@ -49,6 +63,11 @@ include("db_connection.php");
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners ) = mysql_fetch_row( $result1 ))
 	{
+		if( strpos($HiddenNames,$name) != 0 )
+			continue;
+		if( strpos($HiddenGuilds,$guild) != 0 )
+			continue;
+		
 		$LastUpdatedHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);
 		$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
 		$PlayerArchiveLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterN=".urlencode($name);
