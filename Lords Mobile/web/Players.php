@@ -12,21 +12,20 @@ include("db_connection.php");
 		<td>Might</td>
 		<td>Kills</td>
 		<td>Last Updated</td>
-		<td>Has prisoners</td>
-		<td>Last active at</td>
+		<td>Last seen with prisoners</td>
+		<td>Innactive</td>
+		<td>Guild rank</td>
+		<td>VIP Level</td>
+		<td>Player Level</td>
 		<td>Last Burned at</td>
 		<td>Last Burned at might</td>
 		<td>Aprox troops available</td>
 		<td>Nodes gathering from</td>
-		<td>Guild rank</td>
-		<td>Level</td>
-		<td>VIP Level</td>
 		<td>Castle lvl</td>
 		<td>Bounty</td>
 		<td>Distance to hive</td>
 		<td>Active at X hours</td>
 		<td>Active Y hours a day</td>
-		<td>Last seen with prisoners</td>
 		<td>First seen ever(age)</td>
 	</tr>
 <?php
@@ -37,6 +36,7 @@ include("db_connection.php");
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenNames .= "####$name####";
+
 	$HiddenGuilds = "";
 	$query1 = "select name from guilds_hidden where EndStamp > ".time();
 //echo "$query1<br>";
@@ -44,7 +44,7 @@ include("db_connection.php");
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 		
-	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners from ";
+	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners,VIP,GuildRank from ";
 	if(isset($FilterN))
 		$query1 .= "players_archive ";
 	else
@@ -61,7 +61,7 @@ include("db_connection.php");
 		$query1 .= " where 1=1 $Filter ";
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners ) = mysql_fetch_row( $result1 ))
+	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank ) = mysql_fetch_row( $result1 ))
 	{
 		if( strpos($HiddenNames,$name) != 0 )
 			continue;
@@ -69,9 +69,10 @@ include("db_connection.php");
 			continue;
 		
 		$LastUpdatedHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);
-		$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
+		//$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
 		$PlayerArchiveLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterN=".urlencode($name);
 		$GuildFilterLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterG=".urlencode($guild);
+		$HasPrisonersHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);		
 		?>
 		<tr>
 			<td><?php echo $k; ?></td>
@@ -82,8 +83,10 @@ include("db_connection.php");
 			<td><?php echo $might; ?></td>
 			<td><?php echo $kills; ?></td>
 			<td><?php echo $LastUpdatedHumanFormat; ?></td>
-			<td><?php echo $innactiveHumanFormat; ?></td>
-			<td><?php echo $HasPrisoners; ?></td>
+			<td><?php echo $HasPrisonersHumanFormat; ?></td>
+			<td><?php echo $innactive; ?></td>
+			<td><?php echo $VIP; ?></td>
+			<td><?php echo $GuildRank; ?></td>
 		</tr>
 		<?php
 	}

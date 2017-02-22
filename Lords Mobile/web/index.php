@@ -4,7 +4,7 @@
 	</tr>
 	<tr>
 		<td><iframe src="buttons.php" width="200px" height="500px"></iframe></td>
-		<td><iframe src="Welcome.php" width="1000px" height="500px" name="IFShowContent" id="IFShowContent"></iframe></td>
+		<td><iframe src="Welcome.php" width="1200px" height="700px" name="IFShowContent" id="IFShowContent"></iframe></td>
 	</tr>
 </table>
 <!-- <a href="paypal.me/Tudi69">Sponsor the upkeep of the site</a> -->

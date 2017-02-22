@@ -3,7 +3,7 @@ set_time_limit(60 * 30);
 	
 include("db_connection.php");
 
-$f = fopen("Players5.txt","rt");
+$f = fopen("Players_tt.txt","rt");
 if(!$f)
 	exit("Could not open file");
 
@@ -13,12 +13,19 @@ if(!$f)
 $k_ind = 0;
 $x_ind = 1;
 $y_ind = 2;
+
 $name_ind = 3;
 $guild_ind = 4;
+
 $might_ind = 5;
 $kills_ind = 6;
+
 $time_ind = 7;
-$HasPrisoners_ind = 7;
+$HasPrisoners_ind = 8;
+
+$VIP_ind = 9;
+$GuildRank_ind = 10;
+$PLevel_ind = 11;
 
 while (($line = fgets($f)) !== false) 
 	if(strlen($line)>5)
@@ -37,25 +44,30 @@ while (($line = fgets($f)) !== false)
 			$parts[$key] = str_replace("&bsol;",'\\',$parts[$key]);
 			$parts[$key] = str_replace("&gt;",'>',$parts[$key]);
 			$parts[$key] = str_replace("&lt;",'<',$parts[$key]);
+			$parts[$key] = str_replace("&skipit;",'',$parts[$key]);
 //			$parts[$key] = str_replace(" ",'',$parts[$key]);
 //			if( $val != $parts[$key] )				echo "$val == ".$parts[$key]."<br>\n";
 		}
 //		echo "<br>";
 		$LastUpdated = 0;
 		
+		$PLevel = mysql_real_escape_string($parts[$PLevel_ind]);
+		
 		//chek if this location exists in DB and if it's newer than what we know
-		$query1 = "select LastUpdated,kills from players where k ='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
+		$query1 = "select LastUpdated,kills,PLevel from players where k ='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-		list( $LastUpdated, $kills ) = mysql_fetch_row( $result1 );
+		list( $LastUpdated, $kills, $PLevel2 ) = mysql_fetch_row( $result1 );
 		//if the value in the DB is newer than the one we provided in the scan, it means it should be skipped and not updated. This can happen when multiple bots are scanning the same map and one goes faster than the other
 		// maybe we should insert this into archives ? Handle it later
 		if($LastUpdated > $parts[$time_ind] || $kills > $parts[$kills_ind] )
 			continue;
+		if($PLevel2>$PLevel)
+			$PLevel = $PLevel2;
 		
 		//check if this player already exists in another location. Maybe he teleported to a new location
-		$query1 = "select LastUpdated,kills from players where name like '".mysql_real_escape_string($parts[$name_ind])."' limit 0,1";
+		$query1 = "select LastUpdated,kills,PLevel from players where name like '".mysql_real_escape_string($parts[$name_ind])."' limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220012 <br> ".$query1." <br> ".mysql_error($dbi));
-		list( $NameExistsStamp,$kills ) = mysql_fetch_row( $result1 );
+		list( $NameExistsStamp,$kills,$PLevel2 ) = mysql_fetch_row( $result1 );
 		if($NameExistsStamp > $parts[$time_ind] && $kills <= $parts[$kills_ind] )
 			continue;	//the name in the DB is newer than the one we loaded from the file. We ignore the file
 		else if( $NameExistsStamp != 0 )
@@ -69,8 +81,10 @@ while (($line = fgets($f)) !== false)
 			//make sure we create a new entry for this player 
 			$LastUpdated = 0;
 		}
+		if($PLevel2>$PLevel)
+			$PLevel = $PLevel2;
 		
-		if( $LastUpdated != 0)
+		if( $LastUpdated != 0 || $kills != 0 )
 		{
 			//move old to archive
 			$query1 = "insert into players_archive ( select * from players where k='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."')";
@@ -86,7 +100,11 @@ while (($line = fgets($f)) !== false)
 			$query1 .= ", kills='".mysql_real_escape_string($parts[$kills_ind])."'";
 			$query1 .= ", LastUpdated='".mysql_real_escape_string($parts[$time_ind])."'";
 			$query1 .= ", HasPrisoners='".mysql_real_escape_string($parts[$HasPrisoners_ind])."'";
-			$query1 .= "where k ='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
+			$query1 .= ", VIP='".mysql_real_escape_string($parts[$VIP_ind])."'";
+			$query1 .= ", GuildRank='".mysql_real_escape_string($parts[$GuildRank_ind])."'";
+			if( $PLevel > 0 )
+				$query1 .= ", PLevel='".mysql_real_escape_string($PLevel)."'";
+			$query1 .= "where k ='".$parts[$k_ind]."' and x='".$parts[$x_ind]."' and y='".$parts[$y_ind]."'";
 			//echo "$query1<br>";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022003 <br>".$query1." <br> ".mysql_error($dbi));
 		}
@@ -94,7 +112,7 @@ while (($line = fgets($f)) !== false)
 		else
 		{			
 			//insert new
-			$query1 = "replace into players ( k,x,y,name,guild,kills,might,lastupdated,HasPrisoners)values(";
+			$query1 = "insert into players ( k,x,y,name,guild,kills,might,lastupdated,HasPrisoners,VIP,GuildRank,PLevel)values(";
 			$query1 .= "'".mysql_real_escape_string($parts[$k_ind])."'";
 			$query1 .= ",'".mysql_real_escape_string($parts[$x_ind])."'";
 			$query1 .= ",'".mysql_real_escape_string($parts[$y_ind])."'";
@@ -104,11 +122,26 @@ while (($line = fgets($f)) !== false)
 			$query1 .= ",'".mysql_real_escape_string($parts[$kills_ind])."'";
 			$query1 .= ",'".mysql_real_escape_string($parts[$time_ind])."'";
 			$query1 .= ",'".mysql_real_escape_string($parts[$HasPrisoners_ind])."'";
+			$query1 .= ",'".mysql_real_escape_string($parts[$VIP_ind])."'";
+			$query1 .= ",'".mysql_real_escape_string($parts[$GuildRank_ind])."'";
 			$query1 .= ")";
 
 //			echo "$query1<br>";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 		}
+		
+		//delete old ones in the neighbourhood
+		$xmin = $parts[$x_ind] - 10;
+		$xmax = $parts[$x_ind] + 10;
+		$ymin = $parts[$y_ind] - 10;
+		$ymax = $parts[$y_ind] + 10;
+		$olderthan = $parts[$time_ind] - 24 * 60 * 60;
+		//move to archive 
+		$query1 = "insert into players_archive ( select * from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan)";
+		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+		//delete from actual
+		$query1 = "delete from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
+		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 	}
 /**/	
 //update innactivity column

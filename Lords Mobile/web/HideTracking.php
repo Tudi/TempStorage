@@ -49,3 +49,28 @@ else
 	echo "$Type $Name will not be displayed for $AntiScoutDuration minutes";
 }
 ?>
+<table>
+	<tr>
+		<td>Name</td>
+		<td>Expires</td>
+		<td>Remaining H</td>
+	</tr>
+	<?php
+	echo "${Type}s hidden from tracking :<br>";
+	$query1 = "select name,EndStamp from $table where EndStamp>".time()."";
+	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
+	while(list( $name,$EndStamp ) = mysql_fetch_row( $result1 ))
+	{
+		$EndStampHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $EndStamp);
+		$HoursRemaining = ($EndStamp-time())/60/60;
+		$HoursRemaining = (int)($HoursRemaining*100)/100;
+	?>
+		<tr>
+			<td><?php echo $name;?></td>
+			<td><?php echo $EndStampHumanFormat;?></td>
+			<td><?php echo $HoursRemaining;?></td>
+		</tr>
+	<?php
+	}
+	?>
+</table>

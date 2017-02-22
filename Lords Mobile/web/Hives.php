@@ -13,6 +13,8 @@ if(!isset($k))
 		<td>Might at hive</td>
 		<td>Player count total</td>
 		<td>Might total</td>
+		<td>Max PLevel</td>
+		<td>Avg PLevel</td>
 	</tr>
 <?php
 	$HiddenGuilds = "";
