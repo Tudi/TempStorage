@@ -3,7 +3,9 @@ set_time_limit(60 * 30);
 	
 include("db_connection.php");
 
-$f = fopen("Players_tt.txt","rt");
+$SkipMapgen=0;
+
+$f = fopen("Players12.txt","rt");
 if(!$f)
 	exit("Could not open file");
 
@@ -102,6 +104,7 @@ while (($line = fgets($f)) !== false)
 			$query1 .= ", HasPrisoners='".mysql_real_escape_string($parts[$HasPrisoners_ind])."'";
 			$query1 .= ", VIP='".mysql_real_escape_string($parts[$VIP_ind])."'";
 			$query1 .= ", GuildRank='".mysql_real_escape_string($parts[$GuildRank_ind])."'";
+			//only save advanced player profile info if it was scanned
 			if( $PLevel > 0 )
 				$query1 .= ", PLevel='".mysql_real_escape_string($PLevel)."'";
 			$query1 .= "where k ='".$parts[$k_ind]."' and x='".$parts[$x_ind]."' and y='".$parts[$y_ind]."'";
@@ -124,6 +127,7 @@ while (($line = fgets($f)) !== false)
 			$query1 .= ",'".mysql_real_escape_string($parts[$HasPrisoners_ind])."'";
 			$query1 .= ",'".mysql_real_escape_string($parts[$VIP_ind])."'";
 			$query1 .= ",'".mysql_real_escape_string($parts[$GuildRank_ind])."'";
+			$query1 .= ",'".mysql_real_escape_string($PLevel)."'";
 			$query1 .= ")";
 
 //			echo "$query1<br>";
@@ -144,6 +148,10 @@ while (($line = fgets($f)) !== false)
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 	}
 /**/	
+
+if($SkipMapgen)
+	exit("Skippedmapgen as requested");
+
 //update innactivity column
 $query1 = "update players set innactive=0";
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220027 <br>".$query1." <br> ".mysql_error($dbi));

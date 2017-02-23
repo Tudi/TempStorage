@@ -63,16 +63,16 @@ include("db_connection.php");
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank ) = mysql_fetch_row( $result1 ))
 	{
-		if( strpos($HiddenNames,$name) != 0 )
+		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;
-		if( strpos($HiddenGuilds,$guild) != 0 )
+		if( strpos($HiddenGuilds,"#".$guild."#") != 0 )
 			continue;
 		
 		$LastUpdatedHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);
 		//$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
 		$PlayerArchiveLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterN=".urlencode($name);
 		$GuildFilterLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterG=".urlencode($guild);
-		$HasPrisonersHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);		
+		$HasPrisonersHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $HasPrisoners);		
 		?>
 		<tr>
 			<td><?php echo $k; ?></td>
