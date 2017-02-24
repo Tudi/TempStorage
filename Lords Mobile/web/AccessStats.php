@@ -33,6 +33,7 @@ Last X rows<br>
 		<td>URIs</td>
 		<td>IPs</td>
 		<td>Time</td>
+		<td>Time diff</td>
 	</tr>
 	<?php
 		$LastRowCount = 50;
@@ -41,12 +42,14 @@ Last X rows<br>
 		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 		while( list( $URI,$IPs,$Stamp ) = mysql_fetch_row( $result1 ) )
 		{
+			$diff = ( time() - $Stamp ) / 60;
 			$AtHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $Stamp);
 			?>
 	<tr>
 		<td><?php echo $URI;?></td>
 		<td><?php echo $IPs;?></td>
 		<td><?php echo $AtHumanFormat;?></td>
+		<td><?php echo $diff;?></td>
 	</tr>
 			<?php
 		}

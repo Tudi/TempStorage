@@ -43,6 +43,7 @@ $TurfsDestroyed_ind = 20;
 
 $LastInd = $TurfsDestroyed_ind;
 
+$FiveMinutes = 5 * 60;
 while (($line = fgets($f)) !== false) 
 	if(strlen($line)>5)
 	{
@@ -90,7 +91,7 @@ while (($line = fgets($f)) !== false)
 		list( $LastUpdated2, $kills, $PLevel2,$VIP2,$GuildRank2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
 
 		//if the value in the DB is newer than the one we provided in the scan, it means it should be skipped and not updated. This can happen when multiple bots are scanning the same map and one goes faster than the other
-		if( $LastUpdated2 > $LastUpdated )
+		if( $LastUpdated2 + $FiveMinutes>= $LastUpdated )
 			continue;
 		
 		if($LastUpdated2>0)
@@ -129,7 +130,7 @@ while (($line = fgets($f)) !== false)
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220012 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $NameExistsStamp,$kills,$PLevel2,$VIP2,$GuildRank2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
 		// there is a chance that conflict exists between name and location of a player. In time the inexisting player should get automatically removed due to no updates
-		if( $NameExistsStamp > $parts[$time_ind] )
+		if( $NameExistsStamp + $FiveMinutes >= $LastUpdated )
 			continue;	//the name in the DB is newer than the one we loaded from the file. We ignore the file
 		
 		if( $NameExistsStamp > 0 )
