@@ -32,18 +32,21 @@ Last X rows<br>
 	<tr>
 		<td>URIs</td>
 		<td>IPs</td>
+		<td>Time</td>
 	</tr>
 	<?php
 		$LastRowCount = 50;
 		$LastRows = ($rowcount-$LastRowCount);
-		$query1 = "select URI,IP from access_logs limit $LastRows,$LastRowCount";
+		$query1 = "select URI,IP,Stamp from access_logs limit $LastRows,$LastRowCount";
 		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-		while( list( $URI,$IPs ) = mysql_fetch_row( $result1 ) )
+		while( list( $URI,$IPs,$Stamp ) = mysql_fetch_row( $result1 ) )
 		{
+			$AtHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $Stamp);
 			?>
 	<tr>
 		<td><?php echo $URI;?></td>
 		<td><?php echo $IPs;?></td>
+		<td><?php echo $AtHumanFormat;?></td>
 	</tr>
 			<?php
 		}

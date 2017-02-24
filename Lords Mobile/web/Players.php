@@ -1,8 +1,10 @@
 <?php
 include("db_connection.php");
 ?>
+<link href="css/table.css" rel="stylesheet">
+
 <br>Show list of players and the gathered data about them. Some players might not be shown as they are using antiscout.<br>
-<table border=1>
+<table class="TFtable">
 	<tr>
 		<td>k</td>
 		<td>x</td>
@@ -44,7 +46,7 @@ include("db_connection.php");
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 		
-	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners,VIP,GuildRank from ";
+	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners,VIP,GuildRank,PLevel from ";
 	if(isset($FilterN))
 		$query1 .= "players_archive ";
 	else
@@ -61,7 +63,7 @@ include("db_connection.php");
 		$query1 .= " where 1=1 $Filter ";
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank ) = mysql_fetch_row( $result1 ))
+	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank,$Plevel ) = mysql_fetch_row( $result1 ))
 	{
 		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;
@@ -85,8 +87,9 @@ include("db_connection.php");
 			<td><?php echo $LastUpdatedHumanFormat; ?></td>
 			<td><?php echo $HasPrisonersHumanFormat; ?></td>
 			<td><?php echo $innactive; ?></td>
-			<td><?php echo $VIP; ?></td>
 			<td><?php echo $GuildRank; ?></td>
+			<td><?php echo $VIP; ?></td>
+			<td><?php echo $Plevel; ?></td>
 		</tr>
 		<?php
 	}

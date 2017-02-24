@@ -103,6 +103,28 @@ ALTER TABLE `guild_hives`
 	ADD COLUMN `MaxPLevel` INT(11) NULL DEFAULT NULL AFTER `TotalMight`,
 	ADD COLUMN `AvgPLevel` INT(11) NULL DEFAULT NULL AFTER `MaxPLevel`;
 	
+ALTER TABLE `players`
+	ADD COLUMN `SuccessfulAttacks` INT(11) NULL DEFAULT NULL AFTER `PLevel`,
+	ADD COLUMN `FailedAttacks` INT(11) NULL DEFAULT NULL AFTER `SuccessfulAttacks`,
+	ADD COLUMN `SuccessfulDefenses` INT(11) NULL DEFAULT NULL AFTER `FailedAttacks`,
+	ADD COLUMN `FailedDefenses` INT(11) NULL DEFAULT NULL AFTER `SuccessfulDefenses`,
+	ADD COLUMN `TroopsKilled` INT(11) NULL DEFAULT NULL AFTER `FailedDefenses`,
+	ADD COLUMN `TroopsLost` INT(11) NULL DEFAULT NULL AFTER `TroopsKilled`,
+	ADD COLUMN `TroopsHealed` INT(11) NULL DEFAULT NULL AFTER `TroopsLost`,
+	ADD COLUMN `TroopsWounded` INT(11) NULL DEFAULT NULL AFTER `TroopsHealed`,
+	ADD COLUMN `TurfsDestroyed` INT(11) NULL DEFAULT NULL AFTER `TroopsWounded`;
+
+ALTER TABLE `players_archive`
+	ADD COLUMN `SuccessfulAttacks` INT(11) NULL DEFAULT NULL AFTER `PLevel`,
+	ADD COLUMN `FailedAttacks` INT(11) NULL DEFAULT NULL AFTER `SuccessfulAttacks`,
+	ADD COLUMN `SuccessfulDefenses` INT(11) NULL DEFAULT NULL AFTER `FailedAttacks`,
+	ADD COLUMN `FailedDefenses` INT(11) NULL DEFAULT NULL AFTER `SuccessfulDefenses`,
+	ADD COLUMN `TroopsKilled` INT(11) NULL DEFAULT NULL AFTER `FailedDefenses`,
+	ADD COLUMN `TroopsLost` INT(11) NULL DEFAULT NULL AFTER `TroopsKilled`,
+	ADD COLUMN `TroopsHealed` INT(11) NULL DEFAULT NULL AFTER `TroopsLost`,
+	ADD COLUMN `TroopsWounded` INT(11) NULL DEFAULT NULL AFTER `TroopsHealed`,
+	ADD COLUMN `TurfsDestroyed` INT(11) NULL DEFAULT NULL AFTER `TroopsWounded`;	
+	
 -- Data exporting was unselected.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

@@ -3,7 +3,8 @@ include("db_connection.php");
 if(!isset($k))
 	$k = 67;
 ?>
-<table border=1>
+<link href="css/table.css" rel="stylesheet">
+<table class="TFtable">
 	<tr>
 		<td>x</td>
 		<td>y</td>

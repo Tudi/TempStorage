@@ -1,10 +1,15 @@
-<table border=1>
+<link href="css/metro.css" rel="stylesheet">
+<link href="css/metro-icons.css" rel="stylesheet">
+<link href="css/metro-responsive.css" rel="stylesheet">
+<link href="css/metro-schemes.css" rel="stylesheet">
+
+<table border=0>
 	<tr>
 		<td colspan=2>my avesome banner with cool 3d stereoscopic hidden information about the illuminati</td>
 	</tr>
 	<tr>
-		<td><iframe src="buttons.php" width="200px" height="500px"></iframe></td>
-		<td><iframe src="Welcome.php" width="1200px" height="700px" name="IFShowContent" id="IFShowContent"></iframe></td>
+		<td><iframe src="buttons.php" width="200px" height="500px" frameBorder="0"></iframe></td>
+		<td><iframe src="Welcome.php" width="1200px" height="700px" name="IFShowContent" id="IFShowContent" frameBorder="0"></iframe></td>
 	</tr>
 </table>
 <!-- <a href="paypal.me/Tudi69">Sponsor the upkeep of the site</a> -->
