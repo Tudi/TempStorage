@@ -42,7 +42,7 @@ Last X rows<br>
 		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 		while( list( $URI,$IPs,$Stamp ) = mysql_fetch_row( $result1 ) )
 		{
-			$diff = ( time() - $Stamp ) / 60;
+			$diff = GetTimeDiffShortFormat($Stamp);
 			$AtHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $Stamp);
 			?>
 	<tr>

@@ -26,4 +26,5 @@ if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
 $query1 = "insert into access_logs (script,URI,IP,stamp)values('".mysql_real_escape_string($_SERVER['SCRIPT_FILENAME'])."','".mysql_real_escape_string($_SERVER['REQUEST_URI'])."','$ip','".mysql_real_escape_string($_SERVER['REQUEST_TIME'])."')";		
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220041630 <br>".$query1." <br> ".mysql_error($dbi));
 
+include("functions.php");
 ?>

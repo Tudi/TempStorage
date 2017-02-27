@@ -37,9 +37,9 @@ if(!isset($k))
 			<td><?php echo $guild;?></td>
 			<td><?php echo $radius;?></td>
 			<td><?php echo $HiveCastles;?></td>
-			<td><?php echo $HiveMight;?></td>
+			<td><?php echo GetValShortFormat($HiveMight);?></td>
 			<td><?php echo $TotalCastles;?></td>
-			<td><?php echo $TotalMight;?></td>
+			<td><?php echo GetValShortFormat($TotalMight);?></td>
 			<td><?php echo $MaxPLevel;?></td>
 			<td><?php echo $AvgPLevel;?></td>
 		</tr>

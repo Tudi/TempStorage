@@ -33,11 +33,15 @@ if($TrackWhat == "guildless_innactive")
 ?>
 <table>
 	<tr>
+		<td></td>
 <?php
 	for( $x=0;$x<500;$x += $XStep)
 	{
+		$from = ($x);
+		if($from<0)
+			$from=0;
 		?>
-		<td><?php echo ($x-$XStep)."-".($x+$XStep); ?></td>
+		<td><?php echo $from."-".($x+$XStep); ?></td>
 		<?php
 	}
 	?>
@@ -51,7 +55,7 @@ if($TrackWhat == "guildless_innactive")
 		{
 			//fetch players in this cell
 			$MightSum[$x][$y] = 0;
-			$query1 = "select $SelectWhat from players where k=$k and x>=".($x-$XStep)." and x<=".($x+$XStep)." and y>=".($y-$YStep)." and y<=".($y+$YStep)."$ExtraFilter";		
+			$query1 = "select $SelectWhat from players where k=$k and x>=".($x)." and x<=".($x+$XStep)." and y>=".($y)." and y<=".($y+$YStep)."$ExtraFilter";		
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 			while( list( $might ) = mysql_fetch_row( $result1 ))
 				$MightSum[$x][$y] += $might;
@@ -61,16 +65,19 @@ if($TrackWhat == "guildless_innactive")
 
 	for( $y=0;$y<1000;$y+=$YStep)
 	{
+		$from = ($y);
+		if($from<0)
+			$from=0;
 		?>
 		<tr>
-			<td><?php echo ($y-$YStep)."-".($y+$YStep); ?></td>
+			<td><?php echo $from."-".($y+$YStep); ?></td>
 		<?php
 		for( $x=0;$x<500;$x += $XStep)
 		{
 			//fetch players in this cell
 			$ColorPCT = 255 - (int)( 255 * $MightSum[$x][$y] / $MaxMight );
 			?>
-			<td style="background-color:rgb(<?php echo $ColorPCT; ?>,0,0)"><?php echo $MightSum[$x][$y]; ?></td>
+			<td style="background-color:rgb(<?php echo $ColorPCT; ?>,0,0)"><?php echo GetValShortFormat($MightSum[$x][$y]); ?></td>
 			<?php
 		}
 		?>

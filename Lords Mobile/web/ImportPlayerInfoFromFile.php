@@ -5,7 +5,7 @@ include("db_connection.php");
 
 $SkipMapgen=0;
 
-$f = fopen("Players14.txt","rt");
+$f = fopen("Players19.txt","rt");
 if(!$f)
 	exit("Could not open file");
 
@@ -51,7 +51,7 @@ while (($line = fgets($f)) !== false)
 		$parts = explode(" \t ",$line);
 		
 		//to avoid warnings about vector being too small
-		for($i=count($parts);$i<$LastInd;$i++)
+		for($i=count($parts);$i<=$LastInd;$i++)
 			$parts[$i]=0;
 		
 		//remove HTML chars from fonts before saving to DB
@@ -86,9 +86,9 @@ while (($line = fgets($f)) !== false)
 		$TurfsDestroyed = mysql_real_escape_string($parts[$TurfsDestroyed_ind]);
 		
 		//chek if this location exists in DB and if it's newer than what we know
-		$query1 = "select LastUpdated,kills,PLevel,VIP,GuildRank,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where k ='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
+		$query1 = "select LastUpdated,kills,PLevel,VIP,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where k ='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-		list( $LastUpdated2, $kills, $PLevel2,$VIP2,$GuildRank2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
+		list( $LastUpdated2, $kills, $PLevel2,$VIP2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
 
 		//if the value in the DB is newer than the one we provided in the scan, it means it should be skipped and not updated. This can happen when multiple bots are scanning the same map and one goes faster than the other
 		if( $LastUpdated2 + $FiveMinutes>= $LastUpdated )
@@ -104,8 +104,6 @@ while (($line = fgets($f)) !== false)
 			$PLevel = $PLevel2;
 		if($VIP2>$VIP)
 			$VIP = $VIP2;
-		if($GuildRank==0)
-			$GuildRank = $GuildRank2;
 		if($SuccessfulAttacks==0)
 			$SuccessfulAttacks = $SuccessfulAttacks2;
 		if($FailedAttacks==0)
@@ -126,9 +124,10 @@ while (($line = fgets($f)) !== false)
 			$TurfsDestroyed = $TurfsDestroyed2;
 		
 		//check if this player already exists in another location. Maybe he teleported to a new location
-		$query1 = "select LastUpdated,kills,PLevel,VIP,GuildRank,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where name like '".mysql_real_escape_string($parts[$name_ind])."' and k ='".$parts[$k_ind]."' and not(x='".$parts[1]."' and y='".$parts[2]."') limit 0,1";
+		$namename = substr($parts[$name_ind],strpos($parts[$name_ind],']')+1);
+		$query1 = "select LastUpdated,kills,PLevel,VIP,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where name like '".mysql_real_escape_string($namename)."' and k ='".$parts[$k_ind]."' and not(x='".$parts[1]."' and y='".$parts[2]."') limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220012 <br> ".$query1." <br> ".mysql_error($dbi));
-		list( $NameExistsStamp,$kills,$PLevel2,$VIP2,$GuildRank2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
+		list( $NameExistsStamp,$kills,$PLevel2,$VIP2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
 		// there is a chance that conflict exists between name and location of a player. In time the inexisting player should get automatically removed due to no updates
 		if( $NameExistsStamp + $FiveMinutes >= $LastUpdated )
 			continue;	//the name in the DB is newer than the one we loaded from the file. We ignore the file
@@ -143,8 +142,6 @@ while (($line = fgets($f)) !== false)
 			$PLevel = $PLevel2;
 		if($VIP2>$VIP)
 			$VIP = $VIP2;
-		if($GuildRank==0)
-			$GuildRank = $GuildRank2;
 		if($SuccessfulAttacks==0)
 			$SuccessfulAttacks = $SuccessfulAttacks2;
 		if($FailedAttacks==0)
@@ -190,8 +187,8 @@ while (($line = fgets($f)) !== false)
 		$query1 .= ",'".mysql_real_escape_string($parts[$y_ind])."'";
 		$query1 .= ",'".mysql_real_escape_string($parts[$name_ind])."'";
 		$query1 .= ",'".mysql_real_escape_string($parts[$guild_ind])."'";
-		$query1 .= ",'".mysql_real_escape_string($parts[$might_ind])."'";
 		$query1 .= ",'".mysql_real_escape_string($parts[$kills_ind])."'";
+		$query1 .= ",'".mysql_real_escape_string($parts[$might_ind])."'";
 		$query1 .= ",'".mysql_real_escape_string($parts[$time_ind])."'";
 		$query1 .= ",'".mysql_real_escape_string($parts[$HasPrisoners_ind])."'";
 		$query1 .= ",'".mysql_real_escape_string($VIP)."'";
@@ -217,6 +214,7 @@ while (($line = fgets($f)) !== false)
 		$ymin = $parts[$y_ind] - 10;
 		$ymax = $parts[$y_ind] + 10;
 		$olderthan = $parts[$time_ind] - 24 * 60 * 60;
+		$LastTime = $parts[$time_ind];
 		//move to archive 
 		$query1 = "insert into players_archive ( select * from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan)";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
@@ -225,6 +223,17 @@ while (($line = fgets($f)) !== false)
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 	}
 /**/	
+//delete all from players that is older than 3 days old without update
+if($LastTime>0)
+{
+	$olderthan = $LastTime - 3 * 24 * 60 * 60;
+	//move to archive 
+	$query1 = "insert into players_archive ( select * from players where LastUpdated < $olderthan)";
+	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+	//delete from actual
+	$query1 = "delete from players where LastUpdated < $olderthan";
+	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
+}
 
 if($SkipMapgen)
 	exit("Skipped mapgen as requested");
