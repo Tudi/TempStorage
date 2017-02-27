@@ -5,10 +5,7 @@
 
 <table border=0>
 	<tr>
-		<td colspan=2>my avesome banner with cool 3d stereoscopic hidden information about the illuminati</td>
-	</tr>
-	<tr>
-		<td><iframe src="buttons.php" width="200px" height="500px" frameBorder="0"></iframe></td>
+		<td><iframe src="buttons.php" width="182px" height="685px" frameBorder="0"></iframe></td>
 		<td><iframe src="Hives.php" width="1200px" height="700px" name="IFShowContent" id="IFShowContent" frameBorder="0"></iframe></td>
 	</tr>
 </table>
