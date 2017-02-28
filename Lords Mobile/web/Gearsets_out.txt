@@ -1,6 +1,6 @@
 Other army boosters :
 Jewels : +480%
-Good scouting + using counter army composition : +400%
+Good scouting + using counter army composition : +1600%
 research per troop type : 135% Atk + 135% def + 135% Hp = +405% 
 research per army : 135% Atk + 135% def + 135% Hp = +405% 
 talents troop specific : 5 + 7 + 13 + 13 + 10 + 53 + 87 + 87 = +275%
@@ -13,7 +13,7 @@ hero imprisoned : 30% atk
 Hero composition : 
 for cavalry : death knight +  child of light + icarus + rose + sage = +380%
 for ranged : alice + tracker + black crow + rose + goblin = 300%
-Endgame army boost = 3000% ( in theory 1 trop beats 30 enemy troops ... )
+Endgame best case army boost = 4200% ( in theory 1 trop beats 42 enemy troops ... )
 =====================================================================================================================================================
 *Army composition : infantry + cavalry + ranged
 Looking for item combinations to maximize stats : chp cdef catk ratk ihp idef iatk

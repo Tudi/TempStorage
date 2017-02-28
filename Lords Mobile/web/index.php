@@ -6,7 +6,7 @@
 <table border=0>
 	<tr>
 		<td><iframe src="buttons.php" width="182px" height="685px" frameBorder="0"></iframe></td>
-		<td><iframe src="Hives.php" width="1200px" height="700px" name="IFShowContent" id="IFShowContent" frameBorder="0"></iframe></td>
+		<td><iframe src="welcome.php" width="1200px" height="700px" name="IFShowContent" id="IFShowContent" frameBorder="0"></iframe></td>
 	</tr>
 </table>
 <!-- <a href="paypal.me/Tudi69">Sponsor the upkeep of the site</a> -->

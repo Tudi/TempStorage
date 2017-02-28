@@ -10,16 +10,18 @@ $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." 
 //get the list of possible maps we have
 $query1 = "select distinct(k) from players";		
 $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
+$itr=0;
 while( list( $k ) = mysql_fetch_row( $result1 ))
-	$KList[count($KList)] = $k;
+	$KList[$itr++] = $k;
 
 //generate hives for each server we parsed
 foreach( $KList as $key => $k)
 {
 	$query1 = "select distinct(guild) from players where k=$k";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
+	$itr=0;
 	while( list( $guild ) = mysql_fetch_row( $result1 ))
-		$GuildList[count($GuildList)] = $guild;
+		$GuildList[$itr++] = $guild;
 	
 	//get the hive for each guild
 	foreach( $GuildList as $key => $guild)

@@ -41,7 +41,7 @@ include("db_connection.php");
 
 	$HiddenGuilds = "";
 	$Filter = "";
-	$Order = "";
+	$Order = " lastupdated desc ";
 	$query1 = "select name from guilds_hidden where EndStamp > ".time();
 //echo "$query1<br>";
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
@@ -61,7 +61,6 @@ include("db_connection.php");
 		//remove "guild" from player name
 		$namename = substr($FilterN,strpos($FilterN,']')+1);
 		$Filter .= " and name like '%".mysql_real_escape_string($namename)."' ";
-		$Order .= " lastupdated desc ";
 	}
 	if(isset($FilterG))
 		$Filter .= " and guild like '".mysql_real_escape_string($FilterG)."' ";

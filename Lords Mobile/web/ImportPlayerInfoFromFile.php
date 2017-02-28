@@ -5,7 +5,7 @@ include("db_connection.php");
 
 $SkipMapgen=0;
 
-$f = fopen("Players19.txt","rt");
+$f = fopen("Players201.txt","rt");
 if(!$f)
 	exit("Could not open file");
 
