@@ -19,6 +19,7 @@ include("db_connection.php");
 		<td>Guild rank</td>
 		<td>VIP Level</td>
 		<td>Player Level</td>
+		<td>Castle Level</td>
 <!--		<td>Last Burned at</td>
 		<td>Last Burned at might</td>
 		<td>Aprox troops available</td>
@@ -48,7 +49,7 @@ include("db_connection.php");
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 		
-	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners,VIP,GuildRank,PLevel from ";
+	$query1 = "select k,x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners,VIP,GuildRank,PLevel,castlelevel from ";
 	if(isset($FilterN))
 		$query1 .= "players_archive ";
 	else
@@ -71,7 +72,7 @@ include("db_connection.php");
 		$query1 .= " order by $Order ";
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank,$Plevel ) = mysql_fetch_row( $result1 ))
+	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank,$Plevel,$castlelevel ) = mysql_fetch_row( $result1 ))
 	{
 		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;
@@ -85,6 +86,10 @@ include("db_connection.php");
 		$HasPrisonersHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $HasPrisoners);	
 		$LastUpdatedAsDiff = GetTimeDiffShortFormat($lastupdated);
 		$HasPrisonersAsDiff = GetTimeDiffShortFormat($HasPrisoners);
+		if($HasPrisonersAsDiff=="48.4 y")
+			$HasPrisonersAsDiff="";
+		if($guild=="")
+			$guild="&nbsp;";
 		?>
 		<tr>
 			<td><?php echo $k; ?></td>
@@ -100,6 +105,7 @@ include("db_connection.php");
 			<td><?php echo $GuildRank; ?></td>
 			<td><?php echo $VIP; ?></td>
 			<td><?php echo $Plevel; ?></td>
+			<td><?php echo $castlelevel; ?></td>
 		</tr>
 		<?php
 	}

@@ -28,7 +28,7 @@ foreach( $KList as $key => $k)
 	{
 		//get all players for this guild
 		$tguild = str_replace("\\","%",$guild); //random bugs ?
-		$query1 = "select x,y,might,PLevel from players where k=$k and guild like '".mysql_real_escape_string($tguild)."'";		
+		$query1 = "select x,y,might,PLevel,CastleLevel from players where k=$k and guild like '".mysql_real_escape_string($tguild)."'";		
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 		unset($Guildx);
 		unset($Guildy);
@@ -38,12 +38,13 @@ foreach( $KList as $key => $k)
 		$yavg = 0;
 		$playercount = 0;
 		$TotalMight = 0;
-		while( list( $x,$y,$might,$PLevel ) = mysql_fetch_row( $result1 ))
+		while( list( $x,$y,$might,$PLevel,$CastleLevel ) = mysql_fetch_row( $result1 ))
 		{
 			$Guildx[$playercount] = $x;
 			$Guildy[$playercount] = $y;
 			$Guildmight[$playercount] = $might;
 			$GuildPLevel[$playercount] = $PLevel;
+			$GuildCastleLevel[$playercount] = $CastleLevel;
 			$TotalMight += $might;
 			$xavg += $x;
 			$yavg += $y;
@@ -70,6 +71,8 @@ foreach( $KList as $key => $k)
 			$MaxPLevel = 0;
 			$PLevelSum = 0;
 			$PLevelCount = 0;
+			$CLevelSum = 0;
+			$CLevelCount = 0;
 			for($i=0;$i<count($Guildx);$i++)
 			{
 				$x = $Guildx[ $i ];
@@ -92,6 +95,11 @@ foreach( $KList as $key => $k)
 						$PLevelSum += $GuildPLevel[$i];
 						$PLevelCount++;
 					}
+					if( $GuildCastleLevel[$i] > 0 )
+					{
+						$CLevelSum += $GuildCastleLevel[$i];
+						$CLevelCount++;
+					}
 				}
 			}
 			if($cordcount>0)
@@ -112,12 +120,16 @@ foreach( $KList as $key => $k)
 			$PLevelAvg = (int)($PLevelSum / $PLevelCount);
 		else
 			$PLevelAvg = 0;
+		if( $CLevelCount > 0 )
+			$CLevelAvg = (int)($CLevelSum / $CLevelCount);
+		else
+			$CLevelAvg = 0;
 		$MaxDist = (int)sqrt( $DistSumPrev );
 		$xavg_prev = (int)($xavg_prev);
 		$yavg_prev = (int)($yavg_prev);
 //echo "Guild $guild central location is at $xavg_prev $yavg_prev with radius $MaxDist and castles $cordcount. Total castle count $playercount<br>";
 //exit();
-		$query1 = "insert into guild_hives (k,x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,MaxPLevel,AvgPLevel)values($k,$xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$MaxPLevel,$PLevelAvg)";		
+		$query1 = "insert into guild_hives (k,x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,MaxPLevel,AvgPLevel,AvgCastleLevel)values($k,$xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$MaxPLevel,$PLevelAvg,$CLevelAvg)";		
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	}	
 }

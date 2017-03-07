@@ -1,11 +1,11 @@
 <?php
-set_time_limit(60 * 30);
+set_time_limit(2 * 60 * 60);
 	
 include("db_connection.php");
 
 $SkipMapgen=0;
 
-$f = fopen("Players201.txt","rt");
+$f = fopen("Players28.txt","rt");
 if(!$f)
 	exit("Could not open file");
 
@@ -66,6 +66,7 @@ while (($line = fgets($f)) !== false)
 			$parts[$key] = str_replace("&gt;",'>',$parts[$key]);
 			$parts[$key] = str_replace("&lt;",'<',$parts[$key]);
 			$parts[$key] = str_replace("&skipit;",'',$parts[$key]);
+			$parts[$key] = str_replace("&quest;",'?',$parts[$key]);
 //			$parts[$key] = str_replace(" ",'',$parts[$key]);
 //			if( $val != $parts[$key] )				echo "$val == ".$parts[$key]."<br>\n";
 		}
@@ -86,7 +87,7 @@ while (($line = fgets($f)) !== false)
 		$TurfsDestroyed = mysql_real_escape_string($parts[$TurfsDestroyed_ind]);
 		
 		//chek if this location exists in DB and if it's newer than what we know
-		$query1 = "select LastUpdated,kills,PLevel,VIP,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where k ='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
+		$query1 = "select LastUpdated,kills,PLevel,VIP,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where k ='".$parts[$k_ind]."' and x='".$parts[$x_ind]."' and y='".$parts[$y_ind]."' limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $LastUpdated2, $kills, $PLevel2,$VIP2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
 
@@ -125,7 +126,7 @@ while (($line = fgets($f)) !== false)
 		
 		//check if this player already exists in another location. Maybe he teleported to a new location
 		$namename = substr($parts[$name_ind],strpos($parts[$name_ind],']')+1);
-		$query1 = "select LastUpdated,kills,PLevel,VIP,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where name like '".mysql_real_escape_string($namename)."' and k ='".$parts[$k_ind]."' and not(x='".$parts[1]."' and y='".$parts[2]."') limit 0,1";
+		$query1 = "select LastUpdated,kills,PLevel,VIP,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed from players where name like '".mysql_real_escape_string($namename)."' and k ='".$parts[$k_ind]."' and not(x='".$parts[$x_ind]."' and y='".$parts[$y_ind]."') limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220012 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $NameExistsStamp,$kills,$PLevel2,$VIP2,$SuccessfulAttacks2,$FailedAttacks2,$SuccessfulDefenses2,$FailedDefenses2,$TroopsKilled2,$TroopsLost2,$TroopsHealed2,$TroopsWounded2,$TurfsDestroyed2 ) = mysql_fetch_row( $result1 );
 		// there is a chance that conflict exists between name and location of a player. In time the inexisting player should get automatically removed due to no updates
@@ -164,21 +165,21 @@ while (($line = fgets($f)) !== false)
 		if($ArchiveLocation!=0)
 		{
 			//move old to archive
-			$query1 = "insert into players_archive ( select * from players where k='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."')";
+			$query1 = "insert into players_archive ( select * from players where k='".$parts[$k_ind]."' and x='".$parts[$x_ind]."' and y='".$parts[$y_ind]."' limit 0,1)";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022002 <br>".$query1." <br> ".mysql_error($dbi));			
-			//delete it
-			$query1 = "delete from players where k='".$parts[$k_ind]."' and x='".$parts[1]."' and y='".$parts[2]."'";
-			$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 		}
+		//delete it
+		$query1 = "delete from players where k='".$parts[$k_ind]."' and x='".$parts[$x_ind]."' and y='".$parts[$y_ind]."'";
+		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 		if($ArchiveName!=0)
 		{
 			//move to archive the one from DB 
 			$query1 = "insert into players_archive ( select * from players where name like '".mysql_real_escape_string($parts[$name_ind])."' and k ='".$parts[$k_ind]."' limit 0,1)";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
-			//delete it
-			$query1 = "delete from players where name like '".mysql_real_escape_string($parts[$name_ind])."'";
-			$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 		}
+		//delete it
+		$query1 = "delete from players where name like '".mysql_real_escape_string($parts[$name_ind])."' and k ='".$parts[$k_ind]."'";
+		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
 
 		//create new
 		$query1 = "insert into players ( k,x,y,name,guild,kills,might,lastupdated,HasPrisoners,VIP,GuildRank,PLevel,SuccessfulAttacks,FailedAttacks,SuccessfulDefenses,FailedDefenses,TroopsKilled,TroopsLost,TroopsHealed,TroopsWounded,TurfsDestroyed)values(";
@@ -238,61 +239,5 @@ if($LastTime>0)
 if($SkipMapgen)
 	exit("Skipped mapgen as requested");
 
-//update innactivity column
-$query1 = "update players set innactive=0";
-$result1 = mysql_query($query1,$dbi) or die("Error : 20170220027 <br>".$query1." <br> ".mysql_error($dbi));
-// a player is innactive if he did not change coordinate and he's might did not change in the past X days
-$query1 = "select k,x,y,name,might,lastupdated from players";
-$result1 = mysql_query($query1,$dbi) or die("Error : 20170220024 <br>".$query1." <br> ".mysql_error($dbi));
-while( list( $k,$x,$y,$name,$might,$lastupdated ) = mysql_fetch_row( $result1 ))
-{
-	// check he's might yesterday or anywhere before last seen him here. 
-	// Kill count might go up when he is defending because of traps
-	// should cgeck reource mined
-	// should check if he had prisoners recently
-	// even if might does not change. Troops healed or troops trained might have changed
-	$query2 = "select might,lastupdated from players_archive where k=$k and x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*1)." and name like '".mysql_real_escape_string($name)."' limit 0,1";
-//echo "$query2<br>";
-	$result2 = mysql_query($query2,$dbi) or die("Error : 20170220025 <br>".$query2." <br> ".mysql_error($dbi));
-	$MightChanged = -1;
-	$SameMightSince = 1;
-	while( list( $MightOld,$lastupdated ) = mysql_fetch_row( $result2 ) )
-	{
-		if( $MightOld != $might )
-		{
-			$MightChanged = 1;
-			break;
-		}
-		else
-		{
-			if(	$SameMightSince > $lastupdated )
-				$SameMightSince = $lastupdated;
-			if( $MightChanged == -1 )
-				$MightChanged = 0;
-		}
-//echo "Found archive for player $name<br>";
-	}
-	if($MightChanged==0)
-	{
-		$query2 = "update players set Innactive=$SameMightSince where k=$k and x=$x and y=$y";
-//echo "$query2<br>";
-		$result2 = mysql_query($query2,$dbi) or die("Error : 20170220028 <br>".$query2." <br> ".mysql_error($dbi));
-//		echo "Player's $name might did not change<br>";
-	}
-}
-//generate new hives
-include("gen_hives.php");
-
-//generate static minimaps
-$k=67;
-$TrackWhat = "might";
-include("map_generic.php");
-$TrackWhat = "kills";
-include("map_generic.php");
-$TrackWhat = "pcount";
-include("map_generic.php");
-$TrackWhat = "guildless";
-include("map_generic.php");
-$TrackWhat = "guildless_innactive";
-include("map_generic.php");
+include("PostImportActions.php");
 ?>

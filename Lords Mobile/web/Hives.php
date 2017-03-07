@@ -16,6 +16,7 @@ if(!isset($k))
 		<td>Might total</td>
 		<td>Max PLevel</td>
 		<td>Avg PLevel</td>
+		<td>Avg CLevel</td>
 	</tr>
 <?php
 	$HiddenGuilds = "";
@@ -24,9 +25,9 @@ if(!isset($k))
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 
-	$query1 = "select x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,MaxPLevel,AvgPLevel from guild_hives where k=$k order by HiveCastles desc";		
+	$query1 = "select x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,MaxPLevel,AvgPLevel,AvgCastleLevel from guild_hives where k=$k order by HiveCastles desc";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
-	while( list( $x,$y,$guild,$radius,$HiveCastles,$TotalCastles,$HiveMight,$TotalMight,$MaxPLevel,$AvgPLevel ) = mysql_fetch_row( $result1 ))
+	while( list( $x,$y,$guild,$radius,$HiveCastles,$TotalCastles,$HiveMight,$TotalMight,$MaxPLevel,$AvgPLevel,$AvgCLevel ) = mysql_fetch_row( $result1 ))
 	{
 		if( strpos($HiddenGuilds,$guild) != 0 )
 			continue;
@@ -42,6 +43,7 @@ if(!isset($k))
 			<td><?php echo GetValShortFormat($TotalMight);?></td>
 			<td><?php echo $MaxPLevel;?></td>
 			<td><?php echo $AvgPLevel;?></td>
+			<td><?php echo $AvgCLevel;?></td>
 		</tr>
 		<?php
 	}
