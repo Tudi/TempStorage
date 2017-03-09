@@ -14,13 +14,13 @@ include("db_connection.php");
 		<td>Might</td>
 		<td>Kills</td>
 		<td>Last Updated</td>
-		<td>Last seen with prisoners</td>
-		<td>Innactive</td>
 		<td>Guild rank</td>
 		<td>VIP Level</td>
 		<td>Player Level</td>
 		<td>Castle Level</td>
 <!--		<td>Last Burned at</td>
+		<td>Last seen with prisoners</td>
+		<td>Innactive</td>
 		<td>Last Burned at might</td>
 		<td>Aprox troops available</td>
 		<td>Nodes gathering from</td>
@@ -61,7 +61,7 @@ include("db_connection.php");
 	{
 		//remove "guild" from player name
 		$namename = substr($FilterN,strpos($FilterN,']')+1);
-		$Filter .= " and name like '%".mysql_real_escape_string($namename)."' ";
+		$Filter .= " and name like '%".mysql_real_escape_string($FilterN)."' ";
 	}
 	if(isset($FilterG))
 		$Filter .= " and guild like '".mysql_real_escape_string($FilterG)."' ";
@@ -71,9 +71,17 @@ include("db_connection.php");
 	if($Order)
 		$query1 .= " order by $Order ";
 	
+	if( isset($FilterN) )
+	{
+		$q2 = str_replace("players_archive","players", $query1);
+		$query1 = "($query1)union($q2)";
+	}
+	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $k,$x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank,$Plevel,$castlelevel ) = mysql_fetch_row( $result1 ))
 	{
+		$namename = substr($name,strpos($name,']')+1);
+		
 		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;
 		if( strpos($HiddenGuilds,"#".$guild."#") != 0 )
@@ -81,7 +89,7 @@ include("db_connection.php");
 		
 		$LastUpdatedHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);
 		//$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
-		$PlayerArchiveLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterN=".urlencode($name);
+		$PlayerArchiveLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterN=".urlencode($namename);
 		$GuildFilterLink = $_SERVER['PHP_SELF']."?FilterK=$FilterK&FilterG=".urlencode($guild);
 		$HasPrisonersHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $HasPrisoners);	
 		$LastUpdatedAsDiff = GetTimeDiffShortFormat($lastupdated);
@@ -90,18 +98,18 @@ include("db_connection.php");
 			$HasPrisonersAsDiff="";
 		if($guild=="")
 			$guild="&nbsp;";
+/*			<td><?php echo $HasPrisonersAsDiff; ?></td>
+			<td><?php echo $innactive; ?></td> */
 		?>
 		<tr>
 			<td><?php echo $k; ?></td>
 			<td><?php echo $x; ?></td>
 			<td><?php echo $y; ?></td>
-			<td><a href="<?php echo $PlayerArchiveLink; ?>"><?php echo $name; ?></a></td>
+			<td><a href="<?php echo $PlayerArchiveLink; ?>"><?php echo $namename; ?></a></td>
 			<td><a href="<?php echo $GuildFilterLink; ?>"><?php echo $guild; ?></a></td>
 			<td><?php echo GetValShortFormat($might); ?></td>
 			<td><?php echo GetValShortFormat($kills); ?></td>
 			<td><?php echo $LastUpdatedAsDiff; ?></td>
-			<td><?php echo $HasPrisonersAsDiff; ?></td>
-			<td><?php echo $innactive; ?></td>
 			<td><?php echo $GuildRank; ?></td>
 			<td><?php echo $VIP; ?></td>
 			<td><?php echo $Plevel; ?></td>

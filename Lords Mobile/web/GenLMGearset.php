@@ -204,6 +204,14 @@ function GetParamGroup( $IndexName )
 	return $IndexName;
 }
 
+function GetParamMultiplier( $IndexName )
+{
+//	return $IndexName[0];
+//	return $IndexName[0].$IndexName[1];
+	if($IndexName[1]=='a')
+		return 100 / 75;
+	return 1;
+}
 function GetItemScore( $item )
 {
 	global $Debug;
@@ -212,6 +220,8 @@ function GetItemScore( $item )
 		if( IsParamImportant( $key ) )
 		{
 			$g = GetParamGroup( $key );
+			$mul = GetParamMultiplier( $key );
+			$val = (int)($val * $mul * 10)/10;
 			$item["ScroreGroups"][$g] += $val;
 			$item["SumScore"] += $val;
 		}

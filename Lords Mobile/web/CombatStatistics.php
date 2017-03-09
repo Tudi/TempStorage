@@ -233,6 +233,341 @@ $struct["DACD"]=0;
 $struct["DCCD"]=12;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Infantry ";
+$struct["AIC"]=100;
+$struct["AAC"]=0;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry";
+$struct["DIC"]=50;
+$struct["DAC"]=0;
+$struct["DCC"]=50;
+$struct["DTC"]=0;
+
+$struct["AICD"]=34;
+$struct["AACD"]=0;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=23;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Infantry ";
+$struct["AIC"]=99;
+$struct["AAC"]=0;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry + Archer";
+$struct["DIC"]=33;
+$struct["DAC"]=33;
+$struct["DCC"]=33;
+$struct["DTC"]=0;
+
+$struct["AICD"]=18;
+$struct["AACD"]=0;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=26;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=100;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Archer";
+$struct["DIC"]=50;
+$struct["DAC"]=50;
+$struct["DCC"]=0;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=27;
+$struct["ATCD"]=0;
+$struct["DICD"]=50;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=100;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry";
+$struct["DIC"]=50;
+$struct["DAC"]=0;
+$struct["DCC"]=50;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=13;
+$struct["ATCD"]=0;
+$struct["DICD"]=24;
+$struct["DACD"]=0;
+$struct["DCCD"]=16;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=100;
+$struct["ATC"]=0;
+$struct["D"]="Cavalry + Archer";
+$struct["DIC"]=0;
+$struct["DAC"]=50;
+$struct["DCC"]=50;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=36;
+$struct["ATCD"]=0;
+$struct["DICD"]=0;
+$struct["DACD"]=0;
+$struct["DCCD"]=24;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=99;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry + Archer";
+$struct["DIC"]=33;
+$struct["DAC"]=33;
+$struct["DCC"]=33;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=23;
+$struct["ATCD"]=0;
+$struct["DICD"]=16;
+$struct["DACD"]=0;
+$struct["DCCD"]=17;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=100;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Archer";
+$struct["DIC"]=50;
+$struct["DAC"]=50;
+$struct["DCC"]=0;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=38;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=8;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=100;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry";
+$struct["DIC"]=50;
+$struct["DAC"]=0;
+$struct["DCC"]=50;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=33;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=8;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=100;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Archer + Cavalry";
+$struct["DIC"]=0;
+$struct["DAC"]=50;
+$struct["DCC"]=50;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=10;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=0;
+$struct["DACD"]=0;
+$struct["DCCD"]=50;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=99;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Archer + Cavalry";
+$struct["DIC"]=33;
+$struct["DAC"]=33;
+$struct["DCC"]=33;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=24;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=9;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=200;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry";
+$struct["DIC"]=200;
+$struct["DAC"]=0;
+$struct["DCC"]=0;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=128;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=12;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=200;
+$struct["ATC"]=0;
+$struct["D"]="Infantry";
+$struct["DIC"]=200;
+$struct["DAC"]=0;
+$struct["DCC"]=0;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=16;
+$struct["ATCD"]=0;
+$struct["DICD"]=108;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=200;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Cavalry";
+$struct["DIC"]=0;
+$struct["DAC"]=0;
+$struct["DCC"]=200;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=16;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=0;
+$struct["DACD"]=0;
+$struct["DCCD"]=108;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+//1 Infantry kills 0.08 Cavalry
+//1 Infantry kills 0.64 Archer
+//1 Infantry kills 0.20 Infantry
+//1 Archer kills 0.06 Infantry
+//1 Archer kills 0.20 Archer
+//1 Archer kills 0.54 Cavalry
+//1 Cavalry kills 0.54 Infantry
+//1 Cavalry kills 0.08 Archer
+//1 Cavalry kills 0.20 Cavalry
+//100i / 50a + 50c -> (3+27)i / 8c
+//						24i / 12c
+/*
+2.64 + 21.12 + 6.6 = 30.36a
+5.94i
+$AttackPower['ii'] = 0.20;
+$AttackPower['ia'] = 0.64;
+$AttackPower['ic'] = 0.08;
+$AttackPower['ai'] = 0.06;
+$AttackPower['aa'] = 0.20;
+$AttackPower['ac'] = 0.54;
+$AttackPower['ci'] = 0.54;
+$AttackPower['ca'] = 0.08;
+$AttackPower['cc'] = 0.20;
+
+$divisor = 3.69;
+foreach($AttackPower as $key => $val)
+	$AttackPower[$key] = $val / $divisor;
+
+$A['i'] = 100;
+$D['i'] = 50;
+$D['c'] = 50;
+for($i=0;$i<4;$i++)
+	AttackSim( $A, $D, $i );
+print_r($A);
+echo"<br>";
+print_r($D);
+*/
+function AttackSim(&$A,&$D,$round)
+{
+	global $AttackPower;
+	$NA = $A;
+	$ND = $D;
+	//calculate deads
+	if($A['i']>0)
+		$NA['i'] = $NA['i'] - $D['i'] * $AttackPower['ii'] - $D['a'] * $AttackPower['ai'] - $D['c'] * $AttackPower['ci'];
+//		$NA['i'] = $NA['i'] - $D['i'] * $AttackPower['ii'] - $D['a'] * $AttackPower['ai'] - 0.887 * $D['c'] * $AttackPower['ci'];
+	else if($A['c']>0)
+		$NA['c'] = $NA['c'] - $D['i'] * $AttackPower['ic'] - $D['a'] * $AttackPower['ac'] - $D['c'] * $AttackPower['cc'];
+	else if($A['i']==0 && $A['c']==0 && $A['a']>0)	// meat shield protects archers
+		$NA['a'] = $NA['a'] - $D['i'] * $AttackPower['ia'] - $D['a'] * $AttackPower['aa'] - $D['c'] * $AttackPower['ca'];
+	
+	if($D['i']>0)
+		$ND['i'] = $ND['i'] - $A['i'] * $AttackPower['ii'] - $A['a'] * $AttackPower['ai'] - $A['c'] * $AttackPower['ci'];
+//		$ND['i'] = $ND['i'] - 1.15 * $A['i'] * $AttackPower['ii'] - $A['a'] * $AttackPower['ai'] - $A['c'] * $AttackPower['ci'];
+	else if($D['c']>0)
+		$ND['c'] = $ND['c'] - $A['i'] * $AttackPower['ic'] - $A['a'] * $AttackPower['ac'] - $A['c'] * $AttackPower['cc'];
+	else if($D['i']==0 && $D['c']==0 && $D['a']>0) // meat shield protects archers
+		$ND['a'] = $ND['a'] - $A['i'] * $AttackPower['ia'] - $A['a'] * $AttackPower['aa'] - $A['c'] * $AttackPower['ca'];
+	
+	$A = $NA;
+	$D = $ND;
+}
 ?>						 
 <table border=1>
 	<tr>

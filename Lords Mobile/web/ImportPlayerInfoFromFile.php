@@ -67,6 +67,7 @@ while (($line = fgets($f)) !== false)
 			$parts[$key] = str_replace("&lt;",'<',$parts[$key]);
 			$parts[$key] = str_replace("&skipit;",'',$parts[$key]);
 			$parts[$key] = str_replace("&quest;",'?',$parts[$key]);
+			$parts[$key] = str_replace("&sol;",'/',$parts[$key]);
 //			$parts[$key] = str_replace(" ",'',$parts[$key]);
 //			if( $val != $parts[$key] )				echo "$val == ".$parts[$key]."<br>\n";
 		}

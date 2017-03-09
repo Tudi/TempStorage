@@ -17,6 +17,8 @@ function GetTimeDiffShortFormat($time)
 		$diff = ((int)($diff / 60 / 6 ) / 10 )."h";
 	else if($diff>60)
 		$diff = ( (int)($diff / 6 ) / 10 )."m";
+	else
+		$diff = $diff."s";
 	return $diff;
 }
 

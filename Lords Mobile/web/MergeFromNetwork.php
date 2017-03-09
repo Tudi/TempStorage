@@ -2,9 +2,9 @@
 set_time_limit(1 * 60 * 60);
 include("db_connection.php");
 
-$query1 = "select name,guild,guildF,kills,might,VIP,GuildRank,CastleLvl from players_network";
+$query1 = "select name,guild,guildF,kills,might,VIP,GuildRank,CastleLvl,x,y from players_network";
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
-while(list($name,$guild,$guildF,$kills,$might,$VIP,$GuildRank,$CastleLvl)=mysql_fetch_row( $result1 ))
+while(list($name,$guild,$guildF,$kills,$might,$VIP,$GuildRank,$CastleLvl,$x1,$y1)=mysql_fetch_row( $result1 ))
 {
 	if(strlen($guild)>0)
 	{
@@ -38,7 +38,7 @@ while(list($name,$guild,$guildF,$kills,$might,$VIP,$GuildRank,$CastleLvl)=mysql_
 	}
 	if($RowCount==0 || $RowCount>1)
 	{
-		$where = "name like '%".mysql_real_escape_string($name)."'";
+		$where = "name like '%".mysql_real_escape_string($name)."'";	// there is always a high chance OCR will read the name incorrectly
 		$query2 = "select count(*) from players where $where";
 		$result2 = mysql_query($query2,$dbi) or die("Error : 20170220023 <br>".$query2." <br> ".mysql_error($dbi));
 		list($RowCount)=mysql_fetch_row( $result2 );

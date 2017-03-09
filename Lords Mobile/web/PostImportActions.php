@@ -46,7 +46,7 @@ while( list( $k,$x,$y,$name,$might,$lastupdated ) = mysql_fetch_row( $result1 ))
 }
 //generate new hives
 include("gen_hives.php");
-
+include("gen_hives_small.php");
 //generate static minimaps
 $k=67;
 $TrackWhat = "might";
