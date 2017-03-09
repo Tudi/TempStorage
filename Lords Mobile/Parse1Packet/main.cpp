@@ -5,11 +5,16 @@
 #include <Windows.h>
 #include <map>
 
+enum ObjectTypesList
+{
+	OBJECT_TYPE_PLAYER	= 8,
+};
+
 #pragma pack(push, 1)
 struct PlayerNameDesc
 {
 	unsigned int	GUID;
-	unsigned char	Unk8;	//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
+	unsigned char	ObjectType;	//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
 	unsigned char	Name[13];
 	unsigned char	Guild[3];
 	unsigned short	Realm;
@@ -35,6 +40,29 @@ std::map<int, PlayerNameDesc*>	MapCastlePackets;
 std::map<int, CastlePopupInfo*> ClickCastlePackets;
 
 #include "Tools.cpp"
+
+int GetXYFromGUID(unsigned int GUID, int &x, int &y)
+{
+	unsigned char *GuidBytes = (unsigned char *)&GUID;
+	unsigned int y4bits[4];
+	y4bits[0] = (((unsigned int)GuidBytes[3] & 0xF0) >> 4);
+	y4bits[1] = (((unsigned int)GuidBytes[1] & 0xF0) >> 4);
+	y4bits[2] = (((unsigned int)GuidBytes[2] & 0x0F));
+	y4bits[3] = 0; // ?
+	unsigned int x4bits[4];
+	x4bits[0] = (((unsigned int)GuidBytes[3] & 0x0F));
+	x4bits[1] = (((unsigned int)GuidBytes[1] & 0x0F));
+	x4bits[2] = 0;//?;
+	x4bits[3] = 0;//?;
+	y = (y4bits[0]) | (y4bits[1] << 4) | (y4bits[2] << 8);
+	x = (y & 1) + 2 * ((x4bits[0]) | (x4bits[1] << 4));
+
+	//sanity checks
+	if (x > 512 || y > 1024)
+		return 1;
+
+	return 0;
+}
 
 //76 6F 76 61 6E 20 62 69 6C 00 00 00 00 32 55 41 43 00
 int SearchNextName(unsigned char *packet, int size, int Start, int &StringType)
@@ -71,19 +99,32 @@ int SearchNextName(unsigned char *packet, int size, int Start, int &StringType)
 
 void ParsePacketCastlePopup(unsigned char *packet, int size)
 {
-	//maybe later we want to re-analize it
-	PrintDataHexFormat(packet, size, 0, size);
-
 	//print info about it
 	CastlePopupInfo *CD = (CastlePopupInfo *)&packet[3];
+	int x, y;
+	if (GetXYFromGUID(CD->GUID, x, y) != 0)
+		return;
+
+	//let's do some basic checkings if we are guessing this packet correctly
+//	if (OneStringOnSize(CD->GuildFullName, sizeof(CD->GuildFullName), 0, sizeof(CD->GuildFullName)) == 0)
+//		return;
+
+#ifdef _DEBUG
+	//maybe later we want to re-analize it
+	PrintDataHexFormat(packet, size, 0, size);
+	//humanly readable format
 	printf("Parsing castle popup packet\n");
-	printf("GUID : %08X == %02X %02X %02X %02X\n", CD->GUID, CD->GUID >> 0 & 255, CD->GUID >> 8 & 255, CD->GUID >> 16 & 255, CD->GUID >> 24 & 255);
-	PrintFixedLenString( "guild long name : ", CD->GuildFullName, sizeof(CD->GuildFullName));
+//	printf("GUID : %08X == %02X %02X %02X %02X\n", CD->GUID, CD->GUID >> 0 & 255, CD->GUID >> 8 & 255, CD->GUID >> 16 & 255, CD->GUID >> 24 & 255);
+	printf("x, y = %d %d\n", x, y);
+	PrintFixedLenString("guild long name : ", CD->GuildFullName, sizeof(CD->GuildFullName));
 	printf("VIP : %u\n", (unsigned int)CD->VIPLevel);
 	printf("GuildR : %u\n", (unsigned int)CD->GuildRank);
 	printf("Might : %u\n", (unsigned int)CD->Might);
 	printf("Kills : %u\n", (unsigned int)CD->Kills);
+//	if (MapCastlePackets.find(CD->GUID) == MapCastlePackets.end())
+//		printf("Could not find constructor packet!\n"); // does not seem to matter
 	printf("\n");
+#endif
 
 	//store it for later
 	CastlePopupInfo *CD2 = (CastlePopupInfo *)malloc(sizeof(CastlePopupInfo));
@@ -166,6 +207,7 @@ void ParsePacketViewProfile2(unsigned char *packet, int size)
 */
 }
 
+int BadPlayerPacketsFound = 0;
 void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 {
 	int StructsFound = 0;
@@ -183,22 +225,34 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 			NameStart -= 5;
 			NameEnd = NameStart + sizeof(PlayerNameDesc);
 
+#ifdef _DEBUG
 			PrintDataHexFormat(packet, size, PrevNameStart, NameStart);
 			PrintDataHexFormat(packet, size, NameStart, NameEnd);
+#endif
 
 			PlayerNameDesc *PD = (PlayerNameDesc *)&packet[NameStart];
-			printf("%d)GUID : %08X == %02X %02X %02X %02X\n", StructsFound, PD->GUID, PD->GUID >> 0 & 255, PD->GUID >> 8 & 255, PD->GUID >> 16 & 255, PD->GUID >> 24 & 255);
-			printf("unk:%d\n", PD->Unk8);
-			PrintFixedLenString("name : [", PD->Guild, sizeof(PD->Guild), 0);
-			PrintFixedLenString("]", PD->Name, sizeof(PD->Name), 1);
-			printf("Castle Level:%d\n", PD->CastleLevel);
-			printf("found it in players.txt:%d\n", SearchNameInFile(PD->Name));
-			StructsFound++;
-
-			//store it for later
-			PlayerNameDesc *CD2 = (PlayerNameDesc *)malloc(sizeof(PlayerNameDesc));
-			memcpy(CD2, PD, sizeof(PlayerNameDesc));
-			MapCastlePackets[CD2->GUID] = CD2;
+			int x, y;
+			if (GetXYFromGUID(PD->GUID, x, y) == 0 && PD->CastleLevel <= 25)
+			{
+#ifdef _DEBUG
+				printf("%d)x, y = %d %d\n", StructsFound, x, y);
+				printf("unk:%d\n", PD->ObjectType);
+				PrintFixedLenString("name : [", PD->Guild, sizeof(PD->Guild), 0);
+				PrintFixedLenString("]", PD->Name, sizeof(PD->Name), 1);
+				printf("Castle Level:%d\n", PD->CastleLevel);
+//				printf("found it in players.txt:%d\n", SearchNameInFile(PD->Name));
+				StructsFound++;
+#endif
+				//store it for later
+				if (PD->ObjectType == OBJECT_TYPE_PLAYER)
+				{
+					PlayerNameDesc *CD2 = (PlayerNameDesc *)malloc(sizeof(PlayerNameDesc));
+					memcpy(CD2, PD, sizeof(PlayerNameDesc));
+					MapCastlePackets[CD2->GUID] = CD2;
+				}
+			}
+			else
+				printf("%d)Incorrect player data found above. Parse it manually : %s %d\n", BadPlayerPacketsFound++, PD->Name, PD->ObjectType);
 		}
 		//remember ...
 		if (NameEnd != NameStart)
@@ -208,6 +262,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 		}
 		NameStart = NameEnd + 1;
 	}
+#ifdef _DEBUG
 	if (StructsFound == 0)
 		printf("Query list returned 0 objects !\n");
 	if (PrevNameStart < size)
@@ -217,6 +272,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 		PrintDataHexFormat(packet, size, PrevNameStart, size);
 	}
 	printf("\n\n");
+#endif
 }
 
 void ProcessPacket1(unsigned char *packet, int size)
@@ -238,6 +294,12 @@ void ProcessPacket1(unsigned char *packet, int size)
 		ParsePacketQueryTileObjectReply(packet, size);
 		return;
 	}
+
+#ifdef _DEBUG
+	printf("we are skipping this packet : ");
+//	PrintDataHexFormat(packet, size, 0, size);
+	PrintDataHexFormat(packet, size, 0, min(size,10));
+#endif
 
 	if (packet[0] == 0x26 && packet[1] == 0x0B)
 	{
@@ -310,11 +372,12 @@ void ProcessPacket1(unsigned char *packet, int size)
 		//28 0C 00 02 CB C0 BC 58 00 00 00 00 00 00 00 00 00 00 00 00 06 1F 00 01 00 0E 00 00 00 00 0F 00 00 00 06 00 A8 0F 00 1F 00 01 00 00 00 00 00 00 1A 00 01 00 10 00 A6 0F 00 3C 00 03 00 06 00 00 00 00 0C 00 00 00 07 00 00 00 00
 		return;
 	}
-
+#ifdef _DEBUG
 	printf("Unk packet : \n");
 	//	PrintDataMultipleFormats(packet, size, PrevNameStart, size);
 	PrintDataHexFormat(packet, size, 0, size);
 	printf("\n\n");
+#endif
 }
 
 void MatchPacketDumpContent()
@@ -327,43 +390,46 @@ void MatchPacketDumpContent()
 		printf("Could not open output file\n");
 		return;
 	}
+/*	{
+		for (std::map<int, CastlePopupInfo*>::iterator itr = ClickCastlePackets.begin(); itr != ClickCastlePackets.end(); itr++)
+		{
+			int GUID = itr->first;
+			std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(GUID);
+			if (fc != MapCastlePackets.end() && fc->second->Unk8 != 8 )
+				printf("unk is %d\n", fc->second->Unk8);
+		}
 
+	}/**/
+//	int t = 0;
 	printf("Started dumping usable packets to text file\n");
-	for (std::map<int, CastlePopupInfo*>::iterator itr = ClickCastlePackets.begin(); itr != ClickCastlePackets.end(); itr++)
+	for (std::map<int, PlayerNameDesc*>::iterator itr = MapCastlePackets.begin(); itr != MapCastlePackets.end(); itr++)
 	{
 		int GUID = itr->first;
-		CastlePopupInfo *p2 = itr->second;
-		std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(GUID);
-		if (fc == MapCastlePackets.end())
-		{
-			printf("maybe investigate missing packet for guid : %d\n", GUID);
-			continue;
-		}
-		unsigned char *GuidBytes = (unsigned char *)&GUID;
-		unsigned int y4bits[4];
-		y4bits[0] = (((unsigned int)GuidBytes[3] & 0xF0) >> 4);
-		y4bits[1] = (((unsigned int)GuidBytes[1] & 0xF0) >> 4);
-		y4bits[2] = (((unsigned int)GuidBytes[2] & 0x0F) );
-		y4bits[3] = 0; // ?
-		unsigned int x4bits[4];
-		x4bits[0] = (((unsigned int)GuidBytes[3] & 0x0F) );
-		x4bits[1] = (((unsigned int)GuidBytes[1] & 0x0F) );
-		x4bits[2] = 0;//?;
-		x4bits[3] = 0;//?;
-		unsigned int y = (y4bits[0]) | (y4bits[1] << 4) | (y4bits[2] << 8);
-		unsigned int x = (y & 1) + 2 * ((x4bits[0]) | (x4bits[1] << 4));		
-		PlayerNameDesc *p1 = fc->second;
-		char tName[500], tGuild[5], tGuild2[500];
+		int x, y;
+		GetXYFromGUID(GUID, x, y);
+		PlayerNameDesc *p1 = itr->second;
+		char tName[500], tGuild[5];
+//		if (p1->Unk8 != 8)
+//			printf("%d)p1->Unk8 %d\n", t++, p1->Unk8);
 		int i;
-		for (i = 0; i < sizeof(p1->Name) && p1->Name[i]!=0; i++) tName[i] = p1->Name[i];
+		for (i = 0; i < sizeof(p1->Name) && p1->Name[i] != 0; i++) tName[i] = p1->Name[i];
 		tName[i] = 0;
 		for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
 		tGuild[i] = 0;
-		for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) tGuild2[i] = p2->GuildFullName[i];
-		tGuild2[i] = 0;
-		fprintf(f, "%u \t %s \t %s \t %s", p1->GUID, tName, tGuild, tGuild2);
-		fprintf(f, " \t %d \t %d \t %u \t %u", (int)p1->CastleLevel, (int)p2->GuildRank, (int)p2->Kills, (int)p2->Might);
-		fprintf(f, " \t %d  \t %d  \t %d ", (int)p2->VIPLevel,(int)x,(int)y);
+		fprintf(f, "%u \t %u \t %s \t %s \t %d", x, y, tName, tGuild, (int)p1->CastleLevel);
+		std::map<int, CastlePopupInfo*>::iterator fc = ClickCastlePackets.find(GUID);
+		if (fc != ClickCastlePackets.end())
+		{
+			char tGuild2[500];
+			CastlePopupInfo *p2 = fc->second;
+			for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) tGuild2[i] = p2->GuildFullName[i];
+			tGuild2[i] = 0;
+			fprintf(f, " \t %s \t %d \t %d \t %u \t %u", tGuild2, (int)p2->GuildRank, (int)p2->Kills, (int)p2->Might, (int)p2->VIPLevel);
+		}
+		else
+		{
+			fprintf(f, " \t %s \t %d \t %d \t %u \t %u", "", (int)0, (int)0, (int)0, (int)0);
+		}
 		fprintf(f, "\n");
 	}
 
@@ -377,20 +443,27 @@ void main()
 	//MergeFiles("P1.bin", "P2.bin"); return;
 	FILE *f;
 //	errno_t er = fopen_s(&f, "P3.bin", "rb");
+	//(ip.src == 192.243.47.118 && ip.dst == 192.168.1.101) || (ip.src == 192.168.1.101 && ip.dst==192.243.47.118)
 	errno_t er = fopen_s(&f, "7_filtered", "rb");
 	unsigned char PacketBuffer[65535];
 	int ReadCount;
 	int AbortAfterNPackets = 100;
+	int PacketsRead = 0;
 	if (f)
 	{
 		unsigned short ByteCount;
 		while (ReadCount = fread_s(&ByteCount, sizeof(ByteCount), 1, sizeof(ByteCount), f))
 		{
-			printf("Packet should have %d bytes in it\n", ByteCount);
+#ifdef _DEBUG
+			printf("%d)Packet should have %d bytes in it\n", PacketsRead++, ByteCount);
+#endif#endif
 			if (ByteCount > 2 && ByteCount < sizeof(PacketBuffer))
 			{
 				ReadCount = fread_s(&PacketBuffer, sizeof(PacketBuffer), 1, ByteCount - 2, f);
 				//				ProcessPacket(PacketBuffer, ByteCount - 2);
+#ifdef _DEBUG
+//				PrintDataHexFormat(PacketBuffer, ByteCount - 2, 0, ByteCount - 2);
+#endif
 				ProcessPacket1(PacketBuffer, ByteCount - 2);
 			}
 			AbortAfterNPackets--;
