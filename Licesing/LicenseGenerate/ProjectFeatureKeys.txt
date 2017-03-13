@@ -1,0 +1,8 @@
+; Columns are separated by at least 1 tab key ( "\t")
+; Rows that start with ; are ignored on read
+; first column is "project name". It can be project ID also. If it is a name, thre must exist a valid "name-id" in file "FeatureNameIDs.txt"
+; second column is "project feature". It can be feature ID also. If it is a name, thre must exist a valid "name-id" in file "FeatureNameIDs.txt"
+; third column is "feature activation key". These keys will be hardcoded into projects. Available key list should be maintained in "FeatureKeysNames.txt" file
+
+WDR		SSL	SSLEnablerKey
+ALMA	KPI	KPIEnablerKey

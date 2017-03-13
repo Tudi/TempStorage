@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LicenseDLL", "LicenseDLL.vcxproj", "{665FCE36-CFC7-4E16-A978-72E983DE24E5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		DebugConsoleTest|Win32 = DebugConsoleTest|Win32
+		Release|Win32 = Release|Win32
+		ReleaseConsoleTest|Win32 = ReleaseConsoleTest|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.Debug|Win32.Build.0 = Debug|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.DebugConsoleTest|Win32.ActiveCfg = DebugConsoleTest|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.DebugConsoleTest|Win32.Build.0 = DebugConsoleTest|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.Release|Win32.ActiveCfg = Release|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.Release|Win32.Build.0 = Release|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.ReleaseConsoleTest|Win32.ActiveCfg = ReleaseConsoleTest|Win32
+		{665FCE36-CFC7-4E16-A978-72E983DE24E5}.ReleaseConsoleTest|Win32.Build.0 = ReleaseConsoleTest|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
