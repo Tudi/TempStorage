@@ -1,6 +1,7 @@
 #include "CapturePackets.h"
 #include <pcap.h>
 #include <time.h>
+#include "ParsePackets.h"
 
 /* 4 bytes IP address */
 typedef struct ip_address{
@@ -112,43 +113,84 @@ unsigned int ntohl1(unsigned int const net) {
 #endif
 
 FILE *FCONTENT = NULL;
-void DumpContent(unsigned char *data, unsigned int size, unsigned int off1, unsigned int off2)
+void DumpContent(unsigned char *data, unsigned int size)
 {
 	if (FCONTENT == NULL)
 		errno_t er = fopen_s(&FCONTENT, "p_good", "wb");
 	// might need to reassamble segmented packets later. TCP is a bytestream. The beggining of the packet should be a number indicating how much we need to read until the next packet
 	if (FCONTENT)
 	{
-//		unsigned int curtime = time(NULL);
-		//		fwrite(&off1, 1, sizeof(off1), FCONTENT);
-		//		fwrite(&off2, 1, sizeof(off2), FCONTENT);
-		//		fwrite(&curtime, 1, sizeof(curtime), FCONTENT);
-		//		fwrite(&size, 1, sizeof(size), FCONTENT);
 		fwrite(data, 1, size, FCONTENT);
 		fflush(FCONTENT);
 	}
+}
+
+unsigned char *TempPacketStore = NULL;
+unsigned int WriteIndex = 0;
+unsigned int ReadIndex = 0;
+#define MAX_PACKET_SIZE			(10 * 1024 * 1024)
+#define WAITING_FOR_X_BYTES		(*(unsigned short*)&TempPacketStore[ReadIndex])
+void QueuePacketForMore(unsigned char *data, unsigned int size)
+{
+	//our temp store
+	if (TempPacketStore == NULL)
+		TempPacketStore = (unsigned char*)malloc(MAX_PACKET_SIZE); //10 MB should suffice i hope. Best i seen was about 10k
+	//seems like we can panic
+	if (WriteIndex > size)
+	{
+		printf("!!!ERROR:Packet did not fit into our buffer");
+		WriteIndex = 0;
+		ReadIndex = 0;
+		return;
+	}
+	//add to our queue buffer. If we have enough data, process those
+	memcpy(&TempPacketStore[WriteIndex], data, size);
+	WriteIndex += size;
+	//can we pop packets ?
+	while (WriteIndex - ReadIndex >= WAITING_FOR_X_BYTES)
+	{
+		ProcessPacket1(&TempPacketStore[ReadIndex], WAITING_FOR_X_BYTES);
+		ReadIndex += WAITING_FOR_X_BYTES;
+	}
+	//did we pop all packets ?
+	if (ReadIndex >= WriteIndex)
+	{
+		ReadIndex = 0;
+		WriteIndex = 0;
+	}
+}
+
+void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
+{
+	//theoretical size of a full packet. This is GAME specific !
+	if (WriteIndex == 0)
+	{
+		unsigned short FullPacketSize = *(unsigned short*)data;
+		if (size == FullPacketSize)
+		{
+			ProcessPacket1(data, size);
+			return;
+		}
+		if (size>FullPacketSize)
+		{
+			ProcessPacket1(data, size);
+			QueuePacketForMore(&data[FullPacketSize], size - FullPacketSize);
+			return;
+		}
+	}
+	else
+		QueuePacketForMore(data, size);
 }
 
 #define PROTOCOL_TCPIP	6
 // Callback function invoked by libpcap for every incoming packet 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
 {
-	//	struct tm ltime;
-	//	char timestr[16];
 	ip_hdr *ih;
 	u_int ip_len;
-	//	time_t local_tv_sec;
 
 	//Unused variable
 	(VOID)(param);
-
-	// convert the timestamp to readable format
-	//	local_tv_sec = header->ts.tv_sec;
-	//	localtime_s(&ltime, &local_tv_sec);
-	//	strftime(timestr, sizeof timestr, "%H:%M:%S", &ltime);
-
-	// print timestamp and length of the packet 
-	//	printf("%s.%.6d len:%d ", timestr, header->ts.tv_usec, header->len);
 
 	// retireve the position of the ip header
 	ih = (ip_hdr *)(pkt_data + 14); //length of ethernet header
@@ -164,38 +206,17 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + 14 + ip_len);
 		int tcp_len = tcph->data_offset * 4;
 		unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
-		//		printf("Ack number : %08X, more fragments %d, fo1 %d, fo2 %d\n", tcph->acknowledge, ih->ip_more_fragment, ih->ip_frag_offset, ih->ip_frag_offset1);
-		//		printf("Ack number : %08X, len %d, total len %d\n", ntohl1(tcph->acknowledge), header->len, ntohs1(ih->ip_total_length));
-		//		printf("Ack number : %08X, len %X, total len %X\n", ntohl1(tcph->acknowledge), header->len, ntohs1(ih->ip_total_length));
-		printf("Ack number : %08X, %d, len %d, total len %d\n", tcph->acknowledge, tcph->acknowledge - PrevAck2, header->len, ntohs1(ih->ip_total_length));
-		PrevAck2 = tcph->acknowledge;
 		int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 		int BytesToDump = header->len - TotalHeaderSize;
-		DumpContent(DataStart, BytesToDump, ih->ip_frag_offset, ih->ip_frag_offset1);
-		//		DumpContentFull((unsigned char*)pkt_data, header->len);
-		//		if (ih->ip_more_fragment || ih->ip_frag_offset != 0 || ih->ip_frag_offset1 != 0)
-		//			DumpContentMaybeFragmented((unsigned char*)pkt_data, header->len);
+		DumpContent(DataStart, BytesToDump);
 	}
-	/*	else
-	{
-	udp_header *uh;
-	u_short sport, dport;
-	uh = (udp_header *)((u_char*)ih + ip_len);
-
-	// convert from network byte order to host byte order
-	sport = ntohs1(uh->sport);
-	dport = ntohs1(uh->dport);
-
-	// print ip addresses and udp ports
-	printf("%d.%d.%d.%d.%d -> %d.%d.%d.%d.%d\n", ih->saddr.byte1, ih->saddr.byte2, ih->saddr.byte3, ih->saddr.byte4, sport, ih->daddr.byte1, ih->daddr.byte2, ih->daddr.byte3, ih->daddr.byte4, dport);
-	}/**/
 }
 
-int InitCapturePackets()
+int StartCapturePackets(int AutoPickAdapter)
 {
 	pcap_if_t           * allAdapters;
 	pcap_if_t           * adapter;
-	pcap_t           * adapterHandle;
+	pcap_t				* adapterHandle;
 	char                 errorBuffer[PCAP_ERRBUF_SIZE];
 
 	// retrieve the adapters from the computer
@@ -219,23 +240,26 @@ int InitCapturePackets()
 		printf("\n%d.%s ", ++crtAdapter, adapter->name);
 		printf("-- %s\n", adapter->description);
 	}
-
 	printf("\n");
 
 	int adapterNumber;
-
-	printf("Enter the adapter number between 1 and %d:", crtAdapter);
-	scanf_s("%d", &adapterNumber);
-
-	if (adapterNumber < 1 || adapterNumber > crtAdapter)
+	if (AutoPickAdapter == -1)
 	{
-		printf("\nAdapter number out of range.\n");
+		printf("Enter the adapter number between 1 and %d:", crtAdapter);
+		scanf_s("%d", &adapterNumber);
 
-		// Free the adapter list
-		pcap_freealldevs(allAdapters);
+		if (adapterNumber < 1 || adapterNumber > crtAdapter)
+		{
+			printf("\nAdapter number out of range.\n");
 
-		return -1;
+			// Free the adapter list
+			pcap_freealldevs(allAdapters);
+
+			return -1;
+		}
 	}
+	else
+		adapterNumber = AutoPickAdapter; //this is my default wireless adapter
 
 	// parse the list until we reach the desired adapter
 	adapter = allAdapters;
@@ -273,64 +297,11 @@ int InitCapturePackets()
 	}
 	printf("\nCapture session started on  adapter %s...\n", adapter->name);
 
-	//create a capture filter
-	/*	{
-	u_int netmask = 0xffffff;
-	char packet_filter[] = "ip.src == 192.243.47.118 && tcp.len > 0";
-	struct bpf_program fcode;
-	//compile the filter
-	if (pcap_compile(adapterHandle, &fcode, packet_filter, 1, netmask) <0)
-	{
-	fprintf(stderr, "\nUnable to compile the packet filter. Check the syntax.\n");
-	// Free the device list
-	pcap_freealldevs(allAdapters);
-	return -1;
-	}
-
-	//set the filter
-	if (pcap_setfilter(adapterHandle, &fcode)<0)
-	{
-	fprintf(stderr, "\nError setting the filter.\n");
-	// Free the device list
-	pcap_freealldevs(allAdapters);
-	return -1;
-	}
-	}/**/
-
 	// free the adapter list
 	pcap_freealldevs(allAdapters);
 
-	//listen 1 by 1 
-	/*	{
-	struct pcap_pkthdr * packetHeader;
-	const u_char       * packetData;
-	// this is the most important part of the application
-	// here we start receiving packet traffic
-	int retValue;
-	while ((retValue = pcap_next_ex(adapterHandle, &packetHeader, &packetData)) >= 0)
-	{
-	// timeout elapsed if we reach this point
-	if (retValue == 0)
-	continue;
-
-	// we print some information about the captured packet
-	// we print only the length of the packet here
-	printf("%c.%c.%c.%c length of packet: %d\n", packetHeader->len);
-	}
-
-	// if we get here, there was an error reading the packets
-	if (retValue == -1)
-	{
-	printf("Error reading the packets: %s\n", pcap_geterr(adapterHandle));
-	return -1;
-	}
-	}/**/
-
 	//capture packets using callback
-	{
-		pcap_loop(adapterHandle, 0, packet_handler, NULL);
-	}/**/
+	pcap_loop(adapterHandle, 0, packet_handler, NULL);
 
-	//	system("PAUSE");
 	return 0;
 }

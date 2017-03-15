@@ -27,9 +27,15 @@
     <ClCompile Include="CapturePackets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ParsePackets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapturePackets.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParsePackets.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

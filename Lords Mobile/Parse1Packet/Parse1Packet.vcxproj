@@ -75,6 +75,7 @@
   <ItemGroup>
     <ClCompile Include="CapturePackets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ParsePackets.cpp" />
     <ClCompile Include="Tools.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -83,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapturePackets.h" />
+    <ClInclude Include="ParsePackets.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="WpdPack\Lib\wpcap.lib" />
