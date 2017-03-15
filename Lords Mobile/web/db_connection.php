@@ -1,6 +1,9 @@
 <?php
 foreach($_REQUEST as $foreachname=>$foreachvalue)
+{
 	$$foreachname = $foreachvalue;
+//	echo $foreachname."=$foreachvalue,";
+}
 	
 $dbhost = "localhost";
 $dbname = "LordsMobile";
