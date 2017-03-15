@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <map>
 #include "ParsePackets.h"
+#include "HTTPSendData.h"
 
 //void(*PacketParserPointer)(unsigned char *packet, int size);
 

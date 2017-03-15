@@ -74,6 +74,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CapturePackets.cpp" />
+    <ClCompile Include="HTTPSendData.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ParsePackets.cpp" />
     <ClCompile Include="Tools.cpp">
@@ -84,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapturePackets.h" />
+    <ClInclude Include="HTTPSendData.h" />
     <ClInclude Include="ParsePackets.h" />
   </ItemGroup>
   <ItemGroup>
