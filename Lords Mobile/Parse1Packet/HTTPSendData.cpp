@@ -63,7 +63,7 @@ void AppendURLQuery(string &url, const char *name, const char *val, int IsFirst 
 	url += temp;
 }
 
-int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, int might, int HasPrisoners, int plevel)
+int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int HasPrisoners, int plevel)
 {
 	WSADATA wsaData;
 	SOCKET Socket;
@@ -87,7 +87,7 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	AppendURLQuery(get_http, "kills", (int)kills);
 	AppendURLQuery(get_http, "vip", vip);
 	AppendURLQuery(get_http, "GuildRank", grank);
-	AppendURLQuery(get_http, "might", might);
+	AppendURLQuery(get_http, "might", (int)might);
 	AppendURLQuery(get_http, "HasPrisoners", HasPrisoners);
 	AppendURLQuery(get_http, "PLevel", plevel);
 	AppendURLQuery(get_http, "name", name);

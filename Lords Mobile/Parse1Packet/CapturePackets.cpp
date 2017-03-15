@@ -1,6 +1,6 @@
 #include "CapturePackets.h"
 #include <pcap.h>
-#include <time.h>
+//#include <time.h>
 #include "ParsePackets.h"
 
 /* 4 bytes IP address */
@@ -149,7 +149,8 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 	//can we pop packets ?
 	while (WriteIndex - ReadIndex >= WAITING_FOR_X_BYTES)
 	{
-		ProcessPacket1(&TempPacketStore[ReadIndex], WAITING_FOR_X_BYTES);
+//		ProcessPacket1(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
+		QueuePacketToProcess(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
 		ReadIndex += WAITING_FOR_X_BYTES;
 	}
 	//did we pop all packets ?
@@ -168,13 +169,15 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 		unsigned short FullPacketSize = *(unsigned short*)data;
 		if (size == FullPacketSize)
 		{
-			ProcessPacket1(data, size);
+			//ProcessPacket1(data, size);
+			QueuePacketToProcess(&data[2], size - 2);
 			return;
 		}
 		if (size>FullPacketSize)
 		{
-			ProcessPacket1(data, size);
-			QueuePacketForMore(&data[FullPacketSize], size - FullPacketSize);
+			//ProcessPacket1(&data[2], FullPacketSize - 2);
+			QueuePacketToProcess(&data[2], FullPacketSize - 2);
+			QueuePacketForMore(&data[FullPacketSize], size - FullPacketSize); // should never happen
 			return;
 		}
 	}
@@ -208,15 +211,16 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
 		int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 		int BytesToDump = header->len - TotalHeaderSize;
-		DumpContent(DataStart, BytesToDump);
+		//DumpContent(DataStart, BytesToDump);
+		Wait1FullPacketThenParse(DataStart, BytesToDump);
 	}
 }
 
+pcap_t				* adapterHandle;
 int StartCapturePackets(int AutoPickAdapter)
 {
 	pcap_if_t           * allAdapters;
 	pcap_if_t           * adapter;
-	pcap_t				* adapterHandle;
 	char                 errorBuffer[PCAP_ERRBUF_SIZE];
 
 	// retrieve the adapters from the computer
@@ -304,4 +308,11 @@ int StartCapturePackets(int AutoPickAdapter)
 	pcap_loop(adapterHandle, 0, packet_handler, NULL);
 
 	return 0;
+}
+
+void StopCapturePackets()
+{
+	pcap_breakloop(adapterHandle);
+	pcap_close(adapterHandle);
+	adapterHandle = NULL;
 }

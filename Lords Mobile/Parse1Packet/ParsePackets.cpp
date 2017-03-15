@@ -506,3 +506,79 @@ void ParseOfflineDump(const char *FileName)
 
 	MatchPacketDumpContent();
 }
+
+#include <windows.h>
+unsigned char *PacketCircularBuffer[MAX_PACKET_CIRCULAR_BUFFER];
+int PacketCircularBufferReadIndex = 0;
+int PacketCircularBufferWriteIndex = 0;
+int	KeepThreadsRunning = 1;
+
+void QueuePacketToProcess(unsigned char *data, int size)
+{
+	PacketCircularBuffer[PacketCircularBufferWriteIndex] = new unsigned char[size + 2];
+	*(unsigned short *)&PacketCircularBuffer[PacketCircularBufferWriteIndex][0] = size;
+	memcpy(&PacketCircularBuffer[PacketCircularBufferWriteIndex][2], data, size);
+	PacketCircularBufferWriteIndex = (PacketCircularBufferWriteIndex + 1) % MAX_PACKET_CIRCULAR_BUFFER;
+}
+
+DWORD WINAPI BackgroundProcessPackets(LPVOID lpParam)
+{
+	while (KeepThreadsRunning==1)
+	{
+		//can we pop a packet from the queue ?
+		if (PacketCircularBufferReadIndex != PacketCircularBufferWriteIndex)
+		{
+			//pop one buffer from the circular queue to reduce the chance of a thread collision
+			int PopIndex = PacketCircularBufferReadIndex;
+			unsigned char *PopBuffer = PacketCircularBuffer[PopIndex];
+			PacketCircularBuffer[PopIndex] = NULL;
+			PacketCircularBufferReadIndex = (PacketCircularBufferReadIndex + 1) % MAX_PACKET_CIRCULAR_BUFFER;
+			//if this is a valid buffer than we try to process it
+			if (PopBuffer != NULL)
+			{
+				//parse the packet and if it is a packet we want we will use a HTTP API to push it into our DB. The http API runs async 
+				ProcessPacket1(&PopBuffer[2], *(unsigned short*)PopBuffer);
+				//we no longer need this buffer
+				delete[] PopBuffer;
+			}
+		}
+		//avoid 100% CPU usage. There is no scientific value here
+		Sleep(1);
+	}
+	KeepThreadsRunning = 0;
+	return 0;
+}
+
+int		pDataArray = 0;
+HANDLE	PacketProcessThreadHandle = 0;
+void	CreateBackgroundPacketProcessThread()
+{
+	//1 processing thread is enough
+	if (PacketProcessThreadHandle != 0)
+		return;
+	
+	//make our queue empty
+	memset(PacketCircularBuffer, 0, sizeof(PacketCircularBuffer));
+
+	//create the processing thread 
+	DWORD   PacketProcessThreadId;
+	PacketProcessThreadHandle = CreateThread(
+		NULL,						// default security attributes
+		0,							// use default stack size  
+		BackgroundProcessPackets,   // thread function name
+		&pDataArray,				// argument to thread function 
+		0,							// use default creation flags 
+		&PacketProcessThreadId);	// returns the thread identifier 
+}
+
+void	StopThreadedPacketParser()
+{
+	//signal that we want to break the processing loop
+	KeepThreadsRunning = 2;
+	//wait for the processing thread to finish
+	while (KeepThreadsRunning != 0)
+		Sleep(10);
+	//close the thread properly
+	CloseHandle(PacketProcessThreadHandle);
+	PacketProcessThreadHandle = 0;
+}
