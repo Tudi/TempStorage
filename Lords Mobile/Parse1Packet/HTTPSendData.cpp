@@ -63,7 +63,7 @@ void AppendURLQuery(string &url, const char *name, const char *val, int IsFirst 
 	url += temp;
 }
 
-int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, int kills, int vip, int grank, int might, int HasPrisoners, int plevel)
+int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, int might, int HasPrisoners, int plevel)
 {
 	WSADATA wsaData;
 	SOCKET Socket;
@@ -72,10 +72,7 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	int rowCount = 0;
 	struct hostent *host;
 	locale local;
-	char buffer[10000];
 	int i = 0;
-	int nDataLength;
-	string website_HTML;
 
 	// website url
 	string url = "127.0.0.1";
@@ -87,7 +84,7 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	AppendURLQuery(get_http, "x", x);
 	AppendURLQuery(get_http, "y", y);
 	AppendURLQuery(get_http, "CLevel", clevel);
-	AppendURLQuery(get_http, "kills", kills);
+	AppendURLQuery(get_http, "kills", (int)kills);
 	AppendURLQuery(get_http, "vip", vip);
 	AppendURLQuery(get_http, "GuildRank", grank);
 	AppendURLQuery(get_http, "might", might);
@@ -128,6 +125,10 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	send(Socket, get_http.c_str(), strlen(get_http.c_str()), 0);
 
 	// recieve html
+#ifdef DEBUG_HTTP_BEHAVIOR
+	char buffer[10000];
+	int nDataLength;
+	string website_HTML;
 	while ((nDataLength = recv(Socket, buffer, 10000, 0)) > 0)
 	{
 		int i = 0;
@@ -138,16 +139,11 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 		}
 	}
 
-	closesocket(Socket);
-	WSACleanup();
-
 	// Display HTML source 
 	cout << website_HTML;
+#endif
 
-	// pause
-//	cout << "\n\nPress ANY key to close.\n\n";
-//	cin.ignore(); 
-//	cin.get();
-
+	closesocket(Socket);
+	WSACleanup();
 	return 0;
 }

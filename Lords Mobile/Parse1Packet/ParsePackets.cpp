@@ -15,8 +15,8 @@ struct PlayerNameDesc
 {
 	unsigned int	GUID;
 	unsigned char	ObjectType;	//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
-	unsigned char	Name[13];
-	unsigned char	Guild[3];
+	char			Name[13];
+	char			Guild[3];
 	unsigned short	Realm;
 	unsigned char	CastleLevel;
 };
@@ -130,6 +130,24 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 	CastlePopupInfo *CD2 = (CastlePopupInfo *)malloc(sizeof(CastlePopupInfo));
 	memcpy(CD2, CD, sizeof(CastlePopupInfo));
 	ClickCastlePackets[CD->GUID] = CD2;
+
+	//send it over HTML
+	std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(CD->GUID);
+	if (fc != MapCastlePackets.end())
+	{
+		PlayerNameDesc *p1 = fc->second;
+		CastlePopupInfo *p2 = CD2;
+		int i;
+		char tName[500], tGuild[5];
+		for (i = 0; i < sizeof(p1->Name) && p1->Name[i] != 0; i++) tName[i] = p1->Name[i];
+		tName[i] = 0;
+		for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
+		tGuild[i] = 0;
+		char GuildFullName[500];
+		for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) GuildFullName[i] = p2->GuildFullName[i];
+		GuildFullName[i] = 0;
+		HTTPPostData(p1->Realm, x, y, tName, tGuild, GuildFullName, p1->CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, 0, 0);
+	}
 }
 
 void ParsePacketViewProfile(unsigned char *packet, int size)
@@ -249,6 +267,16 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 					PlayerNameDesc *CD2 = (PlayerNameDesc *)malloc(sizeof(PlayerNameDesc));
 					memcpy(CD2, PD, sizeof(PlayerNameDesc));
 					MapCastlePackets[CD2->GUID] = CD2;
+
+					//send it over HTML
+					PlayerNameDesc *p1 = CD2;
+					int i;
+					char tName[500], tGuild[5];
+					for (i = 0; i < sizeof(p1->Name) && p1->Name[i] != 0; i++) tName[i] = p1->Name[i];
+					tName[i] = 0;
+					for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
+					tGuild[i] = 0;
+					HTTPPostData(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
 				}
 			}
 			else
