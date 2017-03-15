@@ -444,7 +444,7 @@ void main()
 	FILE *f;
 //	errno_t er = fopen_s(&f, "P3.bin", "rb");
 	//(ip.src == 192.243.47.118 && ip.dst == 192.168.1.101) || (ip.src == 192.168.1.101 && ip.dst==192.243.47.118)
-	errno_t er = fopen_s(&f, "7_filtered", "rb");
+	errno_t er = fopen_s(&f, "p_good", "rb");
 	unsigned char PacketBuffer[65535];
 	int ReadCount;
 	int AbortAfterNPackets = 100;
