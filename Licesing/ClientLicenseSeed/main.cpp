@@ -23,6 +23,14 @@ int main()
 	//test save
 	ClientSeed->SaveFingerprint("ClientSeed.dat");
 
+	//test destroy
+	DestroyComputerFingerprint(ClientSeed);
+
+	///////////////////////////////////////////////////////////////////////////
+
+	//create a new store
+	ClientSeed = CreateComputerFingerprint();
+
 	//test load
 	ClientSeed->LoadFingerprint("ClientSeed.dat");
 

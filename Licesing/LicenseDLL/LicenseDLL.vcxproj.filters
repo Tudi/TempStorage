@@ -82,14 +82,14 @@
     <ClInclude Include="src\GetInterfaceMacs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProjectFeatureKeys.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="License.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SimpleList.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="License.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="ProjectFeatureKeys.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

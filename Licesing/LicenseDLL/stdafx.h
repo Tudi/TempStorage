@@ -34,5 +34,3 @@
 
 #include <windows.h>
 #include "SimpleList.h"
-
-#define HardCodedStringLimit 50

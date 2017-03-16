@@ -13,13 +13,13 @@ void Init(DataCollectionHeader *&Data)
 	Data->Count = 0;
 	Data->Size = sizeof(DataCollectionHeader);
 	Data->Ver = CURRENT_PACKER_VERSION;
+	Data->EncryptType = DCE_INTERNAL_CyclicXOR_KEY;
 }
 
 GenericDataStore::GenericDataStore()
 {
 	Data = NULL;
 	Init(Data);
-	XORSeed = ( GetTickCount() << 16 ) ^ (unsigned int )time(NULL);	// should be "unqique" every time we generate a new list
 	HaveBuffToStore = 0;
 }
 
@@ -81,16 +81,23 @@ int GenericDataStore::PushData(char *buff, int Size, int Type)
 	if (EnsureCanStore(AddedSize) != 0)
 		return DADD_FAIL;
 
-	//init block store
-	DataBlockHeader *Store = (DataBlockHeader *)(&Data->Blocks[Data->Size - sizeof(DataCollectionHeader)]);
-	memcpy(Store->Data, buff, Size);
-	Store->Size = Size;
-	Store->Type = (char)Type;
+	if (Type == DB_RAW_FULL_LIST_CONTENT)
+	{
+		memcpy(Data, buff, Size);
+	}
+	else
+	{
+		//init block store
+		DataBlockHeader *Store = (DataBlockHeader *)(&Data->Blocks[Data->Size - sizeof(DataCollectionHeader)]);
+		memcpy(Store->Data, buff, Size);
+		Store->Size = Size;
+		Store->Type = (char)Type;
 
-	//add it to list
-	Data->Count++;
-	Data->Size += AddedSize;
-	HaveBuffToStore -= AddedSize;
+		//add it to list
+		Data->Count++;
+		Data->Size += AddedSize;
+		HaveBuffToStore -= AddedSize;
+	}
 
 	//all went great
 	return DADD_SUCCESS;
@@ -116,16 +123,20 @@ int GenericDataStore::SaveToFile(char *FileName)
 
 	//dump the content
 	int TotalSize = Data->Size;
-	int TotalSizeInt = TotalSize / sizeof(int);
 		
-	//apply obfuscation
-	int *TempBuff = new int[TotalSizeInt];
-	memcpy(TempBuff, Data, TotalSize);
-	EncryptBufferXORKeyRotate((unsigned char*)TempBuff, TotalSizeInt, XORSeed);
+	//apply obfuscation. This method ads very little security complexity. It simply hides the content of the data from a humanly readable format !
+	unsigned char *TempBuff = new unsigned char[TotalSize];
+	if (Data->EncryptType == DCE_INTERNAL_CyclicXOR_KEY)
+	{
+		Data->XORKey = (GetTickCount() << 16) ^ (unsigned int)time(NULL);	// should be "unqique" every time we generate a new list
+		memcpy(TempBuff, Data, TotalSize);
+		EncryptBufferXORKeyRotate(&TempBuff[sizeof(DataCollectionHeader)], TotalSize - sizeof(DataCollectionHeader), Data->XORKey);
+	}
+	else
+		memcpy(TempBuff, Data, TotalSize);
 
 	//dump content
 	fwrite(&TotalSize, 1, sizeof(int), f);
-	fwrite(&XORSeed, 1, sizeof(int), f);
 	fwrite(TempBuff, 1, TotalSize, f);
 	fclose(f);
 
@@ -155,20 +166,18 @@ int GenericDataStore::LoadFromFile(char *FileName)
 	int TotalSize;
 	fread(&TotalSize, 1, sizeof(int), f);
 
-	fread(&XORSeed, 1, sizeof(int), f);
-
 	//make sure we can store it
 	EnsureCanStore(TotalSize);
 
 	//read the whole thing into memory
 	fread(Data, 1, TotalSize, f);
 
-	//deobfuscate
-	int TotalSizeInt = TotalSize / sizeof(int);
-	EncryptBufferXORKeyRotate((unsigned char*)Data, TotalSizeInt, XORSeed);
-
 	fclose(f);
-	
+
+	//deobfuscate
+	if (Data->EncryptType == DCE_INTERNAL_CyclicXOR_KEY)
+		EncryptBufferXORKeyRotate((unsigned char*)Data+sizeof(DataCollectionHeader), TotalSize - sizeof(DataCollectionHeader), Data->XORKey);
+
 	return 0;
 }
 
@@ -206,8 +215,28 @@ void GenericDataStore::PrintContent()
 		{
 			printf("Mothernoard SN : \t%s", buff);
 		}
+		else
+		{
+			printf("Unk block type %d with size : \t%d", Type, Size);
+		}
 		printf("\n");
 	}
+}
+
+int	GenericDataStore::SetEncription(unsigned char EncryptType)
+{
+	//sanity checks
+	if (EncryptType <= DCE_NOT_INITIALIZED || EncryptType >= DCE_INVALID_ENCRYPTION_TYPE)
+		return 1;
+
+	if (Data == NULL)
+		return ERROR_BAD_CONFIGURATION;
+
+	// we will use the value later
+	Data->EncryptType = EncryptType;
+
+	//all went fine
+	return 0;
 }
 
 DataCollectionIterator::DataCollectionIterator()

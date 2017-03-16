@@ -95,18 +95,27 @@ int ComputerFingerprint::LoadFingerprint(char *FileName)
 {
 	return FingerprintData->LoadFromFile(FileName);
 }
-/*
-int ComputerFingerprint::EncodeLicense(char *License, int Len)
-{
-	return 0;
-}
 
-int ComputerFingerprint::DecodeLicense(char *License, int Len)
-{
-	return 0;
-}
-*/
 void ComputerFingerprint::Print()
 {
 	FingerprintData->PrintContent();
+}
+
+// this is the lasy solution, later extract plain content
+int ComputerFingerprint::GetEncryptionKey(char **Key, int &Len)
+{
+	//sanity checks
+	if (*Key == NULL)
+		return ERROR_BAD_ARGUMENTS;
+
+	//assign internal state as encrypt key
+	*Key = (char*)FingerprintData->GetData();
+	Len = FingerprintData->GetDataSize(); // savage. later will work on it
+
+	//everything went well ?
+	if (*Key == NULL || Len == 0)
+		return ERROR;
+
+	//all ok
+	return 0;
 }

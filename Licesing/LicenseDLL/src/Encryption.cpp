@@ -1,6 +1,7 @@
 #include "../stdafx.h"
 #include <stdlib.h>
 #include <winerror.h>
+#include "ComputerFingerprint.h"
 
 static unsigned long crc32_tab[] = {
 	0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
@@ -103,7 +104,7 @@ int EncryptBufferXORKeyRotate(unsigned char *buf, int BufLen, int XORKey)
 		return ERROR_INVALID_ADDRESS;
 
 	if (BufLen == 0 || XORKey == 0)
-		return PEERDIST_ERROR_INVALID_CONFIGURATION;
+		return ERROR_INVALID_ADDRESS;
 
 	unsigned int tXORSeed = XORKey;
 	for (int i = 0; i < BufLen; i++)
@@ -112,4 +113,34 @@ int EncryptBufferXORKeyRotate(unsigned char *buf, int BufLen, int XORKey)
 		tXORSeed = rol(tXORSeed, 3); // swap upper 3 bits with lower 3 bits ( ror(3) )
 	}
 	return 0;
+}
+
+int EncryptWithFingerprint(char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
+{
+	ComputerFingerprint CF;
+	if (Filename == NULL)
+	{
+		if( CF.GenerateFingerprint() != 0 )
+			return ERROR_BAD_PATHNAME;
+	}
+	else if (CF.LoadFingerprint(Filename) != 0)
+		return ERROR_BAD_PATHNAME;
+	char *EncryptKey;
+	int KeyLen;
+	if (CF.GetEncryptionKey(&EncryptKey, KeyLen) != 0)
+		return ERROR_BAD_ARGUMENTS;
+
+	//Encrypt the encryption key. This adds algorithmic complexity
+	EncryptBufferXORKeyRotate((unsigned char*)EncryptKey, KeyLen, Salt);
+
+	//encrypt license content with the client fingerprint
+	EncryptBufferXORKey(buf, BufLen, (unsigned char*)EncryptKey, KeyLen);
+
+	return 0;
+}
+
+int DecryptWithFingerprint(char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
+{
+	//right now this is simetric. Later might change it
+	return EncryptWithFingerprint(Filename, Salt, buf, BufLen);
 }

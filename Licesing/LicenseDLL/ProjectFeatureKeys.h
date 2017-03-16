@@ -3,14 +3,16 @@
 #define MISSING_OR_INVALID_ID	(-1)
 #define DB_LOAD_ERROR			(-1)
 
+#define HardCodedStringLimitFeatures 50
+
 //humanly described
 struct ProjectFeatureKeyStore
 {
-	char	ProjectName[HardCodedStringLimit];
+	char	ProjectName[HardCodedStringLimitFeatures];
 	int		ProjectID;
-	char	FeatureName[HardCodedStringLimit];
+	char	FeatureName[HardCodedStringLimitFeatures];
 	int		FeatureID;
-	char	ActivatorKey[HardCodedStringLimit];
+	char	ActivatorKey[HardCodedStringLimitFeatures];
 };
 
 //map names to IDs
