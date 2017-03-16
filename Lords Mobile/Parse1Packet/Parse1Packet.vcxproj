@@ -39,8 +39,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\Documents\MyGits\Tempstore\Lords Mobile\Parse1Packet\WpdPack\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\Documents\MyGits\Tempstore\Lords Mobile\Parse1Packet\WpdPack\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>WpdPack\include;$(IncludePath)</IncludePath>
+    <LibraryPath>WpdPack\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>WpdPack\include;$(IncludePath)</IncludePath>
@@ -78,8 +78,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ParsePackets.cpp" />
     <ClCompile Include="Tools.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="try1.cpp" />
   </ItemGroup>
@@ -87,6 +87,7 @@
     <ClInclude Include="CapturePackets.h" />
     <ClInclude Include="HTTPSendData.h" />
     <ClInclude Include="ParsePackets.h" />
+    <ClInclude Include="Tools.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="WpdPack\Lib\wpcap.lib" />

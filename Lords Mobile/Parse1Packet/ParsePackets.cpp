@@ -2,12 +2,21 @@
 #include <map>
 #include "ParsePackets.h"
 #include "HTTPSendData.h"
+#include "Tools.h"
 
-//void(*PacketParserPointer)(unsigned char *packet, int size);
+int SkipInsertOnlyDebug = 0;
 
 enum ObjectTypesList
 {
-	OBJECT_TYPE_PLAYER = 8,
+	OBJECT_TYPE_MAYBE_ARMY_OR_RESOURCE	= 0,
+	OBJECT_TYPE_MAYBE_RESOURCE1			= 1,
+	OBJECT_TYPE_MAYBE_RESOURCE2			= 2,
+	OBJECT_TYPE_MAYBE_RESOURCE3			= 3,
+	OBJECT_TYPE_MAYBE_RESOURCE4			= 4,
+	OBJECT_TYPE_MAYBE_RESOURCE5			= 5,
+	OBJECT_TYPE_GEM_RESOURCE			= 6,
+	OBJECT_TYPE_PLAYER					= 8,
+	OBJECT_TYPE_CAMP					= 9,
 };
 
 #pragma pack(push, 1)
@@ -26,7 +35,7 @@ struct CastlePopupInfo
 	__int64			TileID; //??? guessing
 	unsigned char	unk2F;	//seems to be always 0x2F
 	unsigned int	GUID;	// the guid we clicked on
-	unsigned char	GuildFullName[20];
+	char			GuildFullName[20];
 	unsigned char	VIPLevel;
 	unsigned char	GuildRank;
 	unsigned char	Unk[6];
@@ -39,7 +48,7 @@ struct CastlePopupInfo
 std::map<int, PlayerNameDesc*>	MapCastlePackets;
 std::map<int, CastlePopupInfo*> ClickCastlePackets;
 
-#include "Tools.cpp"
+#define GenMyGUID(x,y) (((unsigned short)x << 16)| ((unsigned short)y))
 
 int GetXYFromGUID(unsigned int GUID, int &x, int &y)
 {
@@ -116,7 +125,7 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 	printf("Parsing castle popup packet\n");
 	//	printf("GUID : %08X == %02X %02X %02X %02X\n", CD->GUID, CD->GUID >> 0 & 255, CD->GUID >> 8 & 255, CD->GUID >> 16 & 255, CD->GUID >> 24 & 255);
 	printf("x, y = %d %d\n", x, y);
-	PrintFixedLenString("guild long name : ", CD->GuildFullName, sizeof(CD->GuildFullName));
+	PrintFixedLenString("guild long name : ", CD->GuildFullName, sizeof(CD->GuildFullName), 1);
 	printf("VIP : %u\n", (unsigned int)CD->VIPLevel);
 	printf("GuildR : %u\n", (unsigned int)CD->GuildRank);
 	printf("Might : %u\n", (unsigned int)CD->Might);
@@ -129,10 +138,10 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 	//store it for later
 	CastlePopupInfo *CD2 = (CastlePopupInfo *)malloc(sizeof(CastlePopupInfo));
 	memcpy(CD2, CD, sizeof(CastlePopupInfo));
-	ClickCastlePackets[CD->GUID] = CD2;
+	ClickCastlePackets[GenMyGUID(x,y)] = CD2;
 
 	//send it over HTML
-	std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(CD->GUID);
+	std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(GenMyGUID(x,y));
 	if (fc != MapCastlePackets.end())
 	{
 		PlayerNameDesc *p1 = fc->second;
@@ -146,8 +155,11 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 		char GuildFullName[500];
 		for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) GuildFullName[i] = p2->GuildFullName[i];
 		GuildFullName[i] = 0;
-		HTTPPostData(p1->Realm, x, y, tName, tGuild, GuildFullName, p1->CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, 0, 0);
+		if (SkipInsertOnlyDebug==0)
+			HTTPPostData(p1->Realm, x, y, tName, tGuild, GuildFullName, p1->CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, 0, 0);
 	}
+	else
+		printf("Investigate why there is no create packet for castle at %d %d - %s\n", x, y, CD2->GuildFullName);
 }
 
 void ParsePacketViewProfile(unsigned char *packet, int size)
@@ -254,7 +266,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 			{
 #ifdef _DEBUG
 				printf("%d)x, y = %d %d\n", StructsFound, x, y);
-				printf("unk:%d\n", PD->ObjectType);
+				printf("Type:%d\n", PD->ObjectType);
 				PrintFixedLenString("name : [", PD->Guild, sizeof(PD->Guild), 0);
 				PrintFixedLenString("]", PD->Name, sizeof(PD->Name), 1);
 				printf("Castle Level:%d\n", PD->CastleLevel);
@@ -266,7 +278,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 				{
 					PlayerNameDesc *CD2 = (PlayerNameDesc *)malloc(sizeof(PlayerNameDesc));
 					memcpy(CD2, PD, sizeof(PlayerNameDesc));
-					MapCastlePackets[CD2->GUID] = CD2;
+					MapCastlePackets[GenMyGUID(x,y)] = CD2;
 
 					//send it over HTML
 					PlayerNameDesc *p1 = CD2;
@@ -276,11 +288,14 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 					tName[i] = 0;
 					for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
 					tGuild[i] = 0;
-					HTTPPostData(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
+					if (SkipInsertOnlyDebug==0)
+						HTTPPostData(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
 				}
 			}
 			else
-				printf("%d)Incorrect player data found above. Parse it manually : %s %d\n", BadPlayerPacketsFound++, PD->Name, PD->ObjectType);
+			{
+				printf("%d)Incorrect player data found above. Parse it manually : %s t=%d x=%d y=%d c=%d\n", BadPlayerPacketsFound++, PD->Name, PD->ObjectType, x, y, PD->CastleLevel);
+			}
 		}
 		//remember ...
 		if (NameEnd != NameStart)
@@ -326,7 +341,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 #ifdef _DEBUG
 	printf("we are skipping this packet : ");
 	//	PrintDataHexFormat(packet, size, 0, size);
-	PrintDataHexFormat(packet, size, 0, min(size, 10));
+//	PrintDataHexFormat(packet, size, 0, min(size, 10));
 #endif
 
 	if (packet[0] == 0x26 && packet[1] == 0x0B)
@@ -433,9 +448,9 @@ void MatchPacketDumpContent()
 	for (std::map<int, PlayerNameDesc*>::iterator itr = MapCastlePackets.begin(); itr != MapCastlePackets.end(); itr++)
 	{
 		int GUID = itr->first;
-		int x, y;
-		GetXYFromGUID(GUID, x, y);
 		PlayerNameDesc *p1 = itr->second;
+		int x, y;
+		GetXYFromGUID(p1->GUID, x, y);
 		char tName[500], tGuild[5];
 		//		if (p1->Unk8 != 8)
 		//			printf("%d)p1->Unk8 %d\n", t++, p1->Unk8);
@@ -445,7 +460,7 @@ void MatchPacketDumpContent()
 		for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
 		tGuild[i] = 0;
 		fprintf(f, "%u \t %u \t %s \t %s \t %d", x, y, tName, tGuild, (int)p1->CastleLevel);
-		std::map<int, CastlePopupInfo*>::iterator fc = ClickCastlePackets.find(GUID);
+		std::map<int, CastlePopupInfo*>::iterator fc = ClickCastlePackets.find(GenMyGUID(x,y));
 		if (fc != ClickCastlePackets.end())
 		{
 			char tGuild2[500];

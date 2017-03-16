@@ -78,6 +78,8 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	string url = "127.0.0.1";
 	int URLPort = 8081;
 
+	printf("Send http for player %s, vip %d\n", name, vip);
+
 	//HTTP GET
 	string get_http = "GET /ImportPlayerInfoFromNetwork.php?";
 	AppendURLQuery(get_http, "k", k, 1);

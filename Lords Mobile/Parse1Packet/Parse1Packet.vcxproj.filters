@@ -44,6 +44,9 @@
     <ClInclude Include="HTTPSendData.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Tools.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="WpdPack\Lib\wpcap.lib">

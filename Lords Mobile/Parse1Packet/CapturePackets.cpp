@@ -1,6 +1,5 @@
 #include "CapturePackets.h"
 #include <pcap.h>
-//#include <time.h>
 #include "ParsePackets.h"
 
 /* 4 bytes IP address */
@@ -128,31 +127,42 @@ void DumpContent(unsigned char *data, unsigned int size)
 unsigned char *TempPacketStore = NULL;
 unsigned int WriteIndex = 0;
 unsigned int ReadIndex = 0;
-#define MAX_PACKET_SIZE			(10 * 1024 * 1024)
-#define WAITING_FOR_X_BYTES		(*(unsigned short*)&TempPacketStore[ReadIndex])
+unsigned int ThrowAwayPacketsUntilSmallPackets = 0;
+#define MAX_PACKET_SIZE					(10 * 1024 * 1024)
+#define WAITING_FOR_X_BYTES				(*(unsigned short*)&TempPacketStore[ReadIndex])
+#define MAX_PACKET_SIZE_SERVER_SENDS	1500
 void QueuePacketForMore(unsigned char *data, unsigned int size)
 {
 	//our temp store
 	if (TempPacketStore == NULL)
 		TempPacketStore = (unsigned char*)malloc(MAX_PACKET_SIZE); //10 MB should suffice i hope. Best i seen was about 10k
-	//seems like we can panic
-	if (WriteIndex > size)
+
+	//internal buffer is in a fucked up state !
+	if (ThrowAwayPacketsUntilSmallPackets > 0)
+		return;
+
+	//seems like we can panic. At this point we should try to resync to the next packet start. But how to do that ?
+	if (MAX_PACKET_SIZE-WriteIndex <= size)
 	{
-		printf("!!!ERROR:Packet did not fit into our buffer");
+		printf("!!!ERROR:Packet did not fit into our buffer. Size %d, have %d\n", size, MAX_PACKET_SIZE - WriteIndex);
 		WriteIndex = 0;
 		ReadIndex = 0;
+		ThrowAwayPacketsUntilSmallPackets = 1;
 		return;
 	}
+
 	//add to our queue buffer. If we have enough data, process those
 	memcpy(&TempPacketStore[WriteIndex], data, size);
 	WriteIndex += size;
+
 	//can we pop packets ?
-	while (WriteIndex - ReadIndex >= WAITING_FOR_X_BYTES)
+	while (WriteIndex - ReadIndex >= WAITING_FOR_X_BYTES && WAITING_FOR_X_BYTES>0 && WriteIndex - ReadIndex != 0)
 	{
 //		ProcessPacket1(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
 		QueuePacketToProcess(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
 		ReadIndex += WAITING_FOR_X_BYTES;
 	}
+
 	//did we pop all packets ?
 	if (ReadIndex >= WriteIndex)
 	{
@@ -163,6 +173,8 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 
 void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 {
+	if (size == 0)
+		return;
 	//theoretical size of a full packet. This is GAME specific !
 	if (WriteIndex == 0)
 	{
@@ -171,8 +183,12 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 		{
 			//ProcessPacket1(data, size);
 			QueuePacketToProcess(&data[2], size - 2);
+			//this could be a full packet. Consider ourself syncronized
+			if (ThrowAwayPacketsUntilSmallPackets > 0)
+				ThrowAwayPacketsUntilSmallPackets--;
 			return;
 		}
+		//more than 1 server packet inside a single network packet
 		if (size>FullPacketSize)
 		{
 			//ProcessPacket1(&data[2], FullPacketSize - 2);
@@ -181,8 +197,8 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			return;
 		}
 	}
-	else
-		QueuePacketForMore(data, size);
+	//if we got here than this is a fragmented packet with first fragment
+	QueuePacketForMore(data, size);
 }
 
 #define PROTOCOL_TCPIP	6
@@ -211,7 +227,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
 		int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 		int BytesToDump = header->len - TotalHeaderSize;
-		//DumpContent(DataStart, BytesToDump);
+		DumpContent(DataStart, BytesToDump);
 		Wait1FullPacketThenParse(DataStart, BytesToDump);
 	}
 }

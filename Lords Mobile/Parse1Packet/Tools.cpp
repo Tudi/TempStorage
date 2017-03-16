@@ -1,3 +1,5 @@
+#include <Windows.h>
+#include <stdio.h>
 
 int IsKeyboardAscii(unsigned char c)
 {
@@ -125,7 +127,7 @@ void PrintDataHexFormat(unsigned char *packet, int size, int From, int To)
 	printf("\n");
 }
 
-void PrintFixedLenString(const char *PreStr, unsigned char *str, int len, int WithNewLine = 1)
+void PrintFixedLenString(char *PreStr, char *str, int len, int WithNewLine)
 {
 	if (PreStr != NULL)
 		printf("%s", PreStr);
