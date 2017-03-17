@@ -1,4 +1,5 @@
 <?php
+set_time_limit(2 * 60 * 60);
 if(!isset($dbi))
 	include("db_connection.php");
 
@@ -15,7 +16,7 @@ while( list( $k,$x,$y,$name,$might,$lastupdated ) = mysql_fetch_row( $result1 ))
 	// should cgeck reource mined
 	// should check if he had prisoners recently
 	// even if might does not change. Troops healed or troops trained might have changed
-	$query2 = "select might,lastupdated from players_archive where k=$k and x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*1)." and name like '".mysql_real_escape_string($name)."' limit 0,1";
+	$query2 = "select might,lastupdated from players_archive where x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*1)." and name like '".mysql_real_escape_string($name)."' limit 0,1";
 //echo "$query2<br>";
 	$result2 = mysql_query($query2,$dbi) or die("Error : 20170220025 <br>".$query2." <br> ".mysql_error($dbi));
 	$MightChanged = -1;
@@ -47,6 +48,7 @@ while( list( $k,$x,$y,$name,$might,$lastupdated ) = mysql_fetch_row( $result1 ))
 //generate new hives
 include("gen_hives.php");
 include("gen_hives_small.php");
+/**/
 //generate static minimaps
 $k=67;
 $TrackWhat = "might";

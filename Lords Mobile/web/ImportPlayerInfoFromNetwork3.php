@@ -278,6 +278,7 @@ function RunSyncQuery($query1)
 
 function RemoteRunQuery($query1)
 {
+//return;
 //	echo "MergedQueries : $query1<br>"; die();
 //	$url = 'http://127.0.0.1:8081/RunQueries.php';
 	$url = 'http://5.79.67.171/RunQueries.php';

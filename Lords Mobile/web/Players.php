@@ -82,8 +82,12 @@ Selected kingdom is <?php echo $FilterK;?><br>
 	if(isset($FN))
 	{
 		//remove "guild" from player name
-		$namename = substr($FN,strpos($FN,']'));
-		$Filter .= " and name like '%]".mysql_real_escape_string($namename)."' ";
+		$IsInGuildPos = strpos($FN,']');
+		if($IsInGuildPos>0)
+			$namename = substr($FN,$IsInGuildPos);
+		else
+			$namename = $FN;
+		$Filter .= " and ( name like '%]".mysql_real_escape_string($namename)."' or name like '".mysql_real_escape_string($namename)."')";
 	}
 	if(isset($FG))
 		$Filter .= " and guild like '".mysql_real_escape_string($FG)."' ";
@@ -95,15 +99,20 @@ Selected kingdom is <?php echo $FilterK;?><br>
 	
 	if( isset($FN) )
 	{
+		$query1 = str_replace(" order by $Order ","", $query1);
 		$q2 = str_replace("players_archive","players", $query1);
-		$query1 = "($query1)union($q2)";
+		$query1 = "($query1)union($q2) order by $Order";
 	}
-//echo $query1;
+//echo $FN.":".$query1;
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank,$Plevel,$castlelevel ) = mysql_fetch_row( $result1 ))
-{
-		$namename = substr($name,strpos($name,']')+1);
+	{
+		$IsInGuildPos = strpos($name,']');
+		if($IsInGuildPos>0)
+			$namename = substr($name,$IsInGuildPos+1);
+		else
+			$namename = $name;
 		
 		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;

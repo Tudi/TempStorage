@@ -27,6 +27,12 @@ for( $y=$RadiusHalf;$y<$MaxY-$RadiusHalf;$y+=$RadiusHalf*2)
 		{
 			if($guild1=="")
 				$guild1="None";
+			if(!isset($PlayerLocations[$guild1]['x']))
+				$PlayerLocations[$guild1]['x']=0;
+			if(!isset($PlayerLocations[$guild1]['x']))
+				$PlayerLocations[$guild1]['y']=0;
+			if(!isset($PlayerLocations[$guild1]['x']))
+				$PlayerLocations[$guild1]['c']=0;
 			$PlayerLocations[$guild1]['x'] += $x1;
 			$PlayerLocations[$guild1]['y'] += $y1;
 			$PlayerLocations[$guild1]['c']++;
@@ -45,8 +51,8 @@ for( $y=$RadiusHalf;$y<$MaxY-$RadiusHalf;$y+=$RadiusHalf*2)
 				$avg_y = (int)($PlayerLocations[$name]['y'] / $PlayerLocations[$name]['c']);
 //				$avg_x = $x;
 //				$avg_y = $y;
-				if($name=="None")
-					$name="";
+//				if($name=="None")
+//					$name="";
 				$query2 = "select sum(might),sum(kills),sum(plevel),sum(castlelevel),count(might) from players where k=$k and x>=".($avg_x-$RadiusHalf)." and x<=".($avg_x+$RadiusHalf)." and y>=".($avg_y-$RadiusHalf)." and y<=".($avg_y+$RadiusHalf)." and guild like '".mysql_real_escape_string($name)."'";
 				$result2 = mysql_query($query2,$dbi) or die("Error : 20170220042 <br>".$query2." <br> ".mysql_error($dbi));
 //echo "$query2<br>"				;

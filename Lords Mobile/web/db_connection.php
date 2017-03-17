@@ -26,8 +26,11 @@ if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
     $ip = $_SERVER['REMOTE_ADDR'];
 }
 
-$query1 = "insert into access_logs (script,URI,IP,stamp)values('".mysql_real_escape_string($_SERVER['SCRIPT_FILENAME'])."','".mysql_real_escape_string($_SERVER['REQUEST_URI'])."','$ip','".mysql_real_escape_string($_SERVER['REQUEST_TIME'])."')";		
-$result1 = mysql_query($query1,$dbi) or die("Error : 20170220041630 <br>".$query1." <br> ".mysql_error($dbi));
+if( strpos($_SERVER['SCRIPT_FILENAME'],"ImportPlayerInfoFromNetwork.php")==0 && strpos($_SERVER['SCRIPT_FILENAME'],"RunQueries.php")==0 )
+{
+	$query1 = "insert into access_logs (script,URI,IP,stamp)values('".mysql_real_escape_string($_SERVER['SCRIPT_FILENAME'])."','".mysql_real_escape_string($_SERVER['REQUEST_URI'])."','$ip','".mysql_real_escape_string($_SERVER['REQUEST_TIME'])."')";		
+	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220041630 <br>".$query1." <br> ".mysql_error($dbi));
+}
 
 include("functions.php");
 ?>
