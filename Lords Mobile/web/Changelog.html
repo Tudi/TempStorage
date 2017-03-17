@@ -1,9 +1,34 @@
+17.March.2017<br>
+- trying to improve import speed. Right now it lags behind scan speed<br>
+<br>
+16.March.2017<br>
+- fixed some deadlock of the new parser when there was a server client desync<br>
+- fixed player history showing players with similar names<br>
+- fixed player not getting updated due to badly interpreted GUID<br>
+- fixed mini hives not showing guildless players<br>
+- increased scanner step size. Now it can scan 1 realm in 20 minutes aprox<br>
+<br>
+15.March.2017<br>
+- a lot of work on the new scanner/ parser / importer<br>
+<br>
+14.March.2017<br>
+- fixed player history ordering by date<br>
+- fixed guild filtering not working<br>
+<br>
+10.March.2017<br>
+- default players list will only show coords + name + guild. Reduced page size from 7.5Mb to 3.3MB<br>
+- players history view will display advanced info about the player<br>
+- guild player list will display all player info<br>
+- fixed guild names getting the short format when doing quick updates<br>
+- added quickload version for players list. Still seems long to me<br>
+<br>
 09.March.2017<br>
 - completly replaced old scanner<br>
 - added quick scan mode to update names and coordinates<br>
+- import castle updates that are somehow not visible to the OCR scanner<br>
 - archive should not double insert players without changed data(parralel scan )<br>
 - Added namechange track to buttons<br>
-- removed innactive and prisoners column from player list<br>
+- removed innactive and prisoners column from player list. Page size is still huge. Will add JSON..<br>
 - show player name without guild<br>
 - fixed player renames not showing guild info<br>
 <br>

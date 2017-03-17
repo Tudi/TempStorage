@@ -103,8 +103,8 @@ Selected kingdom is <?php echo $FilterK;?><br>
 	if(isset($FN))
 	{
 		//remove "guild" from player name
-		$namename = substr($FN,strpos($FN,']')+1);
-		$Filter .= " and name like '%".mysql_real_escape_string($FN)."' ";
+		$namename = substr($FN,strpos($FN,']'));
+		$Filter .= " and name like '%]".mysql_real_escape_string($namename)."' ";
 	}
 	if(isset($FG))
 		$Filter .= " and guild like '".mysql_real_escape_string($FG)."' ";

@@ -3,6 +3,7 @@ set_time_limit(2 * 60 * 60);
 	
 include("db_connection.php");
 
+$MergedQueries = "";
 if(!isset($x) && !isset($y) )
 	ImportFromFile();
 else
@@ -18,6 +19,7 @@ function ImportFromWebCall()
 	Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel);
 	PostImportActions();
 	//http://10.50.160.60:8081/ImportPlayerInfoFromNetwork.php?k=67&x=1&y=2&name=Tudi&guild=wib&CLevel=3&kills=4&vip=5&GuildRank6&might=7&HasPrisoners=8&PLevel=9&guildF=sea wolves
+	//http://127.0.0.1:8081/ImportPlayerInfoFromNetwork3.php?k=$k&x=$x&y=$y&name=$name&guild=$guild&CLevel=$CLevel&kills=$kills&vip=$vip&GuildRank=$GuildRank&might=$might&HasPrisoners=$HasPrisoners&PLevel=$PLevel&guildF=$guildF
 }
 
 function ImportFromFile()
@@ -151,7 +153,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	// player got renamed ? Try to search it based on coords
 	if( $LastUpdated2 == 0 || $LastUpdated2 == "" )
 	{
-		$query1 = "select rowid,name,LastUpdated,PLevel,kills,might,vip,guildrank,castlelevel,guild from players where k ='$k' and x='$x' and y='$y' and kills >= '$kills' and vip >= '$vip' and castlelevel>=$CLevel limit 0,1";
+		$query1 = "select rowid,name,LastUpdated,PLevel,kills,might,vip,guildrank,castlelevel,guild from players where k ='$k' and x='$x' and y='$y' and kills >= '$kills' and vip >= '$vip' and castlelevel>='$CLevel' limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $rowid,$oldname,$LastUpdated2,$PLevel2,$kills2,$might2,$vip2,$guildrank2,$castlelevel2,$guild2 ) = mysql_fetch_row( $result1 );			
 		//save the namechange
@@ -202,19 +204,21 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 //		if($LastUpdated2 < $LastUpdated - 5 * 60 )
 		{
 			// do we have this row in archive already ?
-			$query1 = "select rowid from players_archive where x=$x and y=$y and kills=$kills and might=$might and vip=$vip and guildrank=$GuildRank and PLevel=$PLevel and castlelevel=$CLevel and name like '".mysql_real_escape_string($NewName)."' limit 0,1";
+			$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$GuildRank' and PLevel='$PLevel' and castlelevel='$CLevel' and name like '".mysql_real_escape_string($NewName)."' limit 0,1";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 			list( $rowid2 ) = mysql_fetch_row( $result1 );
 			if( $rowid2 == "" || $rowid2 == 0 )
 			{
 				$query1 = "insert ignore into players_archive (select * from players where rowid=$rowid)";
-				$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+				//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+				RunSyncQuery($query1);
 			}
 		}
 		
 		//ditch old
 		$query1 = "delete from players where rowid=$rowid";
-		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+		//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+		RunSyncQuery($query1);
 	}
 	
 	$LastUpdated += 1;
@@ -239,7 +243,8 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 
 //continue;			
 //			echo "$query1<br>";
-	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
+	//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
+	RunSyncQuery($query1);
 	
 	//delete old ones in the neighbourhood
 	$xmin = $x - 10;
@@ -250,9 +255,42 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	$LastTime = $LastUpdated;
 	//move to archive 
 	$query1 = "insert into players_archive ( select * from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan)";
-	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+	//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+	RunSyncQuery($query1);
 	//delete from actual
 	$query1 = "delete from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
-	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));	
+	//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));	
+	RunSyncQuery($query1);
+}
+
+//now run all the queries we stacked up during this execution
+RemoteRunQuery($MergedQueries);
+
+function RunSyncQuery($query1)
+{
+	global $dbi, $MergedQueries;
+	//run it in our DB
+	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));	
+	//run it on the remote machine
+	$MergedQueries .= $query1.";";
+//echo "MergedQueries now : $MergedQueries<br>";
+}
+
+function RemoteRunQuery($query1)
+{
+//	echo "MergedQueries : $query1<br>"; die();
+//	$url = 'http://127.0.0.1:8081/RunQueries.php';
+	$url = 'http://5.79.67.171/RunQueries.php';
+	$data = array('z' => '-1', 'queries' => $query1);
+	$options = array(
+			'http' => array(
+			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+			'method'  => 'POST',
+			'content' => http_build_query($data),
+		)
+	);
+
+	$context  = stream_context_create($options);
+	$result = file_get_contents($url, false, $context);	
 }
 ?>
