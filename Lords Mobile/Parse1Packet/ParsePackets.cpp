@@ -83,7 +83,8 @@ int SearchNextName(unsigned char *packet, int size, int Start, int &StringType)
 		// this happens when server respods to object list query
 		//could be a realm number
 		if (packet[Ind] != 0 && packet[Ind + 16] == 0x043 && packet[Ind + 17] == 0x00)
-		{
+//		if (packet[Ind + 16] == 0x043 && packet[Ind + 17] == 0x00)	// no player name, could be maybe a monster without a name ? Based on object type ?
+			{
 			if (OneStringOnSize(packet, size, Ind, 13))
 			{
 				if (OneStringOnSize(packet, size, Ind + 13, 3))
@@ -156,7 +157,7 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 		for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) GuildFullName[i] = p2->GuildFullName[i];
 		GuildFullName[i] = 0;
 		if (SkipInsertOnlyDebug==0)
-			HTTPPostData(p1->Realm, x, y, tName, tGuild, GuildFullName, p1->CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, 0, 0);
+			QueuePlayerToProcess(p1->Realm, x, y, tName, tGuild, GuildFullName, p1->CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, 0, 0);
 	}
 	else
 		printf("Investigate why there is no create packet for castle at %d %d - %s\n", x, y, CD2->GuildFullName);
@@ -289,7 +290,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 					for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
 					tGuild[i] = 0;
 					if (SkipInsertOnlyDebug==0)
-						HTTPPostData(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
+						QueuePlayerToProcess(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
 				}
 			}
 			else
@@ -530,9 +531,10 @@ int	KeepThreadsRunning = 1;
 
 void QueuePacketToProcess(unsigned char *data, int size)
 {
-	PacketCircularBuffer[PacketCircularBufferWriteIndex] = new unsigned char[size + 2];
-	*(unsigned short *)&PacketCircularBuffer[PacketCircularBufferWriteIndex][0] = size;
-	memcpy(&PacketCircularBuffer[PacketCircularBufferWriteIndex][2], data, size);
+	unsigned char *t = (unsigned char*)malloc(size + 2 + 2);
+	*(unsigned short *)t = size;
+	memcpy(t+2, data, size);
+	PacketCircularBuffer[PacketCircularBufferWriteIndex] = t;
 	PacketCircularBufferWriteIndex = (PacketCircularBufferWriteIndex + 1) % MAX_PACKET_CIRCULAR_BUFFER;
 }
 
@@ -551,14 +553,16 @@ DWORD WINAPI BackgroundProcessPackets(LPVOID lpParam)
 			//if this is a valid buffer than we try to process it
 			if (PopBuffer != NULL)
 			{
-				//parse the packet and if it is a packet we want we will use a HTTP API to push it into our DB. The http API runs async 
+				//parse the packet and if it is a packet we want we will use a HTTP API to push it into our DB. The http API runs async
+				printf("process packet : in queue %d\n", PacketCircularBufferWriteIndex - PopIndex);
 				ProcessPacket1(&PopBuffer[2], *(unsigned short*)PopBuffer);
 				//we no longer need this buffer
-				delete[] PopBuffer;
+				free( PopBuffer );
 			}
 		}
+		else
 		//avoid 100% CPU usage. There is no scientific value here
-		Sleep(1);
+			Sleep(10);
 	}
 	KeepThreadsRunning = 0;
 	return 0;
@@ -588,6 +592,9 @@ void	CreateBackgroundPacketProcessThread()
 
 void	StopThreadedPacketParser()
 {
+	if (PacketProcessThreadHandle == 0)
+		return;
+
 	//signal that we want to break the processing loop
 	KeepThreadsRunning = 2;
 	//wait for the processing thread to finish

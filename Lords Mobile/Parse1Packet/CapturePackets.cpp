@@ -90,6 +90,7 @@ typedef struct tcp_header
 
 
 #ifdef WIN32
+/*
 unsigned short ntohs1(const unsigned short net)
 {
 	unsigned char data[2] = {};
@@ -108,7 +109,7 @@ unsigned int ntohl1(unsigned int const net) {
 		| ((unsigned int)data[1] << 16)
 		| ((unsigned int)data[0] << 24);
 }
-
+*/
 #endif
 
 FILE *FCONTENT = NULL;
@@ -127,10 +128,10 @@ void DumpContent(unsigned char *data, unsigned int size)
 unsigned char *TempPacketStore = NULL;
 unsigned int WriteIndex = 0;
 unsigned int ReadIndex = 0;
-unsigned int ThrowAwayPacketsUntilSmallPackets = 0;
+unsigned int ThrowAwayPacketsUntilSmallPackets = 1;
 #define MAX_PACKET_SIZE					(10 * 1024 * 1024)
 #define WAITING_FOR_X_BYTES				(*(unsigned short*)&TempPacketStore[ReadIndex])
-#define MAX_PACKET_SIZE_SERVER_SENDS	1500
+#define MAX_PACKET_SIZE_SERVER_SENDS	15000
 void QueuePacketForMore(unsigned char *data, unsigned int size)
 {
 	//our temp store
@@ -142,7 +143,10 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 		return;
 
 	//seems like we can panic. At this point we should try to resync to the next packet start. But how to do that ?
-	if (MAX_PACKET_SIZE-WriteIndex <= size)
+	if (MAX_PACKET_SIZE-WriteIndex <= size
+		|| WriteIndex > MAX_PACKET_SIZE_SERVER_SENDS
+		|| size > MAX_PACKET_SIZE_SERVER_SENDS
+		)
 	{
 		printf("!!!ERROR:Packet did not fit into our buffer. Size %d, have %d\n", size, MAX_PACKET_SIZE - WriteIndex);
 		WriteIndex = 0;
@@ -227,17 +231,20 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
 		int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 		int BytesToDump = header->len - TotalHeaderSize;
-		DumpContent(DataStart, BytesToDump);
-		Wait1FullPacketThenParse(DataStart, BytesToDump);
+		if (BytesToDump > 0)
+		{
+			DumpContent(DataStart, BytesToDump);
+			Wait1FullPacketThenParse(DataStart, BytesToDump);
+		}
 	}
 }
 
-pcap_t				* adapterHandle;
+pcap_t				* adapterHandle = NULL;
+char                 errorBuffer[PCAP_ERRBUF_SIZE];
 int StartCapturePackets(int AutoPickAdapter)
 {
 	pcap_if_t           * allAdapters;
 	pcap_if_t           * adapter;
-	char                 errorBuffer[PCAP_ERRBUF_SIZE];
 
 	// retrieve the adapters from the computer
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &allAdapters, errorBuffer) == -1)
@@ -328,6 +335,8 @@ int StartCapturePackets(int AutoPickAdapter)
 
 void StopCapturePackets()
 {
+	if (adapterHandle == NULL)
+		return;
 	pcap_breakloop(adapterHandle);
 	pcap_close(adapterHandle);
 	adapterHandle = NULL;
