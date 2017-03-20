@@ -132,6 +132,7 @@ unsigned int ThrowAwayPacketsUntilSmallPackets = 1;
 #define MAX_PACKET_SIZE					(10 * 1024 * 1024)
 #define WAITING_FOR_X_BYTES				(*(unsigned short*)&TempPacketStore[ReadIndex])
 #define MAX_PACKET_SIZE_SERVER_SENDS	15000
+int ThrowAwayCount = 0;
 void QueuePacketForMore(unsigned char *data, unsigned int size)
 {
 	//our temp store
@@ -140,7 +141,10 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 
 	//internal buffer is in a fucked up state !
 	if (ThrowAwayPacketsUntilSmallPackets > 0)
+	{
+		printf("%d)Throwing away packet with size %d\n", ThrowAwayCount++, size);
 		return;
+	}
 
 	//seems like we can panic. At this point we should try to resync to the next packet start. But how to do that ?
 	if (MAX_PACKET_SIZE-WriteIndex <= size
@@ -148,10 +152,11 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 		|| size > MAX_PACKET_SIZE_SERVER_SENDS
 		)
 	{
-		printf("!!!ERROR:Packet did not fit into our buffer. Size %d, have %d\n", size, MAX_PACKET_SIZE - WriteIndex);
+		printf("!!!ERROR:Packet did not fit into our buffer. Write index %d, Size %d, have %d\n", WriteIndex, size, MAX_PACKET_SIZE - WriteIndex);
 		WriteIndex = 0;
 		ReadIndex = 0;
 		ThrowAwayPacketsUntilSmallPackets = 1;
+		ThrowAwayCount = 0;
 		return;
 	}
 
@@ -193,7 +198,7 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			return;
 		}
 		//more than 1 server packet inside a single network packet
-		if (size>FullPacketSize)
+		if ( size>FullPacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
 		{
 			//ProcessPacket1(&data[2], FullPacketSize - 2);
 			QueuePacketToProcess(&data[2], FullPacketSize - 2);
@@ -294,13 +299,12 @@ int StartCapturePackets(int AutoPickAdapter)
 		adapter = adapter->next;
 
 	// open the adapter
-	adapterHandle = pcap_open(adapter->name, // name of the adapter
-		65536,         // portion of the packet to capture
+	adapterHandle = pcap_open_live(adapter->name, // name of the adapter
+		BUFSIZ,         // portion of the packet to capture
 		// 65536 guarantees that the whole 
 		// packet will be captured
 		PCAP_OPENFLAG_PROMISCUOUS, // promiscuous mode
-		1000,             // read timeout - 1 millisecond
-		NULL,          // authentication on the remote machine
+		-1,             // read timeout - 1 millisecond
 		errorBuffer    // error buffer
 		);
 
@@ -329,6 +333,8 @@ int StartCapturePackets(int AutoPickAdapter)
 
 	//capture packets using callback
 	pcap_loop(adapterHandle, 0, packet_handler, NULL);
+
+	printf("Done creating background thread to monitor network trafic\n");
 
 	return 0;
 }

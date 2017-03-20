@@ -3,6 +3,7 @@
 #include "ParsePackets.h"
 #include "CapturePackets.h"
 #include "HTTPSendData.h"
+#include "LordsMobileControl.h"
 #include <Windows.h>
 
 void OfflineParsing()
@@ -17,6 +18,9 @@ void OfflineParsing()
 
 void OnlineScanParsing()
 {
+	//move the screen, close popups
+	LordsMobileControlStartup();
+
 	HttpSendStartup();
 	//	HTTPPostData(67, 1, 2, "Tudi", "wib", "sea wolves", 3, 4, 5, 6, 7, 8, 9);
 
@@ -29,15 +33,18 @@ void OnlineScanParsing()
 
 void main()
 {
-	OfflineParsing();
-//	OnlineScanParsing();
+//	OfflineParsing();
+	OnlineScanParsing();
 
-	printf("Waiting for packets to come and process\n. Press any key to exit");
-	_getch();
+	printf("Waiting for packets to come and process\n. Press 'a' key to exit");
+	char AKey = ' ';
+	while (AKey != 'a')
+		scanf_s("%c", &AKey, sizeof(AKey));
 
 	//shut everything down
 	StopCapturePackets();
 	StopThreadedPacketParser();
 	HttpSendShutdown();
+	LordsMobileControlShutdown();
 	printf("Properly shut everything down. Exiting\n");
 }

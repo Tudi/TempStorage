@@ -588,6 +588,8 @@ void	CreateBackgroundPacketProcessThread()
 		&pDataArray,				// argument to thread function 
 		0,							// use default creation flags 
 		&PacketProcessThreadId);	// returns the thread identifier 
+
+	printf("Done creating background thread to parse network packets\n");
 }
 
 void	StopThreadedPacketParser()

@@ -33,6 +33,9 @@
     <ClCompile Include="HTTPSendData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LordsMobileControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapturePackets.h">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Tools.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LordsMobileControl.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

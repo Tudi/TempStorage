@@ -117,7 +117,7 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	}
 
 	// send GET / HTTP
-	send(Socket, get_http.c_str(), strlen(get_http.c_str()), 0);
+	send(Socket, get_http.c_str(), (int)strlen(get_http.c_str()), 0);
 
 	// recieve html
 //#define DEBUG_HTTP_BEHAVIOR 1
@@ -260,6 +260,8 @@ void	CreateBackgroundPlayerProcessThread()
 		&ThreadParamPlayerData,		// argument to thread function 
 		0,							// use default creation flags 
 		&PacketProcessThreadId);	// returns the thread identifier 
+
+	printf("Done creating background thread to send data over http\n");
 }
 
 void	StopThreadedPlayerSender()
