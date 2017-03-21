@@ -29,9 +29,9 @@ for( $y=$RadiusHalf;$y<$MaxY-$RadiusHalf;$y+=$RadiusHalf*2)
 				$guild1="None";
 			if(!isset($PlayerLocations[$guild1]['x']))
 				$PlayerLocations[$guild1]['x']=0;
-			if(!isset($PlayerLocations[$guild1]['x']))
+			if(!isset($PlayerLocations[$guild1]['y']))
 				$PlayerLocations[$guild1]['y']=0;
-			if(!isset($PlayerLocations[$guild1]['x']))
+			if(!isset($PlayerLocations[$guild1]['c']))
 				$PlayerLocations[$guild1]['c']=0;
 			$PlayerLocations[$guild1]['x'] += $x1;
 			$PlayerLocations[$guild1]['y'] += $y1;

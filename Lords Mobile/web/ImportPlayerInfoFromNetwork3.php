@@ -9,6 +9,9 @@ if(!isset($x) && !isset($y) )
 else
 	ImportFromWebCall();
 
+//now run all the queries we stacked up during this execution
+RemoteRunQuery($MergedQueries);
+
 function ImportFromWebCall()
 {
 	global $x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel,$LastUpdated;
@@ -119,11 +122,13 @@ function PostImportActions()
 	{
 		$olderthan = $LastUpdated - 3 * 24 * 60 * 60;
 		//move to archive 
-		$query1 = "insert into players_archive ( select * from players where LastUpdated < $olderthan)";
-		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+		$query1 = "insert ignore into players_archive ( select * from players where LastUpdated < $olderthan)";
+		//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+		RunSyncQuery($query1);
 		//delete from actual
 		$query1 = "delete from players where LastUpdated < $olderthan";
-		$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
+		//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
+		RunSyncQuery($query1);
 	}
 }
 
@@ -254,7 +259,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	$olderthan = $LastUpdated - 24 * 60 * 60;
 	$LastTime = $LastUpdated;
 	//move to archive 
-	$query1 = "insert into players_archive ( select * from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan)";
+	$query1 = "insert ignore into players_archive ( select * from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan)";
 	//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
 	RunSyncQuery($query1);
 	//delete from actual
@@ -262,9 +267,6 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));	
 	RunSyncQuery($query1);
 }
-
-//now run all the queries we stacked up during this execution
-RemoteRunQuery($MergedQueries);
 
 function RunSyncQuery($query1)
 {
@@ -276,12 +278,13 @@ function RunSyncQuery($query1)
 //echo "MergedQueries now : $MergedQueries<br>";
 }
 
-function RemoteRunQuery($query1)
+function RemoteRunQuery2($query1)
 {
 //return;
 //	echo "MergedQueries : $query1<br>"; die();
 //	$url = 'http://127.0.0.1:8081/RunQueries.php';
 	$url = 'http://5.79.67.171/RunQueries.php';
+//	$url = 'http://lordsmobile.online/RunQueries.php';
 	$data = array('z' => '-1', 'queries' => $query1);
 	$options = array(
 			'http' => array(
@@ -293,5 +296,24 @@ function RemoteRunQuery($query1)
 
 	$context  = stream_context_create($options);
 	$result = file_get_contents($url, false, $context);	
+	echo "$result";
+}
+
+function RemoteRunQuery($query1)
+{
+	$data = array('z' => '-1', 'queries' => $query1);
+
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_URL,"http://5.79.67.171/RunQueries.php");
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+	$server_output = curl_exec ($ch);
+
+	curl_close ($ch);	
+	echo "Remote query reply :";
+	var_dump( $server_output );
 }
 ?>
