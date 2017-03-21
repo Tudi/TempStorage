@@ -531,6 +531,8 @@ int	KeepThreadsRunning = 1;
 
 void QueuePacketToProcess(unsigned char *data, int size)
 {
+	if (size <= 0)
+		return;
 	unsigned char *t = (unsigned char*)malloc(size + 2 + 2);
 	*(unsigned short *)t = size;
 	memcpy(t+2, data, size);
