@@ -281,5 +281,5 @@ void	StopThreadedPlayerSender()
 
 int IsHTTPQueueEmpty()
 {
-	return (PlayerCircularBufferReadIndex == PlayerCircularBufferWriteIndex);
+	return (PlayerCircularBufferReadIndex == PlayerCircularBufferWriteIndex || PlayerProcessThreadHandle == 0);
 }

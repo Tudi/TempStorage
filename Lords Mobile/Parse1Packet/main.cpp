@@ -8,8 +8,8 @@
 
 void OfflineParsing()
 {
-	HttpSendStartup();
-	ParseOfflineDump("03_17");
+//	HttpSendStartup();
+	ParseOfflineDump("03_20");
 	//wait for the HTTP queue to finish
 	while (IsHTTPQueueEmpty() == 0)
 		Sleep(10);

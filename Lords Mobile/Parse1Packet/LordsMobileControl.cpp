@@ -42,7 +42,7 @@ void	LordsMobileControlStartup()
 
 void	LordsMobileControlShutdown()
 {
-	if (BackgroundProcessScanGame == 0)
+	if (ScanGameProcessThreadHandle == 0)
 		return;
 
 	//signal that we want to break the processing loop

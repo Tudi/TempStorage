@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <map>
+#include <time.h>
 #include "ParsePackets.h"
 #include "HTTPSendData.h"
 #include "Tools.h"
@@ -8,26 +9,56 @@ int SkipInsertOnlyDebug = 0;
 
 enum ObjectTypesList
 {
-	OBJECT_TYPE_MAYBE_ARMY_OR_RESOURCE	= 0,
-	OBJECT_TYPE_MAYBE_RESOURCE1			= 1,
-	OBJECT_TYPE_MAYBE_RESOURCE2			= 2,
-	OBJECT_TYPE_MAYBE_RESOURCE3			= 3,
-	OBJECT_TYPE_MAYBE_RESOURCE4			= 4,
-	OBJECT_TYPE_MAYBE_RESOURCE5			= 5,
-	OBJECT_TYPE_GEM_RESOURCE			= 6,
-	OBJECT_TYPE_PLAYER					= 8,
-	OBJECT_TYPE_CAMP					= 9,
+	OBJECT_TYPE_MAYBE_ARMY		= 0,
+	OBJECT_TYPE_RESOURCE_FOOD	= 1,
+	OBJECT_TYPE_RESOURCE2		= 2,	// rock or wood
+	OBJECT_TYPE_RESOURCE_ORE	= 3,	
+	OBJECT_TYPE_RESOURCE4		= 4,	// rock or wood
+	OBJECT_TYPE_RESOURCE_GOLD	= 5,
+	OBJECT_TYPE_GEM_RESOURCE	= 6,
+	OBJECT_TYPE_PLAYER			= 8,
+	OBJECT_TYPE_CAMP			= 9,
+};
+
+enum PlayerCastleStatusFlags
+{
+	CASTLE_STATUS_BURNING				= 0x20,
+	CASTLE_STATUS_SHIELDED				= 0x40,
+	CASTLE_STATUS_HAS_PRISONERS			= 0x80,
+};
+
+enum PlayerCastleTitles
+{
+	TITLE_QUARTERMASTER	= 4,
+	TITLE_SCOUNDREL		= 13,
 };
 
 #pragma pack(push, 1)
+struct PlayerNameExt
+{
+	unsigned char	StatusFlags;
+	unsigned short	Title;
+	unsigned short	RealmGuild;
+	unsigned int	ExtendedTypeId;			//always 0 except for dark.nest ( has 513 )? Maybe IconId ?
+};
+struct MineExt
+{
+	unsigned int	ResourceMax;
+	float			MinedPercent;		
+	unsigned int	SomeTimestamp;		// not confirmed
+};
 struct PlayerNameDesc
 {
 	unsigned int	GUID;
-	unsigned char	ObjectType;	//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
+	unsigned char	ObjectType;				//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
 	char			Name[13];
 	char			Guild[3];
 	unsigned short	Realm;
 	unsigned char	CastleLevel;
+	union {
+		PlayerNameExt	PEx;
+		MineExt			MEx;
+	};
 };
 
 struct CastlePopupInfo
@@ -273,6 +304,23 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 				printf("Castle Level:%d\n", PD->CastleLevel);
 				//				printf("found it in players.txt:%d\n", SearchNameInFile(PD->Name));
 				StructsFound++;
+				if (PD->ObjectType == OBJECT_TYPE_PLAYER)
+				{
+					printf("statusFlags:%02X\n", PD->PEx.StatusFlags);
+					printf("Title:%d\n", PD->PEx.Title);
+					printf("Guild Realm:%d\n", PD->PEx.RealmGuild);
+					printf("Extended ID:%d\n", PD->PEx.ExtendedTypeId);
+//					if (PD->PEx.ExtendedTypeId != 0 && PD->PEx.ExtendedTypeId != 513)
+//						printf("unk2 is not 0\n");
+				}
+				else if (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE)
+				{
+					printf("ResourceMax:%d\n", PD->MEx.ResourceMax);
+					printf("Mined percent:%.2f\n", PD->MEx.MinedPercent);
+					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->MEx.SomeTimestamp, (PD->MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60))/60);
+//					if (PD->PEx.ExtendedTypeId != 0 && PD->PEx.ExtendedTypeId != 513)
+//						printf("unk2 is not 0\n");
+				}
 #endif
 				//store it for later
 				if (PD->ObjectType == OBJECT_TYPE_PLAYER)
@@ -293,7 +341,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 						QueuePlayerToProcess(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
 				}
 			}
-			else
+			else if (PD->ObjectType != OBJECT_TYPE_MAYBE_ARMY)
 			{
 				printf("%d)Incorrect player data found above. Parse it manually : %s t=%d x=%d y=%d c=%d\n", BadPlayerPacketsFound++, PD->Name, PD->ObjectType, x, y, PD->CastleLevel);
 			}

@@ -88,30 +88,6 @@ typedef struct tcp_header
 	unsigned short urgent_pointer; // urgent pointer
 } TCP_HDR;
 
-
-#ifdef WIN32
-/*
-unsigned short ntohs1(const unsigned short net)
-{
-	unsigned char data[2] = {};
-	memcpy(&data, &net, sizeof(data));
-
-	return ((unsigned int)data[1] << 0)
-		| ((unsigned int)data[0] << 8);
-}
-
-unsigned int ntohl1(unsigned int const net) {
-	unsigned char data[4] = {};
-	memcpy(&data, &net, sizeof(data));
-
-	return ((unsigned int)data[3] << 0)
-		| ((unsigned int)data[2] << 8)
-		| ((unsigned int)data[1] << 16)
-		| ((unsigned int)data[0] << 24);
-}
-*/
-#endif
-
 FILE *FCONTENT = NULL;
 void DumpContent(unsigned char *data, unsigned int size)
 {
