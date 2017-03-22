@@ -7,17 +7,22 @@
 
 int SkipInsertOnlyDebug = 0;
 
+#define MAX_KNOWN_REALM_ID		120		//actually it's only 100, but maybe they will add more very soon
+#define MAX_KNOWN_CASTLE_LEVEL	25
+
 enum ObjectTypesList
 {
-	OBJECT_TYPE_MAYBE_ARMY		= 0,
+	OBJECT_TYPE_MAYBE_ARMY		= 0,	// don't think it's army, got it for neighbour that had no army or camp out
 	OBJECT_TYPE_RESOURCE_FOOD	= 1,
-	OBJECT_TYPE_RESOURCE2		= 2,	// rock or wood
+	OBJECT_TYPE_RESOURCE_ROCK	= 2,	
 	OBJECT_TYPE_RESOURCE_ORE	= 3,	
-	OBJECT_TYPE_RESOURCE4		= 4,	// rock or wood
+	OBJECT_TYPE_RESOURCE_WOOD	= 4,	
 	OBJECT_TYPE_RESOURCE_GOLD	= 5,
 	OBJECT_TYPE_GEM_RESOURCE	= 6,
 	OBJECT_TYPE_PLAYER			= 8,
 	OBJECT_TYPE_CAMP			= 9,
+	OBJECT_TYPE_MONSTER			= 10,	//
+	OBJECT_TYPE_MAX_KNOWN		
 };
 
 enum PlayerCastleStatusFlags
@@ -47,10 +52,8 @@ struct MineExt
 	float			MinedPercent;		
 	unsigned int	SomeTimestamp;		// not confirmed
 };
-struct PlayerNameDesc
+struct BuildingObjectDesciption
 {
-	unsigned int	GUID;
-	unsigned char	ObjectType;				//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
 	char			Name[13];
 	char			Guild[3];
 	unsigned short	Realm;
@@ -58,6 +61,23 @@ struct PlayerNameDesc
 	union {
 		PlayerNameExt	PEx;
 		MineExt			MEx;
+		char			PaddingOrSomething[19];
+	};
+};
+struct MonsterObjectDescriptor
+{
+	unsigned char	Level;
+	unsigned short	Type; 
+	unsigned int	Time;					//seconds multiplied by 100 ? Or milliseconds ? Have to confirm
+	float			HealthPCT;
+};
+struct GenericMapObject
+{
+	unsigned int	GUID;
+	unsigned char	ObjectType;				//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
+	union{
+		BuildingObjectDesciption	B;
+		MonsterObjectDescriptor		M;
 	};
 };
 
@@ -76,8 +96,8 @@ struct CastlePopupInfo
 };
 #pragma pack(pop, 1)
 
-std::map<int, PlayerNameDesc*>	MapCastlePackets;
-std::map<int, CastlePopupInfo*> ClickCastlePackets;
+std::map<int, GenericMapObject*>	MapCastlePackets;
+std::map<int, CastlePopupInfo*>		ClickCastlePackets;
 
 #define GenMyGUID(x,y) (((unsigned short)x << 16)| ((unsigned short)y))
 
@@ -108,32 +128,78 @@ int GetXYFromGUID(unsigned int GUID, int &x, int &y)
 int SearchNextName(unsigned char *packet, int size, int Start, int &StringType)
 {
 	//search for realm first
-	int Ind = Start;
+	int Ind = Start-1;
 	while (Ind < size)
 	{
-		// this happens when server respods to object list query
-		//could be a realm number
-		if (packet[Ind] != 0 && packet[Ind + 16] == 0x043 && packet[Ind + 17] == 0x00)
+		Ind++;
+		GenericMapObject *PD = (GenericMapObject *)&packet[Ind];
+
+		//we are not searching for new object types atm
+		if (PD->ObjectType > OBJECT_TYPE_MAX_KNOWN)
+			continue;
+
+		if (PD->B.Realm > MAX_KNOWN_REALM_ID)
+			continue;
+
+		if (PD->ObjectType != OBJECT_TYPE_MAYBE_ARMY && PD->ObjectType != OBJECT_TYPE_MONSTER && (PD->B.CastleLevel > MAX_KNOWN_CASTLE_LEVEL || PD->B.CastleLevel == 0))
+			continue;
+
+		// this happens when server responds to object list query
+		// could be a realm number
+		if (PD->B.Name[0] != 0)
 //		if (packet[Ind + 16] == 0x043 && packet[Ind + 17] == 0x00)	// no player name, could be maybe a monster without a name ? Based on object type ?
+		{
+			int x, y;
+			if (PD->ObjectType == OBJECT_TYPE_MAYBE_ARMY || GetXYFromGUID(PD->GUID, x, y) == 0)
 			{
-			if (OneStringOnSize(packet, size, Ind, 13))
-			{
-				if (OneStringOnSize(packet, size, Ind + 13, 3))
+				if (OneStringOnSize((unsigned char*)PD->B.Name, sizeof(PD->B.Name) + 1, 0, sizeof(PD->B.Name)))
 				{
+					if (OneStringOnSize((unsigned char*)PD->B.Guild, sizeof(PD->B.Guild) + 1, 0, sizeof(PD->B.Guild)))
+					{
+						StringType = 1;
+						return Ind;
+					}
+				}
+			}
+		}
+		// empty resource fields have no realm !
+		// 00 14 03 19 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02
+		if (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE)
+		{
+			//resource node level
+			if (PD->B.CastleLevel <= 5 && PD->B.MEx.MinedPercent == 0 && PD->B.MEx.SomeTimestamp == 0)
+			{
+				int x, y;
+				if (GetXYFromGUID(PD->GUID, x, y) == 0 
+					&& IsAllZero(PD->B.Name, sizeof(PD->B.Name), 0, sizeof(PD->B.Name))
+					&& IsAllZero(PD->B.Guild, sizeof(PD->B.Guild), 0, sizeof(PD->B.Guild))
+					)
+				{
+					//most probably this is an empty resource node
 					StringType = 1;
 					return Ind;
 				}
 			}
 		}
-		// maybe this is a guild name
+		//object type 10 is just strange. Can be found around dark nests. Does not have a valid name. Just some values
+		if (PD->ObjectType == OBJECT_TYPE_MONSTER)
+		{
+			if ((PD->M.HealthPCT < 105.0f || PD->M.HealthPCT > 0.0f) && PD->M.Level <= 5 && PD->M.Level > 0 && PD->M.Time < 0x01000000 )
+//			if (PD->B.Realm == 0 && PD->B.CastleLevel == 0 && PD->B.MEx.MinedPercent == 0 && PD->B.MEx.ResourceMax == 0 && PD->B.MEx.SomeTimestamp == 0)
+			{
+				StringType = 1;
+				return Ind;
+			}
+		}
+
+/*		// maybe this is a guild name
 		//48 65 6E 74 61 69 20 67 61 20 64 61 69 73 75 6B 69 00 00 00 
 		//42 6F 72 6E 20 74 6F 20 62 65 20 57 69 6C 64 00 00 00 00 00
 		if (OneStringOnSize(packet, size, Ind, 20))
 		{
 			StringType = 2;
 			return Ind;
-		}
-		Ind++;
+		}*/
 	}
 	return 0;
 }
@@ -173,22 +239,22 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 	ClickCastlePackets[GenMyGUID(x,y)] = CD2;
 
 	//send it over HTML
-	std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(GenMyGUID(x,y));
+	std::map<int, GenericMapObject*>::iterator fc = MapCastlePackets.find(GenMyGUID(x, y));
 	if (fc != MapCastlePackets.end())
 	{
-		PlayerNameDesc *p1 = fc->second;
+		GenericMapObject *p1 = fc->second;
 		CastlePopupInfo *p2 = CD2;
 		int i;
 		char tName[500], tGuild[5];
-		for (i = 0; i < sizeof(p1->Name) && p1->Name[i] != 0; i++) tName[i] = p1->Name[i];
+		for (i = 0; i < sizeof(p1->B.Name) && p1->B.Name[i] != 0; i++) tName[i] = p1->B.Name[i];
 		tName[i] = 0;
-		for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
+		for (i = 0; i < sizeof(p1->B.Guild) && p1->B.Guild[i] != 0; i++) tGuild[i] = p1->B.Guild[i];
 		tGuild[i] = 0;
 		char GuildFullName[500];
 		for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) GuildFullName[i] = p2->GuildFullName[i];
 		GuildFullName[i] = 0;
 		if (SkipInsertOnlyDebug==0)
-			QueuePlayerToProcess(p1->Realm, x, y, tName, tGuild, GuildFullName, p1->CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, 0, 0);
+			QueuePlayerToProcess(p1->B.Realm, x, y, tName, tGuild, GuildFullName, p1->B.CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, p1->B.PEx.StatusFlags, 0);
 	}
 	else
 		printf("Investigate why there is no create packet for castle at %d %d - %s\n", x, y, CD2->GuildFullName);
@@ -284,66 +350,80 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 		//dump cur name
 		if (StringType == 1)
 		{
-			NameStart -= 5;
-			NameEnd = NameStart + sizeof(PlayerNameDesc);
+			NameEnd = NameStart + sizeof(BuildingObjectDesciption);
 
 #ifdef _DEBUG
 			PrintDataHexFormat(packet, size, PrevNameStart, NameStart);
 			PrintDataHexFormat(packet, size, NameStart, NameEnd);
 #endif
 
-			PlayerNameDesc *PD = (PlayerNameDesc *)&packet[NameStart];
+			GenericMapObject *PD = (GenericMapObject *)&packet[NameStart];
 			int x, y;
-			if (GetXYFromGUID(PD->GUID, x, y) == 0 && PD->CastleLevel <= 25)
+			if (GetXYFromGUID(PD->GUID, x, y) == 0 && PD->B.CastleLevel <= 25)
 			{
 #ifdef _DEBUG
+				StructsFound++;
 				printf("%d)x, y = %d %d\n", StructsFound, x, y);
 				printf("Type:%d\n", PD->ObjectType);
-				PrintFixedLenString("name : [", PD->Guild, sizeof(PD->Guild), 0);
-				PrintFixedLenString("]", PD->Name, sizeof(PD->Name), 1);
-				printf("Castle Level:%d\n", PD->CastleLevel);
-				//				printf("found it in players.txt:%d\n", SearchNameInFile(PD->Name));
-				StructsFound++;
+				if (PD->ObjectType == OBJECT_TYPE_PLAYER || (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE))
+				{
+					PrintFixedLenString("name : [", PD->B.Guild, sizeof(PD->B.Guild), 0);
+					PrintFixedLenString("]", PD->B.Name, sizeof(PD->B.Name), 1);
+					printf("building Level:%d\n", PD->B.CastleLevel);
+				}
+				if (PD->ObjectType == OBJECT_TYPE_MONSTER)
+				{
+					printf("Type : %d\n", PD->M.Type);
+					printf("Health : %f\n", PD->M.HealthPCT);
+					printf("Time remain : %u\n", PD->M.Time);
+					printf("Monster Level : %d\n", PD->M.Level);
+				}
+				//				printf("found it in players.txt:%d\n", SearchNameInFile(PD->B.Name));
 				if (PD->ObjectType == OBJECT_TYPE_PLAYER)
 				{
-					printf("statusFlags:%02X\n", PD->PEx.StatusFlags);
-					printf("Title:%d\n", PD->PEx.Title);
-					printf("Guild Realm:%d\n", PD->PEx.RealmGuild);
-					printf("Extended ID:%d\n", PD->PEx.ExtendedTypeId);
-//					if (PD->PEx.ExtendedTypeId != 0 && PD->PEx.ExtendedTypeId != 513)
+					printf("statusFlags:%02X\n", PD->B.PEx.StatusFlags);
+					printf("Title:%d\n", PD->B.PEx.Title);
+					printf("Guild Realm:%d\n", PD->B.PEx.RealmGuild);
+					printf("Extended ID:%d\n", PD->B.PEx.ExtendedTypeId);
+//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
 //						printf("unk2 is not 0\n");
 				}
 				else if (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE)
 				{
-					printf("ResourceMax:%d\n", PD->MEx.ResourceMax);
-					printf("Mined percent:%.2f\n", PD->MEx.MinedPercent);
-					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->MEx.SomeTimestamp, (PD->MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60))/60);
-//					if (PD->PEx.ExtendedTypeId != 0 && PD->PEx.ExtendedTypeId != 513)
+					printf("ResourceMax:%d\n", PD->B.MEx.ResourceMax);
+					printf("Mined percent:%.2f\n", PD->B.MEx.MinedPercent);
+					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->B.MEx.SomeTimestamp, (PD->B.MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60))/60);
+//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
 //						printf("unk2 is not 0\n");
 				}
 #endif
 				//store it for later
 				if (PD->ObjectType == OBJECT_TYPE_PLAYER)
 				{
-					PlayerNameDesc *CD2 = (PlayerNameDesc *)malloc(sizeof(PlayerNameDesc));
-					memcpy(CD2, PD, sizeof(PlayerNameDesc));
+					GenericMapObject *CD2 = (GenericMapObject *)malloc(sizeof(GenericMapObject));
+					memcpy(CD2, PD, sizeof(GenericMapObject));
 					MapCastlePackets[GenMyGUID(x,y)] = CD2;
 
 					//send it over HTML
-					PlayerNameDesc *p1 = CD2;
+					GenericMapObject *p1 = CD2;
 					int i;
 					char tName[500], tGuild[5];
-					for (i = 0; i < sizeof(p1->Name) && p1->Name[i] != 0; i++) tName[i] = p1->Name[i];
+					for (i = 0; i < sizeof(p1->B.Name) && p1->B.Name[i] != 0; i++) tName[i] = p1->B.Name[i];
 					tName[i] = 0;
-					for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
+					for (i = 0; i < sizeof(p1->B.Guild) && p1->B.Guild[i] != 0; i++) tGuild[i] = p1->B.Guild[i];
 					tGuild[i] = 0;
 					if (SkipInsertOnlyDebug==0)
-						QueuePlayerToProcess(CD2->Realm, x, y, tName, tGuild, NULL, p1->CastleLevel, 0, 0, 0, 0, 0, 0);
+						QueuePlayerToProcess(CD2->B.Realm, x, y, tName, tGuild, NULL, p1->B.CastleLevel, 0, 0, 0, 0, p1->B.PEx.StatusFlags, 0);
 				}
 			}
 			else if (PD->ObjectType != OBJECT_TYPE_MAYBE_ARMY)
 			{
-				printf("%d)Incorrect player data found above. Parse it manually : %s t=%d x=%d y=%d c=%d\n", BadPlayerPacketsFound++, PD->Name, PD->ObjectType, x, y, PD->CastleLevel);
+				printf("%d)Incorrect player data found above. Parse it manually : %s t=%d x=%d y=%d c=%d\n", BadPlayerPacketsFound++, PD->B.Name, PD->ObjectType, x, y, PD->B.CastleLevel);
+			}
+			else if (PD->ObjectType == OBJECT_TYPE_MAYBE_ARMY)
+			{
+				//army has extra 6 bytes
+				NameEnd += 6;
 			}
 		}
 		//remember ...
@@ -352,7 +432,10 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 			PrevPrevNameStart = PrevNameStart;
 			PrevNameStart = NameEnd;
 		}
-		NameStart = NameEnd + 1;
+		if (NameEnd == NameStart)
+			NameStart++;
+		else
+			NameStart = NameEnd;
 	}
 #ifdef _DEBUG
 	if (StructsFound == 0)
@@ -486,7 +569,7 @@ void MatchPacketDumpContent()
 	for (std::map<int, CastlePopupInfo*>::iterator itr = ClickCastlePackets.begin(); itr != ClickCastlePackets.end(); itr++)
 	{
 	int GUID = itr->first;
-	std::map<int, PlayerNameDesc*>::iterator fc = MapCastlePackets.find(GUID);
+	std::map<int, BuildingObjectDesciption*>::iterator fc = MapCastlePackets.find(GUID);
 	if (fc != MapCastlePackets.end() && fc->second->Unk8 != 8 )
 	printf("unk is %d\n", fc->second->Unk8);
 	}
@@ -494,21 +577,21 @@ void MatchPacketDumpContent()
 	}/**/
 	//	int t = 0;
 	printf("Started dumping usable packets to text file\n");
-	for (std::map<int, PlayerNameDesc*>::iterator itr = MapCastlePackets.begin(); itr != MapCastlePackets.end(); itr++)
+	for (std::map<int, GenericMapObject*>::iterator itr = MapCastlePackets.begin(); itr != MapCastlePackets.end(); itr++)
 	{
 		int GUID = itr->first;
-		PlayerNameDesc *p1 = itr->second;
+		GenericMapObject *p1 = itr->second;
 		int x, y;
 		GetXYFromGUID(p1->GUID, x, y);
 		char tName[500], tGuild[5];
 		//		if (p1->Unk8 != 8)
 		//			printf("%d)p1->Unk8 %d\n", t++, p1->Unk8);
 		int i;
-		for (i = 0; i < sizeof(p1->Name) && p1->Name[i] != 0; i++) tName[i] = p1->Name[i];
+		for (i = 0; i < sizeof(p1->B.Name) && p1->B.Name[i] != 0; i++) tName[i] = p1->B.Name[i];
 		tName[i] = 0;
-		for (i = 0; i < sizeof(p1->Guild) && p1->Guild[i] != 0; i++) tGuild[i] = p1->Guild[i];
+		for (i = 0; i < sizeof(p1->B.Guild) && p1->B.Guild[i] != 0; i++) tGuild[i] = p1->B.Guild[i];
 		tGuild[i] = 0;
-		fprintf(f, "%u \t %u \t %s \t %s \t %d", x, y, tName, tGuild, (int)p1->CastleLevel);
+		fprintf(f, "%u \t %u \t %s \t %s \t %d", x, y, tName, tGuild, (int)p1->B.CastleLevel);
 		std::map<int, CastlePopupInfo*>::iterator fc = ClickCastlePackets.find(GenMyGUID(x,y));
 		if (fc != ClickCastlePackets.end())
 		{
@@ -538,7 +621,7 @@ void ParseOfflineDump(const char *FileName)
 	//(ip.src == 192.243.47.118 && ip.dst == 192.168.1.101) || (ip.src == 192.168.1.101 && ip.dst==192.243.47.118)
 	errno_t er = fopen_s(&f, FileName, "rb");
 	unsigned char PacketBuffer[65535];
-	int ReadCount;
+	size_t ReadCount;
 	int AbortAfterNPackets = 100;
 	int PacketsRead = 0;
 	if (f)
@@ -655,4 +738,12 @@ void	StopThreadedPacketParser()
 	//close the thread properly
 	CloseHandle(PacketProcessThreadHandle);
 	PacketProcessThreadHandle = 0;
+}
+
+void ProcessPacketDebug(char *HexStr)
+{
+	unsigned char TPacket[32000];
+	int TSize;
+	HexToByteStr(HexStr, TPacket, TSize);
+	ProcessPacket1((unsigned char*)TPacket, TSize);
 }

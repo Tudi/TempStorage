@@ -9,7 +9,8 @@
 void OfflineParsing()
 {
 //	HttpSendStartup();
-	ParseOfflineDump("03_20");
+//	ProcessPacketDebug("AC 08 17 05 00 4F 28 08 00 54 75 64 69 36 39 00 00 00 00 00 00 00 23 42 4C 43 00 13 03 2D 14 03 47 8F 24 D2 58 00 00 00 00 C3 00 00 00 00 00 00 00 00 00 00 00 ");
+	ParseOfflineDump("tel_click_fields_lvl2");
 	//wait for the HTTP queue to finish
 	while (IsHTTPQueueEmpty() == 0)
 		Sleep(10);
@@ -33,8 +34,8 @@ void OnlineScanParsing()
 
 void main()
 {
-//	OfflineParsing();
-	OnlineScanParsing();
+	OfflineParsing();
+//	OnlineScanParsing();
 
 	printf("Waiting for packets to come and process\n. Press 'a' key to exit");
 	char AKey = ' ';

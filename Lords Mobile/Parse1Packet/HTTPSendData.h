@@ -8,5 +8,5 @@
 void HttpSendStartup();
 void HttpSendShutdown();
 
-void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int HasPrisoners, int plevel);
+void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel);
 int IsHTTPQueueEmpty();

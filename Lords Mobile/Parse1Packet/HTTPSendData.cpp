@@ -63,7 +63,7 @@ void AppendURLQuery(string &url, const char *name, const char *val, int IsFirst 
 	url += temp;
 }
 
-int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int HasPrisoners, int plevel)
+int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel)
 {
 	SOCKET Socket;
 	SOCKADDR_IN SockAddr;
@@ -91,7 +91,7 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	AppendURLQuery(get_http, "vip", vip);
 	AppendURLQuery(get_http, "GuildRank", grank);
 	AppendURLQuery(get_http, "might", (int)might);
-	AppendURLQuery(get_http, "HasPrisoners", HasPrisoners);
+	AppendURLQuery(get_http, "StatusFlags", StatusFlags);
 	AppendURLQuery(get_http, "PLevel", plevel);
 	AppendURLQuery(get_http, "name", name);
 	AppendURLQuery(get_http, "guild", guild);
@@ -179,7 +179,7 @@ struct PlayerToCommitStore
 	int vip;
 	int grank;
 	__int64 might;
-	int HasPrisoners;
+	int StatusFlags;
 	int plevel;
 };
 
@@ -188,7 +188,7 @@ int PlayerCircularBufferReadIndex = 0;
 int PlayerCircularBufferWriteIndex = 0;
 int	KeepPlayerPushThreadsRunning = 1;
 
-void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int HasPrisoners, int plevel)
+void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel)
 {
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].k = k;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].x = x;
@@ -210,7 +210,7 @@ void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *gu
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].vip = vip;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].grank = grank;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].might = might;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].HasPrisoners = HasPrisoners;
+	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].StatusFlags = StatusFlags;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].plevel = plevel;
 
 	PlayerCircularBufferWriteIndex = (PlayerCircularBufferWriteIndex + 1) % MAX_PLAYERS_CIRCULAR_BUFFER;
@@ -218,7 +218,7 @@ void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *gu
 
 int HTTPPostData(PlayerToCommitStore &t)
 {
-	return HTTPPostData(t.k, t.x, t.y, t.name, t.guild, t.guildf, t.clevel, t.kills, t.vip, t.grank, t.might, t.HasPrisoners, t.plevel);
+	return HTTPPostData(t.k, t.x, t.y, t.name, t.guild, t.guildf, t.clevel, t.kills, t.vip, t.grank, t.might, t.StatusFlags, t.plevel);
 }
 
 DWORD WINAPI BackgroundProcessPlayers(LPVOID lpParam)

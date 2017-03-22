@@ -121,6 +121,8 @@ void PrintDataMultipleFormats(unsigned char *packet, int size, int From, int To)
 
 void PrintDataHexFormat(unsigned char *packet, int size, int From, int To)
 {
+	if (From == To)
+		return;
 	//dump the content from prev packet to cur
 	for (int i = From; i < To; i++)
 		printf("%02X ", packet[i]);
@@ -142,4 +144,41 @@ void PrintFixedLenString(char *PreStr, char *str, int len, int WithNewLine)
 
 	if (WithNewLine == 1)
 		printf("\n");
+}
+
+int HexToByte(unsigned char Hex)
+{
+	if (Hex >= '0' && Hex <= '9')
+		return Hex - '0';
+	if (Hex >= 'a' && Hex <= 'f')
+		return Hex - 'a' + 10;
+	if (Hex >= 'A' && Hex <= 'F')
+		return Hex - 'A' + 10;
+	return 0;
+}
+
+void HexToByteStr(char *HexStr, unsigned char *ByteStr, int &size)
+{
+	int Ind = 0;
+	int MaxInd = strlen(HexStr);
+	size = 0;
+	while (HexStr[Ind] != 0 && Ind<MaxInd)
+	{
+		ByteStr[size] = (HexToByte(HexStr[Ind]) << 4) + HexToByte(HexStr[Ind + 1]);
+		Ind += 3;
+		size += 1;
+	}
+}
+
+int IsAllZero(void *packet, int size, int Ind, int count)
+{
+	int IsAllZero = 1;
+	unsigned char *tpacket = (unsigned char *)packet;
+	for (int i = Ind + count; i >= Ind; i--)
+		if (tpacket[i] != 0)
+		{
+			IsAllZero = 0;
+			break;
+		}
+	return IsAllZero;
 }
