@@ -25,11 +25,11 @@ public:
 	License();
 	~License();
 	int					SetDuration(time_t pStartDate, unsigned int pDuration);
+	int					AddProjectFeature(const char *ProjectName, const char *FeatureName);
 	int					AddProjectFeature(int ProjectId, int FeatureId);
-	int					SaveToFile(char *FileName, char *FingerprintFilename);					// Save License to a file that can be sent to Siemens licensing team
-	int					LoadFromFile(char *FileName);				// load license from a file that can be sent to Siemens licensing team
-	//returned value should not be disposed of ! Do not mix allocators when using DLLs !
-	char				*GetActivationKey(int ProjectId, int FeatureId);
+	int					SaveToFile(const char *FileName, const char *FingerprintFilename);	// Save License to a file that can be sent to Siemens licensing team
+	int					LoadFromFile(char *FileName);										// load license from a file that can be sent to Siemens licensing team
+	int					LoadFromFile(char *FileName, char *FingerprintFilename);			// load a license while not using a local fingerprint file. This should only be used by LicenseInfo Project
 	int					GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, int MaxResultSize);
 	int					GetRemainingSeconds(time_t &RemainingSeconds);
 private:

@@ -10,8 +10,8 @@ public:
 
 	int	GenerateFingerprint();							// gather PC specific info
 
-	int SaveFingerprint(char *FileName);				// Save fingerprint to a file that can be sent to Siemens licensing team
-	int LoadFingerprint(char *FileName);				// load fingerprint to a file that can be sent to Siemens licensing team
+	int SaveFingerprint(const char *FileName);				// Save fingerprint to a file that can be sent to Siemens licensing team
+	int LoadFingerprint(const char *FileName);				// load fingerprint to a file that can be sent to Siemens licensing team
 
 	int GetEncryptionKey(char **Key, int &Len);		    // use internal state to decode license. Only a similar PC can decode license
 
@@ -24,5 +24,5 @@ private:
 extern "C"
 {
 	LIBRARY_API ComputerFingerprint *CreateComputerFingerprint();
-	LIBRARY_API void DestroyComputerFingerprint(ComputerFingerprint *);
+	LIBRARY_API void DestroyComputerFingerprint(ComputerFingerprint **);
 }

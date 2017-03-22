@@ -87,7 +87,7 @@ int EncryptBufferXORKey(unsigned char *buf, int BufLen, const unsigned char *Key
 	for (unsigned int i = 0; i < BufLen / sizeof(int); i++)
 		BufI[i] = BufI[i] ^ KeyI[ i % KeyLenI];
 	//process remaining 1 by 1
-	for (int i = BufLen / sizeof(int); i < BufLen; i++)
+	for (int i = BufLen / sizeof(int) * sizeof(int); i < BufLen; i++)
 		buf[i] = buf[i] ^ Key[i % KeyLen];
 
 	return 0;
@@ -115,7 +115,7 @@ int EncryptBufferXORKeyRotate(unsigned char *buf, int BufLen, int XORKey)
 	return 0;
 }
 
-int EncryptWithFingerprint(char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
+int EncryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
 {
 	ComputerFingerprint CF;
 	if (Filename == NULL)
@@ -139,7 +139,7 @@ int EncryptWithFingerprint(char *Filename, unsigned int Salt, unsigned char *buf
 	return 0;
 }
 
-int DecryptWithFingerprint(char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
+int DecryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
 {
 	//right now this is simetric. Later might change it
 	return EncryptWithFingerprint(Filename, Salt, buf, BufLen);

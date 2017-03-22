@@ -5,6 +5,10 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LicenseGenerate", "LicenseGenerate.vcxproj", "{8620FCEF-2C2F-4AAB-AB96-B1D840F34E47}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UseLicenseDemo", "..\UseLicenseDemo\UseLicenseDemo.vcxproj", "{A6ADC304-40EB-4229-A959-09C448AB5BC3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LicenseInfo", "..\LicenseInfo\LicenseInfo.vcxproj", "{B04747CB-58C9-4EDF-85F8-BE6F509902CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,6 +19,14 @@ Global
 		{8620FCEF-2C2F-4AAB-AB96-B1D840F34E47}.Debug|Win32.Build.0 = Debug|Win32
 		{8620FCEF-2C2F-4AAB-AB96-B1D840F34E47}.Release|Win32.ActiveCfg = Release|Win32
 		{8620FCEF-2C2F-4AAB-AB96-B1D840F34E47}.Release|Win32.Build.0 = Release|Win32
+		{A6ADC304-40EB-4229-A959-09C448AB5BC3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A6ADC304-40EB-4229-A959-09C448AB5BC3}.Debug|Win32.Build.0 = Debug|Win32
+		{A6ADC304-40EB-4229-A959-09C448AB5BC3}.Release|Win32.ActiveCfg = Release|Win32
+		{A6ADC304-40EB-4229-A959-09C448AB5BC3}.Release|Win32.Build.0 = Release|Win32
+		{B04747CB-58C9-4EDF-85F8-BE6F509902CB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B04747CB-58C9-4EDF-85F8-BE6F509902CB}.Debug|Win32.Build.0 = Debug|Win32
+		{B04747CB-58C9-4EDF-85F8-BE6F509902CB}.Release|Win32.ActiveCfg = Release|Win32
+		{B04747CB-58C9-4EDF-85F8-BE6F509902CB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

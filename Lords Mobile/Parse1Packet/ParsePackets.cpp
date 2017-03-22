@@ -54,6 +54,8 @@ struct MineExt
 };
 struct BuildingObjectDesciption
 {
+//	unsigned int	GUID;
+//	unsigned char	ObjectType;				//dark nest and castle are both 8. Maybe struct type ( x bytes in format .. )
 	char			Name[13];
 	char			Guild[3];
 	unsigned short	Realm;

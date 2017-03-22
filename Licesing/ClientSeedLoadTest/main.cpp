@@ -24,8 +24,8 @@ int main()
 	_CrtMemState s1, s2, s3;
 	_CrtMemCheckpoint(&s1);
 
+	int er;
 	ComputerFingerprint *ClientSeed;
-	int er = 0;
 
 	//create a new store
 	ClientSeed = CreateComputerFingerprint();
@@ -35,35 +35,25 @@ int main()
 		return 1;
 	}
 
-	//test generate API
-	er = ClientSeed->GenerateFingerprint();
+	//test load
+	er = ClientSeed->LoadFingerprint("../ClientSeed.dat");
 	if (er != 0)
 	{
-		printf("Could not generate ComputerFingerprint content\n");
+		printf("Could not load ComputerFingerprint content\n");
 		DestroyComputerFingerprint(&ClientSeed);
 		return 1;
 	}
 
-	//test save
-	er = ClientSeed->SaveFingerprint("../ClientSeed.dat");
-	if (er != 0)
-	{
-		printf("Could not save ComputerFingerprint content\n");
-		DestroyComputerFingerprint(&ClientSeed);
-		return 1;
-	}
-
-	//test debugprint
-	printf("For debug purpuses, prin the content : \n");
+	//test if load went well
+	printf("Client PC fingerprint containes :\n\n");
 	ClientSeed->Print();
 
-	//test destroy
+	//destroy
 	DestroyComputerFingerprint(&ClientSeed);
-	
-	printf("\nSaved the license seed. You will need this file to generate a new license for this PC\n");
+
 	//wait for keypress
 	_getch();
-	
+
 	_CrtMemCheckpoint(&s2);
 	if (_CrtMemDifference(&s3, &s1, &s2) && (s3.lCounts[0]>0 || s3.lCounts[1] > 0 || s3.lCounts[3] > 0 || s3.lCounts[3] > 0)) //ignore CRT block allocs, can't do much about them. Some come from printf...
 	{

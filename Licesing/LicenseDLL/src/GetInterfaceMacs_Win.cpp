@@ -82,6 +82,7 @@ void GetMacsWithIP(std::vector<_int64> &vMac)
 		printf("Call to GetAdaptersInfo failed.\n");
 	}
 #endif
+	free(pAdapterInfo);
 }
 
 #endif

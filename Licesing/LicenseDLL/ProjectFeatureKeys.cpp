@@ -247,7 +247,7 @@ int ProjectFeatureKeyDB::LoadProjectFeatureKeys()
 	return 0;
 }
 
-int ProjectFeatureKeyDB::GetFeatureNameID(char *FeatureName)
+int ProjectFeatureKeyDB::GetFeatureNameID(const char *FeatureName)
 {
 	for (NameIdStore* itr = FeatureIDs.begin(); itr != FeatureIDs.end(); itr = FeatureIDs.GetNext())
 		if (strcmp(FeatureName, itr->Name) == 0)
@@ -255,7 +255,7 @@ int ProjectFeatureKeyDB::GetFeatureNameID(char *FeatureName)
 	return MISSING_OR_INVALID_ID;
 }
 
-int ProjectFeatureKeyDB::GetProjectNameID(char *ProjectName)
+int ProjectFeatureKeyDB::GetProjectNameID(const char *ProjectName)
 {
 	int PossibleID = atoi(ProjectName);
 	if (PossibleID > 0 && IsValidProjectID(PossibleID))

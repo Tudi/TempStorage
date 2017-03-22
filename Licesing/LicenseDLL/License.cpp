@@ -5,8 +5,15 @@
 #include "ProjectFeatureKeys.h"
 #include <stdio.h>
 #include "src/Encryption.h"
+#include <random>
 
 #define GenerateSaltKey(a,b) ((unsigned int)(1|(a+b)))
+
+// in case we will get time from WINCCOA, than you should only need to change this implementation
+time_t GetUnixtime()
+{
+	return time(NULL);
+}
 
 License::License()
 {
@@ -22,7 +29,65 @@ License::~License()
 		NodeList = NULL;
 	}
 }
+/**
+* \brief    Add to the content of the license
+* \details  License will conver this newly added project-feature combination. The activation key is automatically loaded from config file
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	ProjectName - name that is unique for each Siemens software product / project
+* \param	FeatureName - name that is unique for each feature within a project
+* \return	Error code. 0 is no error
+*/
+int	License::AddProjectFeature(const char *ProjectName, const char *FeatureName)
+{
+	ProjectFeatureKeyDB DB;
+	int ProjectId = DB.GetProjectNameID(ProjectName);
+	int FeatureId = DB.GetFeatureNameID(FeatureName);
+	return AddProjectFeature(ProjectId, FeatureId);
+}
+/**
+* \brief    Copy string to destination
+* \details  Similar to original strcpy_s it's a safe string copy. The difference here is that we will fill the remaining buffer with random data to confuse the reader
+* \author   Jozsa Istvan
+* \date     2017-03-22
+* \param	dst - destination buffer pointer
+* \param	dstMaxSize - maximum number of bytes we can copy to the destination
+* \param	src - string buffer to copy data from
+* \return	Error code. 0 is no error
+*/
 
+int strcpy_s_ran(char *dst, int dstMaxSize, const char *src)
+{
+	//sanity checks
+	if (dst == NULL || dstMaxSize == 0 || src == NULL)
+		return ERROR_BAD_ARGUMENTS;
+
+	//barbaric string copy
+	int i = 0;
+	for (; i < dstMaxSize && src[i] != 0; i++)
+		dst[i] = src[i];
+
+	//maybe source string was too long ?
+	if (i == dstMaxSize)
+		dst[i - 1] = 0;
+	//fill the rest of the buffer with junk
+	else
+	{
+		for (i++; i < dstMaxSize; i++)
+			dst[i] = (char)rand();
+	}
+	return 0;
+}
+
+/**
+* \brief    Add to the content of the license
+* \details  License will conver this newly added project-feature combination. The activation key is automatically loaded from config file
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	ProjectId - number that is unique for each Siemens software product / project
+* \param	FeatureId - number that is unique for each feature within a project
+* \return	Error code. 0 is no error
+*/
 int License::AddProjectFeature(int ProjectId, int FeatureId)
 {
 	//check if this is a valid param
@@ -42,10 +107,13 @@ int License::AddProjectFeature(int ProjectId, int FeatureId)
 	memset(NewNode, 0, sizeof(LicenseNode));
 	NewNode->ProjectId = ProjectId;
 	NewNode->FeatureId = FeatureId;
-	errno_t er = strcpy_s(NewNode->ActivateKey, sizeof(NewNode->ActivateKey), ActivationKey);
+	errno_t er = strcpy_s_ran(NewNode->ActivateKey, sizeof(NewNode->ActivateKey), ActivationKey);
 	//wow, we should never trigger this
 	if (er)
+	{
+		delete NewNode;
 		return er;
+	}
 
 	//check if we already have this node. There is no point for dounble adding it
 	DataCollectionIterator itr;
@@ -68,20 +136,32 @@ int License::AddProjectFeature(int ProjectId, int FeatureId)
 	//Add new node to our store
 	NodeList->PushData((char*)NewNode, sizeof(LicenseNode), DB_LICENSE_NODE);
 
+	delete NewNode;
+	NewNode = NULL;
+
 	//no errors returned
 	return 0;
 }
 
+/**
+* \brief    Time limits for the license
+* \details  License will be active from a specific date for a specific time
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	pStartDate - time counted in seconds since 1970. A unix timestamp. Used as a starting date for the license
+* \param	pDuration - number of seconds the license will be active for counted from start date
+* \return	Error code. 0 is no error
+*/
 int License::SetDuration(time_t pStartDate, unsigned int pDuration)
 {
 	//sanity checks
-	int LostSeconds = (signed int)(time(NULL) - pStartDate);
+	int LostSeconds = (signed int)(GetUnixtime() - pStartDate);
 	if (LostSeconds > 60 * 60)
 		printf("WARNING:Start date is smaller than current date. Loosing %d seconds from durtation %d\n", LostSeconds, pDuration);
 	if (LostSeconds > (signed int)pDuration)
 	{
 		printf("Warning:Duration is too small. Readjusting start time to current time to avoid negative duration");
-		pStartDate = time(NULL);
+		pStartDate = GetUnixtime();
 	}
 
 	StartStamp = pStartDate;
@@ -125,30 +205,25 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration)
 	return 0;
 }
 
-char *License::GetActivationKey(int ProjectId, int FeatureId)
-{
-	DataCollectionIterator itr;
-	itr.Init(NodeList);
-	char *Data;
-	int Size;
-	int Type;
-	while (DCI_SUCCESS == itr.GetNext(&Data, Size, Type))
-	{
-		if (Type == DB_LICENSE_NODE)
-		{
-			LicenseNode *CurNode = (LicenseNode *)Data;
-			if (CurNode->ProjectId == ProjectId && CurNode->FeatureId == FeatureId)
-				return CurNode->ActivateKey;
-		}
-	}
-	return NULL;
-}
-
+/**
+* \brief    Get a valid activation key for this project-feature from the loaded license
+* \details  License will be active from a specific date for a specific time. If license does not contain a still valid activation key, warning error code will be returned and result will be an empty string
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	ProjectId - number that is unique for each Siemens software product / project
+* \param	FeatureId - number that is unique for each feature within a project
+* \param	StoreResult - buffer where to store the activation key
+* \param	MaxResultSize - max number of bytes we can use to store the activation key
+* \return	Error code. 0 is no error
+*/
 int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, int MaxResultSize)
 {
 	//sanity checks 
 	if (StoreResult == NULL || MaxResultSize <= 0 )
 		return ERROR_INVALID_ADDRESS;
+
+	//just in case for any reason we return prematurly, we should provide a reply
+	strcpy_s(StoreResult, MaxResultSize, "");
 
 	time_t SecondsRemaining;
 	if (GetRemainingSeconds(SecondsRemaining) != 0 || SecondsRemaining==0)
@@ -178,6 +253,14 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 	return WARNING_NO_LICENSE_FOUND;
 }
 
+/**
+* \brief    Time remaining for this license until it expires
+* \details  Counted from current time ( or start of the license if not yet active) until the end stamp of the license the number of seconds.
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	RemainingSeconds = Endstamp - max( current_time, start_time )
+* \return	Error code. 0 is no error
+*/
 int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 {
 	DataCollectionIterator itr;
@@ -190,7 +273,7 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 	{
 		if (Type == DB_LICENSE_END && Size >= sizeof(time_t))
 		{
-			time_t CurTime = time(NULL);
+			time_t CurTime = GetUnixtime();
 			time_t *EndTime = (time_t *)Data;
 			if (CurTime < *EndTime)
 				RemainingSeconds = *EndTime - CurTime;
@@ -202,13 +285,26 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 			Duration = *(unsigned int *)Data;
 	}
 
+	if (StartStamp > GetUnixtime())
+		RemainingSeconds = Duration;
+	else
+		RemainingSeconds = (StartStamp + Duration) - GetUnixtime();
 	if (RemainingSeconds != 0)
 		return 0;
 
 	return WARNING_MISSING_LICENSE_FIELD;
 }
 
-int	License::SaveToFile(char *FileName, char *FingerprintFilename)
+/**
+* \brief    Save the licesense content to a file
+* \details  Save the license info to a file. The content of the license will be encoded and can only be decoded on the machine the fingerprint was generated
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	FileName - The path and the name of the file where to save the content
+* \param	FingerprintFilename - The path and the name of the fingerprint file that will be used to encode the content of the license
+* \return	Error code. 0 is no error
+*/
+int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 {
 	//sanity checks
 	if (FileName == NULL)
@@ -224,7 +320,12 @@ int	License::SaveToFile(char *FileName, char *FingerprintFilename)
 		NodeList->SetEncription(DCE_EXTERNAL_FINGERPRINT);
 		memcpy(TempBuff, NodeList->GetData(), TotalSize);
 		EncryptSalt = GenerateSaltKey( StartStamp, Duration );
-		EncryptWithFingerprint(FingerprintFilename, (unsigned int)EncryptSalt, TempBuff, TotalSize);
+		int er = EncryptWithFingerprint(FingerprintFilename, (unsigned int)EncryptSalt, TempBuff, TotalSize);
+		if (er != 0)
+		{
+			delete TempBuff;
+			return er;
+		}
 	}
 	else
 		memcpy(TempBuff, NodeList->GetData(), TotalSize);
@@ -251,6 +352,20 @@ int	License::SaveToFile(char *FileName, char *FingerprintFilename)
 }
 
 int	License::LoadFromFile(char *FileName)
+{
+	return LoadFromFile(FileName, NULL);
+}
+
+/**
+* \brief    Load the content of a license from a file
+* \details  Buffer the content of the license into internal storage container
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	FileName - The path and the name of the file where to load from the content of the license
+* \param	FingerprintFilename - optional paramether. You should leave this NULL
+* \return	Error code. 0 is no error
+*/
+int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 {
 	//sanity check
 	if (FileName == NULL)
@@ -279,7 +394,7 @@ int	License::LoadFromFile(char *FileName)
 
 	//deobfuscate
 	if (EncryptSalt)
-		DecryptWithFingerprint(NULL, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
+		DecryptWithFingerprint(FingerprintFilename, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
 
 	//done with the FILE
 	fclose(f);
@@ -289,6 +404,7 @@ int	License::LoadFromFile(char *FileName)
 	NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
 
 	delete TempBuff;
+	TempBuff = NULL;
 
 	//check for validity of the data we loaded
 	time_t RemainingSeconds = 0;

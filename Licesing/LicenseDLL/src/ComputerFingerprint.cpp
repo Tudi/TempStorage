@@ -17,9 +17,12 @@ extern "C"
 		return new ComputerFingerprint;
 	}
 
-	LIBRARY_API void DestroyComputerFingerprint(ComputerFingerprint *Deleteme)
+	LIBRARY_API void DestroyComputerFingerprint(ComputerFingerprint **Deleteme)
 	{
-		delete Deleteme;
+		if (*Deleteme == NULL)
+			return;
+		delete *Deleteme;
+		*Deleteme = NULL;
 	}
 }
 
@@ -86,12 +89,12 @@ int	ComputerFingerprint::GenerateFingerprint()
 	return 0;
 }
 
-int ComputerFingerprint::SaveFingerprint(char *FileName)
+int ComputerFingerprint::SaveFingerprint(const char *FileName)
 {
 	return FingerprintData->SaveToFile(FileName);
 }
 
-int ComputerFingerprint::LoadFingerprint(char *FileName)
+int ComputerFingerprint::LoadFingerprint(const char *FileName)
 {
 	return FingerprintData->LoadFromFile(FileName);
 }

@@ -14,6 +14,7 @@ void Init(DataCollectionHeader *&Data)
 	Data->Size = sizeof(DataCollectionHeader);
 	Data->Ver = CURRENT_PACKER_VERSION;
 	Data->EncryptType = DCE_INTERNAL_CyclicXOR_KEY;
+	Data->Blocks[0] = 0;	/// should remain always 0 unless we mess something up
 }
 
 GenericDataStore::GenericDataStore()
@@ -103,7 +104,7 @@ int GenericDataStore::PushData(char *buff, int Size, int Type)
 	return DADD_SUCCESS;
 }
 
-int GenericDataStore::SaveToFile(char *FileName)
+int GenericDataStore::SaveToFile(const char *FileName)
 {
 	//sanity check
 	if (FileName == NULL)
@@ -140,10 +141,12 @@ int GenericDataStore::SaveToFile(char *FileName)
 	fwrite(TempBuff, 1, TotalSize, f);
 	fclose(f);
 
+	delete[] TempBuff;
+
 	return 0;
 }
 
-int GenericDataStore::LoadFromFile(char *FileName)
+int GenericDataStore::LoadFromFile(const char *FileName)
 {
 	//sanity check
 	if (FileName == NULL)
@@ -239,6 +242,8 @@ int	GenericDataStore::SetEncription(unsigned char EncryptType)
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 DataCollectionIterator::DataCollectionIterator()
 {
 	IterateWhat = NULL;
@@ -252,6 +257,8 @@ void DataCollectionIterator::Init(DataCollectionHeader *pIterateWhat)
 	if (pIterateWhat == NULL)
 		return;
 	if (pIterateWhat->Count <= 0)
+		return;
+	if (pIterateWhat->Ver != CURRENT_PACKER_VERSION)
 		return;
 	IterateWhat = pIterateWhat;
 	NextData = pIterateWhat->Blocks;

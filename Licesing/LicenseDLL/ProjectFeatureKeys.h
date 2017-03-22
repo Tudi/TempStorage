@@ -28,8 +28,8 @@ public:
 	ProjectFeatureKeyDB();
 	~ProjectFeatureKeyDB();
 	int ReloadDB();
-	int GetFeatureNameID(char *FeatureName);
-	int GetProjectNameID(char *ProjectName);
+	int GetFeatureNameID(const char *FeatureName);
+	int GetProjectNameID(const char *ProjectName);
 	char *FindProjectFeatureKey(char *ProjectName, char *FeatureName);
 	char *FindProjectFeatureKey(int ProjectId, int FeatureId);
 	ProjectFeatureKeyStore *ListStart() { return Data.begin(); }

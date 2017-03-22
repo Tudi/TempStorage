@@ -19,9 +19,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="LicenseDLL.lib">
-      <Filter>Source Files</Filter>
-    </Library>
-  </ItemGroup>
 </Project>
