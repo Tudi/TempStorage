@@ -38,6 +38,13 @@ enum PlayerCastleTitles
 	TITLE_SCOUNDREL		= 13,
 };
 
+enum MonsterTypes
+{
+	MONSTER_MECHA_TROJAN			= 19,
+	MONSTER_BLACKWING_OR_BON_APETI1	= 16,
+	MONSTER_BLACKWING_OR_BON_APETI2 = 18,
+};
+
 #pragma pack(push, 1)
 struct PlayerNameExt
 {
@@ -246,19 +253,13 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 	{
 		GenericMapObject *p1 = fc->second;
 		CastlePopupInfo *p2 = CD2;
-		int i;
-		char tName[500], tGuild[5];
-		for (i = 0; i < sizeof(p1->B.Name) && p1->B.Name[i] != 0; i++) tName[i] = p1->B.Name[i];
-		tName[i] = 0;
-		for (i = 0; i < sizeof(p1->B.Guild) && p1->B.Guild[i] != 0; i++) tGuild[i] = p1->B.Guild[i];
-		tGuild[i] = 0;
-		char GuildFullName[500];
-		for (i = 0; i < sizeof(p2->GuildFullName) && p2->GuildFullName[i] != 0; i++) GuildFullName[i] = p2->GuildFullName[i];
-		GuildFullName[i] = 0;
-		if (SkipInsertOnlyDebug==0)
-			QueuePlayerToProcess(p1->B.Realm, x, y, tName, tGuild, GuildFullName, p1->B.CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, p1->B.PEx.StatusFlags, 0);
+		if (SkipInsertOnlyDebug == 0)
+		{
+			if (p1->ObjectType == OBJECT_TYPE_PLAYER)
+				QueueObjectToProcess(p1->ObjectType, p1->B.Realm, x, y, p1->B.Name, p1->B.Guild, p2->GuildFullName, p1->B.CastleLevel, p2->Kills, p2->VIPLevel, p2->GuildRank, p2->Might, p1->B.PEx.StatusFlags, 0, p1->B.PEx.Title, p1->M.Type, p1->B.MEx.ResourceMax);
+		}
 	}
-	else
+	else if ( CD2->Kills > 0 && CD2->Might > 0 ) //can be resource click or monster click also
 		printf("Investigate why there is no create packet for castle at %d %d - %s\n", x, y, CD2->GuildFullName);
 }
 
@@ -338,6 +339,7 @@ void ParsePacketViewProfile2(unsigned char *packet, int size)
 }
 
 int BadPlayerPacketsFound = 0;
+int UnknownRealm = -1;
 void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 {
 	int StructsFound = 0;
@@ -387,16 +389,16 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 					printf("Title:%d\n", PD->B.PEx.Title);
 					printf("Guild Realm:%d\n", PD->B.PEx.RealmGuild);
 					printf("Extended ID:%d\n", PD->B.PEx.ExtendedTypeId);
-//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
-//						printf("unk2 is not 0\n");
+					//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
+					//						printf("unk2 is not 0\n");
 				}
 				else if (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE)
 				{
 					printf("ResourceMax:%d\n", PD->B.MEx.ResourceMax);
 					printf("Mined percent:%.2f\n", PD->B.MEx.MinedPercent);
-					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->B.MEx.SomeTimestamp, (PD->B.MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60))/60);
-//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
-//						printf("unk2 is not 0\n");
+					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->B.MEx.SomeTimestamp, (PD->B.MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60)) / 60);
+					//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
+					//						printf("unk2 is not 0\n");
 				}
 #endif
 				//store it for later
@@ -404,28 +406,47 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 				{
 					GenericMapObject *CD2 = (GenericMapObject *)malloc(sizeof(GenericMapObject));
 					memcpy(CD2, PD, sizeof(GenericMapObject));
-					MapCastlePackets[GenMyGUID(x,y)] = CD2;
+					MapCastlePackets[GenMyGUID(x, y)] = CD2;
+
+					if (UnknownRealm == -1)
+						UnknownRealm = CD2->B.Realm;
 
 					//send it over HTML
 					GenericMapObject *p1 = CD2;
-					int i;
-					char tName[500], tGuild[5];
-					for (i = 0; i < sizeof(p1->B.Name) && p1->B.Name[i] != 0; i++) tName[i] = p1->B.Name[i];
-					tName[i] = 0;
-					for (i = 0; i < sizeof(p1->B.Guild) && p1->B.Guild[i] != 0; i++) tGuild[i] = p1->B.Guild[i];
-					tGuild[i] = 0;
-					if (SkipInsertOnlyDebug==0)
-						QueuePlayerToProcess(CD2->B.Realm, x, y, tName, tGuild, NULL, p1->B.CastleLevel, 0, 0, 0, 0, p1->B.PEx.StatusFlags, 0);
+					if (SkipInsertOnlyDebug == 0)
+						QueueObjectToProcess(p1->ObjectType, p1->B.Realm, x, y, p1->B.Name, p1->B.Guild, NULL, p1->B.CastleLevel, 0, 0, 0, 0, p1->B.PEx.StatusFlags, 0, p1->B.PEx.Title, 0, p1->B.MEx.ResourceMax);
 				}
-			}
-			else if (PD->ObjectType != OBJECT_TYPE_MAYBE_ARMY)
-			{
-				printf("%d)Incorrect player data found above. Parse it manually : %s t=%d x=%d y=%d c=%d\n", BadPlayerPacketsFound++, PD->B.Name, PD->ObjectType, x, y, PD->B.CastleLevel);
+				if (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE && UnknownRealm != -1)
+				{
+						GenericMapObject *CD2 = (GenericMapObject *)malloc(sizeof(GenericMapObject));
+						memcpy(CD2, PD, sizeof(GenericMapObject));
+						MapCastlePackets[GenMyGUID(x, y)] = CD2;
+
+						//send it over HTML
+						GenericMapObject *p1 = CD2;
+						if (SkipInsertOnlyDebug == 0)
+							QueueObjectToProcess(p1->ObjectType, UnknownRealm, x, y, p1->B.Name, p1->B.Guild, NULL, p1->B.CastleLevel, 0, 0, 0, 0, 0, 0, 0, 0, p1->B.MEx.ResourceMax);
+				}
+				if (PD->ObjectType == OBJECT_TYPE_MONSTER && UnknownRealm != -1)
+				{
+					GenericMapObject *CD2 = (GenericMapObject *)malloc(sizeof(GenericMapObject));
+					memcpy(CD2, PD, sizeof(GenericMapObject));
+					MapCastlePackets[GenMyGUID(x, y)] = CD2;
+
+					//send it over HTML
+					GenericMapObject *p1 = CD2;
+					if (SkipInsertOnlyDebug == 0)
+						QueueObjectToProcess(p1->ObjectType, UnknownRealm, x, y, NULL, NULL, NULL, p1->M.Level, 0, 0, 0, 0, 0, 0, 0, p1->M.Type, 0);
+				}
 			}
 			else if (PD->ObjectType == OBJECT_TYPE_MAYBE_ARMY)
 			{
 				//army has extra 6 bytes
 				NameEnd += 6;
+			}
+			else //if (PD->ObjectType != OBJECT_TYPE_MAYBE_ARMY)
+			{
+				printf("%d)Incorrect player data found above. Parse it manually : %s t=%d x=%d y=%d c=%d\n", BadPlayerPacketsFound++, PD->B.Name, PD->ObjectType, x, y, PD->B.CastleLevel);
 			}
 		}
 		//remember ...

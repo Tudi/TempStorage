@@ -63,7 +63,7 @@ void AppendURLQuery(string &url, const char *name, const char *val, int IsFirst 
 	url += temp;
 }
 
-int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel)
+int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
 	SOCKET Socket;
 	SOCKADDR_IN SockAddr;
@@ -75,6 +75,7 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 
 	// website url
 	string url = "127.0.0.1";
+	string urlhttp = "127.0.0.1 : 8081";
 	int URLPort = 8081;
 //	string url = "www.lordsmobile.online";
 //	int URLPort = 80;
@@ -86,19 +87,29 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	AppendURLQuery(get_http, "k", k, 1);
 	AppendURLQuery(get_http, "x", x);
 	AppendURLQuery(get_http, "y", y);
-	AppendURLQuery(get_http, "CLevel", clevel);
-	AppendURLQuery(get_http, "kills", (int)kills);
-	AppendURLQuery(get_http, "vip", vip);
-	AppendURLQuery(get_http, "GuildRank", grank);
-	AppendURLQuery(get_http, "might", (int)might);
+	if (clevel>0)
+		AppendURLQuery(get_http, "CLevel", clevel);
+	if (kills>0)
+		AppendURLQuery(get_http, "kills", (int)kills);
+	if (vip>0)
+		AppendURLQuery(get_http, "vip", vip);
+	if (grank>0)
+		AppendURLQuery(get_http, "GuildRank", grank);
+	if (might>0)
+		AppendURLQuery(get_http, "might", (int)might);
 	AppendURLQuery(get_http, "StatusFlags", StatusFlags);
-	AppendURLQuery(get_http, "PLevel", plevel);
+	AppendURLQuery(get_http, "title", title);
+//	AppendURLQuery(get_http, "PLevel", plevel);
 	AppendURLQuery(get_http, "name", name);
 	AppendURLQuery(get_http, "guild", guild);
 	AppendURLQuery(get_http, "guildF", guildf);
+	AppendURLQuery(get_http, "objtype", type);
+	AppendURLQuery(get_http, "monstertype", monstertype);
+	if (max_amt>0)
+		AppendURLQuery(get_http, "MaxAmtNow", max_amt);
 	get_http += " HTTP / 1.1\r\n";
-	get_http += "Host: " + url;
-	get_http += " : " + URLPort;
+	get_http += "Host: " + urlhttp;
+//	get_http += " : " + URLPort;
 	get_http += " \r\n";
 	get_http += "Connection: close\r\n\r\n";
 
@@ -117,11 +128,13 @@ int HTTPPostData(int k, int x, int y, char *name, char *guild, char *guildf, int
 	}
 
 	// send GET / HTTP
-	send(Socket, get_http.c_str(), (int)strlen(get_http.c_str()), 0);
+	int BytesToSend = (int)strlen(get_http.c_str());
+	send(Socket, get_http.c_str(), (int)BytesToSend, 0);
 
 	// recieve html
 //#define DEBUG_HTTP_BEHAVIOR 1
 #ifdef DEBUG_HTTP_BEHAVIOR
+	printf("Our http query is : %s\n", get_http.c_str());
 	char buffer[10000];
 	int nDataLength;
 	string website_HTML;
@@ -166,8 +179,11 @@ void HttpSendShutdown()
 
 #include <windows.h>
 
-struct PlayerToCommitStore
+struct ObjectCommitStore
 {
+	int type; //see ingame object types to identify this
+
+	//if it is a castle
 	int k;
 	int x;
 	int y;
@@ -181,15 +197,21 @@ struct PlayerToCommitStore
 	__int64 might;
 	int StatusFlags;
 	int plevel;
+	int title;
+
+	//if it is a mineral
+	int max_amt_now;
+	int monstertype; // can be monster type also
 };
 
-PlayerToCommitStore PlayerCircularBuffer[MAX_PLAYERS_CIRCULAR_BUFFER];
+ObjectCommitStore PlayerCircularBuffer[MAX_PLAYERS_CIRCULAR_BUFFER];
 int PlayerCircularBufferReadIndex = 0;
 int PlayerCircularBufferWriteIndex = 0;
 int	KeepPlayerPushThreadsRunning = 1;
 
-void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel)
+void QueueObjectToProcess(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
+	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].type = type;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].k = k;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].x = x;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].y = y;
@@ -212,13 +234,16 @@ void QueuePlayerToProcess(int k, int x, int y, char *name, char *guild, char *gu
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].might = might;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].StatusFlags = StatusFlags;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].plevel = plevel;
+	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].title = title;
+	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].max_amt_now = max_amt;
+	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].monstertype = monstertype;
 
 	PlayerCircularBufferWriteIndex = (PlayerCircularBufferWriteIndex + 1) % MAX_PLAYERS_CIRCULAR_BUFFER;
 }
 
-int HTTPPostData(PlayerToCommitStore &t)
+int HTTPPostData(ObjectCommitStore &t)
 {
-	return HTTPPostData(t.k, t.x, t.y, t.name, t.guild, t.guildf, t.clevel, t.kills, t.vip, t.grank, t.might, t.StatusFlags, t.plevel);
+	return HTTPPostDataPlayer(t.type, t.k, t.x, t.y, t.name, t.guild, t.guildf, t.clevel, t.kills, t.vip, t.grank, t.might, t.StatusFlags, t.plevel, t.title, t.monstertype, t.max_amt_now);
 }
 
 DWORD WINAPI BackgroundProcessPlayers(LPVOID lpParam)

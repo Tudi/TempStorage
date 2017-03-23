@@ -165,7 +165,9 @@ void HexToByteStr(char *HexStr, unsigned char *ByteStr, int &size)
 	while (HexStr[Ind] != 0 && Ind<MaxInd)
 	{
 		ByteStr[size] = (HexToByte(HexStr[Ind]) << 4) + HexToByte(HexStr[Ind + 1]);
-		Ind += 3;
+		Ind += 2;
+		if (HexStr[Ind] == ' ')
+			Ind++;
 		size += 1;
 	}
 }
