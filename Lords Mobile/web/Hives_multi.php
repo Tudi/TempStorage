@@ -11,7 +11,7 @@ if(!isset($k))
 		<td>Guild name</td>
 		<td>Might</td>
 		<td>kills</td>
-		<td>Avg PLevel</td>
+<!--		<td>Avg PLevel</td> -->
 		<td>Avg CLevel</td>
 		<td>Player count</td>
 	</tr>
@@ -28,6 +28,9 @@ if(!isset($k))
 	{
 		if( $HiddenGuilds != "" && strpos($HiddenGuilds,$guild) != 0 )
 			continue;
+/*		
+			<td><?php echo $plevel;?></td>
+*/			
 		?>
 		<tr>
 			<td><?php echo $x;?></td>
@@ -35,7 +38,6 @@ if(!isset($k))
 			<td><?php echo $guild;?></td>
 			<td><?php echo GetValShortFormat($might);?></td>
 			<td><?php echo GetValShortFormat($kills);?></td>
-			<td><?php echo $plevel;?></td>
 			<td><?php echo $clevel;?></td>
 			<td><?php echo $pcount;?></td>
 		</tr>

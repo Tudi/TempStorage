@@ -1,5 +1,6 @@
 <?php
-set_time_limit(2 * 60 * 60);
+//set_time_limit(2 * 60 * 60);
+set_time_limit(5);
 	
 include("db_connection.php");
 
@@ -10,17 +11,26 @@ else
 	ImportFromWebCall();
 
 //now run all the queries we stacked up during this execution
-RemoteRunQuery($MergedQueries);
+RemoteRunQuery2($MergedQueries);
 
 function ImportFromWebCall()
 {
-	global $x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel,$LastUpdated;
+	global $k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel,$LastUpdated,$objtype,$StatusFlags,$title,$monstertype,$MaxAmtNow;
 	echo "Importing from url<br>";
 	$LastUpdated = time();
 	if(!isset($k))
 		$k=67;
-	Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel);
-	PostImportActions();
+//echo "we are importing type '$objtype' $x $y";
+	//guess it's a player
+	if(!isset($objtype) || $objtype == 8)
+	{
+		Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel);
+		PostImportActions();
+	}
+	else if($objtype==10)
+		Insert1LineMonster($x,$y,$CLevel,$monstertype);
+	else if($objtype>=1 && $objtype<=6)
+		Insert1LineMineral($objtype,$x,$y,$name,$CLevel,$MaxAmtNow);
 	//http://10.50.160.60:8081/ImportPlayerInfoFromNetwork.php?k=67&x=1&y=2&name=Tudi&guild=wib&CLevel=3&kills=4&vip=5&GuildRank6&might=7&HasPrisoners=8&PLevel=9&guildF=sea wolves
 	//http://127.0.0.1:8081/ImportPlayerInfoFromNetwork3.php?k=$k&x=$x&y=$y&name=$name&guild=$guild&CLevel=$CLevel&kills=$kills&vip=$vip&GuildRank=$GuildRank&might=$might&HasPrisoners=$HasPrisoners&PLevel=$PLevel&guildF=$guildF
 }
@@ -165,7 +175,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 		if($rowid>0)
 		{
 			$query1 = "insert into player_renames values('".mysql_real_escape_string($oldname)."','".mysql_real_escape_string($NewName)."',UNIX_TIMESTAMP())";
-			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+			RunSyncQuery($query1);
 		}
 	}
 	
@@ -190,14 +200,25 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 		}
 		else
 		{
-			//try to find the long version for guild name
-			$t = mysql_real_escape_string($NewGuild);
-			$query1 = "select count(distinct(guild)),guild from players where guild like '$t%' and not guild like '$t'";
+			//maybe we had it in the past ?
+			$escaped_guild = mysql_real_escape_string($guild);
+			$escaped_name = mysql_real_escape_string($name);
+			$query1 = "select guild from players_archive where guild like '[$escaped_guild]%' and guild not like '[$escaped_guild]' and name like '[$escaped_guild]$escaped_name' order by rowid desc limit 0,1";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-			list( $guildnamevariantscount, $PossibleLongName ) = mysql_fetch_row( $result1 );	
-			if($guildnamevariantscount==1)	
+			list( $PossibleLongName ) = mysql_fetch_row( $result1 );	
+			if( $PossibleLongName != "" )
 				$NewGuild = $PossibleLongName;
+			else
+			{
+				//try to find the long version for guild name
+				$t = mysql_real_escape_string($NewGuild);
+				$query1 = "select count(distinct(guild)),guild from players where guild like '$t%' and not guild like '$t'";
+				$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+				list( $guildnamevariantscount, $PossibleLongName ) = mysql_fetch_row( $result1 );	
+				if($guildnamevariantscount==1)	
+					$NewGuild = $PossibleLongName;
 //					else echo "Found multiple $guildnamevariantscount variants for $guild. Query : $query1<br>";
+			}
 		}
 	}
 	//if we have old records, archive and delete them
@@ -222,6 +243,11 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 		
 		//ditch old
 		$query1 = "delete from players where rowid=$rowid";
+		//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+		RunSyncQuery($query1);
+		
+		//there can be only 1 at this coordinate. Everything older than us has to go
+		$query1 = "delete from players where x=$x and y=$y";
 		//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		RunSyncQuery($query1);
 	}
@@ -270,6 +296,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 
 function RunSyncQuery($query1)
 {
+//return;
 	global $dbi, $MergedQueries;
 	//run it in our DB
 	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));	
@@ -280,7 +307,9 @@ function RunSyncQuery($query1)
 
 function RemoteRunQuery2($query1)
 {
-//return;
+	if( strlen($query1) < 10 )
+		return;
+return;
 //	echo "MergedQueries : $query1<br>"; die();
 //	$url = 'http://127.0.0.1:8081/RunQueries.php';
 	$url = 'http://5.79.67.171/RunQueries.php';
@@ -301,6 +330,9 @@ function RemoteRunQuery2($query1)
 
 function RemoteRunQuery($query1)
 {
+	if( strlen($query1) < 10 )
+		return;
+	
 	$data = array('z' => '-1', 'queries' => $query1);
 
 	$ch = curl_init();
@@ -315,5 +347,47 @@ function RemoteRunQuery($query1)
 	curl_close ($ch);	
 	echo "Remote query reply :";
 	var_dump( $server_output );
+}
+
+function Insert1LineMonster($x,$y,$CLevel,$monstertype)
+{
+	global $dbi,$LastUpdated;	
+	//replace or update existing
+	$query1 = "replace into monsters (rowid,x,y,mtype,level,lastupdated)values(";
+	$query1 .= "'".mysql_real_escape_string($x * 65536 + $y)."'";
+	$query1 .= ",'".mysql_real_escape_string($x)."'";
+	$query1 .= ",'".mysql_real_escape_string($y)."'";
+	$query1 .= ",'".mysql_real_escape_string($monstertype)."'";
+	$query1 .= ",'".mysql_real_escape_string($CLevel)."'";
+	$query1 .= ",'".mysql_real_escape_string($LastUpdated)."'";
+	$query1 .= ")";
+	RunSyncQuery($query1);
+	
+	//delete from actual
+	$olderthan = $LastUpdated - 3 * 24 * 60 * 60;
+	$query1 = "delete from monsters where LastUpdated < $olderthan";
+	RunSyncQuery($query1);
+}
+
+function Insert1LineMineral($type,$x,$y,$name,$CLevel,$MaxAmtNow)
+{
+	global $dbi,$LastUpdated;	
+	//replace or update existing
+	$query1 = "replace into resource_nodes (rowid,x,y,rtype,level,max_now,playername,lastupdated)values(";
+	$query1 .= "'".mysql_real_escape_string($x * 65536 + $y)."'";
+	$query1 .= ",'".mysql_real_escape_string($x)."'";
+	$query1 .= ",'".mysql_real_escape_string($y)."'";
+	$query1 .= ",'".mysql_real_escape_string($type)."'";
+	$query1 .= ",'".mysql_real_escape_string($CLevel)."'";
+	$query1 .= ",'".mysql_real_escape_string($MaxAmtNow)."'";
+	$query1 .= ",'".mysql_real_escape_string($name)."'";
+	$query1 .= ",'".mysql_real_escape_string($LastUpdated)."'";
+	$query1 .= ")";
+	RunSyncQuery($query1);
+	
+	//delete from actual
+	$olderthan = $LastUpdated - 3 * 24 * 60 * 60;
+	$query1 = "delete from resource_nodes where LastUpdated < $olderthan";
+	RunSyncQuery($query1);
 }
 ?>

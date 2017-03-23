@@ -36,8 +36,8 @@ if($TrackWhat == "guildless_innactive")
 	$SelectWhat = "count(*)";
 	$ExtraFilter = " and guild='none' and innactive!=0";
 }
-$MaxX = 1030;
-$MaxY = 510;
+$MaxX = 510;
+$MaxY = 1030;
 ?>
 <table>
 	<tr>

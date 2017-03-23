@@ -44,6 +44,7 @@ for( $y=$RadiusHalf;$y<$MaxY-$RadiusHalf;$y+=$RadiusHalf*2)
 		}
 		
 		//do we have enough players ?
+		if(isset($UniqueGuilds))
 		foreach($UniqueGuilds as $name => $count)
 //			if($count>$MinPCount)
 			{
@@ -55,7 +56,7 @@ for( $y=$RadiusHalf;$y<$MaxY-$RadiusHalf;$y+=$RadiusHalf*2)
 //					$name="";
 				$query2 = "select sum(might),sum(kills),sum(plevel),sum(castlelevel),count(might) from players where k=$k and x>=".($avg_x-$RadiusHalf)." and x<=".($avg_x+$RadiusHalf)." and y>=".($avg_y-$RadiusHalf)." and y<=".($avg_y+$RadiusHalf)." and guild like '".mysql_real_escape_string($name)."'";
 				$result2 = mysql_query($query2,$dbi) or die("Error : 20170220042 <br>".$query2." <br> ".mysql_error($dbi));
-//echo "$query2<br>"				;
+echo "$query2<br>"				;
 				list( $might,$kill,$plevel,$castlelevel,$pcount ) = mysql_fetch_row( $result2 );
 				if($pcount>=$MinPCount)
 				{
