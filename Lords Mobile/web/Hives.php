@@ -25,18 +25,22 @@ if(!isset($k))
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 
-	$query1 = "select x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,MaxPLevel,AvgPLevel,AvgCastleLevel from guild_hives order by HiveCastles desc";		
+	$query1 = "select x,y,guild,guildfull,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,AvgCastleLevel from guild_hives order by HiveCastles desc";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
-	while( list( $x,$y,$guild,$radius,$HiveCastles,$TotalCastles,$HiveMight,$TotalMight,$MaxPLevel,$AvgPLevel,$AvgCLevel ) = mysql_fetch_row( $result1 ))
+	while( list( $x,$y,$guild,$guildfull,$radius,$HiveCastles,$TotalCastles,$HiveMight,$TotalMight,$AvgCLevel ) = mysql_fetch_row( $result1 ))
 	{
-		if( strpos($HiddenGuilds,$guild) != 0 )
+		if($guild=="")
+			$guildCombo="&nbsp;";
+		else
+			$guildCombo="[$guild]$guildfull";
+		if( $guild != "" && strpos($HiddenGuilds,$guild) != 0 )
 			continue;
 
 		?>
 		<tr>
 			<td><?php echo $x;?></td>
 			<td><?php echo $y;?></td>
-			<td><?php echo $guild;?></td>
+			<td><a href="players.php?FG=<?php echo $guild; ?>"><?php echo $guildCombo;?></a></td>
 			<td><?php echo $radius;?></td>
 			<td><?php echo $HiveCastles;?></td>
 			<td><?php echo GetValShortFormat($HiveMight);?></td>

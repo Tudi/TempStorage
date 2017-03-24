@@ -12,6 +12,7 @@ if(!isset($YStep))
 if(!isset($XStep))
 	$XStep = 20;
 $ExtraFilter="";
+$FromWhere="players";
 if(!isset($TrackWhat))
 	$TrackWhat = "might";
 if($TrackWhat == "might")
@@ -28,13 +29,26 @@ if($TrackWhat == "castlelevel")
 if($TrackWhat == "guildless")
 {
 	$SelectWhat = "count(*)";
-	$ExtraFilter = " and guild='none'";
+	$ExtraFilter = " and (guild='' or isnull(guild))";
 }
 if($TrackWhat == "guildless_innactive")
 {
 	echo "Players who's might did not change in the past X days<br>. Only works if it has recent data updated. Check manually !";
 	$SelectWhat = "count(*)";
-	$ExtraFilter = " and guild='none' and innactive!=0";
+	$ExtraFilter = " and (guild='' or isnull(guild)) and ( statusflags & 0x01000000) <> 0";
+}
+if($TrackWhat == "resourcelevel")
+{
+	$FromWhere="resource_nodes";
+	$SelectWhat = "level";
+	$ExtraFilter = "";
+	$ShowAvgVal = 1;
+}
+if($TrackWhat == "resourcefree")
+{
+	$FromWhere="resource_nodes";
+	$SelectWhat = "1";
+	$ExtraFilter = " and (isnull(playername) or playername='')";
 }
 $MaxX = 510;
 $MaxY = 1030;
@@ -64,7 +78,7 @@ $MaxY = 1030;
 			//fetch players in this cell
 			$MightSum[$x][$y] = 0;
 			$MightCount[$x][$y] = 0;
-			$query1 = "select $SelectWhat from players where k=$k and x>=".($x)." and x<=".($x+$XStep)." and y>=".($y)." and y<=".($y+$YStep)."$ExtraFilter";		
+			$query1 = "select $SelectWhat from $FromWhere where x>=".($x)." and x<=".($x+$XStep)." and y>=".($y)." and y<=".($y+$YStep)."$ExtraFilter";		
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 			while( list( $might ) = mysql_fetch_row( $result1 ))
 			{

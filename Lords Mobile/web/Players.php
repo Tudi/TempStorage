@@ -10,7 +10,7 @@ else
 	ob_start();
 
 $SimpleView = 1;
-if(isset($FN) || isset($FG) )
+if(isset($FN) || isset($FG) || isset($FNE) || isset($FNS) || isset($FGE) || isset($FGS) )
 	$SimpleView = 0;
 else
 	echo "To minimize page size only player coordinates are shown. If you wish to get more info, click on player name<br>";
@@ -28,11 +28,14 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		<?php if( $SimpleView == 0 )
 		{
 			?>
+		<td>Guild Full</td>
 		<td>Might</td>
 		<td>Kills</td>
 		<td>Guild rank</td>
 		<td>VIP Level</td>
 		<td>Castle Level</td>
+		<td>Status changers</td>
+		<td>Title</td>
 			<?php
 		}
 		?>
@@ -71,7 +74,7 @@ Selected kingdom is <?php echo $FilterK;?><br>
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 		
-	$query1 = "select x,y,name,guild,might,kills,lastupdated,innactive,HasPrisoners,VIP,GuildRank,PLevel,castlelevel from ";
+	$query1 = "select x,y,name,guild,guildfull,might,kills,lastupdated,statusflags,title,VIP,GuildRank,castlelevel from ";
 	if(isset($FN))
 		$query1 .= "players_archive ";
 	else
@@ -80,17 +83,14 @@ Selected kingdom is <?php echo $FilterK;?><br>
 //	if($FilterK)
 //		$Filter .= " and k='".mysql_real_escape_string($FilterK)."' ";
 	if(isset($FN))
-	{
-		//remove "guild" from player name
-		$IsInGuildPos = strpos($FN,']');
-		if($IsInGuildPos>0)
-			$namename = substr($FN,$IsInGuildPos);
-		else
-			$namename = $FN;
-		$Filter .= " and ( name like '%]".mysql_real_escape_string($namename)."' or name like '".mysql_real_escape_string($namename)."')";
-	}
+		$Filter .= " and name like '".mysql_real_escape_string($FN)."'";
+	if(isset($FNS))
+		$Filter .= " and name like '%".mysql_real_escape_string($FNS)."%'";
+	
 	if(isset($FG))
 		$Filter .= " and guild like '".mysql_real_escape_string($FG)."' ";
+	if(isset($FGS))
+		$Filter .= " and guild like '%".mysql_real_escape_string($FGS)."%' ";
 	
 	if($Filter)
 		$query1 .= " where 1=1 $Filter ";
@@ -103,10 +103,10 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		$q2 = str_replace("players_archive","players", $query1);
 		$query1 = "($query1)union($q2) order by $Order";
 	}
-//echo $FN.":".$query1;
+echo "$FN-$FNS-$FG-$FGS:$query1";
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-	while( list( $x,$y,$name,$guild,$might,$kills,$lastupdated,$innactive,$HasPrisoners,$VIP,$GuildRank,$Plevel,$castlelevel ) = mysql_fetch_row( $result1 ))
+	while( list( $x,$y,$name,$guild,$guildfull,$might,$kills,$lastupdated,$statusflags,$title,$VIP,$GuildRank,$castlelevel ) = mysql_fetch_row( $result1 ))
 	{
 		$IsInGuildPos = strpos($name,']');
 		if($IsInGuildPos>0)
@@ -123,11 +123,9 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		//$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
 		$PlayerArchiveLink = "?FN=".urlencode($namename);
 		$GuildFilterLink = "?FG=".urlencode($guild);
-		$HasPrisonersHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $HasPrisoners);	
 		$LastUpdatedAsDiff = GetTimeDiffShortFormat($lastupdated);
-		$HasPrisonersAsDiff = GetTimeDiffShortFormat($HasPrisoners);
-		if($HasPrisonersAsDiff=="48.4 y")
-			$HasPrisonersAsDiff="";
+		$StatusFlagsString = StatusFlagsToString( $statusflags );
+		$TitleAsString = TitleIdToString( $title );
 		if($guild=="")
 			$guild="&nbsp;";
 /*			<td><?php echo $HasPrisonersAsDiff; ?></td>
@@ -143,11 +141,14 @@ Selected kingdom is <?php echo $FilterK;?><br>
 <?php if( $SimpleView == 0 )
 {
 ?>
+<td><?php echo $guildfull; ?></td>
 <td><?php echo GetValShortFormat($might); ?></td>
 <td><?php echo GetValShortFormat($kills); ?></td>
 <td><?php echo $GuildRank; ?></td>
 <td><?php echo $VIP; ?></td>
 <td><?php echo $castlelevel; ?></td>
+<td><?php echo $StatusFlagsString; ?></td>
+<td><?php echo $TitleAsString; ?></td>
 <?php
 }
 ?>
@@ -158,3 +159,29 @@ Selected kingdom is <?php echo $FilterK;?><br>
 ?>	
   </tbody>
 </table>
+<?php
+function TitleIdToString( $t )
+{
+//echo "sf is $sf ".($sf & 0x04);
+	$t = (int)$t;
+	if($t == 0)
+		return "";
+	$ret = "";
+	return $ret;
+}
+function StatusFlagsToString( $sf )
+{
+//echo "sf is $sf ".($sf & 0x04);
+	$sf = (int)$sf;
+	$ret = "";
+	if($sf & 0x01000000)
+		$ret .= "Innactive ";
+	if($sf & 0x02)
+		$ret .= "Burning ";
+	if($sf & 0x04)
+		$ret .= "Shielded ";
+	if($sf & 0x08)
+		$ret .= "HasPrisoners ";
+	return $ret;
+}
+?>

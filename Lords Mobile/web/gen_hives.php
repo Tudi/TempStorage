@@ -6,18 +6,7 @@ if(!isset($dbi))
 $query1 = "delete from guild_hives";		
 $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 
-
-//get the list of possible maps we have
-$query1 = "select distinct(k) from players";		
-$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
-$itr=0;
-while( list( $k ) = mysql_fetch_row( $result1 ))
-	$KList[$itr++] = $k;
-
-//generate hives for each server we parsed
-foreach( $KList as $key => $k)
-{
-	$query1 = "select distinct(guild) from players where k=$k";		
+	$query1 = "select distinct(GuildFull) from players";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	$itr=0;
 	while( list( $guild ) = mysql_fetch_row( $result1 ))
@@ -27,8 +16,11 @@ foreach( $KList as $key => $k)
 	foreach( $GuildList as $key => $guild)
 	{
 		//get all players for this guild
-		$tguild = str_replace("\\","%",$guild); //random bugs ?
-		$query1 = "select x,y,might,PLevel,CastleLevel from players where k=$k and guild like '".mysql_real_escape_string($tguild)."'";		
+		if($guild=="")
+			$query1 = "select x,y,might,CastleLevel,guild from players where isnull(GuildFull) or GuildFull like ''";		
+		else
+			$query1 = "select x,y,might,CastleLevel,guild from players where GuildFull like '".mysql_real_escape_string($guild)."'";		
+echo $query1;	
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 		unset($Guildx);
 		unset($Guildy);
@@ -38,12 +30,11 @@ foreach( $KList as $key => $k)
 		$yavg = 0;
 		$playercount = 0;
 		$TotalMight = 0;
-		while( list( $x,$y,$might,$PLevel,$CastleLevel ) = mysql_fetch_row( $result1 ))
+		while( list( $x,$y,$might,$CastleLevel,$guildsmall ) = mysql_fetch_row( $result1 ))
 		{
 			$Guildx[$playercount] = $x;
 			$Guildy[$playercount] = $y;
 			$Guildmight[$playercount] = $might;
-			$GuildPLevel[$playercount] = $PLevel;
 			$GuildCastleLevel[$playercount] = $CastleLevel;
 			$TotalMight += $might;
 			$xavg += $x;
@@ -68,9 +59,6 @@ foreach( $KList as $key => $k)
 			$cordcount = 0;
 			$DistSum = 0;
 			$mightsum = 0;
-			$MaxPLevel = 0;
-			$PLevelSum = 0;
-			$PLevelCount = 0;
 			$CLevelSum = 0;
 			$CLevelCount = 0;
 			for($i=0;$i<count($Guildx);$i++)
@@ -88,13 +76,6 @@ foreach( $KList as $key => $k)
 					$DistSum += $dist;
 					$cordcount++;
 					$mightsum += $Guildmight[ $i ];
-					if($GuildPLevel[$i]>$MaxPLevel)
-						$MaxPLevel = $GuildPLevel[$i];
-					if( $GuildPLevel[$i] > 0 )
-					{
-						$PLevelSum += $GuildPLevel[$i];
-						$PLevelCount++;
-					}
 					if( $GuildCastleLevel[$i] > 0 )
 					{
 						$CLevelSum += $GuildCastleLevel[$i];
@@ -116,10 +97,6 @@ foreach( $KList as $key => $k)
 				break;
 			$DistSumPrev = (int)($DistSum / $cordcount);
 		}
-		if( $PLevelCount > 0 )
-			$PLevelAvg = (int)($PLevelSum / $PLevelCount);
-		else
-			$PLevelAvg = 0;
 		if( $CLevelCount > 0 )
 			$CLevelAvg = (int)($CLevelSum / $CLevelCount);
 		else
@@ -127,10 +104,9 @@ foreach( $KList as $key => $k)
 		$MaxDist = (int)sqrt( $DistSumPrev );
 		$xavg_prev = (int)($xavg_prev);
 		$yavg_prev = (int)($yavg_prev);
-//echo "Guild $guild central location is at $xavg_prev $yavg_prev with radius $MaxDist and castles $cordcount. Total castle count $playercount<br>";
+echo "Guild '$guild' central location is at $xavg_prev $yavg_prev with radius $MaxDist and castles $cordcount. Total castle count $playercount<br>";
 //exit();
-		$query1 = "insert into guild_hives (k,x,y,guild,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,MaxPLevel,AvgPLevel,AvgCastleLevel)values($k,$xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$MaxPLevel,$PLevelAvg,$CLevelAvg)";		
+		$query1 = "insert into guild_hives (x,y,guild,guildfull,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,AvgCastleLevel)values($xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."','".mysql_real_escape_string($guildsmall)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$CLevelAvg)";		
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	}	
-}
 ?>

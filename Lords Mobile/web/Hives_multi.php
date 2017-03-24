@@ -22,20 +22,21 @@ if(!isset($k))
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 
-	$query1 = "select x,y,gname,might,kills,plevel,clevel,pcount from guild_hives_multi order by pcount desc,gname";		
+	$query1 = "select x,y,guild,guildfull,might,kills,clevel,pcount from guild_hives_multi order by pcount desc,guild,guildfull";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
-	while( list( $x,$y,$guild,$might,$kills,$plevel,$clevel,$pcount ) = mysql_fetch_row( $result1 ))
+	while( list( $x,$y,$guild,$guildfull,$might,$kills,$clevel,$pcount ) = mysql_fetch_row( $result1 ))
 	{
+		if($guild=="")
+			$guildCombo="&nbsp;";
+		else
+			$guildCombo="[$guild]$guildfull";
 		if( $HiddenGuilds != "" && strpos($HiddenGuilds,$guild) != 0 )
 			continue;
-/*		
-			<td><?php echo $plevel;?></td>
-*/			
 		?>
 		<tr>
 			<td><?php echo $x;?></td>
 			<td><?php echo $y;?></td>
-			<td><?php echo $guild;?></td>
+			<td><a href="players.php?FG=<?php echo $guild; ?>"><?php echo $guildCombo;?></a></td>
 			<td><?php echo GetValShortFormat($might);?></td>
 			<td><?php echo GetValShortFormat($kills);?></td>
 			<td><?php echo $clevel;?></td>
