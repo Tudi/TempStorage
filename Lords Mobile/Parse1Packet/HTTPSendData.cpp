@@ -13,6 +13,9 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+
+#include "ParsePackets.h"
+
 using namespace std;
 #pragma comment(lib,"ws2_32.lib")
 
@@ -61,6 +64,18 @@ void AppendURLQuery(string &url, const char *name, const char *val, int IsFirst 
 	else
 		sprintf_s(temp, "%s=%s", name, tval.c_str());
 	url += temp;
+}
+
+void strcpy_s_max(char *to, int maxto, char *src, int maxsrc)
+{
+	int Ind = 0;
+	while (src[Ind] != 0 && Ind < maxsrc && Ind < maxto)
+	{
+		to[Ind] = src[Ind];
+		Ind++;
+	}
+	if (to[Ind] != 0)
+		to[Ind] = 0;
 }
 
 int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
@@ -215,18 +230,20 @@ void QueueObjectToProcess(int type, int k, int x, int y, char *name, char *guild
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].k = k;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].x = x;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].y = y;
+
 	if (name != NULL)
-		strcpy_s(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name), name);
+		strcpy_s_max(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name), name, MAX_BUILDING_NAME);
 	else
 		PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name[0] = 0;
 	if (guild != NULL)
-		strcpy_s(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild), guild);
+		strcpy_s_max(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild), guild, MAX_GUILD_SHORT_NAME);
 	else
 		PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild[0] = 0;
 	if (guildf != NULL)
-		strcpy_s(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf), guildf);
+		strcpy_s_max(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf), guildf, MAX_GUILD_FULL_NAME);
 	else
 		PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf[0] = 0;
+
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].clevel = clevel;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].kills = kills;
 	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].vip = vip;

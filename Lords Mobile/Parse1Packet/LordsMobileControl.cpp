@@ -16,6 +16,7 @@ DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
 	while (KeepGameScanThreadsRunning == 1)
 	{
 		RunLordsMobileTestsNoOCR();	// we do not have a break mechanism for this atm
+		remove("KingdomScanStatus.txt");
 	}
 	KeepGameScanThreadsRunning = 0;
 	return 0;
