@@ -15,7 +15,7 @@ RemoteRunQuery2($MergedQueries);
 
 function ImportFromWebCall()
 {
-	global $k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$HasPrisoners,$PLevel,$LastUpdated,$objtype,$StatusFlags,$title,$monstertype,$MaxAmtNow;
+	global $k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$LastUpdated,$objtype,$StatusFlags,$title,$monstertype,$MaxAmtNow;
 	echo "Importing from url<br>";
 	$LastUpdated = time();
 	if(!isset($k))
@@ -72,29 +72,36 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	// player got renamed ? Try to search it based on coords
 	if( $rowid==0 || $rowid == "" )
 	{
-		$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title from players where x='$x' and y='$y' and kills >= '$kills' and vip >= '$vip' and castlelevel>='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+		$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and kills >= '$kills' and vip >= '$vip' and castlelevel>='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-		list( $rowid2,$kills2,$might2,$vip2,$guildrank2,$GuildFull2,$StatusFlags2,$title2 ) = mysql_fetch_row( $result1 );			
+		list( $rowid2,$kills2,$might2,$vip2,$guildrank2,$GuildFull2,$StatusFlags2,$title2,$oldname ) = mysql_fetch_row( $result1 );			
 		//save the namechange
 		if($rowid2>0)
 		{
-			$query1 = "insert into player_renames values('".mysql_real_escape_string($oldname)."','".mysql_real_escape_string($name)."','".mysql_real_escape_string($guild)."',UNIX_TIMESTAMP())";
-			RunSyncQuery($query1);
+			//check already exists
+			$query1 = "select count(*) from player_renames where name1 like '".mysql_real_escape_string($oldname)."' and name2 like '".mysql_real_escape_string($name)."' limit 0,1";
+			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+			list( $IsInserted ) = mysql_fetch_row( $result1 );	
+			if($IsInserted=="" ||$IsInserted<=0)
+			{
+				$query1 = "insert into player_renames values('".mysql_real_escape_string($oldname)."','".mysql_real_escape_string($name)."','".mysql_real_escape_string($guild)."',UNIX_TIMESTAMP())";
+				RunSyncQuery($query1);
+			}
 		}
 	}
 	
 	//restore non updated from old values
-	if($kills == 0)
+	if($kills == 0 || $kills == "")
 		$kills = $kills2;
-	if($might == 0)
+	if($might == 0 || $might == "")
 		$might = $might2;
-	if($vip == 0)
+	if($vip == 0 || $vip == "")
 		$vip = $vip2;
-	if($GuildRank == 0)
+	if($GuildRank == "")
 		$GuildRank = $guildrank2;
-	if($StatusFlags == 0)
+	if($StatusFlags == 0 || $StatusFlags == "")
 		$StatusFlags = $StatusFlags2;
-	if($title == 0)
+	if($title == 0 || $title == "" )
 		$title = $title2;
 	if($guildF == 0 || $guildF == "")
 		$guildF = $GuildFull2;
@@ -119,8 +126,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 				$query1 = "insert ignore into players_archive (select * from players where rowid=$rowid)";
 				//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 				RunSyncQuery($query1);
-			}
-		
+			}	
 		//ditch old
 		$query1 = "delete from players where rowid=$rowid";
 		//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
@@ -136,11 +142,12 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	
 //if(strlen($NewGuild)<=5 && $NewGuild!="None")die("not good enough $NewGuild");
 	//insert new
-	$query1 = "insert into players ( x,y,name,guild,kills,might,lastupdated,VIP,GuildRank,CastleLevel,StatusFlags,title)values(";
+	$query1 = "insert into players ( x,y,name,guild,guildfull,kills,might,lastupdated,VIP,GuildRank,CastleLevel,StatusFlags,title)values(";
 	$query1 .= "'".mysql_real_escape_string($x)."'";
 	$query1 .= ",'".mysql_real_escape_string($y)."'";
 	$query1 .= ",'".mysql_real_escape_string($name)."'";
 	$query1 .= ",'".mysql_real_escape_string($guild)."'";
+	$query1 .= ",'".mysql_real_escape_string($guildF)."'";
 	$query1 .= ",'".mysql_real_escape_string($kills)."'";
 	$query1 .= ",'".mysql_real_escape_string($might)."'";
 	$query1 .= ",'".mysql_real_escape_string($LastUpdated)."'";
@@ -163,14 +170,24 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	$ymax = $y + 10;
 	$olderthan = $LastUpdated - 24 * 60 * 60;
 	$LastTime = $LastUpdated;
-	//move to archive 
-	$query1 = "insert ignore into players_archive ( select * from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan)";
-	//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
-	RunSyncQuery($query1);
-	//delete from actual
-	$query1 = "delete from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
-	//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));	
-	RunSyncQuery($query1);
+	//move to archive without double insert
+	$query1 = "select rowid,x,y,name,guild,kills,might,statusflags,vip,guildrank,clevel,title from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
+	while( list( $rowid,$x,$y,$name,$guild,$kills,$might,$statusflags,$vip,$guildrank,$clevel,$title ) = mysql_fetch_row( $result1 ))
+	{
+		$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$GuildRank' and castlelevel='$clevel' and StatusFlags='$statusflags' and title='$title' and name like '".mysql_real_escape_string($name)."' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+		$result2 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
+		list( $rowid2 ) = mysql_fetch_row( $result2 );
+		if( $rowid2 == "" || $rowid2 == 0 )
+		{
+			$query1 = "insert into players_archive (select * from players where rowid=$rowid)";
+			//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
+			RunSyncQuery($query1);
+		}
+		//delete from actual
+		$query1 = "delete from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
+		//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));	
+		RunSyncQuery($query1);
+	}
 }
 
 function RunSyncQuery($query1)
@@ -188,7 +205,7 @@ function RemoteRunQuery2($query1)
 {
 	if( strlen($query1) < 10 )
 		return;
-return;
+//return;
 //	echo "MergedQueries : $query1<br>"; die();
 //	$url = 'http://127.0.0.1:8081/RunQueries.php';
 	$url = 'http://5.79.67.171/RunQueries.php';

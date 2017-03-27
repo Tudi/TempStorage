@@ -18,7 +18,15 @@ if(!isset($s_guild))
 }
 if(isset($_REQUEST['ExactGuildName']))
 	$ExactGuildName=$_REQUEST['ExactGuildName'];
-
+if(!isset($s_grank))
+{
+	if(isset($_REQUEST['s_grank']))
+		$s_grank=$_REQUEST['s_grank'];
+	else
+		$s_grank="";
+}
+if(isset($_REQUEST['s_innactive']))
+	$s_innactive=$_REQUEST['s_innactive'];
 ?>
 <form name="SearchForm" id="SearchForm" action="">
 	<table>
@@ -32,6 +40,26 @@ if(isset($_REQUEST['ExactGuildName']))
 			<td>Guild</td>
 			<td><input type="text" name="s_guild" value="<?php echo $s_guild; ?>"></td>
 			<td>Exact match<input type="checkbox" name="ExactGuildName" <?php if(isset($ExactGuildName)) echo "checked";?>></td>
+			<td><input type="submit" value="Search"></td>
+		</tr>
+		<tr>
+			<td>Guild rank</td>
+			<td><select name="s_grank">
+					<option value="">Any</option>
+					<option value="6" <?php if($s_grank==6) echo "selected";?> >Guildless</option>
+					<option value="1" <?php if($s_grank==1) echo "selected";?> >R1</option>
+					<option value="2" <?php if($s_grank==2) echo "selected";?> >R2</option>
+					<option value="3" <?php if($s_grank==3) echo "selected";?> >R3</option>
+					<option value="4" <?php if($s_grank==4) echo "selected";?> >R4</option>
+					<option value="5" <?php if($s_grank==5) echo "selected";?> >Owner</option>
+				</select></td>
+			<td></td>
+			<td><input type="submit" value="Search"></td>
+		</tr>
+		<tr>
+			<td>Innactive</td>
+			<td><input type="checkbox" name="s_innactive" <?php if(isset($s_innactive)) echo "checked";?>></td>
+			<td></td>
 			<td><input type="submit" value="Search"></td>
 		</tr>
 	</table>
@@ -52,6 +80,10 @@ if(strlen($s_guild)>0)
 	else
 		$ShowResults .= "&FGS=".urlencode($s_guild);
 }
+if(isset($s_grank) && $s_grank != "" && $s_grank<6)
+	$ShowResults .= "&FGR=".urlencode($s_grank);
+if(isset($s_innactive) && $s_innactive != "" )
+	$ShowResults .= "&FI=1";
 if($ShowResults!="1")
 {
 //	echo "ShowResults=$ShowResults";

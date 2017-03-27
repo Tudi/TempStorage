@@ -6,7 +6,7 @@ if(!isset($dbi))
 $query1 = "delete from guild_hives";		
 $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 
-	$query1 = "select distinct(GuildFull) from players";		
+	$query1 = "select distinct(guild) from players";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	$itr=0;
 	while( list( $guild ) = mysql_fetch_row( $result1 ))
@@ -15,12 +15,14 @@ $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." 
 	//get the hive for each guild
 	foreach( $GuildList as $key => $guild)
 	{
+		$escapped_guild = str_replace("\\s","\\\\s",$guild);
+		$escapped_guild = mysql_real_escape_string($escapped_guild);
 		//get all players for this guild
 		if($guild=="")
-			$query1 = "select x,y,might,CastleLevel,guild from players where isnull(GuildFull) or GuildFull like ''";		
+			$query1 = "select x,y,might,CastleLevel,guildfull from players where isnull(guild) or guild like ''";		
 		else
-			$query1 = "select x,y,might,CastleLevel,guild from players where GuildFull like '".mysql_real_escape_string($guild)."'";		
-echo $query1;	
+			$query1 = "select x,y,might,CastleLevel,guildfull from players where guild like '".$escapped_guild."'";		
+//echo $query1;	
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 		unset($Guildx);
 		unset($Guildy);
@@ -30,7 +32,7 @@ echo $query1;
 		$yavg = 0;
 		$playercount = 0;
 		$TotalMight = 0;
-		while( list( $x,$y,$might,$CastleLevel,$guildsmall ) = mysql_fetch_row( $result1 ))
+		while( list( $x,$y,$might,$CastleLevel,$guildfull ) = mysql_fetch_row( $result1 ))
 		{
 			$Guildx[$playercount] = $x;
 			$Guildy[$playercount] = $y;
@@ -42,7 +44,7 @@ echo $query1;
 			$playercount++;
 		}
 		if($playercount==0)		
-			echo "Mistical bug found, check guild '$guild' = ".mysql_real_escape_string($guild)."<br>";
+			echo "Mistical bug found, check guild '$guild' = ".mysql_real_escape_string($guild)." = $escapped_guild and query : $query1<br>";
 		$cordcount = $playercount;
 		$xavg_prev = $xavg / $cordcount;
 		$yavg_prev = $yavg / $cordcount;
@@ -104,9 +106,10 @@ echo $query1;
 		$MaxDist = (int)sqrt( $DistSumPrev );
 		$xavg_prev = (int)($xavg_prev);
 		$yavg_prev = (int)($yavg_prev);
-echo "Guild '$guild' central location is at $xavg_prev $yavg_prev with radius $MaxDist and castles $cordcount. Total castle count $playercount<br>";
+//echo "Guild '$guild' central location is at $xavg_prev $yavg_prev with radius $MaxDist and castles $cordcount. Total castle count $playercount<br>";
 //exit();
-		$query1 = "insert into guild_hives (x,y,guild,guildfull,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,AvgCastleLevel)values($xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."','".mysql_real_escape_string($guildsmall)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$CLevelAvg)";		
+		$query1 = "insert into guild_hives (x,y,guild,guildfull,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,AvgCastleLevel)values($xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."','".mysql_real_escape_string($guildfull)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$CLevelAvg)";		
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	}	
+//	die();
 ?>

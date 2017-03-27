@@ -10,7 +10,41 @@ else
 	ob_start();
 
 $SimpleView = 1;
-if(isset($FN) || isset($FG) || isset($FNE) || isset($FNS) || isset($FGE) || isset($FGS) )
+	
+$Filter = "";
+if(isset($FN))
+{
+	$t = str_replace("\\s","\\\\s",$FN);
+	$Filter .= " and name like '".mysql_real_escape_string($t)."'";
+}
+if(isset($FNS))
+{
+	$t = str_replace("\\","\\\\",$FNS);
+	$Filter .= " and name like '%".mysql_real_escape_string($t)."%'";
+}
+
+if(isset($FG))
+{
+	$t = str_replace("\\s","\\\\s",$FG);
+	$Filter .= " and guild like '".mysql_real_escape_string($t)."' ";
+}
+if(isset($FGS))
+{
+	$t = str_replace("\\","\\\\",$FGS);
+	$Filter .= " and guild like '%".mysql_real_escape_string($t)."%' ";
+}
+
+if(isset($FGR))
+{
+	if($FGR==6)
+		$Filter .= " and guildrank=0 and (isnull(guild) or guild='')";
+	else
+		$Filter .= " and guildrank='".mysql_real_escape_string($FGR)."' ";
+}
+if(isset($FI))
+		$Filter .= " and ( statusflags &0x01000000 ) <> 0";
+	
+if($Filter!="")	
 	$SimpleView = 0;
 else
 	echo "To minimize page size only player coordinates are shown. If you wish to get more info, click on player name<br>";
@@ -66,7 +100,6 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		$HiddenNames .= "####$name####";
 
 	$HiddenGuilds = "";
-	$Filter = "";
 	$Order = " lastupdated desc ";
 	$query1 = "select name from guilds_hidden where EndStamp > ".time();
 //echo "$query1<br>";
@@ -79,19 +112,7 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		$query1 .= "players_archive ";
 	else
 		$query1 .= "players ";
-	
-//	if($FilterK)
-//		$Filter .= " and k='".mysql_real_escape_string($FilterK)."' ";
-	if(isset($FN))
-		$Filter .= " and name like '".mysql_real_escape_string($FN)."'";
-	if(isset($FNS))
-		$Filter .= " and name like '%".mysql_real_escape_string($FNS)."%'";
-	
-	if(isset($FG))
-		$Filter .= " and guild like '".mysql_real_escape_string($FG)."' ";
-	if(isset($FGS))
-		$Filter .= " and guild like '%".mysql_real_escape_string($FGS)."%' ";
-	
+
 	if($Filter)
 		$query1 .= " where 1=1 $Filter ";
 	if($Order)
@@ -103,7 +124,7 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		$q2 = str_replace("players_archive","players", $query1);
 		$query1 = "($query1)union($q2) order by $Order";
 	}
-echo "$FN-$FNS-$FG-$FGS:$query1";
+//echo "$FN-$FNS-$FG-$FGS:$query1";
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$name,$guild,$guildfull,$might,$kills,$lastupdated,$statusflags,$title,$VIP,$GuildRank,$castlelevel ) = mysql_fetch_row( $result1 ))

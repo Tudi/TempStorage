@@ -9,16 +9,16 @@ $StatusFlagInnactive = 0x01000000;
 $query1 = "update players set StatusFlags=StatusFlags & ~($StatusFlagInnactive)";
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220027 <br>".$query1." <br> ".mysql_error($dbi));
 // a player is innactive if he did not change coordinate and he's might did not change in the past X days
-$query1 = "select rowid,x,y,name,might,lastupdated from players";
+$query1 = "select rowid,x,y,name,might,lastupdated,vip,castlelevel from players";
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220024 <br>".$query1." <br> ".mysql_error($dbi));
-while( list( $rowid,$x,$y,$name,$might,$lastupdated ) = mysql_fetch_row( $result1 ))
+while( list( $rowid,$x,$y,$name,$might,$lastupdated,$vip,$castlelevel ) = mysql_fetch_row( $result1 ))
 {
 	// check he's might yesterday or anywhere before last seen him here. 
 	// Kill count might go up when he is defending because of traps
 	// should cgeck reource mined
 	// should check if he had prisoners recently
 	// even if might does not change. Troops healed or troops trained might have changed
-	$query2 = "select might,lastupdated from players_archive where x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*3)." and name like '".mysql_real_escape_string($name)."' limit 0,1";
+	$query2 = "select might,lastupdated from players_archive where x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*3)." and name like '".mysql_real_escape_string($name)."' and vip=$vip and castlelevel=$castlelevel limit 0,1";
 //echo "$query2<br>";
 	$result2 = mysql_query($query2,$dbi) or die("Error : 20170220025 <br>".$query2." <br> ".mysql_error($dbi));
 	$MightChanged = -1;

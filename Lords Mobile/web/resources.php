@@ -2,6 +2,58 @@
 include("db_connection.php");
 ?>
 <link href="css/table.css" rel="stylesheet">
+<?php
+if(!isset($s_type))
+{
+	if(isset($_REQUEST['s_type']))
+		$s_type=$_REQUEST['s_type'];
+	else
+		$s_type="";
+}
+if(!isset($s_occupied))
+{
+	if(isset($_REQUEST['s_occupied']))
+		$s_occupied=$_REQUEST['s_occupied'];
+	else
+		$s_occupied="";
+}
+if(!isset($s_level))
+{
+	if(isset($_REQUEST['s_level']))
+		$s_level=$_REQUEST['s_level'];
+	else
+		$s_level="";
+}
+?>
+<form name="SearchForm" id="SearchForm" action="">
+	Mineral Type <select name="s_type"> 
+	<option value="" <?php if($s_type=="") echo "selected"; ?>>All</option>
+	<option value="1" <?php if($s_type==1) echo "selected"; ?>>Food</option>
+	<option value="2" <?php if($s_type==2) echo "selected"; ?>>Rock</option>
+	<option value="3" <?php if($s_type==3) echo "selected"; ?>>Ore</option>
+	<option value="4" <?php if($s_type==4) echo "selected"; ?>>Wood</option>
+	<option value="5" <?php if($s_type==5) echo "selected"; ?>>Gold</option>
+	<option value="6" <?php if($s_type==6) echo "selected"; ?>>Gem loads</option>
+	</select>
+
+	Occupied <select name="s_occupied"> 
+	<option value="0" <?php if($s_occupied==0) echo "selected"; ?>>whatever</option>
+	<option value="1" <?php if($s_occupied==1) echo "selected"; ?>>yes</option>
+	<option value="2" <?php if($s_occupied==2) echo "selected"; ?>>no</option>
+	</select>
+
+	Level minimum<select name="s_level"> 
+	<option value="" <?php if($s_level=="") echo "selected"; ?>>All</option>
+	<option value="1" <?php if($s_level==1) echo "selected"; ?>>1</option>
+	<option value="2" <?php if($s_level==2) echo "selected"; ?>>2</option>
+	<option value="3" <?php if($s_level==3) echo "selected"; ?>>3</option>
+	<option value="4" <?php if($s_level==4) echo "selected"; ?>>4</option>
+	<option value="5" <?php if($s_level==5) echo "selected"; ?>>5</option>
+	</select>
+
+	<input type="submit" value="Search">
+</form>
+
 <table>
   <thead style="background-color: #60a917">
 	<tr>
@@ -14,9 +66,18 @@ include("db_connection.php");
   </thead>
   <tbody class="TFtable">
 	<?php
-	if(!isset($type))
-		$type=6;
-	$query1 = "select x,y,level,playername,lastupdated from resource_nodes where rtype='".mysql_real_escape_string($type)."'";
+	$query1 = "select x,y,level,playername,lastupdated from resource_nodes where 1=1";
+	if(isset($s_type) && $s_type != "" )
+		$query1 .= " and rtype='".mysql_real_escape_string($s_type)."'";
+	if(isset($s_level) && $s_level != "" )
+		$query1 .= " and level>='".mysql_real_escape_string($s_level)."'";
+	if(isset($s_occupied) && $s_occupied != "" )
+	{
+		if($s_occupied==1)
+			$query1 .= " and not (playername like '' or isnull(playername)) ";
+		else if($s_occupied==2)
+			$query1 .= " and (playername like '' or isnull(playername)) ";
+	}
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$level,$playername,$lastupdated ) = mysql_fetch_row( $result1 ))
 	{	

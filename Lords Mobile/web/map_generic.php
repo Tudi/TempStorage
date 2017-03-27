@@ -53,6 +53,7 @@ if($TrackWhat == "resourcefree")
 $MaxX = 510;
 $MaxY = 1030;
 ?>
+Black is strongest value. Light red is weakest value. When showing avg values you should also check color !<br>
 <table>
 	<tr>
 		<td></td>
