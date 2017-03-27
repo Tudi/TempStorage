@@ -78,7 +78,7 @@ void strcpy_s_max(char *to, int maxto, char *src, int maxsrc)
 		to[Ind] = 0;
 }
 
-int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
+int HTTPPostData(string get_http, string p_url, int p_port)
 {
 	SOCKET Socket;
 	SOCKADDR_IN SockAddr;
@@ -89,12 +89,66 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 	int i = 0;
 
 	// website url
+//	string urlhttp = "127.0.0.1 : 8081";
 	string url = "127.0.0.1";
-	string urlhttp = "127.0.0.1 : 8081";
+	if (p_url != "")
+		url = p_url;
 	int URLPort = 8081;
-//	string url = "www.lordsmobile.online";
-//	int URLPort = 80;
+	if (p_port > 0)
+		URLPort = p_port;
+	string urlhttp = url + " : " + to_string(URLPort);
 
+	get_http += " HTTP / 1.1\r\n";
+	get_http += "Host: " + urlhttp;
+	//	get_http += " : " + URLPort;
+	get_http += " \r\n";
+	get_http += "Connection: close\r\n\r\n";
+
+	Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	host = gethostbyname(url.c_str());
+
+	SockAddr.sin_port = htons(URLPort);
+	SockAddr.sin_family = AF_INET;
+	SockAddr.sin_addr.s_addr = *((unsigned long*)host->h_addr);
+
+	if (connect(Socket, (SOCKADDR*)(&SockAddr), sizeof(SockAddr)) != 0)
+	{
+		printf("Could not connect\n");
+		//system("pause");
+		return 1;
+	}
+
+	// send GET / HTTP
+	int BytesToSend = (int)strlen(get_http.c_str());
+	send(Socket, get_http.c_str(), (int)BytesToSend, 0);
+
+	// recieve html
+	//#define DEBUG_HTTP_BEHAVIOR 1
+#ifdef DEBUG_HTTP_BEHAVIOR
+	printf("Our http query is : %s\n", get_http.c_str());
+	char buffer[10000];
+	int nDataLength;
+	string website_HTML;
+	while ((nDataLength = recv(Socket, buffer, 10000, 0)) > 0)
+	{
+		int i = 0;
+		while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r')
+		{
+			website_HTML += buffer[i];
+			i += 1;
+		}
+	}
+
+	// Display HTML source 
+	printf("%s\n", website_HTML.c_str());
+#endif
+
+	closesocket(Socket);
+	return 0;
+}
+
+int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
+{
 	printf("Send http for player %s, vip %d\n", name, vip);
 
 	//HTTP GET
@@ -114,61 +168,26 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 		AppendURLQuery(get_http, "might", (int)might);
 	AppendURLQuery(get_http, "StatusFlags", StatusFlags);
 	AppendURLQuery(get_http, "title", title);
-//	AppendURLQuery(get_http, "PLevel", plevel);
 	AppendURLQuery(get_http, "name", name);
 	AppendURLQuery(get_http, "guild", guild);
-	AppendURLQuery(get_http, "guildF", guildf);
+	if (guildf != NULL && guildf[0]!=0)
+		AppendURLQuery(get_http, "guildF", guildf);
 	AppendURLQuery(get_http, "objtype", type);
-	AppendURLQuery(get_http, "monstertype", monstertype);
+	if (monstertype>0)
+		AppendURLQuery(get_http, "monstertype", monstertype);
 	if (max_amt>0)
 		AppendURLQuery(get_http, "MaxAmtNow", max_amt);
-	get_http += " HTTP / 1.1\r\n";
-	get_http += "Host: " + urlhttp;
-//	get_http += " : " + URLPort;
-	get_http += " \r\n";
-	get_http += "Connection: close\r\n\r\n";
 
-	Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	host = gethostbyname(url.c_str());
+	HTTPPostData(get_http,"",0);
 
-	SockAddr.sin_port = htons(URLPort);
-	SockAddr.sin_family = AF_INET;
-	SockAddr.sin_addr.s_addr = *((unsigned long*)host->h_addr);
-
-	if (connect(Socket, (SOCKADDR*)(&SockAddr), sizeof(SockAddr)) != 0)
-	{
-		printf( "Could not connect\n" );
-		//system("pause");
-		return 1;
-	}
-
-	// send GET / HTTP
-	int BytesToSend = (int)strlen(get_http.c_str());
-	send(Socket, get_http.c_str(), (int)BytesToSend, 0);
-
-	// recieve html
-//#define DEBUG_HTTP_BEHAVIOR 1
-#ifdef DEBUG_HTTP_BEHAVIOR
-	printf("Our http query is : %s\n", get_http.c_str());
-	char buffer[10000];
-	int nDataLength;
-	string website_HTML;
-	while ((nDataLength = recv(Socket, buffer, 10000, 0)) > 0)
-	{
-		int i = 0;
-		while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r')
-		{
-			website_HTML += buffer[i];
-			i += 1;
-		}
-	}
-
-	// Display HTML source 
-	printf( "%s\n", website_HTML.c_str());
-#endif
-
-	closesocket(Socket);
 	return 0;
+}
+
+void HTTP_GenerateMaps()
+{
+	string get_http = "GET /PostImportActions.php";
+	HTTPPostData(get_http,"", 0);
+	HTTPPostData(get_http, "5.79.67.171", 80);
 }
 
 void StopThreadedPlayerSender();
