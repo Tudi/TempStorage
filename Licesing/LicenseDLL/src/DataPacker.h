@@ -57,6 +57,7 @@ enum DataBlockTypes
 	DB_LICENSE_DURATION,
 	DB_LICENSE_END,
 	DB_RAW_FULL_LIST_CONTENT,		// special case when we load up content as 1 memory block
+	DB_GRACE_PERIOD,				// even after license expires we will provide a grace period functionality
 	DB_MAX_TYPES	// non used value. Used for safety checks
 };
 

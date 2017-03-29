@@ -190,7 +190,7 @@ void MainWindow::OnGenerateLicenseClicked()
     //calculate start and duration
     QDateTime StartDateTime(StartDate);
     StartDateTime.setTimeSpec(Qt::UTC);
-    QDateTime EndDateTime(StartDate);
+    QDateTime EndDateTime(EndDate);
     EndDateTime.setTimeSpec(Qt::UTC);
 
     int LicenseDuration = EndDateTime.toTime_t() - StartDateTime.toTime_t();

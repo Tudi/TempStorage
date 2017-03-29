@@ -6,8 +6,74 @@
 #include <stdio.h>
 #include "src/Encryption.h"
 #include <random>
+#include <thread>
 
-#define GenerateSaltKey(a,b) ((unsigned int)(1|(a+b)))
+char GracePeriodStore[sizeof(DLLResourceStoreGraceStatus)] = "RoundBrownFoxJumpedTheFence";
+
+
+LIBRARY_API int	GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, int MaxResultSize)
+{
+	License *lic = new License;
+	if (!lic)
+		return ERROR_UNIDENTIFIED_ERROR;
+
+	int er = lic->LoadFromFile("License.dat");
+	if (er != 0)
+	{
+		printf("Error %d while loading license. Please solve it to continue\n");
+		delete lic;
+		return ERROR_COULD_NOT_LOAD_LIC_FILE;
+	}
+
+	int GetKeyRes = lic->GetActivationKey(ProjectId, FeatureId, StoreResult, MaxResultSize);
+
+	//cleanup
+	delete lic;
+
+	return GetKeyRes;
+}
+
+LIBRARY_API int	IsLicenseInGracePeriod(int *Result)
+{
+	if (Result == NULL)
+		return ERROR_INVALID_PARAMETER;
+
+	*Result = 0;
+
+	License *lic = new License;
+	if (!lic)
+		return ERROR_UNIDENTIFIED_ERROR;
+
+	int er = lic->LoadFromFile("License.dat");
+	if (er != 0)
+	{
+		delete lic;
+		return ERROR_COULD_NOT_LOAD_LIC_FILE;
+	}
+
+	time_t RemainingSec = 0;
+	er = lic->GetRemainingSeconds(RemainingSec);
+	if (er != 0)
+	{
+		delete lic;
+		return ERROR_UNIDENTIFIED_ERROR;
+	}
+
+	if (RemainingSec < 0)
+	{
+		er = lic->GetRemainingSeconds(RemainingSec);
+		if (er != 0)
+		{
+			delete lic;
+			return ERROR_UNIDENTIFIED_ERROR;
+		}
+	}
+
+	//cleanup
+	delete lic;
+
+	return 0;
+}
 
 // in case we will get time from WINCCOA, than you should only need to change this implementation
 time_t GetUnixtime()
@@ -261,13 +327,14 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 * \param	RemainingSeconds = Endstamp - max( current_time, start_time )
 * \return	Error code. 0 is no error
 */
-int	License::GetRemainingSeconds(time_t &RemainingSeconds)
+int	License::GetRemainingSeconds(time_t &RemainingSeconds, int IncludeGrace)
 {
 	DataCollectionIterator itr;
 	itr.Init(NodeList);
 	char *Data;
 	int Size;
 	int Type;
+	time_t GracePeriod = 0;
 	RemainingSeconds = 0;
 	while (DCI_SUCCESS == itr.GetNext(&Data, Size, Type))
 	{
@@ -283,12 +350,20 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 			StartStamp = *(time_t *)Data;
 		if (Type == DB_LICENSE_DURATION && Duration == 0 && Size >= sizeof(unsigned int))
 			Duration = *(unsigned int *)Data;
+		if (Type == DB_GRACE_PERIOD && Size >= sizeof(time_t))
+			GracePeriod = *(time_t *)Data;
 	}
 
+	//remaining seconds can become negative
 	if (StartStamp > GetUnixtime())
 		RemainingSeconds = Duration;
 	else
 		RemainingSeconds = (StartStamp + Duration) - GetUnixtime();
+
+	//check if we are in grace period
+	if (IncludeGrace)
+		RemainingSeconds += GracePeriod;
+
 	if (RemainingSeconds != 0)
 		return 0;
 
@@ -423,3 +498,55 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 	//all good
 	return 0;
 }
+
+
+//////////////////// BEGIN ASYNC CALLBACK IMPLEMENTATION FOR WINDOWS //////////////////////////////////
+//getting activation key in async way might seem a bit hecktic. Feel free to use simple way
+#ifdef WIN32
+#include <Windows.h>
+struct ThreadParamStore
+{
+	int ProjectId;
+	int FeatureId;
+	void *CallBack;
+};
+//this simply detaches from main thread to make debugging a hell. This will almost instantly return the activation key
+DWORD __stdcall ReturnActivationKey(LPVOID lpParam)
+{
+	ThreadParamStore *Param = (ThreadParamStore*)lpParam;
+	char TempStore[2000];
+	TempStore[0] = 0;//sanity initialization
+
+	//get the activation key
+	GetActivationKey(Param->ProjectId, Param->FeatureId, TempStore, sizeof(TempStore));
+
+	//return it by using the callback function
+	void(*ResultReturnCallback)(char *);
+	ResultReturnCallback = (void(*)(char *))Param->CallBack;
+	ResultReturnCallback(TempStore);
+
+	//cleanup 
+	delete lpParam;
+
+	return 0;
+}
+// for extra security we could detach ourself to a new thread and return result later to an unknown buffer
+LIBRARY_API void GetActivationKeyAsync(int ProjectId, int FeatureId, void *CallBack)
+{
+	//create a new thread
+	ThreadParamStore *Param = new ThreadParamStore;
+	Param->ProjectId = ProjectId;
+	Param->FeatureId = FeatureId;
+	Param->CallBack = CallBack;
+	DWORD   ThreadId;
+	CreateThread(
+		NULL,						// default security attributes
+		0,							// use default stack size  
+		ReturnActivationKey,		// thread function name
+		Param,						// argument to thread function 
+		0,							// use default creation flags 
+		&ThreadId);					// returns the thread identifier 
+}
+#endif
+
+//////////////////// END ASYNC CALLBACK IMPLEMENTATION FOR WINDOWS //////////////////////////////////

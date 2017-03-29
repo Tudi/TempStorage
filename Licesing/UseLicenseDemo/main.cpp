@@ -29,6 +29,17 @@ enum SiemensProjectFeatures
 	ALMA_KPI	= 2,
 };
 
+char GlobalKeyStoreTestCallback[2000];
+int ReceivedCallback = 0;
+void HandleAsyncKeyAssignCallback(char*key)
+{
+	ReceivedCallback = 1;
+	GlobalKeyStoreTestCallback[0] = 0;
+	if (key == NULL)
+		return;
+	strcpy_s(GlobalKeyStoreTestCallback, sizeof(GlobalKeyStoreTestCallback), key);
+}
+
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_CHECK_CRT_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_EVERY_16_DF);
@@ -41,6 +52,8 @@ int main()
 	_CrtMemState s1, s2, s3;
 	_CrtMemCheckpoint(&s1);
 
+	SetGracePeriod( 10, 0 );
+
 	//create a license
 	License *TestLicense = new License;
 
@@ -52,7 +65,7 @@ int main()
 
 	//for testing, load up the saved license and check if we can extract feature keys
 	printf("Load license into temp buffer\n");
-	int er = TestLicense->LoadFromFile("../testLic.dat");
+	int er = TestLicense->LoadFromFile("../License.dat");
 	if (er != 0)
 	{
 		printf("Error %d while loading license. Please solve it to continue\n");
@@ -76,8 +89,17 @@ int main()
 	//cleanup
 	delete TestLicense;
 
+	printf("\n\nAll done. Push a key to continue.");
+	_getch();
+
+	///////////////////////////////////////// get the key in an async way ////////////////////////////////////
+	GetActivationKeyAsync(ALMA, ALMA_KPI, &HandleAsyncKeyAssignCallback);
+	while (ReceivedCallback==0)
+		Sleep(10); 
+	printf("For project ALMA and Feature KPI we obtained activation key '%s'\n", GlobalKeyStoreTestCallback);
 	printf("\n\nAll done. Push a key to exit.");
 	_getch();
+	///////////////////////////////////////// get the key in an async way ////////////////////////////////////
 
 	_CrtMemCheckpoint(&s2);
 	if (_CrtMemDifference(&s3, &s1, &s2) && (s3.lCounts[0]>0 || s3.lCounts[1] > 0 || s3.lCounts[3] > 0 || s3.lCounts[3] > 0)) //ignore CRT block allocs, can't do much about them. Some come from printf...
