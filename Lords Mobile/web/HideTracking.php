@@ -1,4 +1,3 @@
-Put in the name to stop showing it to other players. Copy paste exactly as you can see it in the list.<br>
 <?php
 if(!isset($dbi))
 	include("db_connection.php");
@@ -23,6 +22,7 @@ if(!isset($table))
 if(!isset($Name))
 {
 ?>
+Put in the name to stop showing it to other players. Copy paste exactly as you can see it in the list.<br>
 	<form name="HidePlayer" id="HidePlayer" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		Name : <input type="text" name="Name" value=""><br/>
 		<input type="hidden" name="Type" value="<?php echo $Type; ?>"><br/>

@@ -1,5 +1,6 @@
 <?php
-include("db_connection.php");
+if(!isset($dbi))
+	include("db_connection.php");
 ?>
 <link href="css/table.css" rel="stylesheet">
 <?php
@@ -58,7 +59,8 @@ if(!isset($s_level))
 	if($s_type==10066 || $s_type=="rare")
 		$query1 .= " and mtype not in (19,18,16)";
 	if($s_level>0 && $s_level<6)
-		$query1 .= " and level>'".mysql_real_escape_string($s_level)."'";
+		$query1 .= " and level>='".mysql_real_escape_string($s_level)."'";
+//echo "$query1";
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$level,$mtype,$lastupdated ) = mysql_fetch_row( $result1 ))
 	{	

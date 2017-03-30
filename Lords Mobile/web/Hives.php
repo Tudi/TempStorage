@@ -4,20 +4,23 @@ if(!isset($k))
 	$k = 67;
 ?>
 <link href="css/table.css" rel="stylesheet">
-<table class="TFtable">
-	<tr>
-		<td>x</td>
-		<td>y</td>
-		<td>Guild name</td>
-		<td>Hive radius</td>
-		<td>Player count at hive</td>
-		<td>Might at hive</td>
-		<td>Player count total</td>
-		<td>Might total</td>
-<!--		<td>Max PLevel</td>
-		<td>Avg PLevel</td> -->
-		<td>Avg CLevel</td>
-	</tr>
+<table>
+	<thead style="background-color: #60a917">
+		<tr>
+			<td>x</td>
+			<td>y</td>
+			<td>Guild name</td>
+			<td>Hive radius</td>
+			<td>Player count at hive</td>
+			<td>Might at hive</td>
+			<td>Player count total</td>
+			<td>Might total</td>
+	<!--		<td>Max PLevel</td>
+			<td>Avg PLevel</td> -->
+			<td>Avg CLevel</td>
+		</tr>
+	</thead>
+  <tbody class="TFtable">	
 <?php
 	$HiddenGuilds = "";
 	$query1 = "select name from guilds_hidden where EndStamp > ".time();
@@ -51,5 +54,6 @@ if(!isset($k))
 		<?php
 	}
 ?>	
+	</tbody>
 </table>
 <br>Show list of locations where the number of players from the same guild is high<br>

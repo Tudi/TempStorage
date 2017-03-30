@@ -1,7 +1,7 @@
 <?php
 include("db_connection.php");
-if(!isset($FilterK))
-	$FilterK = 67;
+if(!isset($FN))
+{
 ?>
 <br>Find a player based on name. Or maybe an older name. Data is only estimated!, based on position change, castle level, VIP, kills<br>
 <table border=1>
@@ -15,8 +15,8 @@ if(!isset($FilterK))
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $Name1,$Name2,$Stamp ) = mysql_fetch_row( $result1 ))
 	{
-		$Player1ArchiveLink = "players.php?FN=".urlencode($Name1);
-		$Player2ArchiveLink = "players.php?FN=".urlencode($Name2);
+		$Player1ArchiveLink = "NamechangeTracking.php?FN=".urlencode($Name1);
+		$Player2ArchiveLink = "NamechangeTracking.php?FN=".urlencode($Name2);
 		$when = GetTimeDiffShortFormat($Stamp);
 		?>
 	<tr>
@@ -28,3 +28,23 @@ if(!isset($FilterK))
 	}
 ?>	
 </table>
+<?php
+}
+else
+{
+	//track a starting name for consecutivenamechanges
+	$Name1 = $FN;
+	$Stamp = time();
+	$PlayersPhpIncluded = 1;
+	do{
+		echo "Player $Name1 records<br>";
+		$FN=$Name1;
+		include("players.php");
+		//check for next name of this player
+		$query1 = "select Name2,NewNameSeenAt from player_renames where name1 like '".mysql_real_escape_string($Name1)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc";
+		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
+		list( $Name2,$Stamp ) = mysql_fetch_row( $result1 );
+		$Name1 = $Name2;
+	}while($Name1 != "");
+}
+?>

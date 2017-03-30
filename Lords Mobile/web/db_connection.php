@@ -1,12 +1,25 @@
 <?php
+//load cookies
+if (session_status() == PHP_SESSION_NONE || session_id() == '')
+	session_start();
+
+//transform post/get into local variables
 foreach($_REQUEST as $foreachname=>$foreachvalue)
 {
 	$$foreachname = $foreachvalue;
 //	echo $foreachname."=$foreachvalue,";
 }
-	
+
+//transform cookie kingdom into local kingdom	
+if($_SESSION['k'])
+{
+	$k = $_SESSION['k'];
+//	echo "Kingdom session was set to $k";
+}
+
+//connect to DB
 $dbhost = "localhost";
-$dbname = "LordsMobile";
+$dbname = "LordsMobile_$k";
 $dbuname = "root";
 $dbupass = "";
 $dbtype = "MySQL";

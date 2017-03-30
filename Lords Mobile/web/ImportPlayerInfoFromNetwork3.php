@@ -43,14 +43,7 @@ function PostImportActions()
 	if($LastUpdated>0)
 	{
 		$olderthan = $LastUpdated - 3 * 24 * 60 * 60;
-		//move to archive 
-		$query1 = "insert ignore into players_archive ( select * from players where LastUpdated < $olderthan)";
-		//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
-		RunSyncQuery($query1);
-		//delete from actual
-		$query1 = "delete from players where LastUpdated < $olderthan";
-		//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));
-		RunSyncQuery($query1);
+		ArchivePlayerIfNotArtchived( "LastUpdated < $olderthan" );
 	}
 }
 
@@ -62,7 +55,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 		return;
 
 	//we will always receive these 3 values : $name,$guild,$CLevel
-	
+
 	//do we have missing data ? Can we load it from previous version ?
 	// load old data for this player
 	$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title from players where name like '".mysql_real_escape_string($name)."' limit 0,1";
@@ -76,7 +69,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $rowid2,$kills2,$might2,$vip2,$guildrank2,$GuildFull2,$StatusFlags2,$title2,$oldname ) = mysql_fetch_row( $result1 );			
 		//save the namechange
-		if($rowid2>0)
+		if($rowid2>0 && $name!=$oldname) //wtf bug sometimes it can not find the name but it has the same name ? Happened 10 times in 1 day
 		{
 			//check already exists
 			$query1 = "select count(*) from player_renames where name1 like '".mysql_real_escape_string($oldname)."' and name2 like '".mysql_real_escape_string($name)."' limit 0,1";
@@ -89,23 +82,26 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 			}
 		}
 	}
+	//if we have old records, archive and delete them
+	if( $rowid > 0 )
+		ArchivePlayerIfNotArtchived( "rowid=$rowid", 1 );
 	
 	//restore non updated from old values
-	if($kills == 0 || $kills == "")
+	if(!isset($kills) || $kills == 0)
 		$kills = $kills2;
-	if($might == 0 || $might == "")
+	if(!isset($might) || $might == 0)
 		$might = $might2;
-	if($vip == 0 || $vip == "")
+	if(!isset($vip) || $vip == 0)
 		$vip = $vip2;
-	if($GuildRank == "")
+	if(!isset($GuildRank))
 		$GuildRank = $guildrank2;
-	if($StatusFlags == 0 || $StatusFlags == "")
+	if(!isset($StatusFlags) || $StatusFlags == 0 )
 		$StatusFlags = $StatusFlags2;
-	if($title == 0 || $title == "" )
+	if(!isset($title) || $title == 0 )
 		$title = $title2;
-	if($guildF == 0 || $guildF == "")
+	if(!isset($guildF) || $guildF == "")
 		$guildF = $GuildFull2;
-	if($guildF == 0 || $guildF == "")
+	if(!isset($guildF) || $guildF == "")
 	{
 		//try to get it from players archive using same player name
 		$query1 = "select GuildFull from players_archive where guild like '".mysql_real_escape_string($guild)."' and name like '".mysql_real_escape_string($name)."' order by rowid desc limit 0,1";
@@ -113,24 +109,6 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 		list( $PossibleLongName ) = mysql_fetch_row( $result1 );	
 		if( $PossibleLongName != "" )
 			$guildF = $PossibleLongName;
-	}
-	//if we have old records, archive and delete them
-	if( $rowid > 0 )
-	{
-			// do we have this row in archive already ?
-			$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$GuildRank' and castlelevel='$CLevel' and StatusFlags='$StatusFlags' and name like '".mysql_real_escape_string($name)."' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
-			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-			list( $rowid2 ) = mysql_fetch_row( $result1 );
-			if( $rowid2 == "" || $rowid2 == 0 )
-			{
-				$query1 = "insert ignore into players_archive (select * from players where rowid=$rowid)";
-				//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-				RunSyncQuery($query1);
-			}	
-		//ditch old
-		$query1 = "delete from players where rowid=$rowid";
-		//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
-		RunSyncQuery($query1);
 	}
 	
 	//there can be only 1 at this coordinate. Everything older than us has to go
@@ -171,20 +149,28 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	$olderthan = $LastUpdated - 24 * 60 * 60;
 	$LastTime = $LastUpdated;
 	//move to archive without double insert
-	$query1 = "select rowid,x,y,name,guild,kills,might,statusflags,vip,guildrank,clevel,title from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
+	ArchivePlayerIfNotArtchived( "x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan" );
+}
+
+function ArchivePlayerIfNotArtchived( $where )
+{	
+	global $dbi;
+	$query1 = "select rowid,x,y,name,guild,kills,might,statusflags,vip,guildrank,castlelevel,title from players where $where";
+	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 	while( list( $rowid,$x,$y,$name,$guild,$kills,$might,$statusflags,$vip,$guildrank,$clevel,$title ) = mysql_fetch_row( $result1 ))
 	{
-		$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$GuildRank' and castlelevel='$clevel' and StatusFlags='$statusflags' and title='$title' and name like '".mysql_real_escape_string($name)."' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+		$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$guildrank' and castlelevel='$clevel' and StatusFlags='$statusflags' and title='$title' and name like '".mysql_real_escape_string($name)."' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
 		$result2 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $rowid2 ) = mysql_fetch_row( $result2 );
-		if( $rowid2 == "" || $rowid2 == 0 )
+		if( $rowid2 == 0 || $rowid2 == "" || !isset($rowid2) )
 		{
 			$query1 = "insert into players_archive (select * from players where rowid=$rowid)";
+//file_put_contents("t.txt",$query1);
 			//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
 			RunSyncQuery($query1);
 		}
 		//delete from actual
-		$query1 = "delete from players where x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan";
+		$query1 = "delete from players where rowid=$rowid";
 		//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220023 <br>".$query1." <br> ".mysql_error($dbi));	
 		RunSyncQuery($query1);
 	}
@@ -192,6 +178,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 
 function RunSyncQuery($query1)
 {
+//echo $query1;
 //return;
 	global $dbi, $MergedQueries;
 	//run it in our DB

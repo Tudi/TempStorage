@@ -17,5 +17,5 @@
 <input type="hidden" name="item_number" value="Donation"> 
 <select name="amount"><option value="10.00">€10.00</option><option value="25.00">€25.00</option></select>
 <input type="hidden" name="currency_code" value="EUR">
-<input type="image" name="submit" border="0" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="PayPal - The safer, easier way to pay online">
+<input type="image" name="submit" border="0" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="PayPal - The safer, easier way to pay online"> Made by Tudi
 </form>

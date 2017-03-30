@@ -27,13 +27,16 @@ $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." 
 		unset($Guildx);
 		unset($Guildy);
 		unset($Guildmight);
+		unset($guildfull);
 		// initial central location
 		$xavg = 0;
 		$yavg = 0;
 		$playercount = 0;
 		$TotalMight = 0;
-		while( list( $x,$y,$might,$CastleLevel,$guildfull ) = mysql_fetch_row( $result1 ))
+		while( list( $x,$y,$might,$CastleLevel,$tguildfull ) = mysql_fetch_row( $result1 ))
 		{
+			if( $tguildfull != "" && (!isset($guildfull) || $guildfull=="") )
+				$guildfull = $tguildfull;
 			$Guildx[$playercount] = $x;
 			$Guildy[$playercount] = $y;
 			$Guildmight[$playercount] = $might;
@@ -106,6 +109,8 @@ $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." 
 		$MaxDist = (int)sqrt( $DistSumPrev );
 		$xavg_prev = (int)($xavg_prev);
 		$yavg_prev = (int)($yavg_prev);
+		if(!isset($guildfull))
+			$guildfull="";
 //echo "Guild '$guild' central location is at $xavg_prev $yavg_prev with radius $MaxDist and castles $cordcount. Total castle count $playercount<br>";
 //exit();
 		$query1 = "insert into guild_hives (x,y,guild,guildfull,radius,HiveCastles,TotalCastles,HiveMight,TotalMight,AvgCastleLevel)values($xavg_prev,$yavg_prev,'".mysql_real_escape_string($guild)."','".mysql_real_escape_string($guildfull)."',$MaxDist,$cordcount,$playercount,$mightsum,$TotalMight,$CLevelAvg)";		

@@ -1,4 +1,5 @@
 <?php
+session_start();
 if(!isset($s_player))
 {
 	if(isset($_REQUEST['s_player']))
@@ -69,26 +70,43 @@ $ShowResults = "1";
 if(strlen($s_player)>0)
 {
 	if(isset($ExactPlayerName))
+	{
+		$FN=$s_player;
 		$ShowResults .= "&FN=".urlencode($s_player);
+	}
 	else
+	{
+		$FNS=$s_player;
 		$ShowResults .= "&FNS=".urlencode($s_player);
+	}
 }
 if(strlen($s_guild)>0)
 {
 	if(isset($ExactGuildName))
+	{
+		$FG = $s_guild;
 		$ShowResults .= "&FG=".urlencode($s_guild);
+	}
 	else
+	{
+		$FGS = $s_guild;
 		$ShowResults .= "&FGS=".urlencode($s_guild);
+	}
 }
 if(isset($s_grank) && $s_grank != "" && $s_grank<6)
+{
+	$FGR = $s_grank;
 	$ShowResults .= "&FGR=".urlencode($s_grank);
+}
 if(isset($s_innactive) && $s_innactive != "" )
+{
+	$FI=1;
 	$ShowResults .= "&FI=1";
+}
 if($ShowResults!="1")
 {
 //	echo "ShowResults=$ShowResults";
-	?>
-	<iframe src="players.php?<?php echo $ShowResults;?>" width="100%" height="100%" frameBorder="0"></iframe>
-	<?php
+	$PlayersPhpIncluded = 1;
+	include("players.php");
 }
 ?>

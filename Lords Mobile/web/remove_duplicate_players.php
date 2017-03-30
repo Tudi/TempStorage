@@ -33,7 +33,7 @@ while( $row = mysql_fetch_assoc( $result1 ) )
 	foreach($row as $key => $val )
 	{
 		if($key!="rowid" && $key!="LastUpdated" && $key!="k" )
-			$query1 .= " and ( $key='".mysql_real_escape_string($val)."' or $key='' )";
+			$query1 .= " and ( $key='".mysql_real_escape_string($val)."' or $key='' or isnull($key))";
 	}
 //	echo $query1;
 //	die();

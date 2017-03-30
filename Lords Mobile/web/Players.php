@@ -1,13 +1,14 @@
 <?php
-include("db_connection.php");
+if(!isset($dbi))
+	include("db_connection.php");
 
-if(!isset($FilterK))
-	$FilterK = 67;
-
-if (substr_count($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip"))
-	ob_start("ob_gzhandler"); 
-else 
-	ob_start();
+if(!isset($PlayersPhpIncluded))
+{
+	if (substr_count($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip"))
+		ob_start("ob_gzhandler"); 
+	else 
+		ob_start();
+}
 
 $SimpleView = 1;
 	
@@ -48,10 +49,10 @@ if($Filter!="")
 	$SimpleView = 0;
 else
 	echo "To minimize page size only player coordinates are shown. If you wish to get more info, click on player name<br>";
+if(!isset($PlayersPhpIncluded))
+	echo "Hidden players are not shown!<br>";
 ?>
 <link href="css/table.css" rel="stylesheet">
-Hidden players are not shown!<br>
-Selected kingdom is <?php echo $FilterK;?><br>
 <table>
   <thead style="background-color: #60a917">
 	<tr>
@@ -128,13 +129,7 @@ Selected kingdom is <?php echo $FilterK;?><br>
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$name,$guild,$guildfull,$might,$kills,$lastupdated,$statusflags,$title,$VIP,$GuildRank,$castlelevel ) = mysql_fetch_row( $result1 ))
-	{
-		$IsInGuildPos = strpos($name,']');
-		if($IsInGuildPos>0)
-			$namename = substr($name,$IsInGuildPos+1);
-		else
-			$namename = $name;
-		
+	{	
 		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;
 		if( strpos($HiddenGuilds,"#".$guild."#") != 0 )
@@ -142,7 +137,7 @@ Selected kingdom is <?php echo $FilterK;?><br>
 		
 		$LastUpdatedHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $lastupdated);
 		//$innactiveHumanFormat = gmdate("Y-m-d\TH:i:s\Z", $innactive);
-		$PlayerArchiveLink = "?FN=".urlencode($namename);
+		$PlayerArchiveLink = "?FN=".urlencode($name);
 		$GuildFilterLink = "?FG=".urlencode($guild);
 		$LastUpdatedAsDiff = GetTimeDiffShortFormat($lastupdated);
 		$StatusFlagsString = StatusFlagsToString( $statusflags );
@@ -157,7 +152,7 @@ Selected kingdom is <?php echo $FilterK;?><br>
 <tr>
 <td><?php echo $x; ?></td>
 <td><?php echo $y; ?></td>
-<td><a href="<?php echo $PlayerArchiveLink; ?>"><?php echo $namename; ?></a></td>
+<td><a href="<?php echo $PlayerArchiveLink; ?>"><?php echo $name; ?></a></td>
 <td><a href="<?php echo $GuildFilterLink; ?>"><?php echo $guild; ?></a></td>
 <?php if( $SimpleView == 0 )
 {
@@ -187,6 +182,20 @@ function TitleIdToString( $t )
 	$t = (int)$t;
 	if($t == 0)
 		return "";
+	if($t == 1)
+		return "Overlord";	
+	if($t == 2)
+		return "Queen";	
+	if($t == 4)
+		return "Premier";	
+	if($t == 6)
+		return "Warden";	
+	if($t == 7)
+		return "Priest";	
+	if($t == 8)
+		return "Quartermaster";	
+	if($t == 14)
+		return "Thrall";	
 	$ret = "";
 	return $ret;
 }

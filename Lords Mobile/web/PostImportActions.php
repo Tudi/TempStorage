@@ -6,7 +6,7 @@ if(!isset($dbi))
 $StatusFlagInnactive = 0x01000000;
 
 //update innactivity column
-$query1 = "update players set StatusFlags=StatusFlags & ~($StatusFlagInnactive)";
+$query1 = "update players set StatusFlags=StatusFlags & ~($StatusFlagInnactive) order by rowid";
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220027 <br>".$query1." <br> ".mysql_error($dbi));
 // a player is innactive if he did not change coordinate and he's might did not change in the past X days
 $query1 = "select rowid,x,y,name,might,lastupdated,vip,castlelevel from players";

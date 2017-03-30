@@ -4,7 +4,8 @@ if(!isset($k))
 	$k = 67;
 ?>
 <link href="css/table.css" rel="stylesheet">
-<table class="TFtable">
+<table>
+	<thead style="background-color: #60a917">
 	<tr>
 		<td>x</td>
 		<td>y</td>
@@ -15,6 +16,8 @@ if(!isset($k))
 		<td>Avg CLevel</td>
 		<td>Player count</td>
 	</tr>
+	</thead>
+  <tbody class="TFtable">	
 <?php
 	$HiddenGuilds = "";
 	$query1 = "select name from guilds_hidden where EndStamp > ".time();
@@ -45,4 +48,5 @@ if(!isset($k))
 		<?php
 	}
 ?>	
+	</tbody>
 </table>

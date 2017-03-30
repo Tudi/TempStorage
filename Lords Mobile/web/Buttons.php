@@ -5,12 +5,14 @@
 
 <table>
 	<tr><td colspan=2><img src="img/eyesauron.gif" width=180 height=170 /></td></tr>
+	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="SelectKingdom.php" target="IFShowContent">Select Kingdom</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="search.php" target="IFShowContent">Search</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="Players.php" target="IFShowContent">Players</a></td></tr>
-	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" width="200px" href="Hives.php" target="IFShowContent">Hives</a></td></tr>
-	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" width="200px" href="Hives_multi.php" target="IFShowContent">Hives multi</a></td></tr>
+	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="Hives.php" target="IFShowContent">Hives</a></td></tr>
+	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="Hives_multi.php" target="IFShowContent">Hives multi</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="maps.php?FilterK=67" target="IFShowContent">Minimaps</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="NamechangeTracking.php" target="IFShowContent">Namechanges</a></td></tr>
+	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="GuildSummary.php" target="IFShowContent">Guild Summary</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="resources.php?s_type=6" target="IFShowContent">Gem Loades</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="monsters.php?s_type=rare" target="IFShowContent">Rare monsters</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="HideTracking.php?Type=Player" target="IFShowContent">Hide Player Tracking</a></td></tr>
