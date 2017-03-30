@@ -28,21 +28,22 @@ enum PlayerCastleStatusFlags
 
 enum PlayerCastleTitles
 {
-	TITLE_OVERLORD			= 1,
-	TITLE_QUEEN				= 2,
-	TITLE_QUARTERMASTER		= 4,	//?
+	TITLE_OVERLORD			= 1, //
+	TITLE_QUEEN				= 2, //
+	TITLE_PREMIER			= 4, //
 	TITLE_CHIEF				= 5,
-	TITLE_WARDEN			= 6,
-	TITLE_PRIEST			= 7,
-	TITLE_QUARTERMASTER2	= 8,	//?
+	TITLE_WARDEN			= 6, //
+	TITLE_PRIEST			= 7, //
+	TITLE_QUARTERMASTER		= 8,	//?
 	TITLE_COWARD			= 11,
 	TITLE_SCOUNDREL			= 13,	//?
 	TITLE_CLOWN				= 13,	//?
-	TITLE_THRALL			= 14,
+	TITLE_THRALL			= 14, //
 	TITLE_TRAITOR			= 15,
 	TITLE_FELON				= 16,
 	TITLE_SLOB				= 17,
 	TITLE_BUM				= 19,
+	TITLE_FOOL				= 19,
 };
 
 enum MonsterTypes

@@ -123,7 +123,7 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 	send(Socket, get_http.c_str(), (int)BytesToSend, 0);
 
 	// recieve html
-	//#define DEBUG_HTTP_BEHAVIOR 1
+//#define DEBUG_HTTP_BEHAVIOR 1
 #ifdef DEBUG_HTTP_BEHAVIOR
 	printf("Our http query is : %s\n", get_http.c_str());
 	char buffer[10000];
