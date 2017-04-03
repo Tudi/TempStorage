@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "License_Grace.h"
 #include "License.h"
 
 #ifdef _MANAGED
@@ -15,15 +16,17 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 {
 	if( ul_reason_for_call == DLL_PROCESS_ATTACH )
 	{
+		InitLogging();
 		//check if license is expired
-		char TempStore[500];
-		GetActivationKey(0, 0, TempStore, sizeof(TempStore));
+//		char TempStore[500];
+//		GetActivationKey(0, 0, TempStore, sizeof(TempStore));
 		//start watchdog timer to countdown remaining seconds
 		StartLicenseGraceWatchdogThread();
 	}
 	else if( ul_reason_for_call == DLL_PROCESS_DETACH )
 	{
 		EndLicenseGraceWatchdogThread();
+		ShutDownLogging();
 	}
     return TRUE;
 }

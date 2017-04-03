@@ -7,6 +7,7 @@
 #include <crtdbg.h>
 #include <conio.h>
 #include <Windows.h>
+#include "../LicenseDLL/License_API.h"
 #include "../LicenseDLL/License.h"
 
 #ifdef _DEBUG
@@ -52,7 +53,7 @@ int main()
 	_CrtMemState s1, s2, s3;
 	_CrtMemCheckpoint(&s1);
 
-	SetGracePeriod( 10, 0 );
+//	UpdateGracePeriodStatus( 10, 0 );
 
 	//create a license
 	License *TestLicense = new License;

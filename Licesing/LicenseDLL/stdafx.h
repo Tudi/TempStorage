@@ -34,3 +34,4 @@
 
 #include <windows.h>
 #include "SimpleList.h"
+#include "Logging.h"

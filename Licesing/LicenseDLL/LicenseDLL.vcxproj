@@ -167,6 +167,8 @@
   <ItemGroup>
     <ClCompile Include="License.cpp" />
     <ClCompile Include="LicenseDLL.cpp" />
+    <ClCompile Include="license_grace.cpp" />
+    <ClCompile Include="Logging.cpp" />
     <ClCompile Include="ProjectFeatureKeys.cpp" />
     <ClCompile Include="SimpleList.cpp" />
     <ClCompile Include="src\ComputerFingerprint.cpp" />
@@ -191,6 +193,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="License.h" />
+    <ClInclude Include="License_API.h" />
+    <ClInclude Include="License_Grace.h" />
+    <ClInclude Include="Logging.h" />
     <ClInclude Include="ProjectFeatureKeys.h" />
     <ClInclude Include="SimpleList.h" />
     <ClInclude Include="src\ComputerFingerprint.h" />

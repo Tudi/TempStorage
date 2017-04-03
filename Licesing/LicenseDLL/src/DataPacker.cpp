@@ -285,3 +285,28 @@ int DataCollectionIterator::GetNext(char **Data, int &Size, int &Type)
 	//all done
 	return DCI_SUCCESS;
 }
+
+int	GenericDataStore::IsDataValid()
+{
+	//not yet initialized ?
+	if (Data == NULL)
+		return 0;
+
+	//we can not parse an older version. Maybe later add revisioning support
+	if (Data->Ver != CURRENT_PACKER_VERSION)
+		return 0;
+
+	//can't have more blocks than bytes in it
+	if (Data->Count > Data->Size)
+		return 0;
+
+	//unsupported encryption type ?
+	if (Data->EncryptType >= DCE_INVALID_ENCRYPTION_TYPE)
+		return 0;
+
+	//this should be always 0
+	if (Data->Blocks != 0)
+		return 0;
+
+	return 1;
+}

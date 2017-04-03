@@ -54,6 +54,12 @@
     <ClCompile Include="License.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="license_grace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="LicenseDLL.def">
@@ -89,6 +95,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProjectFeatureKeys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="License_Grace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="License_API.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

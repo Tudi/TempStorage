@@ -115,6 +115,19 @@ int EncryptBufferXORKeyRotate(unsigned char *buf, int BufLen, int XORKey)
 	return 0;
 }
 
+int EncryptWithFingerprintContent(unsigned char *EncryptKey, int KeyLen, unsigned int Salt, unsigned char *buf, int BufLen)
+{
+	//Encrypt the encryption key. This adds algorithmic complexity
+	int er1 = EncryptBufferXORKeyRotate((unsigned char*)EncryptKey, KeyLen, Salt);
+	if (er1)
+		return er1;
+
+	//encrypt license content with the client fingerprint
+	int er2 = EncryptBufferXORKey(buf, BufLen, (unsigned char*)EncryptKey, KeyLen);
+	if (er2)
+		return er2;
+}
+
 int EncryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
 {
 	ComputerFingerprint CF;
@@ -130,13 +143,9 @@ int EncryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned cha
 	if (CF.GetEncryptionKey(&EncryptKey, KeyLen) != 0)
 		return ERROR_BAD_ARGUMENTS;
 
-	//Encrypt the encryption key. This adds algorithmic complexity
-	EncryptBufferXORKeyRotate((unsigned char*)EncryptKey, KeyLen, Salt);
+	int er = EncryptWithFingerprintContent((unsigned char*)EncryptKey, KeyLen, Salt, buf, BufLen);
 
-	//encrypt license content with the client fingerprint
-	EncryptBufferXORKey(buf, BufLen, (unsigned char*)EncryptKey, KeyLen);
-
-	return 0;
+	return er;
 }
 
 int DecryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)

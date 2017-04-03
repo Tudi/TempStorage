@@ -1,5 +1,3 @@
-#define LIBRARY_API __declspec(dllimport)
-
 #include <stdio.h>
 #define LIBRARY_API __declspec(dllimport)
 #define _CRTDBG_MAP_ALLOC

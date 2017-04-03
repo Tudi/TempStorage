@@ -58,6 +58,7 @@ enum DataBlockTypes
 	DB_LICENSE_END,
 	DB_RAW_FULL_LIST_CONTENT,		// special case when we load up content as 1 memory block
 	DB_GRACE_PERIOD,				// even after license expires we will provide a grace period functionality
+	DB_LIST_FINGERPRINT,			// mark that this is a valid list, this is used to guess if decoding went well
 	DB_MAX_TYPES	// non used value. Used for safety checks
 };
 
@@ -85,6 +86,7 @@ public:
 	int						SaveToFile(const char *FileName);			// Obfuscate + save the content of the list
 	int						LoadFromFile(const char *FileName);			// load + Deobfuscate the content of a list
 	int						SetEncription(unsigned char EncryptType);	// do we use internal encryption or external ? Maybe in the future more modes will be added
+	int						IsDataValid();								// try to guess if the content loaded into the store is a valid store
 
 	void					PrintContent();								// Debugging the content of the list
 	void					DisposeData();								// get rid of the content of the cache
