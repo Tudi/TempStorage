@@ -20,7 +20,7 @@ long GetFileSize(const char *filename)
 int CODECGraceData(GraceStatusDLLResourceStore *StaticDLLResourceDataInFile, int Encode)
 {
 	//only encrypt a part of our structure
-	int BytesToEncrypt = sizeof(GraceStatusDLLResourceStore) - sizeof(StaticDLLResourceDataInFile->Header) + sizeof(StaticDLLResourceDataInFile->IsFileInitialized) + sizeof(StaticDLLResourceDataInFile->XORKey);
+	int BytesToEncrypt = sizeof(GraceStatusDLLResourceStore) - (sizeof(StaticDLLResourceDataInFile->Header) + sizeof(StaticDLLResourceDataInFile->IsFileInitialized) + sizeof(StaticDLLResourceDataInFile->XORKey));
 	if (Encode == 0)
 	{
 		//first time initialization. Nothing to do now
@@ -186,7 +186,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		return ERROR_COULD_NOT_STORE_GRACE_PERIOD;
 
 	GraceStatusDLLResourceStore OldValues;
-	memcpy(&OldValues, &StaticDLLResourceDataInFile, sizeof(StaticDLLResourceDataInFile));
+	memcpy(&OldValues, &StaticDLLResourceDataInFile, sizeof(OldValues));
 
 	//first and oncetime initialization
 	if (StaticDLLResourceDataInFile.IsFileInitialized != 1)
@@ -196,6 +196,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		StaticDLLResourceDataInFile.LicenseFirstUsed = time(NULL);
 		StaticDLLResourceDataInFile.LicenseSecondsUsed = 0;
 		StaticDLLResourceDataInFile.TriggerCount = 0;
+		Log(LL_IMPORTANT, "License first time use at %d\n", time(NULL));
 	}
 
 	//this happens when a valid!! license is used. Reset grace period status.
@@ -212,6 +213,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		StaticDLLResourceDataInFile.GracePeriod = Value;
 		StaticDLLResourceDataInFile.RemainingSeconds = 0;
 		StaticDLLResourceDataInFile.TriggerCount++;	// it would be strange to trigger grace period multiple times
+		Log(LL_IMPORTANT, "Grace period removed by valid license. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
 		//generate and save a valid fingerprint and store it. Maybe later we will need it on Hardware changes
 		if (StaticDLLResourceDataInFile.FingerPrintSize == 0)
 		{
@@ -238,6 +240,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 	//this should be triggered when a NON valid license is getting used. Expired / HW changes...
 	if (ActionType == GP_TRIGGER_GRACE_PERIOD && StaticDLLResourceDataInFile.FirstTriggered == 0)
 	{
+		Log(LL_IMPORTANT, "Grace period started. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
 		StaticDLLResourceDataInFile.FirstTriggered = time(NULL);
 		StaticDLLResourceDataInFile.GraceShouldEnd = StaticDLLResourceDataInFile.FirstTriggered + StaticDLLResourceDataInFile.GracePeriod;
 		StaticDLLResourceDataInFile.RemainingSeconds = StaticDLLResourceDataInFile.GracePeriod;
@@ -247,7 +250,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		StaticDLLResourceDataInFile.LicenseShouldEnd = Value;
 
 	//if nothing changed, there is no need to write it to file. This happens when we query for activation keys
-	if (memcmp(&OldValues, &StaticDLLResourceDataInFile, sizeof(StaticDLLResourceDataInFile)) != 0)
+	if (memcmp(&OldValues, &StaticDLLResourceDataInFile, sizeof(OldValues)) == 0)
 		return 0;
 
 	int er = SaveCurrectGracePeriodData(&StaticDLLResourceDataInFile, StaticDataStoredAt);

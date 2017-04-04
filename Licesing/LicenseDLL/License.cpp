@@ -349,7 +349,7 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 		int er = IsLicenseInGracePeriod(&res);
 		if (er != 0 || res == 0)
 		{
-			Log(LL_DEBUG_INFO, "License expired. Could not get activation key for %d-%d", ProjectId, FeatureId);
+			Log(LL_IMPORTANT, "License expired. Could not get activation key for %d-%d", ProjectId, FeatureId);
 			return WARNING_NO_LICENSE_FOUND;
 		}
 	}
@@ -550,16 +550,9 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 	memcpy(TempBuffBackup, TempBuff, TotalSize);
 
 	//deobfuscate
+	int erDecrypt = 0;
 	if (EncryptSalt)
-	{
-		int erDecrypt = DecryptWithFingerprint(FingerprintFilename, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
-		if (erDecrypt != 0)
-		{
-			delete TempBuff;
-			delete TempBuffBackup;
-			return erDecrypt;
-		}
-	}
+		erDecrypt = DecryptWithFingerprint(FingerprintFilename, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
 
 	//done with the FILE
 	fclose(f);
@@ -569,7 +562,7 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 	NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
 
 	//maybe we messed up encryption ? Could happen if we entered grace period due to HW changes
-	if (NodeList->IsDataValid() == 0)
+	if (erDecrypt != 0 || NodeList->IsDataValid() == 0)
 	{
 		//dispose unusable data
 		NodeList->DisposeData();
@@ -579,7 +572,7 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 		unsigned char Temp[COMPUTER_FINGERPRINT_STORE_SIZE];
 		int FingerprintSize = 0;
 		int erFingerprint = LicenseGracePeriod::GetSavedFingerprint(Temp, sizeof(Temp), &FingerprintSize);
-		if (erFingerprint == 0)
+		if (erFingerprint == 0 && FingerprintSize > 0 )
 		{
 			NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
 			int erDecrypt = EncryptWithFingerprintContent(Temp, FingerprintSize, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
@@ -608,12 +601,16 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 	}
 
 #ifdef ENABLE_ANTI_HACK_CHECKS
-	time_t ExpectedSaltKey = GenerateSaltKey(StartStamp, Duration);
-	if (ExpectedSaltKey != EncryptSalt)
+	time_t TempRemainingSeconds = 0;
+	if (GetRemainingSeconds(TempRemainingSeconds) == 0)
 	{
-		NodeList->DisposeData();
-		Log(LL_DEBUG_INFO, "Encription mismatch while loading license content", FileName);
-		return ERROR_LICENSE_INVALID;
+		time_t ExpectedSaltKey = GenerateSaltKey(StartStamp, Duration);
+		if (ExpectedSaltKey != EncryptSalt)
+		{
+			NodeList->DisposeData();
+			Log(LL_DEBUG_INFO, "Encription mismatch while loading license content", FileName);
+			return ERROR_LICENSE_INVALID;
+		}
 	}
 #endif
 

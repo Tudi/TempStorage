@@ -126,6 +126,7 @@ int EncryptWithFingerprintContent(unsigned char *EncryptKey, int KeyLen, unsigne
 	int er2 = EncryptBufferXORKey(buf, BufLen, (unsigned char*)EncryptKey, KeyLen);
 	if (er2)
 		return er2;
+	return 0;
 }
 
 int EncryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)

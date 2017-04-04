@@ -82,7 +82,7 @@ public:
 	~GenericDataStore();
 	int						PushData(char *buff, int Size, int Type);	// add a new data block to our list
 	DataCollectionHeader	*GetData(){ return Data; };					// return the buffer used to store the list
-	int						GetDataSize(){ return Data->Size; }			// number of bytes the store takes
+	int						GetDataSize(){ if (Data) return Data->Size; else return 0; }			// number of bytes the store takes
 	int						SaveToFile(const char *FileName);			// Obfuscate + save the content of the list
 	int						LoadFromFile(const char *FileName);			// load + Deobfuscate the content of a list
 	int						SetEncription(unsigned char EncryptType);	// do we use internal encryption or external ? Maybe in the future more modes will be added

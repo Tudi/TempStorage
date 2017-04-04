@@ -96,7 +96,16 @@ int ComputerFingerprint::SaveFingerprint(const char *FileName)
 
 int ComputerFingerprint::LoadFingerprint(const char *FileName)
 {
-	return FingerprintData->LoadFromFile(FileName);
+	int erLoad = FingerprintData->LoadFromFile(FileName);
+	if (erLoad == 0)
+	{
+		if (FingerprintData->IsDataValid() == 0)
+		{
+			FingerprintData->DisposeData();
+			return ERROR_CF_CONTENT_INVALID;
+		}
+	}
+	return erLoad;
 }
 
 void ComputerFingerprint::Print()

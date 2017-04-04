@@ -1,5 +1,7 @@
 #pragma once
 
+#define ERROR_CF_CONTENT_INVALID (-1)
+
 class GenericDataStore;
 
 class LIBRARY_API ComputerFingerprint

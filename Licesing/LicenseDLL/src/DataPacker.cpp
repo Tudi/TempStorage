@@ -304,9 +304,5 @@ int	GenericDataStore::IsDataValid()
 	if (Data->EncryptType >= DCE_INVALID_ENCRYPTION_TYPE)
 		return 0;
 
-	//this should be always 0
-	if (Data->Blocks != 0)
-		return 0;
-
 	return 1;
 }

@@ -12,4 +12,7 @@ extern "C"
 	LIBRARY_API void GetActivationKeyAsync(int ProjectId, int FeatureId, void *CallBackFunc);
 	//grace period related functions
 	LIBRARY_API int	IsLicenseInGracePeriod(int *Result);
+#ifdef _DEBUG
+	//for debugging only
+#endif
 }

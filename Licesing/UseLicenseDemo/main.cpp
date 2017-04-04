@@ -1,5 +1,3 @@
-#define LIBRARY_API __declspec(dllimport)
-
 #include <stdio.h>
 #define LIBRARY_API __declspec(dllimport)
 #define _CRTDBG_MAP_ALLOC
@@ -53,8 +51,7 @@ int main()
 	_CrtMemState s1, s2, s3;
 	_CrtMemCheckpoint(&s1);
 
-//	UpdateGracePeriodStatus( 10, 0 );
-
+	///////////////////////////////////////// get the key using class ////////////////////////////////////
 	//create a license
 	License *TestLicense = new License;
 
@@ -92,15 +89,32 @@ int main()
 
 	printf("\n\nAll done. Push a key to continue.");
 	_getch();
+	///////////////////////////////////////// get the key using class ////////////////////////////////////
+
+
+
+
 
 	///////////////////////////////////////// get the key in an async way ////////////////////////////////////
-	GetActivationKeyAsync(ALMA, ALMA_KPI, &HandleAsyncKeyAssignCallback);
+/*	GetActivationKeyAsync(ALMA, ALMA_KPI, &HandleAsyncKeyAssignCallback);
 	while (ReceivedCallback==0)
 		Sleep(10); 
 	printf("For project ALMA and Feature KPI we obtained activation key '%s'\n", GlobalKeyStoreTestCallback);
 	printf("\n\nAll done. Push a key to exit.");
-	_getch();
+	_getch();*/
 	///////////////////////////////////////// get the key in an async way ////////////////////////////////////
+
+
+	///////////////////////////////////////// simulate HW failure. Test Grace period ////////////////////////////////////
+	// !! in previous tests we made a successfull query for an activation key. 
+	// Grace period should be initialized at this point and even if fingerprint is no longer valid, it should trigger grace period and allow us to gte the key
+	TestLicense = new License;
+	er = TestLicense->LoadFromFile("../License.dat","../License.dat"); // !! we are loading a bad file as fingerprint !!
+	///////////////////////////////////////// simulate HW failure. Test Grace period ////////////////////////////////////
+
+	///////////////////////////////////////// simulate license expire. Test Grace period ////////////////////////////////////
+	//	UpdateGracePeriodStatus( 10, 0 );
+	///////////////////////////////////////// simulate license expire. Test Grace period ////////////////////////////////////
 
 	_CrtMemCheckpoint(&s2);
 	if (_CrtMemDifference(&s3, &s1, &s2) && (s3.lCounts[0]>0 || s3.lCounts[1] > 0 || s3.lCounts[3] > 0 || s3.lCounts[3] > 0)) //ignore CRT block allocs, can't do much about them. Some come from printf...
