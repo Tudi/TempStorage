@@ -2,14 +2,6 @@
 if(!isset($dbi))
 	include("db_connection.php");
 
-if(!isset($PlayersPhpIncluded))
-{
-	if (substr_count($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip"))
-		ob_start("ob_gzhandler"); 
-	else 
-		ob_start();
-}
-
 $SimpleView = 1;
 	
 $Filter = "";
@@ -44,6 +36,8 @@ if(isset($FGR))
 }
 if(isset($FI))
 		$Filter .= " and ( statusflags &0x01000000 ) <> 0";
+if(isset($FT))
+	$Filter .= " and title='".mysql_real_escape_string($FT)."'";
 	
 if($Filter!="")	
 	$SimpleView = 0;
@@ -176,6 +170,8 @@ if(!isset($PlayersPhpIncluded))
   </tbody>
 </table>
 <?php
+include("db_connection_footer.php");
+
 function TitleIdToString( $t )
 {
 //echo "sf is $sf ".($sf & 0x04);
@@ -186,16 +182,36 @@ function TitleIdToString( $t )
 		return "Overlord";	
 	if($t == 2)
 		return "Queen";	
+	if($t == 3)
+		return "General";	
 	if($t == 4)
 		return "Premier";	
+	if($t == 5)
+		return "Chief";	
 	if($t == 6)
 		return "Warden";	
 	if($t == 7)
 		return "Priest";	
 	if($t == 8)
 		return "Quartermaster";	
+	if($t == 9)
+		return "Engeneer";	
+	if($t == 10)
+		return "Scholar";	
+	if($t == 11)
+		return "Coward";	
+	if($t == 12)
+		return "Scoundrel";	
+	if($t == 13)
+		return "Clown";	
 	if($t == 14)
 		return "Thrall";	
+	if($t == 15)
+		return "Traitor";	
+	if($t == 16)
+		return "Felon";	
+	if($t == 19)
+		return "Fool";	
 	$ret = "";
 	return $ret;
 }

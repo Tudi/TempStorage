@@ -1,5 +1,6 @@
 <?php
-include("db_connection.php");
+if(!isset($dbi))
+	include("db_connection.php");
 ?>
 <link href="css/table.css" rel="stylesheet">
 <?php
@@ -78,6 +79,9 @@ if(!isset($s_level))
 		else if($s_occupied==2)
 			$query1 .= " and (playername like '' or isnull(playername)) ";
 	}
+	if(isset($FN))
+		$query1 .= " and playername like '".mysql_real_escape_string($FN)."'";
+	$query1 .= " order by lastupdated desc";
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$level,$playername,$lastupdated ) = mysql_fetch_row( $result1 ))
 	{	
@@ -96,4 +100,6 @@ if(!isset($s_level))
 ?>	
   </tbody>
 </table>
-
+<?php
+include("db_connection_footer.php");
+?>

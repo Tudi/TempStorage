@@ -1,7 +1,6 @@
 <?php
-include("db_connection.php");
-if(!isset($k))
-	$k = 67;
+if(!isset($dbi))
+	include("db_connection.php");
 ?>
 <link href="css/table.css" rel="stylesheet">
 <table>
@@ -50,3 +49,6 @@ if(!isset($k))
 ?>	
 	</tbody>
 </table>
+<?php
+include("db_connection_footer.php");
+?>

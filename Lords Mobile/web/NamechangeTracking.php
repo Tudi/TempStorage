@@ -1,5 +1,6 @@
 <?php
-include("db_connection.php");
+if(!isset($dbi))
+	include("db_connection.php");
 if(!isset($FN))
 {
 ?>
@@ -41,10 +42,11 @@ else
 		$FN=$Name1;
 		include("players.php");
 		//check for next name of this player
-		$query1 = "select Name2,NewNameSeenAt from player_renames where name1 like '".mysql_real_escape_string($Name1)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc";
+		$query1 = "select Name2,NewNameSeenAt from player_renames where name1 like '".mysql_real_escape_string($Name1)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 		list( $Name2,$Stamp ) = mysql_fetch_row( $result1 );
 		$Name1 = $Name2;
 	}while($Name1 != "");
 }
+include("db_connection_footer.php");
 ?>

@@ -51,4 +51,38 @@ function GetValShortFormat($val)
 	return $val;
 }
 
+$CurCacheFileName = "";
+function CacheStartOrLoadCache($NameParam, $period)
+{
+	global $CurCacheFileName;
+	$ParamsList = hash("adler32",$_SERVER['REQUEST_URI']);
+	$file = "cache".$_SERVER['PHP_SELF']."_$NameParam $ParamsList.cache";
+	$CurCacheFileName = $file;
+//	echo $_SERVER['PHP_SELF']."<br>";
+	if(is_file($file))
+	{
+		$timeDiff = time() - filemtime($file);
+		if($timeDiff < $period)
+		{
+//			echo "Loaded from cache<br>";
+			echo file_get_contents($file);
+			die();
+		}
+	}
+	//gzip if we can. Else simply send plain content
+	if (substr_count($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip"))
+		ob_start("ob_gzhandler"); 
+	else 
+		ob_start();
+}
+
+function AutoCacheEnd()
+{
+	global $CurCacheFileName;
+	$file = $CurCacheFileName;
+	$StaticFileContent = ob_get_contents();
+	ob_end_clean();
+	file_put_contents($file,$StaticFileContent);
+	echo $StaticFileContent;
+}
 ?>

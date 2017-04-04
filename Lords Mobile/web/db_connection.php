@@ -3,6 +3,10 @@
 if (session_status() == PHP_SESSION_NONE || session_id() == '')
 	session_start();
 
+include("functions.php");
+if(!isset($PlayersPhpIncluded) && !isset($DisableCaching))
+	CacheStartOrLoadCache( "", 30*60);
+
 //transform post/get into local variables
 foreach($_REQUEST as $foreachname=>$foreachvalue)
 {
@@ -11,10 +15,15 @@ foreach($_REQUEST as $foreachname=>$foreachvalue)
 }
 
 //transform cookie kingdom into local kingdom	
-if($_SESSION['k'])
+if(isset($_SESSION['k']))
 {
 	$k = $_SESSION['k'];
 //	echo "Kingdom session was set to $k";
+}
+else
+{
+	echo "No kingdom was selected. Using default #67<br>";
+	$k = 67;
 }
 
 //connect to DB
@@ -45,5 +54,4 @@ if( strpos($_SERVER['SCRIPT_FILENAME'],"ImportPlayerInfoFromNetwork3.php")==0 &&
 	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220041630 <br>".$query1." <br> ".mysql_error($dbi));
 }
 
-include("functions.php");
 ?>

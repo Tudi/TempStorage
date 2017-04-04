@@ -13,6 +13,7 @@
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="maps.php?FilterK=67" target="IFShowContent">Minimaps</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="NamechangeTracking.php" target="IFShowContent">Namechanges</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="GuildSummary.php" target="IFShowContent">Guild Summary</a></td></tr>
+	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="KingdomStatistics.php" target="IFShowContent">Kingdom statistics</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="resources.php?s_type=6" target="IFShowContent">Gem Loades</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="monsters.php?s_type=rare" target="IFShowContent">Rare monsters</a></td></tr>
 	<tr><td><a class="button rounded loading-pulse primary" style="width:180px;display: block" href="HideTracking.php?Type=Player" target="IFShowContent">Hide Player Tracking</a></td></tr>

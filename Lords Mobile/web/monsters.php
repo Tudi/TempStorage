@@ -30,6 +30,12 @@ if(!isset($s_level))
 	Monster Type <select name="s_type"> 
 	<option value="" <?php if($s_type=="") echo "selected"; ?>>All</option>
 	<option value="10066" <?php if($s_type==10066 || $s_type=="rare") echo "selected"; ?>>Rare</option>
+	<option value="3" <?php if($s_type==3) echo "selected"; ?>>Gargantua</option>
+	<option value="7" <?php if($s_type==7) echo "selected"; ?>>Mega Maggot</option>
+	<option value="15" <?php if($s_type==15) echo "selected"; ?>>Tidal titan</option>
+	<option value="16" <?php if($s_type==16) echo "selected"; ?>>Bon apeti</option>
+	<option value="18" <?php if($s_type==18) echo "selected"; ?>>Blackwing</option>
+	<option value="19" <?php if($s_type==19) echo "selected"; ?>>Mecha trojan</option>
 	</select>
 	Level minimum<select name="s_level"> 
 	<option value="" <?php if($s_level=="") echo "selected"; ?>>All</option>
@@ -56,10 +62,15 @@ if(!isset($s_level))
   <tbody class="TFtable">
 	<?php
 	$query1 = "select x,y,level,mtype,lastupdated from monsters where lastupdated>'".(time()-4*60*60)."'";
+	
 	if($s_type==10066 || $s_type=="rare")
-		$query1 .= " and mtype not in (19,18,16)";
+		$query1 .= " and mtype not in (3,7,15,16,18,19)";
+	else if($s_type != "")
+		$query1 .= " and mtype='".mysql_real_escape_string($s_type)."'";
+	
 	if($s_level>0 && $s_level<6)
 		$query1 .= " and level>='".mysql_real_escape_string($s_level)."'";
+	
 //echo "$query1";
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$level,$mtype,$lastupdated ) = mysql_fetch_row( $result1 ))
@@ -78,6 +89,7 @@ if(!isset($s_level))
   </tbody>
 </table>
 <?php
+include("db_connection_footer.php");
 function MonsterTypeToName($type)
 {
 	return $type;

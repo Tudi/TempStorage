@@ -1,7 +1,6 @@
 <?php
-include("db_connection.php");
-if(!isset($k))
-	$k = 67;
+if(!isset($dbi))
+	include("db_connection.php");
 ?>
 <link href="css/table.css" rel="stylesheet">
 <table>
@@ -57,3 +56,6 @@ if(!isset($k))
 	</tbody>
 </table>
 <br>Show list of locations where the number of players from the same guild is high<br>
+<?php
+include("db_connection_footer.php");
+?>
