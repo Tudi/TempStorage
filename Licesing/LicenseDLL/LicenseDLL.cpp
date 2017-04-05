@@ -14,7 +14,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
 					 )
 {
-	if( ul_reason_for_call == DLL_PROCESS_ATTACH )
+	//disable warning for unused variables
+	(void)(hModule);
+	(void)(lpReserved);
+
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
 		InitLogging();
 		//check if license is expired

@@ -13,30 +13,33 @@
 
 enum GracePeriodUpdateTypes
 {
-	GP_TRIGGER_GRACE_PERIOD = 1,
-	GP_RESET_GRACE_PERIOD,
-	GP_SET_LICENSE_END,
-	GP_CONSUME_REMAINING,
+	GP_TRIGGER_GRACE_PERIOD = 1,			// when Hardware changes occure or when license duration ended
+	GP_RESET_GRACE_PERIOD,					// when a valid license in valid conditions is get used, grace period is "reset"
+	GP_SET_LICENSE_END,						// valid license will copy duration to grace period
+	GP_CONSUME_REMAINING,					// periodic event update. Even if clock is rewinded, they can cheat only 1 update period
+	GP_LICENSE_LIFETIME_USE_FLAGS,			// on this PC license was used with specific API calls. Clients should never use some of the API calls
 };
 
 // use resource inside the DLL to store the grace period related data
 #pragma pack(push,1)
 struct GraceStatusDLLResourceStore
 {
-	char	Header[25];			// we will seek to this header inside the DLL
-	char	IsFileInitialized;	// Mark that we did run this function at least once. Required for decoding
-	int		XORKey;				// slightly encrypt ourself to avoid humanly readable mode
+	char	Header[25];				// we will seek to this header inside the DLL
+	char	IsFileInitialized;		// Mark that we did run this function at least once. Required for decoding
+	int		XORKey;					// slightly encrypt ourself to avoid humanly readable mode
 	//everything below should get encrypted
 	char	FingerPrint[COMPUTER_FINGERPRINT_STORE_SIZE];	// on first time init we store a valid fingerprint. We will need this to be able to decode our license on HW changes
-	int		FingerPrintSize;	//number of bytes used for fingerprinting
+	int		FingerPrintSize;		//number of bytes used for fingerprinting
 	int		TriggerCount;
-	time_t	LicenseFirstUsed;	// only trigger grace period if the license was used while it was valid. Avoid reusing an expired license to abuse grace period
-	time_t	LicenseSecondsUsed;	// seconds the license was used
-	time_t	LicenseShouldEnd;	// used for cross checking
-	time_t	FirstTriggered;		// on hardware change or license expire we will start ticking
-	time_t	GracePeriod;		// redundant value to be able to remake grace end on hack
-	time_t	GraceShouldEnd;		// for security, double store the value
-	time_t	RemainingSeconds;	// we will periodically update remaining seconds
+	int		APIsUsedFlags;			// License APIs called will set flags. These flags are never removed, only set
+	time_t	LicenseFirstUsed;		// only trigger grace period if the license was used while it was valid. Avoid reusing an expired license to abuse grace period
+	time_t	LicensePeriodicLastUpdate; // timestamp when we last updated usage amount
+	time_t	LicenseSecondsUsed;		// seconds the license was used
+	time_t	LicenseShouldEnd;		// used for cross checking
+	time_t	GraceTriggeredAt;		// on hardware change or license expire we will start ticking
+	time_t	GracePeriod;			// redundant value to be able to remake grace end on hack
+	time_t	GraceShouldEnd;			// for security, double store the value
+	time_t	GraceRemainingSeconds;	// we will periodically update remaining seconds
 };
 extern char GracePeriodStore[GRACE_PERIOD_STORE_SIZE];
 #pragma pack(pop)

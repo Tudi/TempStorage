@@ -60,49 +60,20 @@ LIBRARY_API int	IsLicenseInGracePeriod(int *Result)
 		return ERROR_COULD_NOT_LOAD_LIC_FILE;
 	}
 
-	time_t RemainingSec = 0;
-	er = lic->GetRemainingSeconds(RemainingSec);
-	if (er != 0 && er != ERROR_LICENSE_EXPIRED)
+	int IsTriggered = 0;
+	int erQuery = lic->IsGracePeriodTriggered(&IsTriggered);
+	if (erQuery != 0)
 	{
-		Log(LL_ERROR, "Could not get time info from license.dat");
+		Log(LL_ERROR, "Unexpected error while asking for grace period. Error %d", erQuery);
 		delete lic;
 		return ERROR_UNIDENTIFIED_ERROR;
-	}
-
-	//license is still valid. It is not considered grace period if everything is fine
-	if (RemainingSec > 0)
-	{
-		*Result = 0;
-		delete lic;
-		return 0;
-	}
-
-	if (RemainingSec <= 0)
-	{
-		int IsGraceTriggered;
-		time_t GracePeriodRemaining;
-		int er = LicenseGracePeriod::GetStatus(&IsGraceTriggered, &GracePeriodRemaining);
-		if (er != 0)
-		{
-			Log(LL_ERROR, "Could not get grace info");
-			delete lic;
-			return ERROR_UNIDENTIFIED_ERROR;
-		}
-
-		//license is in a valid grace period
-		if (IsGraceTriggered != 0 && GracePeriodRemaining > 0)
-		{
-			*Result = 1;
-			delete lic;
-			return 0;
-		}
 	}
 
 	//cleanup
 	delete lic;
 
 	//license is expired and grace period also expired
-	*Result = 0;
+	*Result = IsTriggered;
 
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return 0;
@@ -119,6 +90,7 @@ License::License()
 	NodeList = new GenericDataStore;
 	StartStamp = GracePeriod = 0;//mark them uninitialized
 	Duration = 0;
+	UsageStateFlags = 0;
 }
 
 License::~License()
@@ -128,6 +100,7 @@ License::~License()
 		delete NodeList;
 		NodeList = NULL;
 	}
+	LicenseGracePeriod::UpdateStatus(GP_LICENSE_LIFETIME_USE_FLAGS,UsageStateFlags);
 }
 /**
 * \brief    Add to the content of the license
@@ -145,6 +118,7 @@ int	License::AddProjectFeature(const char *ProjectName, const char *FeatureName)
 	int ProjectId = DB.GetProjectNameID(ProjectName);
 	int FeatureId = DB.GetFeatureNameID(FeatureName);
 	int ret = AddProjectFeature(ProjectId, FeatureId);
+	UsageStateFlags |= LSF_FEATURE_ADDED;
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return ret;
 }
@@ -246,6 +220,9 @@ int License::AddProjectFeature(int ProjectId, int FeatureId)
 	delete NewNode;
 	NewNode = NULL;
 
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_FEATURE_ADDED;
+
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	//no errors returned
 	return 0;
@@ -260,9 +237,13 @@ int License::AddProjectFeature(int ProjectId, int FeatureId)
 * \param	pDuration - number of seconds the license will be active for counted from start date
 * \return	Error code. 0 is no error
 */
-int License::SetDuration(time_t pStartDate, unsigned int pDuration)
+int License::SetDuration(time_t pStartDate, unsigned int pDuration, unsigned int pGraceDuration)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_DURATION_IS_SET;
+
 	//sanity checks
 	int LostSeconds = (signed int)(GetUnixtime() - pStartDate);
 	if (LostSeconds > 60 * 60)
@@ -275,6 +256,7 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration)
 
 	StartStamp = pStartDate;
 	Duration = pDuration;
+	GracePeriod = pGraceDuration;
 
 	//check if we already have this node. There is no point for dounble adding it
 	DataCollectionIterator itr;
@@ -293,12 +275,17 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration)
 		if (Type == DB_LICENSE_DURATION)
 		{
 			FoundLicenseTimingInfo = 1;
-			*(time_t*)Data = Duration;
+			*(unsigned int*)Data = Duration;
 		}
 		if (Type == DB_LICENSE_END)
 		{
 			FoundLicenseTimingInfo = 1;
 			*(time_t*)Data = StartStamp + Duration;
+		}
+		if (Type == DB_GRACE_PERIOD)
+		{
+			FoundLicenseTimingInfo = 1;
+			*(time_t*)Data = pGraceDuration;
 		}
 	}
 
@@ -307,6 +294,7 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration)
 	{
 		NodeList->PushData((char*)&StartStamp, sizeof(StartStamp), DB_LICENSE_START);
 		NodeList->PushData((char*)&Duration, sizeof(Duration), DB_LICENSE_DURATION);
+		NodeList->PushData((char*)&GracePeriod, sizeof(GracePeriod), DB_GRACE_PERIOD);
 		time_t LicenseExpire = StartStamp + Duration;
 		NodeList->PushData((char*)&LicenseExpire, sizeof(LicenseExpire), DB_LICENSE_END);
 	}
@@ -329,6 +317,10 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration)
 int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, int MaxResultSize)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_FEATURE_REQUESTED;
+
 	//sanity checks 
 	if (StoreResult == NULL || MaxResultSize <= 0)
 	{
@@ -340,14 +332,14 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 	strcpy_s(StoreResult, MaxResultSize, "");
 
 	time_t SecondsRemaining;
-	if (GetRemainingSeconds(SecondsRemaining) != 0 || SecondsRemaining == 0)
+	int GracePeriodIsUsed = 0;
+	if (GetRemainingSeconds(SecondsRemaining) != 0 || SecondsRemaining <= 0)
 	{
 		//trigger grace period if it has not been done before
 		LicenseGracePeriod::UpdateStatus(GP_TRIGGER_GRACE_PERIOD, 0);
 		//check if license is still in a valid grace period interval
-		int res;
-		int er = IsLicenseInGracePeriod(&res);
-		if (er != 0 || res == 0)
+		int er = IsGracePeriodTriggered(&GracePeriodIsUsed);
+		if (er != 0 || GracePeriodIsUsed == 0)
 		{
 			Log(LL_IMPORTANT, "License expired. Could not get activation key for %d-%d", ProjectId, FeatureId);
 			return WARNING_NO_LICENSE_FOUND;
@@ -371,8 +363,12 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 					Log(LL_ERROR, "Activation key does not fit into return buffer");
 					return ERROR_BUFFER_OVERFLOW;
 				}
-				LicenseGracePeriod::UpdateStatus(GP_RESET_GRACE_PERIOD, (int)GracePeriod);
+				// should make a change only when hardware configuration comes back online or a new valid license is getting used
+				if (GracePeriodIsUsed == 0)
+					LicenseGracePeriod::UpdateStatus(GP_RESET_GRACE_PERIOD, (int)GracePeriod);
+				// should make a change only when a new valid license is getting used
 				LicenseGracePeriod::UpdateStatus(GP_SET_LICENSE_END, (int)StartStamp + Duration);
+				//return the activation key
 				return strcpy_s(StoreResult, MaxResultSize, CurNode->ActivateKey);
 			}
 		}
@@ -395,6 +391,10 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_DURATION_REQUESTED;
+
 	DataCollectionIterator itr;
 	itr.Init(NodeList);
 	char *Data;
@@ -431,6 +431,64 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return WARNING_MISSING_LICENSE_FIELD;
 }
+/**
+* \brief    Check if license is using grace period right now
+* \details  There is a chance license will trigger using grace period even while it is active. This function will signal that scenario
+* \author   Jozsa Istvan
+* \date     2017-04-05
+* \param	Result - 0 if license is either expired or not using grace period. 1 if license is using grace period
+* \return	Error code. 0 is no error
+*/
+int License::IsGracePeriodTriggered(int *Result)
+{
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_GRACE_STATUS_QUERIED;
+
+	if (Result == NULL)
+		return ERROR_MISSING_PARAMETER;
+
+	// make sure return value is initialized
+	*Result = 0;
+
+	time_t RemainingSec = 0;
+	int er = GetRemainingSeconds(RemainingSec);
+	if (er != 0 && er != ERROR_LICENSE_EXPIRED)
+	{
+		Log(LL_ERROR, "Could not get time info from license.dat");
+		return ERROR_UNIDENTIFIED_ERROR;
+	}
+
+	//license is still valid. It is not considered grace period if everything is fine
+	if (RemainingSec > 0)
+	{
+		*Result = 0;
+		return 0;
+	}
+
+	if (RemainingSec <= 0)
+	{
+		int IsGraceTriggered;
+		time_t GracePeriodRemaining;
+		int er = LicenseGracePeriod::GetStatus(&IsGraceTriggered, &GracePeriodRemaining);
+		if (er != 0)
+		{
+			Log(LL_ERROR, "Could not get grace info");
+			return ERROR_UNIDENTIFIED_ERROR;
+		}
+
+		//license is in a valid grace period
+		if (IsGraceTriggered != 0 && GracePeriodRemaining > 0)
+		{
+			*Result = 1;
+			return 0;
+		}
+	}
+
+	// we should have not got here. License is in an unexpected state
+	*Result = 0;
+
+	return 0;
+}
 
 /**
 * \brief    Save the licesense content to a file
@@ -444,6 +502,10 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_SAVED_TO_FILE;
+
 	//sanity checks
 	if (FileName == NULL)
 		return ERROR_BAD_PATHNAME;
@@ -457,7 +519,7 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 	{
 		NodeList->SetEncription(DCE_EXTERNAL_FINGERPRINT);
 		memcpy(TempBuff, NodeList->GetData(), TotalSize);
-		EncryptSalt = GenerateSaltKey( StartStamp, Duration );
+		EncryptSalt = GenerateSaltKey(StartStamp, Duration);
 		int er = EncryptWithFingerprint(FingerprintFilename, (unsigned int)EncryptSalt, TempBuff, TotalSize);
 		if (er != 0)
 		{
@@ -466,7 +528,11 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 		}
 	}
 	else
+#ifdef _DEBUG
 		memcpy(TempBuff, NodeList->GetData(), TotalSize);
+#else
+		return ERROR_MISSING_PARAMETER;
+#endif
 
 	//dump the content to a file
 	//open file
@@ -514,6 +580,10 @@ int	License::LoadFromFile(char *FileName)
 int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_LOADED_FROM_FILE;
+
 	//sanity check
 	if (FileName == NULL)
 		return ERROR_FILE_INVALID;

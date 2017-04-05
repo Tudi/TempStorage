@@ -158,8 +158,22 @@ int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
 		return ERROR_UNHANDLED_EXCEPTION;
 	}
 
-	if (StaticDLLResourceDataInFile.RemainingSeconds > 0)
-		*SecondsRemain = StaticDLLResourceDataInFile.RemainingSeconds;
+	if (StaticDLLResourceDataInFile.GraceRemainingSeconds > 0)
+	{
+		// double check values. Just in case our dynamic clock got shut down for some reason, check differential clock
+		time_t SecondsRemainSystemClock = StaticDLLResourceDataInFile.GraceShouldEnd - time(NULL);
+		if (SecondsRemainSystemClock < StaticDLLResourceDataInFile.GraceRemainingSeconds)
+		{
+			if (SecondsRemainSystemClock<0)
+				*SecondsRemain = 0;
+			else
+				*SecondsRemain = SecondsRemainSystemClock;
+		}
+		else
+			*SecondsRemain = StaticDLLResourceDataInFile.GraceRemainingSeconds;
+	}
+	else
+		*IsTriggered = 0;
 
 #ifdef ENABLE_ANTI_HACK_CHECKS
 	//cross check values. If we have been using this license more than we max should be allowed than refuse to be available
@@ -196,6 +210,10 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		StaticDLLResourceDataInFile.LicenseFirstUsed = time(NULL);
 		StaticDLLResourceDataInFile.LicenseSecondsUsed = 0;
 		StaticDLLResourceDataInFile.TriggerCount = 0;
+		StaticDLLResourceDataInFile.APIsUsedFlags = 0;
+		StaticDLLResourceDataInFile.LicenseShouldEnd = 0;
+		StaticDLLResourceDataInFile.LicensePeriodicLastUpdate = time(NULL);
+		StaticDLLResourceDataInFile.FingerPrintSize = 0;
 		Log(LL_IMPORTANT, "License first time use at %d\n", time(NULL));
 	}
 
@@ -208,12 +226,15 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 			Log(LL_HACKING, "Grace period is getting set to %d seconds. Max allowed is %d\n", Value);
 			Value = MAX_GRACE_PERIOD_SECONDS;
 		}
-		StaticDLLResourceDataInFile.FirstTriggered = 0;
-		StaticDLLResourceDataInFile.GraceShouldEnd = 0;
-		StaticDLLResourceDataInFile.GracePeriod = Value;
-		StaticDLLResourceDataInFile.RemainingSeconds = 0;
-		StaticDLLResourceDataInFile.TriggerCount++;	// it would be strange to trigger grace period multiple times
-		Log(LL_IMPORTANT, "Grace period removed by valid license. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
+		if (StaticDLLResourceDataInFile.GraceTriggeredAt != 0)
+		{
+			StaticDLLResourceDataInFile.GraceTriggeredAt = 0;
+			StaticDLLResourceDataInFile.GraceShouldEnd = 0;
+			StaticDLLResourceDataInFile.GracePeriod = Value;
+			StaticDLLResourceDataInFile.GraceRemainingSeconds = 0;
+			StaticDLLResourceDataInFile.TriggerCount++;	// it would be strange to trigger grace period multiple times
+			Log(LL_IMPORTANT, "Grace period removed by valid license. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
+		}
 		//generate and save a valid fingerprint and store it. Maybe later we will need it on Hardware changes
 		if (StaticDLLResourceDataInFile.FingerPrintSize == 0)
 		{
@@ -232,22 +253,61 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 	//update timers if this is a periodic tick
 	if (ActionType == GP_CONSUME_REMAINING)
 	{
-		StaticDLLResourceDataInFile.LicenseSecondsUsed += Value;
-		if (StaticDLLResourceDataInFile.FirstTriggered != 0)
-			StaticDLLResourceDataInFile.RemainingSeconds -= Value;
+		int ConsumeAmount = 0;
+		time_t TimeNow = time(NULL);
+		int ExternalTimeDiffSec = Value / 1000;
+		// this should never happen. It indicated a hack attempt by rewinding the computer clock
+		// Note ! Daytime saving might trigger this once a year
+		if (TimeNow < StaticDLLResourceDataInFile.LicensePeriodicLastUpdate)
+		{
+			int Diff = (int)(StaticDLLResourceDataInFile.LicensePeriodicLastUpdate - TimeNow);
+			Log(LL_IMPORTANT, "Time rewind detected. Seconds difference %d. Last Update %d. Now %d\n", Diff, (int)StaticDLLResourceDataInFile.LicensePeriodicLastUpdate, (int)TimeNow);
+			ConsumeAmount = ExternalTimeDiffSec;
+		}
+		//periodic update came faster than what we expected
+		else if (TimeNow < StaticDLLResourceDataInFile.LicensePeriodicLastUpdate + ExternalTimeDiffSec)
+		{
+			ConsumeAmount = (int)(StaticDLLResourceDataInFile.LicensePeriodicLastUpdate + ExternalTimeDiffSec - TimeNow);
+		}
+		// maybe DLL got unloaded since last update. We trust system clock for time consume
+		else
+			ConsumeAmount = ExternalTimeDiffSec;
+		// never assume, always know
+		if (ConsumeAmount<=0)
+			Log(LL_DEBUG_RARE, "Unexpected grace period state. Time passed %d. Val %d\n", ConsumeAmount, Value);
+		StaticDLLResourceDataInFile.LicenseSecondsUsed += ConsumeAmount;
+		if (StaticDLLResourceDataInFile.GraceTriggeredAt != 0)
+			StaticDLLResourceDataInFile.GraceRemainingSeconds -= ConsumeAmount;
+		StaticDLLResourceDataInFile.LicensePeriodicLastUpdate = time(NULL);
 	}
 
 	//this should be triggered when a NON valid license is getting used. Expired / HW changes...
-	if (ActionType == GP_TRIGGER_GRACE_PERIOD && StaticDLLResourceDataInFile.FirstTriggered == 0)
+	if (ActionType == GP_TRIGGER_GRACE_PERIOD && StaticDLLResourceDataInFile.GraceTriggeredAt == 0)
 	{
 		Log(LL_IMPORTANT, "Grace period started. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
-		StaticDLLResourceDataInFile.FirstTriggered = time(NULL);
-		StaticDLLResourceDataInFile.GraceShouldEnd = StaticDLLResourceDataInFile.FirstTriggered + StaticDLLResourceDataInFile.GracePeriod;
-		StaticDLLResourceDataInFile.RemainingSeconds = StaticDLLResourceDataInFile.GracePeriod;
+		StaticDLLResourceDataInFile.GraceTriggeredAt = time(NULL);
+		StaticDLLResourceDataInFile.GraceShouldEnd = StaticDLLResourceDataInFile.GraceTriggeredAt + StaticDLLResourceDataInFile.GracePeriod;
+		StaticDLLResourceDataInFile.GraceRemainingSeconds = StaticDLLResourceDataInFile.GracePeriod;
 	}
 
+	//backup when license ends
 	if (ActionType == GP_SET_LICENSE_END)
+	{
+		if (StaticDLLResourceDataInFile.LicenseShouldEnd!=0)
+			Log(LL_IMPORTANT, "License duration got extended. A new license should been loaded. End date %d\n", StaticDLLResourceDataInFile.LicenseShouldEnd);
 		StaticDLLResourceDataInFile.LicenseShouldEnd = Value;
+	}
+
+	//this always gets added and never consumed. Client should never use some of the API calls. Siemens field engeneer can confirm by investigating flags
+	if (ActionType == GP_LICENSE_LIFETIME_USE_FLAGS)
+	{
+		//report strange behavior
+#ifdef ENABLE_ANTI_HACK_CHECKS
+		if ((Value & LSF_SIEMENS_ONLY_FLAGS) != 0 && (StaticDLLResourceDataInFile.APIsUsedFlags & LSF_SIEMENS_ONLY_FLAGS) == 0 )
+			Log(LL_HACKING, "Client used forbidden API calls %d\n", Value);
+#endif
+		StaticDLLResourceDataInFile.APIsUsedFlags |= Value;
+	}
 
 	//if nothing changed, there is no need to write it to file. This happens when we query for activation keys
 	if (memcmp(&OldValues, &StaticDLLResourceDataInFile, sizeof(OldValues)) == 0)
@@ -302,7 +362,7 @@ DWORD __stdcall LicenseGraceWatchdogThread(LPVOID lpParam)
 	while (*ThreadIsRunning == 1)
 	{
 		Sleep(OneLoopSleepAmt);
-		RemainingTimeUntilNextUpdate -= OneLoopSleepAmt;
+		RemainingTimeUntilNextUpdate -= OneLoopSleepAmt; //multiple small sleeps, in case we want to shut down the thread, to have time to react to the command
 		if (RemainingTimeUntilNextUpdate <= 0)
 		{
 			LicenseGracePeriod::UpdateStatus(GP_CONSUME_REMAINING, LICENSE_DURATION_UPDATE_INTERVAL - RemainingTimeUntilNextUpdate);

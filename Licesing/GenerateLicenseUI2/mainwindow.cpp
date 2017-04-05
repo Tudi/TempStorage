@@ -187,6 +187,16 @@ void MainWindow::OnGenerateLicenseClicked()
         Msgbox.exec();
     }
 
+    int GraceDuration = ui->t_GraceDuration->toPlainText().toInt();
+    if(GraceDuration > 31)
+    {
+        QMessageBox Msgbox;
+        Msgbox.setText("Max Grace duration is 31 days");
+        Msgbox.exec();
+        GraceDuration = 31; // this limitation comes from inside licenseDLL. Can be extended, but needs a rebuild
+    }
+    GraceDuration = GraceDuration * 24 * 60 * 60;
+
     //calculate start and duration
     QDateTime StartDateTime(StartDate);
     StartDateTime.setTimeSpec(Qt::UTC);
@@ -199,7 +209,7 @@ void MainWindow::OnGenerateLicenseClicked()
     int er, ers = 0;
     //create a license
     License *TestLicense = new License;
-    er = TestLicense->SetDuration(LicenseStart, LicenseDuration);
+    er = TestLicense->SetDuration(LicenseStart, LicenseDuration, GraceDuration);
     ers += er;
 
     //iterate through the table and add rows 1 by 1

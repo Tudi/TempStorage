@@ -53,7 +53,7 @@ int main()
 
 	//create a license
 	License *TestLicense = new License;
-	TestLicense->SetDuration(LicenseStart, LicenseDuration);
+	TestLicense->SetDuration(LicenseStart, LicenseDuration, 5 * 60);
 	TestLicense->AddProjectFeature(desc1->ProjectID, desc1->FeatureID);
 //	TestLicense->AddProjectFeature(desc2->ProjectID, desc2->FeatureID);
 
