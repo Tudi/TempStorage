@@ -4,6 +4,7 @@
 #include "CapturePackets.h"
 #include "HTTPSendData.h"
 #include "LordsMobileControl.h"
+#include "ConsoleListener.h"
 #include <Windows.h>
 
 void OfflineParsing()
@@ -29,6 +30,9 @@ void OnlineScanParsing()
 	//parse network packets and intiate a http-post to insert them into the DB
 	CreateBackgroundPacketProcessThread();
 
+	//listen to console to send commands to game control
+	StartListenConsole();
+
 	// listen to network interface, assemble packets, queue them to the process queue
 	StartCapturePackets(3);
 }
@@ -48,5 +52,6 @@ void main()
 	StopThreadedPacketParser();
 	HttpSendShutdown();
 	LordsMobileControlShutdown();
+	StopListenConsole();
 	printf("Properly shut everything down. Exiting\n");
 }

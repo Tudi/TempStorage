@@ -1,9 +1,12 @@
+#include <time.h>
 #include "LordsMobileControl.h"
 #include "HTTPSendData.h"
 
 #pragma comment(lib,"ImageSearch/ImageSearchDLL_x64.lib")
 
 extern void RunLordsMobileTestsNoOCR();
+extern void ToggleFastScan(int YStepFast, int YStepSlow);
+extern void ScanKingdomArea2(int Kingdom, int StartX, int StartY, int EndX, int EndY);
 
 #include <windows.h>
 #include <stdio.h>
@@ -11,14 +14,27 @@ extern void RunLordsMobileTestsNoOCR();
 int		KeepGameScanThreadsRunning = 1;
 int		ThreadParamScanGameData = 0;
 HANDLE	ScanGameProcessThreadHandle = 0;
+int		InverseScanOrder = (time(NULL) / (60*24)) % 2;
+
+void InvertGameScanDirection()
+{
+	InverseScanOrder = 1 - InverseScanOrder;
+	printf("New scan direction is : %d\n", InverseScanOrder);
+}
 
 DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
 {
+	int LoopCounter = 0;
 	while (KeepGameScanThreadsRunning == 1)
 	{
-		RunLordsMobileTestsNoOCR();	// we do not have a break mechanism for this atm
+//		RunLordsMobileTestsNoOCR();	// we do not have a break mechanism for this atm
+		if (InverseScanOrder == 0)
+			ScanKingdomArea2(69, LoopCounter % 5, LoopCounter % 5, 510, 1020);
+		else
+			ScanKingdomArea2(69, LoopCounter % 5, 1020, 510, LoopCounter % 5);
 		remove("KingdomScanStatus.txt");
 		HTTP_GenerateMaps();
+		ToggleFastScan( 15, 9 );
 	}
 	KeepGameScanThreadsRunning = 0;
 	return 0;

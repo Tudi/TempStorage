@@ -1,5 +1,15 @@
 <?php
 set_time_limit(2 * 60 * 60);
+$DisableCaching=1;
+//do not run this in parallel
+if(file_exists( "ImportLock" ))
+{
+	$LastAccessed = fileatime("ImportLock");
+	if(time() - $LastAccessed < 1 * 60 * 60)
+		die("locked");
+}
+file_put_contents("ImportLock","locked");
+
 if(!isset($dbi))
 	include("db_connection.php");
 
@@ -35,7 +45,14 @@ while( list( $rowid,$x,$y,$name,$might,$lastupdated,$vip,$castlelevel ) = mysql_
 			if(	$SameMightSince > $lastupdated )
 				$SameMightSince = $lastupdated;
 			if( $MightChanged == -1 )
-				$MightChanged = 0;
+			{
+				//maybe he gathered some resources recently ?
+				$query2 = "select count(*) from resource_nodes where playername like '".mysql_real_escape_string($name)."'";
+				$result2 = mysql_query($query2,$dbi) or die("Error : 20170220024 <br>".$query2." <br> ".mysql_error($dbi));
+				list( $NodesGatheredFrom ) = mysql_fetch_row( $result2 );
+				if($NodesGatheredFrom<=0)
+					$MightChanged = 0;
+			}
 		}
 //echo "Found archive for player $name<br>";
 	}
@@ -47,6 +64,18 @@ while( list( $rowid,$x,$y,$name,$might,$lastupdated,$vip,$castlelevel ) = mysql_
 //		echo "Player's $name might did not change<br>";
 	}
 }
+//count number of resource nodes player is mining from
+$query1 = "update players set MiningNodes=0 order by rowid";
+$result1 = mysql_query($query1,$dbi) or die("Error : 20170220027 <br>".$query1." <br> ".mysql_error($dbi));
+// a player is innactive if he did not change coordinate and he's might did not change in the past X days
+$query1 = "select count(*),playername from resource_nodes where playername!='' and lastupdated>UNIX_TIMESTAMP()-4*60*60 group by playername";
+$result1 = mysql_query($query1,$dbi) or die("Error : 20170220024 <br>".$query1." <br> ".mysql_error($dbi));
+while( list( $count,$name ) = mysql_fetch_row( $result1 ))
+{
+	$query2 = "update players set MiningNodes='$count' where name like '".mysql_real_escape_string($name)."'";
+	$result2 = mysql_query($query2,$dbi) or die("Error : 20170220024 <br>".$query2." <br> ".mysql_error($dbi));
+}
+
 //generate new hives
 include("gen_hives.php");
 include("gen_hives_small.php");
@@ -69,4 +98,6 @@ $TrackWhat = "resourcelevel";
 include("map_generic.php");
 $TrackWhat = "resourcefree";
 include("map_generic.php");
+
+unlink("ImportLock");
 ?>

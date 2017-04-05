@@ -4,7 +4,7 @@ if (session_status() == PHP_SESSION_NONE || session_id() == '')
 	session_start();
 
 include("functions.php");
-if(!isset($PlayersPhpIncluded) && !isset($DisableCaching))
+if(!isset($PlayersPhpIncluded) && !isset($DisableCaching) && !(!isset($z) || $z != -1))
 	CacheStartOrLoadCache( "", 30*60);
 
 //transform post/get into local variables
@@ -20,7 +20,7 @@ if(isset($_SESSION['k']))
 	$k = $_SESSION['k'];
 //	echo "Kingdom session was set to $k";
 }
-else
+else if( !isset($k) || $k <= 0 )
 {
 	echo "No kingdom was selected. Using default #67<br>";
 	$k = 67;

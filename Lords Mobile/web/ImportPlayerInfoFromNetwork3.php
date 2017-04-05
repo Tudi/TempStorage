@@ -1,7 +1,7 @@
 <?php
 //set_time_limit(2 * 60 * 60);
 set_time_limit(5);
-	
+$DisableCaching=1;
 include("db_connection.php");
 
 $MergedQueries = "";
@@ -18,8 +18,6 @@ function ImportFromWebCall()
 	global $k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$LastUpdated,$objtype,$StatusFlags,$title,$monstertype,$MaxAmtNow;
 	echo "Importing from url<br>";
 	$LastUpdated = time();
-	if(!isset($k))
-		$k=67;
 //echo "we are importing type '$objtype' $x $y";
 	//guess it's a player
 	if(!isset($objtype) || $objtype == 8)
@@ -65,7 +63,10 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	// player got renamed ? Try to search it based on coords
 	if( $rowid==0 || $rowid == "" )
 	{
-		$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and kills >= '$kills' and vip >= '$vip' and castlelevel>='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+		if($kills>0 && $vip>0)
+			$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and kills<='$kills' and vip<='$vip' and castlelevel='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+		else
+			$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and castlelevel='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $rowid2,$kills2,$might2,$vip2,$guildrank2,$GuildFull2,$StatusFlags2,$title2,$oldname ) = mysql_fetch_row( $result1 );			
 		//save the namechange
@@ -112,7 +113,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	}
 	
 	//there can be only 1 at this coordinate. Everything older than us has to go
-	$query1 = "delete from players where x=$x and y=$y";
+	$query1 = "delete from players where x='$x' and y='$y'";
 	//$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 	RunSyncQuery($query1);
 	
@@ -147,7 +148,6 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	$ymin = $y - 10;
 	$ymax = $y + 10;
 	$olderthan = $LastUpdated - 24 * 60 * 60;
-	$LastTime = $LastUpdated;
 	//move to archive without double insert
 	ArchivePlayerIfNotArtchived( "x < $xmax and x > $xmin and y < $ymax and y < $ymin and LastUpdated < $olderthan" );
 }
@@ -164,7 +164,7 @@ function ArchivePlayerIfNotArtchived( $where )
 		list( $rowid2 ) = mysql_fetch_row( $result2 );
 		if( $rowid2 == 0 || $rowid2 == "" || !isset($rowid2) )
 		{
-			$query1 = "insert into players_archive (select * from players where rowid=$rowid)";
+			$query1 = "insert ignore into players_archive (select * from players where rowid=$rowid)";
 //file_put_contents("t.txt",$query1);
 			//$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));
 			RunSyncQuery($query1);
@@ -184,20 +184,22 @@ function RunSyncQuery($query1)
 	//run it in our DB
 	$result1 = mysql_query($query1,$dbi) or die("Error : 20170220022 <br>".$query1." <br> ".mysql_error($dbi));	
 	//run it on the remote machine
-	$MergedQueries .= $query1.";";
+	$MergedQueries .= $query1.";NEXT_QUERY;";
 //echo "MergedQueries now : $MergedQueries<br>";
 }
 
 function RemoteRunQuery2($query1)
 {
+	global $k;
 	if( strlen($query1) < 10 )
 		return;
+//	file_put_contents("online_queries.txt", trim($query1)."\n\r", FILE_APPEND);
 //return;
 //	echo "MergedQueries : $query1<br>"; die();
 //	$url = 'http://127.0.0.1:8081/RunQueries.php';
 	$url = 'http://5.79.67.171/RunQueries.php';
 //	$url = 'http://lordsmobile.online/RunQueries.php';
-	$data = array('z' => '-1', 'queries' => $query1);
+	$data = array('z' => '-1', 'k' => $k, 'queries' => $query1);
 	$options = array(
 			'http' => array(
 			'header'  => "Content-type: application/x-www-form-urlencoded\r\n",

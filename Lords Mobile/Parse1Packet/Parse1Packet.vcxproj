@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CapturePackets.cpp" />
+    <ClCompile Include="ConsoleListener.cpp" />
     <ClCompile Include="HTTPSendData.cpp" />
     <ClCompile Include="LordsMobileControl.cpp" />
     <ClCompile Include="main.cpp" />
@@ -152,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapturePackets.h" />
+    <ClInclude Include="ConsoleListener.h" />
     <ClInclude Include="HTTPSendData.h" />
     <ClInclude Include="LordsMobileControl.h" />
     <ClInclude Include="ParsePackets.h" />

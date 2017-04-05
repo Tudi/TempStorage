@@ -10,6 +10,11 @@ if(isset($FN))
 	$t = str_replace("\\s","\\\\s",$FN);
 	$Filter .= " and name like '".mysql_real_escape_string($t)."'";
 }
+if(isset($FNL))
+{
+	$t = str_replace("\\s","\\\\s",$FNL);
+	$Filter .= " and name in $t";
+}
 if(isset($FNS))
 {
 	$t = str_replace("\\","\\\\",$FNS);
@@ -65,6 +70,7 @@ if(!isset($PlayersPhpIncluded))
 		<td>Castle Level</td>
 		<td>Status changers</td>
 		<td>Title</td>
+		<td>Mined nodes</td>
 			<?php
 		}
 		?>
@@ -102,8 +108,8 @@ if(!isset($PlayersPhpIncluded))
 	while( list( $name ) = mysql_fetch_row( $result1 ) )
 		$HiddenGuilds .= "####$name####";
 		
-	$query1 = "select x,y,name,guild,guildfull,might,kills,lastupdated,statusflags,title,VIP,GuildRank,castlelevel from ";
-	if(isset($FN))
+	$query1 = "select x,y,name,guild,guildfull,might,kills,lastupdated,statusflags,title,VIP,GuildRank,castlelevel,MiningNodes from ";
+	if(isset($FN) || isset($FNL))
 		$query1 .= "players_archive ";
 	else
 		$query1 .= "players ";
@@ -113,16 +119,16 @@ if(!isset($PlayersPhpIncluded))
 	if($Order)
 		$query1 .= " order by $Order ";
 	
-	if( isset($FN) )
+	if( isset($FN) || isset($FNL))
 	{
 		$query1 = str_replace(" order by $Order ","", $query1);
 		$q2 = str_replace("players_archive","players", $query1);
 		$query1 = "($query1)union($q2) order by $Order";
 	}
-//echo "$FN-$FNS-$FG-$FGS:$query1";
+//echo "$FN-$FNL-$FNS-$FG-$FGS:$query1";
 	
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
-	while( list( $x,$y,$name,$guild,$guildfull,$might,$kills,$lastupdated,$statusflags,$title,$VIP,$GuildRank,$castlelevel ) = mysql_fetch_row( $result1 ))
+	while( list( $x,$y,$name,$guild,$guildfull,$might,$kills,$lastupdated,$statusflags,$title,$VIP,$GuildRank,$castlelevel,$MiningNodes ) = mysql_fetch_row( $result1 ))
 	{	
 		if( strpos($HiddenNames,"#".$name."#") != 0 )
 			continue;
@@ -159,6 +165,7 @@ if(!isset($PlayersPhpIncluded))
 <td><?php echo $castlelevel; ?></td>
 <td><?php echo $StatusFlagsString; ?></td>
 <td><?php echo $TitleAsString; ?></td>
+<td><a href="resources.php?FN=<?php echo urlencode($name); ?>"><?php echo $MiningNodes; ?></a></td>
 <?php
 }
 ?>

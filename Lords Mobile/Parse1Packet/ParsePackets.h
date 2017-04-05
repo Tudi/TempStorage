@@ -30,27 +30,34 @@ enum PlayerCastleTitles
 {
 	TITLE_OVERLORD			= 1, //
 	TITLE_QUEEN				= 2, //
+	TITLE_GENERAL			= 3, //
 	TITLE_PREMIER			= 4, //
-	TITLE_CHIEF				= 5,
+	TITLE_CHIEF				= 5, //
 	TITLE_WARDEN			= 6, //
 	TITLE_PRIEST			= 7, //
-	TITLE_QUARTERMASTER		= 8,	//?
-	TITLE_COWARD			= 11,
-	TITLE_SCOUNDREL			= 13,	//?
-	TITLE_CLOWN				= 13,	//?
+	TITLE_QUARTERMASTER		= 8, //
+	TITLE_ENGENEER			= 9, //
+	TITLE_SCHOLAR			= 10, //
+	TITLE_COWARD			= 11, //
+	TITLE_SCOUNDREL			= 12, //
+	TITLE_CLOWN				= 13, //
 	TITLE_THRALL			= 14, //
-	TITLE_TRAITOR			= 15,
-	TITLE_FELON				= 16,
+	TITLE_TRAITOR			= 15, //
+	TITLE_FELON				= 16, //
 	TITLE_SLOB				= 17,
-	TITLE_BUM				= 19,
-	TITLE_FOOL				= 19,
+	TITLE_FOOL				= 19, //
 };
 
 enum MonsterTypes
 {
-	MONSTER_MECHA_TROJAN = 19,
-	MONSTER_BLACKWING_OR_BON_APETI1 = 16,
-	MONSTER_BLACKWING_OR_BON_APETI2 = 18,
+	//select *,count(*) from monsters where mtype not in (3,7,19,16,18) and lastupdated > UNIX_TIMESTAMP() - 6 * 60 * 60 group by mtype
+	// tidal = 32 ? reaper = 23 ? helldrider = 11 ? 9 = ?
+	MONSTER_GARGANTUA		= 3,
+	MONSTER_MEGA_MAGOT		= 7,
+	MONSTER_TIDAL_TITAN		= 15,
+	MONSTER_BON_APETI		= 16,
+	MONSTER_BLACKWING		= 18,
+	MONSTER_MECHA_TROJAN	= 19,
 };
 
 #pragma pack(push, 1)

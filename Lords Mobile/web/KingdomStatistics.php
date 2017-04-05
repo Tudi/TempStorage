@@ -1,8 +1,9 @@
 <?php
+$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");
 
-echo "All data is generated in a period of 31 days if available. Counted from this moment<br>";
+echo "All data is generated based on past 31 days(if available).<br>";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,7 +62,26 @@ echo "Player kills now : ".GetValShortFormat($SumKillsNow)." . Difference ".GetV
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 echo "Player might old : ".GetValShortFormat($SumMightStart)." <br>";
-echo "Player might now : ".GetValShortFormat($SumMightNow)." . Difference ".GetValShortFormat($SumMightNow-$SumMightStart)." . Counts values from migrated players !<br>";
+echo "Player might now : ".GetValShortFormat($SumMightNow)." . Difference ".GetValShortFormat($SumMightNow-$SumMightStart)."<br>";
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//select oldest but not older than 31 days data for players
+$query1 = "select might,name from players_archive order by name,lastupdated";
+$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
+$PrevMight = 0;
+$PrevName = "";
+$SumMightBurned = 0;
+while( list( $might,$name ) = mysql_fetch_row( $result1 ))
+{
+	if($PrevName == $name)
+	{
+		if($PrevMight>$might)
+			$SumMightBurned += ($PrevMight-$might);
+	}
+	$PrevMight = $might;
+	$PrevName = $name;
+}
+echo "Might burned(recovered later ) : ".GetValShortFormat($SumMightBurned)."<br>";
 
 include("db_connection_footer.php");
 

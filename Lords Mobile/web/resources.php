@@ -5,26 +5,11 @@ if(!isset($dbi))
 <link href="css/table.css" rel="stylesheet">
 <?php
 if(!isset($s_type))
-{
-	if(isset($_REQUEST['s_type']))
-		$s_type=$_REQUEST['s_type'];
-	else
-		$s_type="";
-}
+	$s_type="";
 if(!isset($s_occupied))
-{
-	if(isset($_REQUEST['s_occupied']))
-		$s_occupied=$_REQUEST['s_occupied'];
-	else
-		$s_occupied="";
-}
+	$s_occupied="";
 if(!isset($s_level))
-{
-	if(isset($_REQUEST['s_level']))
-		$s_level=$_REQUEST['s_level'];
-	else
-		$s_level="";
-}
+	$s_level="";
 ?>
 <form name="SearchForm" id="SearchForm" action="">
 	Mineral Type <select name="s_type"> 
