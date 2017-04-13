@@ -1,4 +1,5 @@
 <?php
+$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");
 
@@ -15,13 +16,12 @@ $result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." 
 	//get the hive for each guild
 	foreach( $GuildList as $key => $guild)
 	{
-		$escapped_guild = str_replace("\\s","\\\\s",$guild);
-		$escapped_guild = mysql_real_escape_string($escapped_guild);
+		$escapped_guild = mysql_real_escape_string($guild);
 		//get all players for this guild
 		if($guild=="")
-			$query1 = "select x,y,might,CastleLevel,guildfull from players where isnull(guild) or guild like ''";		
+			$query1 = "select x,y,might,CastleLevel,guildfull from players where isnull(guild) or guild = ''";		
 		else
-			$query1 = "select x,y,might,CastleLevel,guildfull from players where guild like '".$escapped_guild."'";		
+			$query1 = "select x,y,might,CastleLevel,guildfull from players where guild = '".$escapped_guild."'";		
 //echo $query1;	
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 		unset($Guildx);

@@ -1,5 +1,5 @@
 <?php
-$DisableCaching=1;
+//$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");
 
@@ -44,7 +44,7 @@ $SumMightStart = 0;
 $SumMightNow = 0;
 while( list( $kills,$might,$name ) = mysql_fetch_row( $result1 ))
 {
-	$query2 = "select kills,might from players_archive where lastupdated>UNIX_TIMESTAMP()-31*24*60*60 and name like '".mysql_real_escape_string($name)."' order by lastupdated asc limit 0,1";
+	$query2 = "select kills,might from players_archive where lastupdated>UNIX_TIMESTAMP()-31*24*60*60 and name = '".mysql_real_escape_string($name)."' order by lastupdated asc limit 0,1";
 	$result2 = mysql_query($query2,$dbi) or die("2017022001".$query2);
 	list( $kills2,$might2 ) = mysql_fetch_row( $result2 );
 	if($might>0)

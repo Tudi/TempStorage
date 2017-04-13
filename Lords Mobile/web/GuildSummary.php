@@ -49,7 +49,7 @@ if($s_guild!="")
 	else
 		$sel_guild = $GuildList[$s_guild];
 	$OneMonthAgo = time() - 60 * 60 * 24 * 31;
-	$query1 = "select name,might,kills,lastupdated from players where guild like '".mysql_real_escape_string($sel_guild)."'";
+	$query1 = "select name,might,kills,lastupdated from players where guild = '".mysql_real_escape_string($sel_guild)."'";
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	while( list( $name,$cur_might,$cur_kills,$cur_lastupdated ) = mysql_fetch_row( $result1 ))
 	{
@@ -57,13 +57,13 @@ if($s_guild!="")
 		if($cur_might>0)
 		{
 			//select oldest version but older than a month
-			$query1 = "select might,kills from players_archive where might<>0 and name like '".mysql_real_escape_string($name)."' and lastupdated < $OneMonthAgo limit 0,1";
+			$query1 = "select might,kills from players_archive where might<>0 and name = '".mysql_real_escape_string($name)."' and lastupdated < $OneMonthAgo limit 0,1";
 			$result2 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 			list( $past_might, $past_kills, $past_updated ) = mysql_fetch_row( $result2 );
 			// in case we did not collect enough data for 31 days
 			if($past_might==0)
 			{
-				$query1 = "select might,kills,lastupdated from players_archive where might<>0 and name like '".mysql_real_escape_string($name)."' order by lastupdated asc limit 0,1";
+				$query1 = "select might,kills,lastupdated from players_archive where might<>0 and name = '".mysql_real_escape_string($name)."' order by lastupdated asc limit 0,1";
 				$result2 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 				list( $past_might, $past_kills, $past_updated ) = mysql_fetch_row( $result2 );			
 			}

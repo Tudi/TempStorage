@@ -28,7 +28,7 @@ while( list( $rowid,$x,$y,$name,$might,$lastupdated,$vip,$castlelevel ) = mysql_
 	// should cgeck reource mined
 	// should check if he had prisoners recently
 	// even if might does not change. Troops healed or troops trained might have changed
-	$query2 = "select might,lastupdated from players_archive where x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*3)." and name like '".mysql_real_escape_string($name)."' and vip=$vip and castlelevel=$castlelevel limit 0,1";
+	$query2 = "select might,lastupdated from players_archive where x=$x and y=$y and lastupdated<".($lastupdated-60*60*24*3)." and name = '".mysql_real_escape_string($name)."' and vip=$vip and castlelevel=$castlelevel limit 0,1";
 //echo "$query2<br>";
 	$result2 = mysql_query($query2,$dbi) or die("Error : 20170220025 <br>".$query2." <br> ".mysql_error($dbi));
 	$MightChanged = -1;
@@ -47,7 +47,7 @@ while( list( $rowid,$x,$y,$name,$might,$lastupdated,$vip,$castlelevel ) = mysql_
 			if( $MightChanged == -1 )
 			{
 				//maybe he gathered some resources recently ?
-				$query2 = "select count(*) from resource_nodes where playername like '".mysql_real_escape_string($name)."'";
+				$query2 = "select count(*) from resource_nodes where playername = '".mysql_real_escape_string($name)."'";
 				$result2 = mysql_query($query2,$dbi) or die("Error : 20170220024 <br>".$query2." <br> ".mysql_error($dbi));
 				list( $NodesGatheredFrom ) = mysql_fetch_row( $result2 );
 				if($NodesGatheredFrom<=0)
@@ -72,7 +72,7 @@ $query1 = "select count(*),playername from resource_nodes where playername!='' a
 $result1 = mysql_query($query1,$dbi) or die("Error : 20170220024 <br>".$query1." <br> ".mysql_error($dbi));
 while( list( $count,$name ) = mysql_fetch_row( $result1 ))
 {
-	$query2 = "update players set MiningNodes='$count' where name like '".mysql_real_escape_string($name)."'";
+	$query2 = "update players set MiningNodes='$count' where name = '".mysql_real_escape_string($name)."'";
 	$result2 = mysql_query($query2,$dbi) or die("Error : 20170220024 <br>".$query2." <br> ".mysql_error($dbi));
 }
 
@@ -81,7 +81,6 @@ include("gen_hives.php");
 include("gen_hives_small.php");
 /**/
 //generate static minimaps
-$k=67;
 $TrackWhat = "might";
 include("map_generic.php");
 $TrackWhat = "kills";

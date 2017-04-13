@@ -1,4 +1,5 @@
 <?php
+$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");
 
@@ -52,13 +53,11 @@ for( $y=$RadiusHalf;$y<$MaxY-$RadiusHalf;$y+=$RadiusHalf*2)
 //				$avg_y = $y;
 //				if($guild=="None")
 //					$guild="";
-				$escapped_guild = str_replace("\\s","\\\\s",$guild);
-				$escapped_guild = mysql_real_escape_string($escapped_guild);
 				$query2 = "select sum(might),sum(kills),sum(castlelevel),count(might),guildfull from players where x>=".($avg_x-$RadiusHalf)." and x<=".($avg_x+$RadiusHalf)." and y>=".($avg_y-$RadiusHalf)." and y<=".($avg_y+$RadiusHalf)." and ";
 				if($guild=="")
-					$query2 .= " ( isnull(guild) or guild like '')";
+					$query2 .= " ( isnull(guild) or guild = '')";
 				else
-					$query2 .= " guild like '".$escapped_guild."'";
+					$query2 .= " guild = '".mysql_real_escape_string($guild)."'";
 				$result2 = mysql_query($query2,$dbi) or die("Error : 20170220042 <br>".$query2." <br> ".mysql_error($dbi));
 //echo "$query2<br>";
 				list( $might,$kill,$castlelevel,$pcount,$guildfull ) = mysql_fetch_row( $result2 );

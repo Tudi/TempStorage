@@ -22,8 +22,8 @@ if(isset($_SESSION['k']))
 }
 else if( !isset($k) || $k <= 0 )
 {
-	echo "No kingdom was selected. Using default #67<br>";
-	$k = 67;
+	$k = 82;
+	echo "No kingdom was selected. Using default #$k<br>";
 }
 
 //connect to DB

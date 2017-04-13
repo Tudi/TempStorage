@@ -1,4 +1,5 @@
 <?php
+$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");
 if(isset($Type))
@@ -32,14 +33,14 @@ Put in the name to stop showing it to other players. Copy paste exactly as you c
 }
 else
 {
-	$query1 = "select RequestCount,IPs from $table where name like '".mysql_real_escape_string($Name)."'";		
+	$query1 = "select RequestCount,IPs from $table where name = '".mysql_real_escape_string($Name)."'";		
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022004 <br>".$query1." <br> ".mysql_error($dbi));
 	list( $RequestCount,$IPs ) = mysql_fetch_row( $result1 );
 	if(strpos($IPs,$ip)==0)
 		$IPs.= ",$ip";
 	if($RequestCount>0)
 	{
-		$query1 = "update $table set RequestCount=$RequestCount+1, EndStamp=".(time()+$AntiScoutDuration*60).",ips='$IPs' where name like '".mysql_real_escape_string($Name)."'";				
+		$query1 = "update $table set RequestCount=$RequestCount+1, EndStamp=".(time()+$AntiScoutDuration*60).",ips='$IPs' where name = '".mysql_real_escape_string($Name)."'";				
 	}
 	else
 	{

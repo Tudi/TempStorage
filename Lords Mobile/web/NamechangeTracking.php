@@ -43,7 +43,7 @@ else
 //		echo "Player $Name1 records<br>";
 		$FNL .= "'".mysql_real_escape_string($Name2)."',";
 		//check for next name of this player
-		$query1 = "select Name1,NewNameSeenAt from player_renames where name2 like '".mysql_real_escape_string($Name2)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc limit 0,1";
+		$query1 = "select Name1,NewNameSeenAt from player_renames where name2 = '".mysql_real_escape_string($Name2)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 		list( $Name1,$Stamp ) = mysql_fetch_row( $result1 );
 		$Name2 = $Name1;
@@ -55,7 +55,7 @@ else
 //		echo "Player $Name1 records<br>";
 		$FNL .= "'".mysql_real_escape_string($Name1)."',";
 		//check for next name of this player
-		$query1 = "select Name2,NewNameSeenAt from player_renames where name1 like '".mysql_real_escape_string($Name1)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc limit 0,1";
+		$query1 = "select Name2,NewNameSeenAt from player_renames where name1 = '".mysql_real_escape_string($Name1)."' and NewNameSeenAt<$Stamp order by NewNameSeenAt desc limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 		list( $Name2,$Stamp ) = mysql_fetch_row( $result1 );
 		$Name1 = $Name2;

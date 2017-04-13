@@ -30,6 +30,17 @@ function GetTimeDiffShortFormat($time, $IsDiff = 0)
 	return $diff;
 }
 
+//\s is interpreted as a token when using "like"
+function mysql_escape_str_like( $str )
+{
+	$estr = $str;
+	$estr = str_replace("\\s","\\\\s",$estr);
+	$estr = str_replace("\\S","\\\\S",$estr);
+	$estr = str_replace("\\F","\\\\F",$estr);
+	$estr = mysql_real_escape_string($estr);
+	return $estr;
+}
+
 function GetValShortFormat($val)
 {
 	$sign = 1;
@@ -68,6 +79,7 @@ function CacheStartOrLoadCache($NameParam, $period)
 			echo file_get_contents($file);
 			die();
 		}
+		unlink($file);
 	}
 	//gzip if we can. Else simply send plain content
 	if (substr_count($_SERVER["HTTP_ACCEPT_ENCODING"], "gzip"))

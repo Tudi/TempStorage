@@ -6,31 +6,20 @@ $SimpleView = 1;
 	
 $Filter = "";
 if(isset($FN))
-{
-	$t = str_replace("\\s","\\\\s",$FN);
-	$Filter .= " and name like '".mysql_real_escape_string($t)."'";
-}
+	$Filter .= " and name = '".mysql_real_escape_string($FN)."'";
 if(isset($FNL))
 {
 	$t = str_replace("\\s","\\\\s",$FNL);
+	$t = str_replace("\\S","\\\\S",$t);
+	$t = str_replace("\\F","\\\\F",$t);
 	$Filter .= " and name in $t";
 }
 if(isset($FNS))
-{
-	$t = str_replace("\\","\\\\",$FNS);
-	$Filter .= " and name like '%".mysql_real_escape_string($t)."%'";
-}
-
+	$Filter .= " and name like '%".mysql_escape_str_like($FNS)."%'";
 if(isset($FG))
-{
-	$t = str_replace("\\s","\\\\s",$FG);
-	$Filter .= " and guild like '".mysql_real_escape_string($t)."' ";
-}
+	$Filter .= " and guild = '".mysql_real_escape_string($FG)."' ";
 if(isset($FGS))
-{
-	$t = str_replace("\\","\\\\",$FGS);
-	$Filter .= " and guild like '%".mysql_real_escape_string($t)."%' ";
-}
+	$Filter .= " and guild like '%".mysql_escape_str_like($FGS)."%' ";
 
 if(isset($FGR))
 {

@@ -56,7 +56,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 
 	//do we have missing data ? Can we load it from previous version ?
 	// load old data for this player
-	$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title from players where name like '".mysql_real_escape_string($name)."' limit 0,1";
+	$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title from players where name = '".mysql_real_escape_string($name)."' limit 0,1";
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 	list( $rowid,$kills2,$might2,$vip2,$guildrank2,$GuildFull2,$StatusFlags2,$title2 ) = mysql_fetch_row( $result1 );	
 //echo $query1;
@@ -64,16 +64,16 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	if( $rowid==0 || $rowid == "" )
 	{
 		if($kills>0 && $vip>0)
-			$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and kills<='$kills' and vip<='$vip' and castlelevel='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+			$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and kills<='$kills' and vip<='$vip' and castlelevel='$CLevel' and guild = '".mysql_real_escape_string($guild)."' limit 0,1";
 		else
-			$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and castlelevel='$CLevel' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+			$query1 = "select rowid,kills,might,vip,guildrank,GuildFull,StatusFlags,title,name from players where x='$x' and y='$y' and castlelevel='$CLevel' and guild = '".mysql_real_escape_string($guild)."' limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $rowid2,$kills2,$might2,$vip2,$guildrank2,$GuildFull2,$StatusFlags2,$title2,$oldname ) = mysql_fetch_row( $result1 );			
 		//save the namechange
 		if($rowid2>0 && $name!=$oldname) //wtf bug sometimes it can not find the name but it has the same name ? Happened 10 times in 1 day
 		{
 			//check already exists
-			$query1 = "select count(*) from player_renames where name1 like '".mysql_real_escape_string($oldname)."' and name2 like '".mysql_real_escape_string($name)."' limit 0,1";
+			$query1 = "select count(*) from player_renames where name1 = '".mysql_real_escape_string($oldname)."' and name2 = '".mysql_real_escape_string($name)."' limit 0,1";
 			$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 			list( $IsInserted ) = mysql_fetch_row( $result1 );	
 			if($IsInserted=="" ||$IsInserted<=0)
@@ -105,7 +105,7 @@ function Insert1Line($k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRan
 	if(!isset($guildF) || $guildF == "")
 	{
 		//try to get it from players archive using same player name
-		$query1 = "select GuildFull from players_archive where guild like '".mysql_real_escape_string($guild)."' and name like '".mysql_real_escape_string($name)."' order by rowid desc limit 0,1";
+		$query1 = "select GuildFull from players_archive where guild = '".mysql_real_escape_string($guild)."' and name = '".mysql_real_escape_string($name)."' order by rowid desc limit 0,1";
 		$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $PossibleLongName ) = mysql_fetch_row( $result1 );	
 		if( $PossibleLongName != "" )
@@ -159,7 +159,7 @@ function ArchivePlayerIfNotArtchived( $where )
 	$result1 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 	while( list( $rowid,$x,$y,$name,$guild,$kills,$might,$statusflags,$vip,$guildrank,$clevel,$title ) = mysql_fetch_row( $result1 ))
 	{
-		$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$guildrank' and castlelevel='$clevel' and StatusFlags='$statusflags' and title='$title' and name like '".mysql_real_escape_string($name)."' and guild like '".mysql_real_escape_string($guild)."' limit 0,1";
+		$query1 = "select rowid from players_archive where x='$x' and y='$y' and kills='$kills' and might='$might' and vip='$vip' and guildrank='$guildrank' and castlelevel='$clevel' and StatusFlags='$statusflags' and title='$title' and name = '".mysql_real_escape_string($name)."' and guild = '".mysql_real_escape_string($guild)."' limit 0,1";
 		$result2 = mysql_query($query1,$dbi) or die("Error : 2017022001 <br> ".$query1." <br> ".mysql_error($dbi));
 		list( $rowid2 ) = mysql_fetch_row( $result2 );
 		if( $rowid2 == 0 || $rowid2 == "" || !isset($rowid2) )

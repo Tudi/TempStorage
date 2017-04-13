@@ -60,12 +60,12 @@ if(!isset($s_level))
 	if(isset($s_occupied) && $s_occupied != "" )
 	{
 		if($s_occupied==1)
-			$query1 .= " and not (playername like '' or isnull(playername)) ";
+			$query1 .= " and not (playername = '' or isnull(playername)) ";
 		else if($s_occupied==2)
-			$query1 .= " and (playername like '' or isnull(playername)) ";
+			$query1 .= " and (playername = '' or isnull(playername)) ";
 	}
 	if(isset($FN))
-		$query1 .= " and playername like '".mysql_real_escape_string($FN)."'";
+		$query1 .= " and playername = '".mysql_real_escape_string($FN)."'";
 	$query1 .= " order by lastupdated desc";
 	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1);
 	while( list( $x,$y,$level,$playername,$lastupdated ) = mysql_fetch_row( $result1 ))
