@@ -5,7 +5,10 @@
 #include "License_Grace.h"
 #include "License.h"
 #include "src/Encryption.h"
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <cstdlib>
+#include <io.h>
 #include "src\ComputerFingerprint.h"
 
 char GracePeriodStore[GRACE_PERIOD_STORE_SIZE] = "RoundBrownFoxJumpedTheFence";
@@ -17,39 +20,178 @@ long GetFileSize(const char *filename)
 	return rc == 0 ? stat_buf.st_size : -1;
 }
 
-int CODECGraceData(GraceStatusDLLResourceStore *StaticDLLResourceDataInFile, int Encode)
+int DirExists(const char *Path)
+{
+	if (Path == NULL)
+		return 0;
+	struct stat info;
+	if (stat(Path, &info) != 0)
+		return 0;
+	else if (info.st_mode & S_IFDIR)
+	{
+		//check if we have access to it
+		if (_access(Path, 6) == 0)
+			return 1;
+	}
+	return 0;
+}
+
+void RemoveEndSlashes(char *Path)
+{
+	if (Path == NULL)
+		return;
+	while (Path[0] != 0)
+	{
+		int Len = strlen(Path);
+		if (Len > 0 && Path[Len - 1] == '\\')
+			Path[Len - 1] = 0;
+		else
+			break;
+	} 
+}
+
+int HaveStringInList(const char *s, char **List, int count)
+{
+	for (int i = 0; i < count; i++)
+		if (strcmp(s, List[i]) == 0)
+			return 1;
+	return 0;
+}
+
+int GetGraceSerializationPaths(int &OutputCount, char **List, int MaxCount)
+{
+	OutputCount = 0;
+	if (*List == NULL)
+		return 1;
+	//add local directory
+	{
+		char *LocalPath = new char[2];
+		strcpy_s(LocalPath, 2, ".");
+		if (DirExists(LocalPath) && OutputCount<MaxCount)
+			List[OutputCount++] = LocalPath;
+		else
+			delete LocalPath;
+	}
+
+	//add temp directory 1
+	{
+		char *TempPath = new char[500];
+		DWORD ret = GetTempPath(500, TempPath);
+		if (ret < MAX_PATH && ret != 0)
+		{
+			RemoveEndSlashes(TempPath);
+			if (HaveStringInList(TempPath, List, OutputCount) == 0 && DirExists(TempPath) && OutputCount<MaxCount)
+				List[OutputCount++] = TempPath;
+			else
+				delete[] TempPath;
+		}
+		else
+			delete[] TempPath;
+	}
+
+	//add temp directory 2
+	{
+		char *env_p;
+		size_t len;
+		errno_t err = _dupenv_s(&env_p, &len, "TMP");
+		if (err == 0 && len > 0)
+		{
+			RemoveEndSlashes(env_p);
+			if (HaveStringInList(env_p, List, OutputCount) == 0 && DirExists(env_p) && OutputCount < MaxCount)
+			{
+				char *TempPath = new char[500];
+				strcpy_s(TempPath, 500, env_p);
+				List[OutputCount++] = TempPath;
+			}
+			free(env_p);
+		}
+	}
+
+	//add temp directory 3
+	{
+		char *env_p;
+		size_t len;
+		errno_t err = _dupenv_s(&env_p, &len, "TEMP");
+		if (err == 0 && len > 0)
+		{
+			RemoveEndSlashes(env_p);
+			if (HaveStringInList(env_p, List, OutputCount) == 0 && DirExists(env_p) && OutputCount < MaxCount)
+			{
+				char *TempPath = new char[500];
+				strcpy_s(TempPath, 500, env_p);
+				List[OutputCount++] = TempPath;
+			}
+			free(env_p);
+		}
+	}
+
+	//add temp directory 4
+	{
+		char *env_p;
+		size_t len;
+		errno_t err = _dupenv_s(&env_p, &len, "USERPROFILE");
+		if (err == 0 && len > 0)
+		{
+			RemoveEndSlashes(env_p);
+			if (HaveStringInList(env_p, List, OutputCount) == 0 && DirExists(env_p) && OutputCount < MaxCount)
+			{
+				char *TempPath = new char[500];
+				strcpy_s(TempPath, 500, env_p);
+				List[OutputCount++] = TempPath;
+			}
+			free(env_p);
+		}
+	}
+
+	//add temp directory 5
+	{
+		char *env_p;
+		size_t len;
+		errno_t err = _dupenv_s(&env_p, &len, "%WINDIR%\temp");
+		if (err == 0 && len > 0)
+		{
+			RemoveEndSlashes(env_p);
+			if (HaveStringInList(env_p, List, OutputCount) == 0 && DirExists(env_p) && OutputCount < MaxCount)
+			{
+				char *TempPath = new char[500];
+				strcpy_s(TempPath, 500, env_p);
+				List[OutputCount++] = TempPath;
+			}
+			free(env_p);
+		}
+	}
+	return 0;
+}
+
+int CODECGraceData(GraceStatusResourceStore *StaticDLLResourceDataInFile, int Encode)
 {
 	//only encrypt a part of our structure
-	int BytesToEncrypt = sizeof(GraceStatusDLLResourceStore) - (sizeof(StaticDLLResourceDataInFile->Header) + sizeof(StaticDLLResourceDataInFile->IsFileInitialized) + sizeof(StaticDLLResourceDataInFile->XORKey));
+	int BytesToEncrypt = sizeof(GraceStatusResourceStore) - (sizeof(StaticDLLResourceDataInFile->IsFileInitialized) + sizeof(StaticDLLResourceDataInFile->XORKey));
 	if (Encode == 0)
 	{
 		//first time initialization. Nothing to do now
 		if (StaticDLLResourceDataInFile->IsFileInitialized != 1)
 			return 0;
 	}
+	//generate new XOR key
 	else
 	{
-		//generate new XOR key
-		StaticDLLResourceDataInFile->XORKey = GenerateSaltKey2;
+		if (Encode == 1)
+			StaticDLLResourceDataInFile->XORKey = GenerateSaltKey2;
+		else
+			StaticDLLResourceDataInFile->XORKey = GenerateSaltKey3(1,Encode % 8);
 	}
 	//actual crypt
 	int er = EncryptBufferXORKeyRotate((unsigned char*)&StaticDLLResourceDataInFile->XORKey + sizeof(StaticDLLResourceDataInFile->XORKey), BytesToEncrypt, StaticDLLResourceDataInFile->XORKey);
 	//fall through errors
 	return er;
 }
-
-int LoadCurrectGracePeriodDataDLL()
+/*
+int LoadCurrectGracePeriodDataDLL(GraceStatusResourceStore *StaticDLLResourceDataInFile, long *StaticDataStoredAt)
 {
-	return 0;
-}
+	//make sure we do not return uninitialized values
+	memset(StaticDLLResourceDataInFile, 0, sizeof(GraceStatusResourceStore));
 
-int LoadCurrectGracePeriodDataFile()
-{
-	return 0;
-}
-
-int LoadCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDataInFile, long *StaticDataStoredAt)
-{
 	//open self DLL
 	FILE *f;
 	errno_t er = fopen_s(&f, "LicenseDLL.dll", "rb");
@@ -59,7 +201,7 @@ int LoadCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDat
 	if (f == NULL)
 		return ERROR_FILE_INVALID;
 
-	GraceStatusDLLResourceStore *StaticDLLResourceDataInMemory = (GraceStatusDLLResourceStore *)GracePeriodStore;
+	GraceStatusResourceStore *StaticDLLResourceDataInMemory = (GraceStatusResourceStore *)GracePeriodStore;
 
 	//search for our resource store header
 #define FileReadBlockSize (10 * 1024 * 1024)		//our dll file should be about 150k
@@ -72,8 +214,8 @@ int LoadCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDat
 	for (size_t i = 0; i < ReadCount; i++)
 		if (memcmp(&FileContentBuffered[i], StaticDLLResourceDataInMemory->Header, sizeof(StaticDLLResourceDataInMemory->Header)) == 0)
 		{
-			if (StaticDLLResourceDataInFile!=NULL)
-				memcpy(StaticDLLResourceDataInFile, &FileContentBuffered[i], sizeof(GraceStatusDLLResourceStore));
+			if (StaticDLLResourceDataInFile != NULL)
+				memcpy(StaticDLLResourceDataInFile, &FileContentBuffered[i], sizeof(GraceStatusResourceStore));
 			*StaticDataStoredAt = i;
 			break;
 		}
@@ -86,28 +228,77 @@ int LoadCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDat
 	//pass through errors
 	return erEncrypt;
 }
-
-int SaveCurrectGracePeriodDataDLL()
+*/
+int LoadCurrectGracePeriodDataFile(const char *FileName,GraceStatusResourceStore *StaticDLLResourceDataInFile)
 {
-	return 0;
+	//make sure we do not return uninitialized values
+	memset(StaticDLLResourceDataInFile, 0, sizeof(GraceStatusResourceStore));
+	FILE *f;
+	errno_t er = fopen_s(&f, FileName, "rb");
+	if (er != NO_ERROR)
+		return er;
+
+	if (f == NULL)
+		return ERROR_FILE_INVALID;
+
+	size_t ReadCount = fread_s(StaticDLLResourceDataInFile, sizeof(GraceStatusResourceStore), 1, sizeof(GraceStatusResourceStore), f);
+	fclose(f);
+	if (ReadCount != sizeof(GraceStatusResourceStore))
+		return ERROR_COULD_NOT_LOAD_GRACE_DATA;
+
+	//if data is encoded, decode it
+	int erEncrypt = CODECGraceData(StaticDLLResourceDataInFile, 0);
+
+	//pass through errors
+	return erEncrypt;
 }
 
-int SaveCurrectGracePeriodDataFile()
+//load grace period from 2 diffrent sources encoded with 2 different encryption keys. Use the most up to date version
+int LoadCurrectGracePeriodData(GraceStatusResourceStore *StaticDLLResourceDataInFile)
 {
+//	GraceStatusResourceStore Store1;
+//	int erLoad1 = LoadCurrectGracePeriodDataDLL(&Store1, StaticDataStoredAt);
+
+	StaticDLLResourceDataInFile->LicenseSecondsUsed = 0;
+	GraceStatusResourceStore CurStore;
+
+	//generate a list of paths we will save our content to
+	int PathCount;
+	char *PathList[20];
+	GetGraceSerializationPaths(PathCount, PathList, sizeof(PathList));
+	int SuccesfulLoads = 0;
+	for (int i = 0; i < PathCount; i++)
+	{
+		char FullPath[500];
+		sprintf_s(FullPath, sizeof(FullPath), "%s\\grace.dat", PathList[i]);	// TODO : Add some randomization to filename
+		int erLoad = LoadCurrectGracePeriodDataFile(FullPath, &CurStore);
+		if (erLoad != 0)
+			Log(LL_DEBUG_DEBUG_ONLY, "Could not save grace period status to sources!");
+		else
+		{
+#ifdef ENABLE_ANTI_HACK_CHECKS
+			CurStore.XORKey = StaticDLLResourceDataInFile->XORKey;//because this is different for each save
+			if (SuccesfulLoads > 0 && CurStore.IsFileInitialized == StaticDLLResourceDataInFile->IsFileInitialized && memcmp(&CurStore, StaticDLLResourceDataInFile, sizeof(GraceStatusResourceStore)) != 0)
+				Log(LL_ERROR, "Grace period state does not match when loaded from multiple places. If it persist, investigate the issue");
+#endif
+			if (CurStore.LicenseSecondsUsed > StaticDLLResourceDataInFile->LicenseSecondsUsed)
+				memcpy(StaticDLLResourceDataInFile, &CurStore, sizeof(GraceStatusResourceStore));
+			SuccesfulLoads++;
+		}
+		delete [] PathList[i];
+	}
+	//check if both loads where successfull
+	if (SuccesfulLoads == 0)
+	{
+		Log(LL_ERROR, "Could not load grace period status from any sources!");
+		return ERROR_COULD_NOT_LOAD_GRACE_DATA;
+	}
 	return 0;
 }
-
-int SaveCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDataInFile, long StaticDataStoredAt)
+/*
+//should not call directly. Let it get called from generic save function
+int SaveCurrectGracePeriodDataDLL(GraceStatusResourceStore *StaticDLLResourceDataInFile, long StaticDataStoredAt)
 {
-	//sanity checks
-	if (StaticDLLResourceDataInFile == NULL)
-		return ERROR_INVALID_PARAMETER;
-	long LocalStaticDataStoredAt = StaticDataStoredAt;
-	if (LocalStaticDataStoredAt == 0)
-		LoadCurrectGracePeriodData(NULL, &LocalStaticDataStoredAt);
-
-	//actual store
-
 	//open self DLL
 	FILE *f;
 	errno_t er = fopen_s(&f, "LicenseDLL.dll", "rb+");
@@ -118,7 +309,7 @@ int SaveCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDat
 		return ERROR_FILE_INVALID;
 
 	//jump to the location where the static variable is stored inside of the DLL
-	int SeekSuccess = fseek(f, LocalStaticDataStoredAt, SEEK_SET);
+	int SeekSuccess = fseek(f, StaticDataStoredAt, SEEK_SET);
 	if (SeekSuccess != 0)
 	{
 		fclose(f);
@@ -129,12 +320,72 @@ int SaveCurrectGracePeriodData(GraceStatusDLLResourceStore *StaticDLLResourceDat
 	CODECGraceData(StaticDLLResourceDataInFile, 1);
 
 	//write back to our DLL
-	size_t BytesWritten = fwrite(StaticDLLResourceDataInFile, 1, sizeof(GraceStatusDLLResourceStore), f);
+	size_t BytesWritten = fwrite(StaticDLLResourceDataInFile, 1, sizeof(GraceStatusResourceStore), f);
 	fclose(f);
 
-	int erWrite = (BytesWritten != sizeof(GraceStatusDLLResourceStore));
+	int erWrite = (BytesWritten != sizeof(GraceStatusResourceStore));
 
 	return erWrite;
+}
+*/
+int SaveCurrectGracePeriodDataFile(const char *FileName, int UseCodecType, GraceStatusResourceStore *StaticDLLResourceDataInFile)
+{
+	//open self DLL
+	FILE *f;
+	errno_t er = fopen_s(&f, FileName, "wb");
+	if (er != NO_ERROR)
+		return er;
+
+	if (f == NULL)
+		return ERROR_FILE_INVALID;
+
+	//encode data to avoid humanly readable mode
+	CODECGraceData(StaticDLLResourceDataInFile, UseCodecType);
+
+	//write back to our DLL
+	size_t BytesWritten = fwrite(StaticDLLResourceDataInFile, 1, sizeof(GraceStatusResourceStore), f);
+	fclose(f);
+
+	int erWrite = (BytesWritten != sizeof(GraceStatusResourceStore));
+
+	return erWrite;
+}
+
+//save grace period in 2 place with 2 different encryption keys
+int SaveCurrectGracePeriodData(GraceStatusResourceStore *StaticDLLResourceDataInFile)
+{
+	//sanity checks
+	if (StaticDLLResourceDataInFile == NULL)
+		return ERROR_INVALID_PARAMETER;
+
+	//main save type. Sadly this randomly fails if DLL is write locked
+//	int erSave1 = SaveCurrectGracePeriodDataDLL(StaticDLLResourceDataInFile, LocalStaticDataStoredAt);
+//	if (erSave1 != 0)
+//		Log(LL_DEBUG_DEBUG_ONLY, "Could not save grace period status to source1!");
+
+	//generate a list of paths we will save our content to
+	int PathCount;
+	char *PathList[20];
+	GetGraceSerializationPaths(PathCount, PathList, sizeof(PathList));
+	int SuccesfulSaves = 0;
+	for (int i = 0; i < PathCount; i++)
+	{
+		char FullPath[500];
+		sprintf_s(FullPath, sizeof(FullPath), "%s\\grace.dat", PathList[i]);
+		int erSave = SaveCurrectGracePeriodDataFile(FullPath, i, StaticDLLResourceDataInFile);
+		if (erSave != 0)
+			Log(LL_DEBUG_DEBUG_ONLY, "Could not save grace period status to sources!");
+		else
+			SuccesfulSaves++;
+		delete [] PathList[i];
+	}
+
+	//no path were good to save the grace data
+	if (SuccesfulSaves == 0)
+		return ERROR_COULD_NOT_SAVE_GRACE_DATA;
+
+	//we managed to save it at least once
+	return 0;
 }
 
 int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
@@ -143,12 +394,11 @@ int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
 	*IsTriggered = 1;
 	*SecondsRemain = 0;
 
-	GraceStatusDLLResourceStore StaticDLLResourceDataInFile;
+	GraceStatusResourceStore StaticDLLResourceDataInFile;
 	int LoadErr;
-	long StaticDataStoredAt = 0;
 
 	//load current status
-	LoadErr = LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile, &StaticDataStoredAt);
+	LoadErr = LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile);
 	if (LoadErr != 0)
 		return LoadErr;
 
@@ -179,6 +429,9 @@ int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
 	//cross check values. If we have been using this license more than we max should be allowed than refuse to be available
 	if (StaticDLLResourceDataInFile.LicenseShouldEnd != 0 && StaticDLLResourceDataInFile.LicenseFirstUsed + StaticDLLResourceDataInFile.LicenseSecondsUsed > StaticDLLResourceDataInFile.LicenseShouldEnd + PERIODIC_UPDATE_EXPECTED_YEARLY_DEVIATION_SECONDS + MAX_GRACE_PERIOD_SECONDS)
 		*SecondsRemain = 0;
+	int LicenseShouldEnd = atoi(StaticDLLResourceDataInFile.LicenseShouldEndc);
+	if (LicenseShouldEnd != StaticDLLResourceDataInFile.LicenseShouldEnd)
+		*SecondsRemain = 0;
 #endif
 
 	return 0;
@@ -186,25 +439,18 @@ int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
 
 int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 {
-	GraceStatusDLLResourceStore StaticDLLResourceDataInFile;
-	int LoadErr;
-	long StaticDataStoredAt = 0;
+	GraceStatusResourceStore StaticDLLResourceDataInFile;
 
-	//load current status
-	LoadErr = LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile, &StaticDataStoredAt);
+	//load current status. We can ignore load error. If grace data can not be loaded, you will not get grace period
+	LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile);
 
-	if (LoadErr != 0)
-		return LoadErr;
-
-	if (StaticDataStoredAt == 0)
-		return ERROR_COULD_NOT_STORE_GRACE_PERIOD;
-
-	GraceStatusDLLResourceStore OldValues;
+	GraceStatusResourceStore OldValues;
 	memcpy(&OldValues, &StaticDLLResourceDataInFile, sizeof(OldValues));
 
 	//first and oncetime initialization
 	if (StaticDLLResourceDataInFile.IsFileInitialized != 1)
 	{
+		memset(&StaticDLLResourceDataInFile, 0, sizeof(StaticDLLResourceDataInFile)); //generic set all to 0 just in case we forgot to set some manually
 		StaticDLLResourceDataInFile.XORKey = 0;
 		StaticDLLResourceDataInFile.IsFileInitialized = 1;
 		StaticDLLResourceDataInFile.LicenseFirstUsed = time(NULL);
@@ -212,9 +458,11 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		StaticDLLResourceDataInFile.TriggerCount = 0;
 		StaticDLLResourceDataInFile.APIsUsedFlags = 0;
 		StaticDLLResourceDataInFile.LicenseShouldEnd = 0;
+		memset(StaticDLLResourceDataInFile.LicenseShouldEndc, 0, sizeof(StaticDLLResourceDataInFile.LicenseShouldEndc));
 		StaticDLLResourceDataInFile.LicensePeriodicLastUpdate = time(NULL);
 		StaticDLLResourceDataInFile.FingerPrintSize = 0;
-		Log(LL_IMPORTANT, "License first time use at %d\n", time(NULL));
+		StaticDLLResourceDataInFile.GraceTriggeredAt = 0;
+		Log(LL_IMPORTANT, "License first time use at %d", time(NULL));
 	}
 
 	//this happens when a valid!! license is used. Reset grace period status.
@@ -241,12 +489,16 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 			ComputerFingerprint CF;
 			CF.GenerateFingerprint();
 			char *Key;
-			int er = CF.GetEncryptionKey(&Key, StaticDLLResourceDataInFile.FingerPrintSize);
+			int er = CF.DupEncryptionKey(&Key, StaticDLLResourceDataInFile.FingerPrintSize);
 			//store this fingerprint
 			if (StaticDLLResourceDataInFile.FingerPrintSize < COMPUTER_FINGERPRINT_STORE_SIZE && er == 0)
 				memcpy(StaticDLLResourceDataInFile.FingerPrint, Key, StaticDLLResourceDataInFile.FingerPrintSize);
 			else
 				StaticDLLResourceDataInFile.FingerPrintSize = 0;
+
+			//strdup uses free
+			if (Key != NULL)
+				free(Key);
 		}
 	}
 
@@ -296,6 +548,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		if (StaticDLLResourceDataInFile.LicenseShouldEnd!=0)
 			Log(LL_IMPORTANT, "License duration got extended. A new license should been loaded. End date %d\n", StaticDLLResourceDataInFile.LicenseShouldEnd);
 		StaticDLLResourceDataInFile.LicenseShouldEnd = Value;
+		_itoa_s(Value, StaticDLLResourceDataInFile.LicenseShouldEndc, sizeof(StaticDLLResourceDataInFile.LicenseShouldEndc), 10);
 	}
 
 	//this always gets added and never consumed. Client should never use some of the API calls. Siemens field engeneer can confirm by investigating flags
@@ -304,7 +557,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		//report strange behavior
 #ifdef ENABLE_ANTI_HACK_CHECKS
 		if ((Value & LSF_SIEMENS_ONLY_FLAGS) != 0 && (StaticDLLResourceDataInFile.APIsUsedFlags & LSF_SIEMENS_ONLY_FLAGS) == 0 )
-			Log(LL_HACKING, "Client used forbidden API calls %d\n", Value);
+			Log(LL_HACKING, "Client used forbidden API calls %d", Value);
 #endif
 		StaticDLLResourceDataInFile.APIsUsedFlags |= Value;
 	}
@@ -313,7 +566,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 	if (memcmp(&OldValues, &StaticDLLResourceDataInFile, sizeof(OldValues)) == 0)
 		return 0;
 
-	int er = SaveCurrectGracePeriodData(&StaticDLLResourceDataInFile, StaticDataStoredAt);
+	int er = SaveCurrectGracePeriodData(&StaticDLLResourceDataInFile);
 
 	return er;
 }
@@ -325,19 +578,15 @@ int LicenseGracePeriod::GetSavedFingerprint(unsigned char *Store, int MaxStoreLe
 		return ERROR_INVALID_PARAMETER_G;
 	*RetSize = 0;
 
-	GraceStatusDLLResourceStore StaticDLLResourceDataInFile;
+	GraceStatusResourceStore StaticDLLResourceDataInFile;
 	int LoadErr;
-	long StaticDataStoredAt = 0;
 
 	//load current status
-	LoadErr = LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile, &StaticDataStoredAt);
+	LoadErr = LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile);
 
 	//make sure loaded data is ok
 	if (LoadErr != 0)
 		return LoadErr;
-
-	if (StaticDataStoredAt == 0)
-		return ERROR_COULD_NOT_LOAD_GRACE_DATA;
 
 	if (StaticDLLResourceDataInFile.FingerPrintSize == 0 || StaticDLLResourceDataInFile.IsFileInitialized == 0)
 		return ERROR_GRACE_DATA_NOT_INITIALIZED;

@@ -16,14 +16,10 @@ void InitLogging()
 	LogLevel = LL_DEBUG_ALL;
 	EnableObfuscation = 0;
 #endif
-#ifndef _DEBUG
 	errno_t er = fopen_s(&LogFile, "LDLL.log", "ab");
-#else
-	errno_t er = fopen_s(&LogFile, "LDLL.log", "wb");
-#endif
 	if (er)
 		LogFile = NULL;
-	Log(LL_DEBUG_INFO,"Logging started");
+	Log(LL_DEBUG_INFO,"\n\nLogging started");
 }
 
 void ShutDownLogging()

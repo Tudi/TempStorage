@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
+#include <wchar.h>
 
 void Init(DataCollectionHeader *&Data)
 {
@@ -71,7 +72,7 @@ int GenericDataStore::EnsureCanStore(int Required)
 	return DALLOC_SUCCESS;
 }
 
-int GenericDataStore::PushData(char *buff, int Size, int Type)
+int GenericDataStore::PushData(const void *buff, int Size, int Type)
 {
 	// sanity check
 	if (Size <= 0 || buff == NULL || Type >= DB_MAX_TYPES || Type <= DB_INVALID_UNINITIALIZED)
@@ -93,6 +94,7 @@ int GenericDataStore::PushData(char *buff, int Size, int Type)
 		memcpy(Store->Data, buff, Size);
 		Store->Size = Size;
 		Store->Type = (char)Type;
+		Store->CRC = crc32((unsigned char*)buff, Size);
 
 		//add it to list
 		Data->Count++;
@@ -136,9 +138,13 @@ int GenericDataStore::SaveToFile(const char *FileName)
 	else
 		memcpy(TempBuff, Data, TotalSize);
 
+	//CRC the content. We will use it on load to detect if content is as expected
+	unsigned int Hash = crc32((unsigned char*)Data, Data->Size - 4);
+
 	//dump content
 	fwrite(&TotalSize, 1, sizeof(int), f);
 	fwrite(TempBuff, 1, TotalSize, f);
+	fwrite(&Hash, 1, sizeof(int), f);
 	fclose(f);
 
 	delete[] TempBuff;
@@ -166,20 +172,49 @@ int GenericDataStore::LoadFromFile(const char *FileName)
 		return ERROR_FILE_INVALID;
 
 	//get the amount of memory we need to store
+	size_t BytesRead;
 	int TotalSize;
-	fread(&TotalSize, 1, sizeof(int), f);
+	BytesRead = fread(&TotalSize, 1, sizeof(int), f);
+	if (BytesRead < sizeof(int) || TotalSize <= 0 || TotalSize >= MAX_EXPECTED_FILE_SIZE)
+	{
+		fclose(f);
+		return ERROR_FILE_INVALID;
+	}
 
 	//make sure we can store it
 	EnsureCanStore(TotalSize);
 
 	//read the whole thing into memory
-	fread(Data, 1, TotalSize, f);
+	BytesRead = fread(Data, 1, TotalSize, f);
+	if ((int)BytesRead < TotalSize)
+	{
+		DisposeData();
+		fclose(f);
+		return ERROR_FILE_INVALID;
+	}
+
+	unsigned int OldHash;
+	BytesRead = fread(&OldHash, 1, sizeof(int), f);
+	if (BytesRead < sizeof(int))
+	{
+		DisposeData();
+		fclose(f);
+		return ERROR_FILE_INVALID;
+	}
 
 	fclose(f);
 
 	//deobfuscate
 	if (Data->EncryptType == DCE_INTERNAL_CyclicXOR_KEY)
 		EncryptBufferXORKeyRotate((unsigned char*)Data+sizeof(DataCollectionHeader), TotalSize - sizeof(DataCollectionHeader), Data->XORKey);
+
+	//CRC the content. We will use it on load to detect if content is as expected
+	unsigned int NewHash = crc32((unsigned char*)Data, Data->Size - 4);
+	if (OldHash != NewHash)
+	{
+		DisposeData();
+		return ERROR_FILE_INVALID;
+	}
 
 	return 0;
 }
@@ -217,6 +252,22 @@ void GenericDataStore::PrintContent()
 		else if (Type == DB_MB_SN)
 		{
 			printf("Mothernoard SN : \t%s", buff);
+		}
+		else if (Type == DB_C_SN)
+		{
+			printf("C Drive SN : \t\t%d", *(int*)buff);
+		}
+		else if (Type == DB_COMPUTER_NAME)
+		{
+			printf("Computer name : \t%s", buff);
+		}
+		else if (Type == DB_NETBIOS_NAME)
+		{
+			printf("Netbios Name : \t%ls", buff);
+		}
+		else if (Type == DB_DOMAIN_NAME)
+		{
+			printf("Domain Name : \t%ls", buff);
 		}
 		else
 		{
@@ -275,8 +326,27 @@ int DataCollectionIterator::GetNext(char **Data, int &Size, int &Type)
 	//return data
 	DataBlockHeader *DataHeader = (DataBlockHeader *)NextData;
 	*Data = (char*)DataHeader->Data;
-	Size = DataHeader->Size;
+	Size = DataHeader->Size; 
 	Type = DataHeader->Type;
+
+	//check fi data is valid
+	if (DataHeader->Size <= 0 || DataHeader->Size >= ( IterateWhat->Size - sizeof(DataCollectionHeader) ) || DataHeader->Type <= 0 || DataHeader->Type >= DB_MAX_TYPES)
+	{
+		*Data = NULL;
+		Size = 0;
+		Type = DB_INVALID_UNINITIALIZED;
+		return DCI_ERROR;
+	}
+
+	//check for CRC
+	unsigned int TempCRC = crc32((unsigned char*)(*Data), Size);
+	if (TempCRC != DataHeader->CRC)
+	{
+		*Data = NULL;
+		Size = 0;
+		Type = DB_INVALID_UNINITIALIZED;
+		return DCI_ERROR;
+	}
 
 	//increase our iterator
 	AtBlock++;
@@ -303,6 +373,22 @@ int	GenericDataStore::IsDataValid()
 	//unsupported encryption type ?
 	if (Data->EncryptType >= DCE_INVALID_ENCRYPTION_TYPE)
 		return 0;
+
+	//iterate through the list and check each element is valid
+	DataCollectionIterator itr;
+	itr.Init(this);
+	char *Data;
+	int Size;
+	int Type;
+	int ret;
+	do {
+		ret = itr.GetNext(&Data, Size, Type);
+	} while (ret == DCI_SUCCESS);
+	if (ret != DCI_NO_MORE_DATA)
+	{
+		Log(LL_ERROR, "Error list data saved not the same after loaded!");
+		return 0;
+	}
 
 	return 1;
 }

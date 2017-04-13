@@ -10,9 +10,9 @@
 #define LICENSE_SEED_CONSTANT_NAME "LicenseSeed.dat"
 
 #ifdef _DEBUG
-    #pragma comment(lib, "../../LicenseDLL/Debug/LicenseDLL.lib")
+    #pragma comment(lib, "../Debug/LicenseDLL.lib")
 #else
-    #pragma comment(lib, "../../LicenseDLL/Release/LicenseDLL.lib")
+    #pragma comment(lib, "../Release/LicenseDLL.lib")
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -61,6 +61,8 @@ int MainWindow::GenerateSeedFile(QString path)
         DestroyComputerFingerprint(&ClientSeed);
         return 1;
     }
+
+    ClientSeed->AppendClientInfo( ui->co_Role->currentText().toStdString().c_str(), ui->te_Name->toPlainText().toStdString().c_str() );
 
     QString FullPath = path + "\\" + LICENSE_SEED_CONSTANT_NAME;
 

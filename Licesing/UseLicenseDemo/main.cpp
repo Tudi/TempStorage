@@ -11,9 +11,9 @@
 #include "../LicenseDLL/License_grace.h"
 
 #ifdef _DEBUG
-	#pragma comment(lib, "../LicenseDLL/Debug/LicenseDLL.lib")
+	#pragma comment(lib, "../Debug/LicenseDLL.lib")
 #else
-	#pragma comment(lib, "../LicenseDLL/Release/LicenseDLL.lib")
+	#pragma comment(lib, "../Release/LicenseDLL.lib")
 #endif
 
 //this list should be generated from "ProjectNameIDs.txt"
@@ -56,6 +56,7 @@ int main()
 	///////////////////////////////////////// get the key using class ////////////////////////////////////
 	//create a license
 	License *TestLicense = new License;
+//TestLicense->SaveToFile("t.t", "LicenseSeed.dat");
 
 	if (TestLicense == NULL)
 	{
@@ -65,11 +66,12 @@ int main()
 
 	//for testing, load up the saved license and check if we can extract feature keys
 	printf("Load license into temp buffer\n");
-	int er = TestLicense->LoadFromFile("License.dat");
+	int er = TestLicense->LoadFromFile("../License.dat");
 	if (er != 0)
 	{
 		printf("Error %d while loading license. Please solve it to continue\n");
 		delete TestLicense;
+		_getch();
 		return 1;
 	}
 
@@ -110,7 +112,7 @@ int main()
 	// !! in previous tests we made a successfull query for an activation key. 
 	// Grace period should be initialized at this point and even if fingerprint is no longer valid, it should trigger grace period and allow us to gte the key
 	TestLicense = new License;
-	er = TestLicense->LoadFromFile("License.dat","License.dat"); // !! we are loading a bad file as fingerprint !!
+	er = TestLicense->LoadFromFile("../License.dat", "../License.dat"); // !! we are loading a bad file as fingerprint !!
 	if (er == 0)
 	{
 //		int GracePeriodTriggered;
@@ -131,7 +133,7 @@ int main()
 
 	///////////////////////////////////////// simulate license expire. Test Grace period ////////////////////////////////////
 	TestLicense = new License;
-	er = TestLicense->LoadFromFile("License.dat");
+	er = TestLicense->LoadFromFile("../License.dat");
 	//set license expiration to a very short interval
 	TestLicense->SetDuration(time(NULL), 1, 5 * 60);
 	//wait for the license to expire
@@ -162,6 +164,19 @@ int main()
 	delete TestLicense;
 	TestLicense = NULL;
 	///////////////////////////////////////// simulate license expire. Test Grace period ////////////////////////////////////
+
+
+
+	///////////////////////////////////////// simulate bad license file content and check error proofness ////////////////////////////////////
+#ifdef _DEBUG
+	EnableErrorTests();
+	for (int i = 0; i < 201; i++)	// the 500 is a fictional number, should know the sizeo of the license file
+	{
+		GetKeyRes = GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
+		printf("Corrupting byte %d from license file. Got result %s\n", i, ActivationKeyBuffer);
+	}
+#endif
+	///////////////////////////////////////// simulate bad license file content and check error proofness ////////////////////////////////////
 
 
 	printf("\n\nAll done. Push a key to continue.\n");

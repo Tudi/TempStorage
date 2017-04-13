@@ -8,6 +8,9 @@
 #include "GetInterfaceMacs.h"
 #include "DumpSMBIOS.h"
 
+#include <DSRole.h>
+#pragma comment(lib, "netapi32.lib")
+
 #define DLL_EXPORT
 
 extern "C"
@@ -61,7 +64,7 @@ int	ComputerFingerprint::GenerateFingerprint()
 		for (std::vector<__int64>::iterator itr = vMacs.begin(); itr != vMacs.end(); itr++)
 		{
 			__int64 MAC = *itr;
-			FingerprintData->PushData((char*)&MAC, sizeof(__int64), DB_MAC_ADDRESS);
+			FingerprintData->PushData(&MAC, sizeof(__int64), DB_MAC_ADDRESS);
 		}
 	}
 
@@ -69,22 +72,66 @@ int	ComputerFingerprint::GenerateFingerprint()
 	{
 		int cpuid[4];
 		__cpuid(cpuid, 0);
-		FingerprintData->PushData((char*)cpuid, sizeof(cpuid), DB_CPU_ID);
+		FingerprintData->PushData(cpuid, sizeof(cpuid), DB_CPU_ID);
 	}
 
 	//get BIOS UUID
 	{
 		unsigned char UUID[16];
 		GetBiosUUID(UUID, sizeof(UUID));
-		FingerprintData->PushData((char*)UUID, sizeof(UUID), DB_UUID);
+		FingerprintData->PushData(UUID, sizeof(UUID), DB_UUID);
 	}
 
 	// mother board SN
 	{
 		unsigned char SN[255];
 		GetMotherBoardSN(SN, sizeof(SN));
-		FingerprintData->PushData((char*)SN, sizeof(SN), DB_MB_SN);
+		FingerprintData->PushData(SN, sizeof(SN), DB_MB_SN);
 	}
+
+	return 0;
+}
+
+//these are the fields that came after initial design
+int ComputerFingerprint::AppendClientInfo(const char * MachineRole, const char *ClientName)
+{
+
+	// volume serial number. For windows only
+	{
+		DWORD serialNum = 0;
+		GetVolumeInformation("c:\\", NULL, 0, &serialNum, NULL, NULL, NULL, 0);
+		if (FingerprintData->PushData(&serialNum, sizeof(serialNum), DB_C_SN) != 0)
+			return ERROR_CF_CONTENT_INVALID;
+	}
+
+	// Computer name. Should be unique in workgroup
+	{
+		char computerName[1024];
+		DWORD size = sizeof(computerName);
+		GetComputerName(computerName, &size);
+		if (FingerprintData->PushData(computerName, size + 1, DB_COMPUTER_NAME) != 0)
+			return ERROR_CF_CONTENT_INVALID;
+	}
+
+	//get DNS info. Move this code to platform specific implementation
+	{
+		DSROLE_PRIMARY_DOMAIN_INFO_BASIC * info;
+		DWORD dw = DsRoleGetPrimaryDomainInformation(NULL, DsRolePrimaryDomainInfoBasic, (PBYTE *)&info);
+		if (dw == ERROR_SUCCESS && info->DomainNameDns != NULL)
+		{
+			if( FingerprintData->PushData(info->DomainNameDns, wcslen(info->DomainNameDns) * 2, DB_DOMAIN_NAME) != 0)
+				return ERROR_CF_CONTENT_INVALID;
+			if( FingerprintData->PushData(info->DomainNameFlat, wcslen(info->DomainNameFlat) * 2, DB_NETBIOS_NAME) != 0)
+				return ERROR_CF_CONTENT_INVALID;
+		}
+		DsRoleFreeMemory(info);
+	}
+
+	if (MachineRole!=NULL && FingerprintData->PushData(MachineRole, strlen(MachineRole) + 1, DB_MACHINE_ROLE) != 0 )
+		return ERROR_CF_CONTENT_INVALID;
+
+	if (ClientName!=NULL && FingerprintData->PushData(ClientName, strlen(ClientName) + 1, DB_CLIENT_NAME ) != 0 )
+		return ERROR_CF_CONTENT_INVALID;
 
 	return 0;
 }
@@ -114,19 +161,48 @@ void ComputerFingerprint::Print()
 }
 
 // this is the lasy solution, later extract plain content
-int ComputerFingerprint::GetEncryptionKey(char **Key, int &Len)
+int ComputerFingerprint::DupEncryptionKey(char **Key, int &Len)
 {
 	//sanity checks
 	if (*Key == NULL)
 		return ERROR_BAD_ARGUMENTS;
 
+	//calculate amount of buffer we need to store the encryption key
+	int SumSize = 0;
+	DataCollectionIterator itr;
+	itr.Init(FingerprintData);
+	char *Data;
+	int Size;
+	int Type;
+	while (DCI_SUCCESS == itr.GetNext(&Data, Size, Type))
+	{
+		if (Type == DB_MAC_ADDRESS || Type == DB_CPU_ID || Type == DB_UUID)
+			SumSize += Size;
+	}
+	//our fingerprint is empty ? What and how ?
+	if (SumSize == 0)
+		return ERROR;
+
 	//assign internal state as encrypt key
-	*Key = (char*)FingerprintData->GetData();
-	Len = FingerprintData->GetDataSize(); // savage. later will work on it
+	Len = SumSize; // savage. later will work on it
+	char *DestBuf = (char*)malloc(SumSize);
+	*Key = DestBuf;
 
 	//everything went well ?
 	if (*Key == NULL || Len == 0)
 		return ERROR;
+
+	//now extract info we are interested in. Optional nodes are not used for encryption
+	SumSize = 0;
+	itr.Init(FingerprintData);
+	while (DCI_SUCCESS == itr.GetNext(&Data, Size, Type))
+	{
+		if (Type == DB_MAC_ADDRESS || Type == DB_CPU_ID || Type == DB_UUID)
+		{
+			memcpy(&DestBuf[SumSize], (char*)Data, Size);
+			SumSize += Size;
+		}
+	}
 
 	//all ok
 	return 0;

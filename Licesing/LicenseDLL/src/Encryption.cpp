@@ -141,10 +141,14 @@ int EncryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned cha
 		return ERROR_BAD_PATHNAME;
 	char *EncryptKey;
 	int KeyLen;
-	if (CF.GetEncryptionKey(&EncryptKey, KeyLen) != 0)
+	if (CF.DupEncryptionKey(&EncryptKey, KeyLen) != 0)
 		return ERROR_BAD_ARGUMENTS;
 
 	int er = EncryptWithFingerprintContent((unsigned char*)EncryptKey, KeyLen, Salt, buf, BufLen);
+
+	//strdup uses free
+	if (EncryptKey != NULL)
+		free(EncryptKey);
 
 	return er;
 }

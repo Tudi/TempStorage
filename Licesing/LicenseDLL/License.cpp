@@ -8,6 +8,12 @@
 #include <random>
 #include <thread>
 #include "License_Grace.h"
+#include "License_API.h"
+
+#ifdef _DEBUG
+	int ENABLE_ERROR_PRONE_TESTS = 0;
+	void EnableErrorTests(){ ENABLE_ERROR_PRONE_TESTS = 1; }
+#endif
 
 LIBRARY_API int	GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, int MaxResultSize)
 {
@@ -32,7 +38,7 @@ LIBRARY_API int	GetActivationKey(int ProjectId, int FeatureId, char *StoreResult
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return GetKeyRes;
 }
-
+/*
 LIBRARY_API int	IsLicenseInGracePeriod(int *Result)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
@@ -76,7 +82,67 @@ LIBRARY_API int	IsLicenseInGracePeriod(int *Result)
 	*Result = IsTriggered;
 
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
-	return 0;
+	return NO_ERROR;
+}*/
+/**
+* \brief    Get time information from license
+* \details  License has a start date and duration. Return the remaining seconds until expiration. If license already entered grace period, return remaining grace period also
+* \author   Jozsa Istvan
+* \date     2017-04-06
+* \param	ProjectName - name that is unique for each Siemens software product / project
+* \param	FeatureName - name that is unique for each feature within a project
+* \return	Error code. 0 is no error
+*/
+LIBRARY_API int	GetRemainingTime(int *LicenseTime, int *GraceTime, int *GraceReasonCode)
+{
+	//sanity checks
+	if (LicenseTime == NULL || GraceTime == NULL || GraceReasonCode == NULL)
+		return ERROR_MISSING_PARAMETER;
+	
+	//safety initializations
+	*LicenseTime = 0;
+	*GraceTime = 0;
+	*GraceReasonCode = GRC_LICENSE_EXPIRED_GRACE_EXPIRED;
+
+	License *lic = new License;
+	if (!lic)
+	{
+		Log(LL_ERROR, "Sever error.Could not create license object");
+		return ERROR_UNIDENTIFIED_ERROR;
+	}
+
+	int er = lic->LoadFromFile("License.dat");
+	if (er != 0)
+	{
+		Log(LL_ERROR, "License.dat file missing. Could not load data.");
+		delete lic;
+		return ERROR_COULD_NOT_LOAD_LIC_FILE;
+	}
+
+	int RemainingGraceTimeIfTriggered = 0;
+	int erQuery = lic->IsGracePeriodTriggered(&RemainingGraceTimeIfTriggered);
+	if (erQuery != 0)
+	{
+		Log(LL_ERROR, "Unexpected error while asking for grace period. Error %d", erQuery);
+		delete lic;
+		return ERROR_UNIDENTIFIED_ERROR;
+	}
+
+	//cleanup
+	delete lic;
+
+	//license is expired and grace period also expired
+	*GraceTime = RemainingGraceTimeIfTriggered;
+
+	if (*LicenseTime > 0)
+		*GraceReasonCode = GRC_LICENSE_IS_VALID;
+	else if (*LicenseTime <= 0 && *GraceTime > 0)
+		*GraceReasonCode = GRC_LICENSE_EXPIRED_GRACE_AVAILABLE;
+	else
+		*GraceReasonCode = GRC_LICENSE_EXPIRED_GRACE_EXPIRED;
+
+	//if we got here, we managed to finish our job successfully
+	return NO_ERROR;
 }
 
 // in case we will get time from WINCCOA, than you should only need to change this implementation
@@ -91,6 +157,8 @@ License::License()
 	StartStamp = GracePeriod = 0;//mark them uninitialized
 	Duration = 0;
 	UsageStateFlags = 0;
+	DisableEdit = 0;
+	DisableQuery = 0;
 }
 
 License::~License()
@@ -114,11 +182,17 @@ License::~License()
 int	License::AddProjectFeature(const char *ProjectName, const char *FeatureName)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+	
+	UsageStateFlags |= LSF_FEATURE_ADDED;
+
+	if (DisableEdit != 0)
+		return ERROR_DISABLED_FUNCTION;
+	DisableQuery = 1;
+
 	ProjectFeatureKeyDB DB;
 	int ProjectId = DB.GetProjectNameID(ProjectName);
 	int FeatureId = DB.GetFeatureNameID(FeatureName);
 	int ret = AddProjectFeature(ProjectId, FeatureId);
-	UsageStateFlags |= LSF_FEATURE_ADDED;
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return ret;
 }
@@ -155,7 +229,7 @@ int strcpy_s_ran(char *dst, int dstMaxSize, const char *src)
 			dst[i] = (char)rand();
 	}
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
-	return 0;
+	return NO_ERROR;
 }
 
 /**
@@ -170,6 +244,15 @@ int strcpy_s_ran(char *dst, int dstMaxSize, const char *src)
 int License::AddProjectFeature(int ProjectId, int FeatureId)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_FEATURE_ADDED;
+
+	if (DisableEdit != 0)
+		return ERROR_DISABLED_FUNCTION;
+	
+	DisableQuery = 1;
+
 	//check if this is a valid param
 	ProjectFeatureKeyDB DB;
 	if (DB.IsValidProjectID(ProjectId) == MISSING_OR_INVALID_ID)
@@ -220,12 +303,9 @@ int License::AddProjectFeature(int ProjectId, int FeatureId)
 	delete NewNode;
 	NewNode = NULL;
 
-	//usage flags might get added to logs
-	UsageStateFlags |= LSF_FEATURE_ADDED;
-
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	//no errors returned
-	return 0;
+	return NO_ERROR;
 }
 
 /**
@@ -241,13 +321,18 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration, unsigned int
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 
+	if (DisableEdit != 0)
+		return ERROR_DISABLED_FUNCTION;
+
+	DisableQuery = 1;
+
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_DURATION_IS_SET;
 
 	//sanity checks
 	int LostSeconds = (signed int)(GetUnixtime() - pStartDate);
 	if (LostSeconds > 60 * 60)
-		Log(LL_DEBUG_INFO, "Start date is smaller than current date. Loosing %d seconds from durtation %d\n", LostSeconds, pDuration);
+		Log(LL_DEBUG_INFO, "Start date is smaller than current date. Loosing %d seconds from durtation %d", LostSeconds, pDuration);
 	if (LostSeconds > (signed int)pDuration)
 	{
 		Log(LL_DEBUG_INFO, "Duration is too small. Readjusting start time to current time to avoid negative duration");
@@ -300,7 +385,7 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration, unsigned int
 	}
 
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
-	return 0;
+	return NO_ERROR;
 }
 
 /**
@@ -321,6 +406,9 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_FEATURE_REQUESTED;
 
+	if (DisableQuery != 0)
+		return ERROR_DISABLED_FUNCTION;
+
 	//sanity checks 
 	if (StoreResult == NULL || MaxResultSize <= 0)
 	{
@@ -332,14 +420,14 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 	strcpy_s(StoreResult, MaxResultSize, "");
 
 	time_t SecondsRemaining;
-	int GracePeriodIsUsed = 0;
+	int GracePeriodRemainingSeconds = 0;
 	if (GetRemainingSeconds(SecondsRemaining) != 0 || SecondsRemaining <= 0)
 	{
 		//trigger grace period if it has not been done before
 		LicenseGracePeriod::UpdateStatus(GP_TRIGGER_GRACE_PERIOD, 0);
 		//check if license is still in a valid grace period interval
-		int er = IsGracePeriodTriggered(&GracePeriodIsUsed);
-		if (er != 0 || GracePeriodIsUsed == 0)
+		int er = IsGracePeriodTriggered(&GracePeriodRemainingSeconds);
+		if (er != 0 || GracePeriodRemainingSeconds <= 0)
 		{
 			Log(LL_IMPORTANT, "License expired. Could not get activation key for %d-%d", ProjectId, FeatureId);
 			return WARNING_NO_LICENSE_FOUND;
@@ -358,18 +446,25 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 			LicenseNode *CurNode = (LicenseNode *)Data;
 			if (CurNode->ProjectId == ProjectId && CurNode->FeatureId == FeatureId)
 			{
-				if (strlen(CurNode->ActivateKey) >= (unsigned int)MaxResultSize)
+				int KeyLen = strlen(CurNode->ActivateKey);
+				if (KeyLen >= (int)(Size - sizeof(CurNode->ProjectId) - sizeof(CurNode->FeatureId) ))
+				{
+					Log(LL_ERROR, "License is corrupted. Skipping key fetch");
+					return ERROR_BUFFER_OVERFLOW;
+				}
+				if (KeyLen >= MaxResultSize)
 				{
 					Log(LL_ERROR, "Activation key does not fit into return buffer");
 					return ERROR_BUFFER_OVERFLOW;
 				}
 				// should make a change only when hardware configuration comes back online or a new valid license is getting used
-				if (GracePeriodIsUsed == 0)
+				if (GracePeriodRemainingSeconds == 0)
 					LicenseGracePeriod::UpdateStatus(GP_RESET_GRACE_PERIOD, (int)GracePeriod);
 				// should make a change only when a new valid license is getting used
 				LicenseGracePeriod::UpdateStatus(GP_SET_LICENSE_END, (int)StartStamp + Duration);
 				//return the activation key
-				return strcpy_s(StoreResult, MaxResultSize, CurNode->ActivateKey);
+				errno_t er = strcpy_s(StoreResult, MaxResultSize, CurNode->ActivateKey);
+				return er;
 			}
 		}
 	}
@@ -395,13 +490,18 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_DURATION_REQUESTED;
 
+	if (DisableQuery != 0)
+		return ERROR_DISABLED_FUNCTION;
+
 	DataCollectionIterator itr;
 	itr.Init(NodeList);
 	char *Data;
 	int Size;
 	int Type;
 	RemainingSeconds = 0;
-	while (DCI_SUCCESS == itr.GetNext(&Data, Size, Type))
+	int ItrRet;
+	ItrRet = itr.GetNext(&Data, Size, Type);
+	while (DCI_SUCCESS == ItrRet)
 	{
 		if (Type == DB_LICENSE_END && Size >= sizeof(time_t))
 		{
@@ -417,6 +517,7 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 			Duration = *(unsigned int *)Data;
 		if (Type == DB_GRACE_PERIOD && Size >= sizeof(time_t))
 			GracePeriod = *(time_t *)Data;
+		ItrRet = itr.GetNext(&Data, Size, Type);
 	}
 
 	//remaining seconds can become negative
@@ -426,7 +527,7 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 		RemainingSeconds = (StartStamp + Duration) - GetUnixtime();
 
 	if (RemainingSeconds != 0)
-		return 0;
+		return NO_ERROR;
 
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return WARNING_MISSING_LICENSE_FIELD;
@@ -439,16 +540,16 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 * \param	Result - 0 if license is either expired or not using grace period. 1 if license is using grace period
 * \return	Error code. 0 is no error
 */
-int License::IsGracePeriodTriggered(int *Result)
+int License::IsGracePeriodTriggered(int *RemainingSeconds)
 {
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_GRACE_STATUS_QUERIED;
 
-	if (Result == NULL)
+	if (RemainingSeconds == NULL)
 		return ERROR_MISSING_PARAMETER;
 
 	// make sure return value is initialized
-	*Result = 0;
+	*RemainingSeconds = 0;
 
 	time_t RemainingSec = 0;
 	int er = GetRemainingSeconds(RemainingSec);
@@ -461,8 +562,8 @@ int License::IsGracePeriodTriggered(int *Result)
 	//license is still valid. It is not considered grace period if everything is fine
 	if (RemainingSec > 0)
 	{
-		*Result = 0;
-		return 0;
+		*RemainingSeconds = 0;
+		return NO_ERROR;
 	}
 
 	if (RemainingSec <= 0)
@@ -479,15 +580,15 @@ int License::IsGracePeriodTriggered(int *Result)
 		//license is in a valid grace period
 		if (IsGraceTriggered != 0 && GracePeriodRemaining > 0)
 		{
-			*Result = 1;
-			return 0;
+			*RemainingSeconds = (int)GracePeriodRemaining;
+			return NO_ERROR;
 		}
 	}
 
 	// we should have not got here. License is in an unexpected state
-	*Result = 0;
+	*RemainingSeconds = 0;
 
-	return 0;
+	return NO_ERROR;
 }
 
 /**
@@ -499,12 +600,15 @@ int License::IsGracePeriodTriggered(int *Result)
 * \param	FingerprintFilename - The path and the name of the fingerprint file that will be used to encode the content of the license
 * \return	Error code. 0 is no error
 */
-int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
+int	License::SaveToFile(const char *FileName, const char *FingerprintFilename, int Append)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_SAVED_TO_FILE;
+
+	if (DisableEdit != 0)
+		return ERROR_DISABLED_FUNCTION;
 
 	//sanity checks
 	if (FileName == NULL)
@@ -537,7 +641,13 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 	//dump the content to a file
 	//open file
 	FILE *f;
-	errno_t er = fopen_s(&f, FileName, "wb");
+	errno_t er;
+
+	if (Append != 0)
+		er = fopen_s(&f, FileName, "ab"); //can stack multiple licenses into a single file
+	else
+		er = fopen_s(&f, FileName, "wb");
+
 	if (er != NO_ERROR)
 	{
 		Log(LL_ERROR, "Could not save license. Error opening file %s", FileName);
@@ -551,8 +661,8 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 	}
 
 	//dump the content
-	fwrite(&EncryptSalt, 1, sizeof(unsigned int), f);
 	fwrite(&TotalSize, 1, sizeof(int), f);
+	fwrite(&EncryptSalt, 1, sizeof(unsigned int), f);
 	fwrite(TempBuff, 1, TotalSize, f);
 	fclose(f);
 
@@ -560,14 +670,114 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename)
 
 	Log(LL_DEBUG_ALL, "License succesfully saved to %s", FileName);
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
-	return 0;
+	return NO_ERROR;
 }
-
+/**
+* \brief    Load the content of a license from a file
+* \details  Buffer the content of the license into internal storage container
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	FileName - The path and the name of the file where to load from the content of the license
+* \return	Error code. 0 is no error
+*/
 int	License::LoadFromFile(char *FileName)
 {
 	return LoadFromFile(FileName, NULL);
 }
 
+//forward declaration of function to get filesize in bytes
+long GetFileSize(const char *filename);
+
+/**
+* \brief    Load the content of a license from a buffer.
+* \details  Buffer the content of the license into internal storage container
+* \author   Jozsa Istvan
+* \date     2017-04-12
+* \param	TempBuff - Buffer containing an encrypted license
+* \param	TotalSize - size of the buffer
+* \param	EncryptSalt - Salt for the encryption key
+* \param	FingerprintFilename - a file ( or NULL ) containing the decode key
+* \return	Error code. 0 is no error
+*/
+int	License::InitFromBuffer(char *TempBuff, int TotalSize, unsigned int EncryptSalt, char *FingerprintFilename)
+{
+
+#ifdef _DEBUG		// test random bad input
+	if (ENABLE_ERROR_PRONE_TESTS == 1)
+	{
+		static int TempBufLoc = 0;
+		if (TempBufLoc < TotalSize)
+			TempBuff[TempBufLoc] = ~TempBuff[TempBufLoc];
+		TempBufLoc++;
+	}
+#endif
+
+	//backup in case we mess up decryption
+	char *TempBuffBackup = new char[TotalSize];
+	memcpy(TempBuffBackup, TempBuff, TotalSize);
+
+	//deobfuscate
+	int erDecrypt = 0;
+	if (EncryptSalt)
+		erDecrypt = DecryptWithFingerprint(FingerprintFilename, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
+
+	//make sure we can store it
+	NodeList->DisposeData();
+	NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
+
+	//maybe we messed up encryption ? Could happen if we entered grace period due to HW changes
+	if (erDecrypt != 0 || NodeList->IsDataValid() == 0)
+	{
+		//dispose unusable data
+		NodeList->DisposeData();
+		//restore backup
+		memcpy(TempBuff, TempBuffBackup, TotalSize);
+		//try to borrow fingerprint from grace
+		unsigned char Temp[COMPUTER_FINGERPRINT_STORE_SIZE];
+		int FingerprintSize = 0;
+		int erFingerprint = LicenseGracePeriod::GetSavedFingerprint(Temp, sizeof(Temp), &FingerprintSize);
+		if (erFingerprint == 0 && FingerprintSize > 0)
+		{
+			NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
+			int erDecrypt = EncryptWithFingerprintContent(Temp, FingerprintSize, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
+			if (erDecrypt != 0)
+			{
+				delete TempBuffBackup;
+				return erDecrypt;
+			}
+			//if there was no decrypt err with grace key, reinitialize the new list. If this fails, we have no backup plan
+			NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
+		}
+	}
+
+	// we do not need these anymore
+	delete TempBuffBackup;
+	TempBuffBackup = NULL;
+
+	//still not a valid license content ? That is bad. Very bad
+	if (NodeList->IsDataValid() == 0)
+	{
+		NodeList->DisposeData();
+		return ERROR_LICENSE_INVALID;
+	}
+
+#ifdef ENABLE_ANTI_HACK_CHECKS
+	time_t TempRemainingSeconds = 0;
+	if (GetRemainingSeconds(TempRemainingSeconds) == 0)
+	{
+		time_t ExpectedSaltKey = GenerateSaltKey(StartStamp, Duration);
+		if (ExpectedSaltKey != EncryptSalt)
+		{
+			NodeList->DisposeData();
+			Log(LL_DEBUG_INFO, "Encryption mismatch while loading license content");
+			return ERROR_LICENSE_INVALID;
+		}
+	}
+#endif
+
+	//all good
+	return NO_ERROR;
+}
 /**
 * \brief    Load the content of a license from a file
 * \details  Buffer the content of the license into internal storage container
@@ -580,6 +790,9 @@ int	License::LoadFromFile(char *FileName)
 int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//deny API calls that can change our internal state
+	DisableEdit = 1;
 
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_LOADED_FROM_FILE;
@@ -604,89 +817,64 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 		return ERROR_FILE_INVALID;
 	}
 
-	unsigned int EncryptSalt = 0;
-	fread(&EncryptSalt, 1, sizeof(unsigned int), f);
+	int FoundDecodableLicense = 0;
+	size_t TotalBytesRead = 0;
+	size_t FileSize = GetFileSize(FileName);
 
-	//get the amount of memory we need to store
-	int TotalSize;
-	fread(&TotalSize, 1, sizeof(int), f);
+	do{
+		size_t BytesRead;
+		unsigned int EncryptSalt = 0;
+		int TotalSize;
 
-	//read the whole thing into memory
-	char *TempBuff = new char[TotalSize];
-	fread(TempBuff, 1, TotalSize, f);
+		//get the amount of memory we need to store
+		BytesRead = fread(&TotalSize, 1, sizeof(int), f);
+		TotalBytesRead += BytesRead;
+		if (BytesRead < sizeof(int))
+		{
+			Log(LL_ERROR, "Could not read license. File too small", FileName);
+			fclose(f);
+			return ERROR_FILE_INVALID;
+		}
 
-	//backup in case we mess up decryption
-	char *TempBuffBackup = new char[TotalSize];
-	memcpy(TempBuffBackup, TempBuff, TotalSize);
+		if (TotalSize <= 0 || TotalSize >= MAX_LICENSE_SIZE_BYTES)
+		{
+			Log(LL_ERROR, "License file has invalid format or data");
+			fclose(f);
+			return ERROR_FILE_INVALID;
+		}
 
-	//deobfuscate
-	int erDecrypt = 0;
-	if (EncryptSalt)
-		erDecrypt = DecryptWithFingerprint(FingerprintFilename, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
+		BytesRead = fread(&EncryptSalt, 1, sizeof(unsigned int), f);
+		TotalBytesRead += BytesRead;
+		if (BytesRead < sizeof(unsigned int))
+		{
+			Log(LL_ERROR, "Could not read license. File too small", FileName);
+			fclose(f);
+			return ERROR_FILE_INVALID;
+		}
 
+		//read the whole thing into memory
+		char *TempBuff = new char[TotalSize];
+		BytesRead = fread(TempBuff, 1, TotalSize, f);
+		TotalBytesRead += BytesRead;
+		if ((int)BytesRead < TotalSize)
+		{
+			Log(LL_ERROR, "Could not read license. File too small", FileName);
+			fclose(f);
+			return ERROR_FILE_INVALID;
+		}
+
+		FoundDecodableLicense = InitFromBuffer(TempBuff, TotalSize, EncryptSalt, FingerprintFilename);
+		delete TempBuff;
+	} while (!feof(f) && TotalBytesRead < FileSize && FoundDecodableLicense==0);
 	//done with the FILE
 	fclose(f);
 
-	//make sure we can store it
-	NodeList->DisposeData();
-	NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
-
-	//maybe we messed up encryption ? Could happen if we entered grace period due to HW changes
-	if (erDecrypt != 0 || NodeList->IsDataValid() == 0)
-	{
-		//dispose unusable data
-		NodeList->DisposeData();
-		//restore backup
-		memcpy(TempBuff, TempBuffBackup, TotalSize);
-		//try to borrow fingerprint from grace
-		unsigned char Temp[COMPUTER_FINGERPRINT_STORE_SIZE];
-		int FingerprintSize = 0;
-		int erFingerprint = LicenseGracePeriod::GetSavedFingerprint(Temp, sizeof(Temp), &FingerprintSize);
-		if (erFingerprint == 0 && FingerprintSize > 0 )
-		{
-			NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
-			int erDecrypt = EncryptWithFingerprintContent(Temp, FingerprintSize, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
-			if (erDecrypt != 0)
-			{
-				delete TempBuff;
-				delete TempBuffBackup;
-				return erDecrypt;
-			}
-			//if there was no decrypt err with grace key, reinitialize the new list. If this fails, we have no backup plan
-			NodeList->PushData(TempBuff, TotalSize, DB_RAW_FULL_LIST_CONTENT);
-		}
-	}
-
-	// we do not need these anymore
-	delete TempBuff;
-	TempBuff = NULL;
-	delete TempBuffBackup;
-	TempBuffBackup = NULL;
-
-	//still not a valid license content ? That is bad. Very bad
-	if (NodeList->IsDataValid() == 0)
-	{
-		NodeList->DisposeData();
-		return ERROR_LICENSE_INVALID;
-	}
-
-#ifdef ENABLE_ANTI_HACK_CHECKS
-	time_t TempRemainingSeconds = 0;
-	if (GetRemainingSeconds(TempRemainingSeconds) == 0)
-	{
-		time_t ExpectedSaltKey = GenerateSaltKey(StartStamp, Duration);
-		if (ExpectedSaltKey != EncryptSalt)
-		{
-			NodeList->DisposeData();
-			Log(LL_DEBUG_INFO, "Encription mismatch while loading license content", FileName);
-			return ERROR_LICENSE_INVALID;
-		}
-	}
-#endif
+	if (FoundDecodableLicense == 0)
+		return ERROR_FILE_INVALID;
 
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	//all good
-	return 0;
+	return NO_ERROR;
 }
 
 
@@ -720,7 +908,7 @@ DWORD __stdcall ReturnActivationKey(LPVOID lpParam)
 	delete lpParam;
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 
-	return 0;
+	return NO_ERROR;
 }
 
 // for extra security we could detach ourself to a new thread and return result later to an unknown buffer

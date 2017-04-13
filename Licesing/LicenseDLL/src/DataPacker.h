@@ -7,6 +7,7 @@ Could have been done with STD vector. But maybe in the future we want to provide
 
 #define CURRENT_PACKER_VERSION		0
 #define ALLOC_BUFFER_EXTRA_SIZE		64000	// over allocate to not spam data alloc and copy
+#define MAX_EXPECTED_FILE_SIZE		(100*1024*1024)
 
 enum DataCollectionEncryptionTypes
 {
@@ -23,6 +24,7 @@ struct DataBlockHeader
 {
 	unsigned char	Type;		// type of the data block
 	unsigned int	Size;		// size of the data block
+	unsigned int	CRC;		// extra feature to make sure data integrity remains. In memory tempering chance should be smaller
 	unsigned char	Data[1];	// fake, we will use dynamic size
 };
 // header for a list of data blocks
@@ -32,7 +34,7 @@ struct DataCollectionHeader
 	unsigned short	Count;		// number of data blocks in this collection
 	unsigned int	Size;		// sum of datablock sizes
 	unsigned char	EncryptType;// 
-	unsigned int	XORKey;		// very basic obfuscation to avoid human readable format
+	unsigned int	XORKey;		// very basic obfuscation to avoid human readable format. Keep this in the header in case for security reasons we never unpack it, we can pass it from buffer to buffer.
 	unsigned char	Blocks[1];	// should be dynamic
 }; 
 #pragma pack(pop)
@@ -44,6 +46,12 @@ enum DataBlockTypes
 	DB_CPU_ID,						// The CPU ID returned by the system. There could be multiple CPUs in a system. It depends on the OS API which one we will store
 	DB_UUID,						// this is the BIOS ID. THere is a chance this will be unique even on VMs
 	DB_MB_SN,						// Mother board serial number. Not used at the moment
+	DB_C_SN,						// Serial number of the C drive, this is available only for windows
+	DB_COMPUTER_NAME,				// Computer name should be unique in a workgroup or a domain
+	DB_NETBIOS_NAME,				// old workgroup name
+	DB_DOMAIN_NAME,					// domain we are part of
+	DB_MACHINE_ROLE,				// what kind of PC is this for the client ? Server ? Client? Workstation ... ?
+	DB_CLIENT_NAME,					// custom string entered by the client
 	DB_USELESS_STUFFING_MIN,		// does not have any meaning. In case you wish to inspect it than waste your time with it
 	DB_USELESS_STUFFING2,			// does not have any meaning. In case you wish to inspect it than waste your time with it
 	DB_USELESS_STUFFING3,			// does not have any meaning. In case you wish to inspect it than waste your time with it
@@ -51,7 +59,7 @@ enum DataBlockTypes
 	DB_USELESS_STUFFING_MAX,		// does not have any meaning. In case you wish to inspect it than waste your time with it
 	DB_DATE_STAMP,
 	DB_XOR_KEY,
-	DB_COMPRESSED_LIST,				// should generate a new DB_Block that should get parsed
+	DB_COMPRESSED_LIST,				// should generate a new DB_Block that should get parsed recursively..
 	DB_LICENSE_NODE,				// some project+feature+activationkey structure
 	DB_LICENSE_START,
 	DB_LICENSE_DURATION,
@@ -80,7 +88,7 @@ class GenericDataStore
 public:
 	GenericDataStore();
 	~GenericDataStore();
-	int						PushData(char *buff, int Size, int Type);	// add a new data block to our list
+	int						PushData(const void *buff, int Size, int Type);	// add a new data block to our list
 	DataCollectionHeader	*GetData(){ return Data; };					// return the buffer used to store the list
 	int						GetDataSize(){ if (Data) return Data->Size; else return 0; }			// number of bytes the store takes
 	int						SaveToFile(const char *FileName);			// Obfuscate + save the content of the list

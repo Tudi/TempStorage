@@ -10,12 +10,13 @@ public:
 	ComputerFingerprint();
 	~ComputerFingerprint();
 
-	int	GenerateFingerprint();							// gather PC specific info
+	int	GenerateFingerprint();												// gather PC specific info
+	int AppendClientInfo(const char *MachineRole, const char *ClientName);	// append data to the info block
 
 	int SaveFingerprint(const char *FileName);			// Save fingerprint to a file that can be sent to Siemens licensing team
 	int LoadFingerprint(const char *FileName);			// load fingerprint to a file that can be sent to Siemens licensing team
 
-	int GetEncryptionKey(char **Key, int &Len);		    // use internal state to decode license. Only a similar PC can decode license
+	int DupEncryptionKey(char **Key, int &Len);		    // use internal state to decode license. Only a similar PC can decode license
 
 	void Print();										// print out Fingerprint data in a humanly readable format. This is for debugging purpuses only
 private:

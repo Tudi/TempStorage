@@ -11,9 +11,9 @@
 #include "../LicenseDLL/License.h"
 
 #ifdef _DEBUG
-	#pragma comment(lib, "../LicenseDLL/Debug/LicenseDLL.lib")
+	#pragma comment(lib, "../Debug/LicenseDLL.lib")
 #else
-	#pragma comment(lib, "../LicenseDLL/Release/LicenseDLL.lib")
+	#pragma comment(lib, "../Release/LicenseDLL.lib")
 #endif
 
 int main()
@@ -57,7 +57,7 @@ int main()
 	TestLicense->AddProjectFeature(desc1->ProjectID, desc1->FeatureID);
 //	TestLicense->AddProjectFeature(desc2->ProjectID, desc2->FeatureID);
 
-	TestLicense->SaveToFile("License.dat","LicenseSeed.dat");
+	TestLicense->SaveToFile("../License.dat","../LicenseSeed.dat");
 
 	delete TestLicense;
 	TestLicense = NULL;

@@ -8,9 +8,9 @@
 #include "../LicenseDLL/License.h"
 
 #ifdef _DEBUG
-	#pragma comment(lib, "../LicenseDLL/Debug/LicenseDLL.lib")
+	#pragma comment(lib, "../Debug/LicenseDLL.lib")
 #else
-	#pragma comment(lib, "../LicenseDLL/Release/LicenseDLL.lib")
+	#pragma comment(lib, "../Release/LicenseDLL.lib")
 #endif
 
 //this list should be generated from "ProjectNameIDs.txt"
@@ -18,7 +18,7 @@ enum SiemensProjects
 {
 	ALMA = 1,
 	WDR = 2,
-	MAX_USED_SIEMENS_PROJECT_IDS
+	MAX_USED_SIEMENS_PROJECT_IDS = 255
 };
 
 //this list should be generated from "FeatureNameIDs.txt"
@@ -26,7 +26,7 @@ enum SiemensProjectFeatures
 {
 	WDR_SSL = 1,
 	ALMA_KPI = 2,
-	MAX_USED_SIEMENS_FEATURE_IDS,
+	MAX_USED_SIEMENS_FEATURE_IDS = 255,
 };
 
 int main()
@@ -52,7 +52,10 @@ int main()
 
 	//for testing, load up the saved license and check if we can extract feature keys
 	printf("Load license into temp buffer\n");
-	int er = TestLicense->LoadFromFile("../testLic.dat", "../ClientSeed.dat");
+	int er = TestLicense->LoadFromFile("../License.dat", "../LicenseSeed.dat");
+	//maybe we are running it in a local directory ? 
+	if (er!=0)
+		er = TestLicense->LoadFromFile("License.dat", "LicenseSeed.dat");
 	if (er != 0)
 	{
 		printf("Error %d while loading license. Please solve it to continue\n");
@@ -69,17 +72,20 @@ int main()
 	printf("License is still valid for %d seconds\n", (int)RemainingSecondsInLicense);
 
 	//find the key we need to activate a feature
+	char PB[4] = { '\\', '|', '/', '-' };
 	for (int ProductID = 0; ProductID < MAX_USED_SIEMENS_PROJECT_IDS; ProductID++)
 		for (int FeatureId = 0; FeatureId < MAX_USED_SIEMENS_FEATURE_IDS; FeatureId++)
 		{
 			char ActivationKeyBuffer[200];
 			int GetKeyRes = TestLicense->GetActivationKey(ProductID, FeatureId, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
 			if (GetKeyRes == 0)
-				printf("For project %d and Feature %d we obtained activation key '%s'\n", ProductID, FeatureId, ActivationKeyBuffer);
+				printf("\rFor project %d and Feature %d we obtained activation key '%s'\n", ProductID, FeatureId, ActivationKeyBuffer);
+			printf("\r%c %d", PB[FeatureId % 4], ((1 + FeatureId + MAX_USED_SIEMENS_FEATURE_IDS * ProductID) * 100) / (MAX_USED_SIEMENS_PROJECT_IDS * MAX_USED_SIEMENS_FEATURE_IDS) );
 		}
 
 	//cleanup
 	delete TestLicense;
+	TestLicense = NULL;
 
 	printf("\n\nAll done. Push a key to exit.");
 	_getch();

@@ -7,9 +7,9 @@
 #include "../LicenseDLL/src/ComputerFingerprint.h"
 
 #ifdef _DEBUG
-	#pragma comment(lib, "../LicenseDLL/Debug/LicenseDLL.lib")
+	#pragma comment(lib, "../Debug/LicenseDLL.lib")
 #else
-	#pragma comment(lib, "../LicenseDLL/Release/LicenseDLL.lib")
+	#pragma comment(lib, "../Release/LicenseDLL.lib")
 #endif
 
 int main()
