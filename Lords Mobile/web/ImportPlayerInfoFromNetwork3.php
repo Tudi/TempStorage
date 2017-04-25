@@ -11,7 +11,7 @@ else
 	ImportFromWebCall();
 
 //now run all the queries we stacked up during this execution
-RemoteRunQuery2($MergedQueries);
+//RemoteRunQuery2($MergedQueries);
 
 function ImportFromWebCall()
 {

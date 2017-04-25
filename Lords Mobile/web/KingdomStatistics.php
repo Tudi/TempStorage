@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit','640M');
 //$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");

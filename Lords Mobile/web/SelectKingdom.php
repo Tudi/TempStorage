@@ -12,7 +12,7 @@ if(isset($_REQUEST['Kingdom']))
 	<table>
 		<tr>
 			<td>Kingdom</td>
-			<td><select name="Kingdom"><option value="67">#67</option></select></td>
+			<td><select name="Kingdom"><option value="67">#67</option><option value="82" selected>#82</option></select></td>
 			<td><input type="submit" value="Select"></td>
 		</tr>
 	</table>

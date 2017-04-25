@@ -15,6 +15,7 @@ if(!isset($z) || $z != -1 || !isset($queries))
 $MultiQueries = explode(";NEXT_QUERY;",$queries);
 
 foreach($MultiQueries as $key => $val)
+if(strlen($val)>10)
 {
 	$query1 = $val;
 //	$result1 = mysql_query($query1,$dbi);	

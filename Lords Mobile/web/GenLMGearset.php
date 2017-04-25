@@ -1,10 +1,10 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
-set_time_limit( 30 * 60 );
+set_time_limit( 7 * 30 * 60 );
 
 $Debug = 0;
 
-$ItemSlotNames = array("helm","body","feet","mhand","ohand","trinket","trinket");
+$ItemSlotNames = array("helm","body","feet","mhand","ohand","trinket","trinket","trinket");
 
 echo "=====================================================================================================================================================<br>";
 echo "*Army composition : infantry + cavalry + ranged <br>";
@@ -54,6 +54,18 @@ LoadItemInfo();
 GenGearSet();
 echo "<br><br>";
 
+/*
+echo "Most used items from best sets : <br>";
+arsort($MostUsedItems);
+foreach($MostUsedItems as $ItName => $Nr)
+	echo "Item $ItName used $Nr times in sets<br>";
+
+echo "Most used items from best hunted sets : <br>";
+arsort($MostUsedItemsH);
+foreach($MostUsedItemsH as $ItName => $Nr)
+	echo "Item $ItName used $Nr times in sets<br>";
+*/
+
 function LoadItemInfo()
 {
 	global $itemsCatInt,$ItemSlotNames;
@@ -61,70 +73,75 @@ function LoadItemInfo()
 	if($f)
 	{
 		while (($line = fgets($f)) !== false) 
-			if(strlen($line)>5)
 		{
-			$line = str_replace( "\t", " ", $line );
-			$line = str_replace( "  ", " ", $line );
-			$line = str_replace( "\n", "", $line );
-			$line = str_replace( "\r", "", $line );
-			$parts = explode(" ",$line);
-			unset( $item );
-			$item = array();
-			$item["slot"] = $parts[0];
-			$item["GearSet"] = $parts[1];
-			$item["name"] = $parts[2];
-			$item["chp"] = $item["rhp"] = $item["catk"] = $item["ratk"] = $item["cdef"] = $item["rdef"] = 0; // group notice warnings
-			foreach($parts as $key => $val)
-				if( $key > 2 )
-				{
-					if( $key % 2 == 0 )
-						$IndName = $val;
-					else
-						$IndVal = (int)$val;
-
-					if( $key % 2 == 0 )
-					{
-						// sanity checks
-						if( $IndVal <= 0 )
-							echo "Something is wrong for item ".$item["name"]." it has atr ".$IndName." value ".$IndVal." <br>";
-						if( IsParamKnown($IndName) == 0 )
-							echo "Unknown param name : $IndName <br>";
-						
-						//convert to a parsable format
-						if( strcmp( $IndName, "hp" ) == 0 || $IndName[0] == 'h' )
-						{
-							$item["chp"] += $IndVal;
-							$item["rhp"] += $IndVal;
-							$item["ihp"] += $IndVal;
-						}					
-						else if( strcmp( $IndName, "def" ) == 0 || $IndName[0] == 'd' )
-						{
-							$item["cdef"] += $IndVal;
-							$item["rdef"] += $IndVal;
-							$item["idef"] += $IndVal;
-						}					
-						else if( strcmp( $IndName, "atk" ) == 0 || $IndName[0] == 'a')
-						{
-							$item["catk"] += $IndVal;
-							$item["ratk"] += $IndVal;
-							$item["iatk"] += $IndVal;
-						}					
-						else
-							$item[$IndName] += $IndVal;
-					}
-				}
-			$item = GetItemScore( $item );
-			if($item["SumScore"] != 0)
+			if($line[0]=='#')
+				continue;
+			if(strlen($line)<5)
+				continue;
 			{
-	//			PrintItemInfo( $item );
-	//			$items[ count($items) ] = $item;
-	//			$itemsCat[$item["slot"]][count($itemsCat[$item["slot"]])] = $item;
-				
-				$ItemNameIndex = ItemSlotNameToIndex( $item["slot"] );
-	//echo count($itemsCatInt[$ItemNameIndex])." - $ItemNameIndex<br>";
-				$itemsCatInt[$ItemNameIndex][count($itemsCatInt[$ItemNameIndex])] = $item;
-			}
-		}	
+				$line = str_replace( "\t", " ", $line );
+				$line = str_replace( "  ", " ", $line );
+				$line = str_replace( "\n", "", $line );
+				$line = str_replace( "\r", "", $line );
+				$parts = explode(" ",$line);
+				unset( $item );
+				$item = array();
+				$item["slot"] = $parts[0];
+				$item["GearSet"] = $parts[1];
+				$item["name"] = $parts[2];
+				$item["chp"] = $item["rhp"] = $item["ihp"] = $item["catk"] = $item["ratk"] = $item["iatk"] = $item["cdef"] = $item["rdef"] = $item["idef"] = $item["cdef"] = 0; // group notice warnings
+				foreach($parts as $key => $val)
+					if( $key > 2 )
+					{
+						if( $key % 2 == 0 )
+							$IndName = $val;
+						else
+							$IndVal = (int)$val;
+
+						if( $key % 2 == 0 )
+						{
+							// sanity checks
+							if( $IndVal <= 0 )
+								echo "Something is wrong for item ".$item["name"]." it has atr ".$IndName." value ".$IndVal." for line $line<br>";
+							if( IsParamKnown($IndName) == 0 )
+								echo "Unknown param name : $IndName for line $line <br>";
+							
+							//convert to a parsable format
+							if( strcmp( $IndName, "hp" ) == 0 || $IndName[0] == 'h' )
+							{
+								$item["chp"] += $IndVal;
+								$item["rhp"] += $IndVal;
+								$item["ihp"] += $IndVal;
+							}					
+							else if( strcmp( $IndName, "def" ) == 0 || $IndName[0] == 'd' )
+							{
+								$item["cdef"] += $IndVal;
+								$item["rdef"] += $IndVal;
+								$item["idef"] += $IndVal;
+							}					
+							else if( strcmp( $IndName, "atk" ) == 0 || $IndName[0] == 'a')
+							{
+								$item["catk"] += $IndVal;
+								$item["ratk"] += $IndVal;
+								$item["iatk"] += $IndVal;
+							}					
+							else
+								$item[$IndName] += $IndVal;
+						}
+					}
+				$item = GetItemScore( $item );
+				if($item["SumScore"] != 0)
+				{
+		//			PrintItemInfo( $item );
+		//			$items[ count($items) ] = $item;
+		//			$itemsCat[$item["slot"]][count($itemsCat[$item["slot"]])] = $item;
+					
+					$ItemNameIndex = ItemSlotNameToIndex( $item["slot"] );
+		//echo count($itemsCatInt[$ItemNameIndex])." - $ItemNameIndex<br>";
+					$itemsCatInt[$ItemNameIndex][count($itemsCatInt[$ItemNameIndex])] = $item;
+				}
+			}	
+		}
 		fclose($f);
 	}
 
@@ -247,7 +264,7 @@ function SetGearsetScore( $GearSet, $PrintInfo )
 {
 	if( count( $GearSet ) == 0 )
 		return 0;	
-	global $ItemSlotNames, $itemsCatInt;
+	global $ItemSlotNames, $itemsCatInt, $MostUsedItems, $MostUsedItemsH;
 	$SumScore = 0;
 	foreach( $GearSet as $key => $val )
 	{
@@ -256,6 +273,21 @@ function SetGearsetScore( $GearSet, $PrintInfo )
 //echo " slot index '$key' = ".$ItemSlotNames[$key].", item index '$val'";
 		if( $PrintInfo )
 		{
+			if($PrintInfo==2 || $PrintInfo==3)
+			{
+				if(!isset($MostUsedItems[$CurItem["name"]]))
+					$MostUsedItems[$CurItem["name"]] = 1;
+				else
+					$MostUsedItems[$CurItem["name"]]++;
+			}
+			if($PrintInfo==3)
+			{
+				if(!isset($MostUsedItemsH[$CurItem["name"]]))
+					$MostUsedItemsH[$CurItem["name"]] = 1;
+				else
+					$MostUsedItemsH[$CurItem["name"]]++;
+			}
+			
 			MyEcho( $key.")item name ".$CurItem["name"]." in slot ".$ItemSlotNames[ $key ]." from set ".$CurItem["GearSet"]."<br>" );
 //			PrintItemInfo( $CurItem );
 			foreach( $CurItem["ScroreGroups"] as $key2 => $val2 )
@@ -383,11 +415,11 @@ function GenGearSet()
 //		if($LoopCounter>10)			break;
 	}
 	echo "<br>Best item set score you can get by heavy monster hunting + buying item packs: <br>";
-	SetGearsetScore($BestScoreSet,1);
+	SetGearsetScore($BestScoreSet,2);
 	echo "<br>Best item set if you are a casual player that hardly spends money on the game : <br>";
 	SetGearsetScore($BestCraftableSet,1);
 	echo "<br>Best item set if you invest a lot in monster hunting : <br>";
-	SetGearsetScore($BestMultiSetSet,1);
+	SetGearsetScore($BestMultiSetSet,3);
 	
 	krsort($BestCraftableSets);
 	echo "<br>Top x item sets that you can craft from resource gathering and monster hunting : <br>";	

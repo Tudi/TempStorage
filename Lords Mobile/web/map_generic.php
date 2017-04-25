@@ -1,4 +1,5 @@
 <?php
+$DisableCaching=1;
 if(!isset($dbi))
 	include("db_connection.php");
 
