@@ -62,7 +62,15 @@ int MainWindow::GenerateSeedFile(QString path)
         return 1;
     }
 
-    ClientSeed->AppendClientInfo( ui->co_Role->currentText().toStdString().c_str(), ui->te_Name->toPlainText().toStdString().c_str() );
+    std::string Role = ui->co_Role->currentText().toStdString();
+    std::string cName = ui->te_Name->toPlainText().toStdString();
+    er = ClientSeed->AppendClientInfo( Role.c_str(), cName.c_str() );
+    if (er != 0)
+    {
+        printf("Could not append client info\n");
+        DestroyComputerFingerprint(&ClientSeed);
+        return 1;
+    }
 
     QString FullPath = path + "\\" + LICENSE_SEED_CONSTANT_NAME;
 

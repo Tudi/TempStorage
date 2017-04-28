@@ -155,6 +155,21 @@ int ComputerFingerprint::LoadFingerprint(const char *FileName)
 	return erLoad;
 }
 
+int ComputerFingerprint::LoadFingerprint(const char *buf, int size)
+{
+	FingerprintData->DisposeData();
+	int erLoad = FingerprintData->PushData(buf, size, DB_RAW_FULL_LIST_CONTENT);
+	if (erLoad == 0)
+	{
+		if (FingerprintData->IsDataValid() == 0)
+		{
+			FingerprintData->DisposeData();
+			return ERROR_CF_CONTENT_INVALID;
+		}
+	}
+	return erLoad;
+}
+
 void ComputerFingerprint::Print()
 {
 	FingerprintData->PrintContent();
@@ -181,7 +196,7 @@ int ComputerFingerprint::DupEncryptionKey(char **Key, int &Len)
 	}
 	//our fingerprint is empty ? What and how ?
 	if (SumSize == 0)
-		return ERROR;
+		return ERROR_GENERIC;
 
 	//assign internal state as encrypt key
 	Len = SumSize; // savage. later will work on it
@@ -190,7 +205,7 @@ int ComputerFingerprint::DupEncryptionKey(char **Key, int &Len)
 
 	//everything went well ?
 	if (*Key == NULL || Len == 0)
-		return ERROR;
+		return ERROR_GENERIC;
 
 	//now extract info we are interested in. Optional nodes are not used for encryption
 	SumSize = 0;
@@ -203,6 +218,40 @@ int ComputerFingerprint::DupEncryptionKey(char **Key, int &Len)
 			SumSize += Size;
 		}
 	}
+
+	//all ok
+	return 0;
+}
+
+int ComputerFingerprint::DupField(char **Content, int *Size, int Type)
+{
+	if (Content == NULL || Size == NULL)
+		return ERROR_BAD_ARGUMENTS;
+
+	int ret = FingerprintData->GetDataDup(Content, Size, Type);
+
+	return ret;
+}
+
+// this is the lasy solution, later extract plain content
+int ComputerFingerprint::DupContent(char **Content, int *Len)
+{
+	//sanity checks
+	if (Content == NULL || Len == NULL)
+		return ERROR_BAD_ARGUMENTS;
+
+	*Len = FingerprintData->GetDataSize(); // savage. later will work on it
+	if (*Len == 0)
+		return ERROR_GENERIC;
+
+	char *DestBuf = (char*)malloc(1 + *Len);
+	*Content = DestBuf;
+
+	//everything went well ?
+	if (*Content == NULL)
+		return ERROR_GENERIC;
+
+	memcpy(DestBuf, FingerprintData->GetData(), *Len);
 
 	//all ok
 	return 0;

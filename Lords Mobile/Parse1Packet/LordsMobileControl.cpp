@@ -25,6 +25,8 @@ void InvertGameScanDirection()
 DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
 {
 	int LoopCounter = 0;
+	ToggleFastScan(13, 9);
+	ToggleFastScan(13, 9);
 	while (KeepGameScanThreadsRunning == 1)
 	{
 //		RunLordsMobileTestsNoOCR();	// we do not have a break mechanism for this atm
@@ -34,7 +36,7 @@ DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
 			ScanKingdomArea2(69, LoopCounter % 5, 1020, 510, LoopCounter % 5);
 		remove("KingdomScanStatus.txt");
 		HTTP_GenerateMaps();
-		ToggleFastScan( 15, 9 );
+		ToggleFastScan( 13, 9 );
 	}
 	KeepGameScanThreadsRunning = 0;
 	return 0;

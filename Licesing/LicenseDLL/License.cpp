@@ -9,6 +9,7 @@
 #include <thread>
 #include "License_Grace.h"
 #include "License_API.h"
+#include "src/ComputerFingerprint.h"
 
 #ifdef _DEBUG
 	int ENABLE_ERROR_PRONE_TESTS = 0;
@@ -18,6 +19,10 @@
 LIBRARY_API int	GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, int MaxResultSize)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s",__FILE__,__LINE__,__FUNCTION__);
+
+	//intitialize return value even if we can not provide a valid one
+	strcpy_s(StoreResult, MaxResultSize, "");
+
 	License *lic = new License;
 	if (!lic)
 		return ERROR_UNIDENTIFIED_ERROR;
@@ -93,7 +98,7 @@ LIBRARY_API int	IsLicenseInGracePeriod(int *Result)
 * \param	FeatureName - name that is unique for each feature within a project
 * \return	Error code. 0 is no error
 */
-LIBRARY_API int	GetRemainingTime(int *LicenseTime, int *GraceTime, int *GraceReasonCode)
+LIBRARY_API int	GetRemainingTime(time_t *LicenseTime, time_t *GraceTime, int *GraceReasonCode)
 {
 	//sanity checks
 	if (LicenseTime == NULL || GraceTime == NULL || GraceReasonCode == NULL)
@@ -119,7 +124,9 @@ LIBRARY_API int	GetRemainingTime(int *LicenseTime, int *GraceTime, int *GraceRea
 		return ERROR_COULD_NOT_LOAD_LIC_FILE;
 	}
 
-	int RemainingGraceTimeIfTriggered = 0;
+	er = lic->GetRemainingSeconds(LicenseTime); //we can ignore error here. It could be comming from grace activation
+
+	time_t RemainingGraceTimeIfTriggered = 0;
 	int erQuery = lic->IsGracePeriodTriggered(&RemainingGraceTimeIfTriggered);
 	if (erQuery != 0)
 	{
@@ -179,6 +186,7 @@ License::~License()
 * \param	FeatureName - name that is unique for each feature within a project
 * \return	Error code. 0 is no error
 */
+/*
 int	License::AddProjectFeature(const char *ProjectName, const char *FeatureName)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
@@ -195,7 +203,8 @@ int	License::AddProjectFeature(const char *ProjectName, const char *FeatureName)
 	int ret = AddProjectFeature(ProjectId, FeatureId);
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return ret;
-}
+}*/
+
 /**
 * \brief    Copy string to destination
 * \details  Similar to original strcpy_s it's a safe string copy. The difference here is that we will fill the remaining buffer with random data to confuse the reader
@@ -206,7 +215,7 @@ int	License::AddProjectFeature(const char *ProjectName, const char *FeatureName)
 * \param	src - string buffer to copy data from
 * \return	Error code. 0 is no error
 */
-
+/*
 int strcpy_s_ran(char *dst, int dstMaxSize, const char *src)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
@@ -231,7 +240,7 @@ int strcpy_s_ran(char *dst, int dstMaxSize, const char *src)
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 	return NO_ERROR;
 }
-
+*/
 /**
 * \brief    Add to the content of the license
 * \details  License will conver this newly added project-feature combination. The activation key is automatically loaded from config file
@@ -241,6 +250,7 @@ int strcpy_s_ran(char *dst, int dstMaxSize, const char *src)
 * \param	FeatureId - number that is unique for each feature within a project
 * \return	Error code. 0 is no error
 */
+/*
 int License::AddProjectFeature(int ProjectId, int FeatureId)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
@@ -265,19 +275,53 @@ int License::AddProjectFeature(int ProjectId, int FeatureId)
 		Log(LL_ERROR, "Could not find a valid activation key for project %d and feature ID %d. Exiting", ProjectId, FeatureId);
 		return ERROR_INVALID_PROJECT_FEAURE;
 	}
+	
+	int ret = AddProjectFeature(ProjectId, FeatureId, ActivationKey);
+
+	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+	//fall through
+	return ret;
+}*/
+
+/**
+* \brief    Add to the content of the license
+* \details  License will conver this newly added project-feature combination. The activation key is automatically loaded from config file
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	ProjectId - number that is unique for each Siemens software product / project
+* \param	FeatureId - number that is unique for each feature within a project
+* \return	Error code. 0 is no error
+*/
+int License::AddProjectFeature(int ProjectId, int FeatureId, const char *ActivationKey)
+{
+	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
+
+	//usage flags might get added to logs
+	UsageStateFlags |= LSF_FEATURE_ADDED;
+
+	if (DisableEdit != 0)
+		return ERROR_DISABLED_FUNCTION;
+
+	DisableQuery = 1;
+
+	//sanity checks
+	if (ActivationKey == NULL)
+		return ERROR_INVALID_PARAMETER;
+
 	//create a new storable node
 	LicenseNode *NewNode = new LicenseNode;
 	memset(NewNode, 0, sizeof(LicenseNode));
-	NewNode->ProjectId = ProjectId;
-	NewNode->FeatureId = FeatureId;
-	errno_t er = strcpy_s_ran(NewNode->ActivateKey, sizeof(NewNode->ActivateKey), ActivationKey);
+	NewNode->SetProjectId( ProjectId );
+	NewNode->SetFeatureId( FeatureId );
+	NewNode->SetKey(ActivationKey);
+/*	errno_t er = strcpy_s_ran(NewNode->ActivateKey, sizeof(NewNode->ActivateKey), ActivationKey);
 	//wow, we should never trigger this
 	if (er)
 	{
 		Log(LL_ERROR, "Could not copy string");
 		delete NewNode;
 		return er;
-	}
+	}*/
 
 	//check if we already have this node. There is no point for dounble adding it
 	DataCollectionIterator itr;
@@ -330,14 +374,14 @@ int License::SetDuration(time_t pStartDate, unsigned int pDuration, unsigned int
 	UsageStateFlags |= LSF_DURATION_IS_SET;
 
 	//sanity checks
-	int LostSeconds = (signed int)(GetUnixtime() - pStartDate);
+/*	int LostSeconds = (signed int)(GetUnixtime() - pStartDate);
 	if (LostSeconds > 60 * 60)
 		Log(LL_DEBUG_INFO, "Start date is smaller than current date. Loosing %d seconds from durtation %d", LostSeconds, pDuration);
 	if (LostSeconds > (signed int)pDuration)
 	{
 		Log(LL_DEBUG_INFO, "Duration is too small. Readjusting start time to current time to avoid negative duration");
 		pStartDate = GetUnixtime();
-	}
+	} */
 
 	StartStamp = pStartDate;
 	Duration = pDuration;
@@ -420,8 +464,8 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 	strcpy_s(StoreResult, MaxResultSize, "");
 
 	time_t SecondsRemaining;
-	int GracePeriodRemainingSeconds = 0;
-	if (GetRemainingSeconds(SecondsRemaining) != 0 || SecondsRemaining <= 0)
+	time_t GracePeriodRemainingSeconds = 0;
+	if (GetRemainingSeconds(&SecondsRemaining) != 0 || SecondsRemaining <= 0)
 	{
 		//trigger grace period if it has not been done before
 		LicenseGracePeriod::UpdateStatus(GP_TRIGGER_GRACE_PERIOD, 0);
@@ -444,15 +488,15 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 		if (Type == DB_LICENSE_NODE)
 		{
 			LicenseNode *CurNode = (LicenseNode *)Data;
-			if (CurNode->ProjectId == ProjectId && CurNode->FeatureId == FeatureId)
+			if (CurNode->GetProjectId() == ProjectId && CurNode->GetFeatureId() == FeatureId)
 			{
-				int KeyLen = strlen(CurNode->ActivateKey);
-				if (KeyLen >= (int)(Size - sizeof(CurNode->ProjectId) - sizeof(CurNode->FeatureId) ))
+				size_t KeyLen = CurNode->GetKeyLen();
+				if (KeyLen >= HardCodedStringLimitLic)
 				{
 					Log(LL_ERROR, "License is corrupted. Skipping key fetch");
 					return ERROR_BUFFER_OVERFLOW;
 				}
-				if (KeyLen >= MaxResultSize)
+				if (KeyLen >= (size_t)MaxResultSize)
 				{
 					Log(LL_ERROR, "Activation key does not fit into return buffer");
 					return ERROR_BUFFER_OVERFLOW;
@@ -463,8 +507,9 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 				// should make a change only when a new valid license is getting used
 				LicenseGracePeriod::UpdateStatus(GP_SET_LICENSE_END, (int)StartStamp + Duration);
 				//return the activation key
-				errno_t er = strcpy_s(StoreResult, MaxResultSize, CurNode->ActivateKey);
-				return er;
+//				errno_t er = strcpy_s(StoreResult, MaxResultSize, CurNode->ActivateKey);
+				CurNode->GetKey(StoreResult, MaxResultSize);
+				return 0;
 			}
 		}
 	}
@@ -483,7 +528,7 @@ int	License::GetActivationKey(int ProjectId, int FeatureId, char *StoreResult, i
 * \param	RemainingSeconds = Endstamp - max( current_time, start_time )
 * \return	Error code. 0 is no error
 */
-int	License::GetRemainingSeconds(time_t &RemainingSeconds)
+int	License::GetRemainingSeconds(time_t *RemainingSeconds)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 
@@ -498,17 +543,18 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 	char *Data;
 	int Size;
 	int Type;
-	RemainingSeconds = 0;
+	*RemainingSeconds = 0;
 	int ItrRet;
 	ItrRet = itr.GetNext(&Data, Size, Type);
+	time_t EndTime = 0;
 	while (DCI_SUCCESS == ItrRet)
 	{
 		if (Type == DB_LICENSE_END && Size >= sizeof(time_t))
 		{
 			time_t CurTime = GetUnixtime();
-			time_t *EndTime = (time_t *)Data;
-			if (CurTime < *EndTime)
-				RemainingSeconds = *EndTime - CurTime;
+			EndTime = *(time_t *)Data;
+			if (CurTime < EndTime)
+				*RemainingSeconds = EndTime - CurTime;
 		}
 		//we loaded data recently ? Update our internal state
 		if (Type == DB_LICENSE_START && StartStamp == 0 && Size >= sizeof(time_t))
@@ -520,13 +566,24 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 		ItrRet = itr.GetNext(&Data, Size, Type);
 	}
 
-	//remaining seconds can become negative
-	if (StartStamp > GetUnixtime())
-		RemainingSeconds = Duration;
-	else
-		RemainingSeconds = (StartStamp + Duration) - GetUnixtime();
+#ifdef ENABLE_ANTI_HACK_CHECKS
+	if (StartStamp + Duration != EndTime)
+	{
+		Log(LL_HACKING, "License duration mismatch");
+		*RemainingSeconds = 0;
+		return ERROR_LICENSE_EXPIRED;
+	}
+#endif
 
-	if (RemainingSeconds != 0)
+	//remaining seconds can become negative !
+	if (Duration == PERMANENT_LICENSE_MAGIC_DURATION )
+		*RemainingSeconds = PERMANENT_LICENSE_MAGIC_DURATION;
+	else if (StartStamp > GetUnixtime())
+		*RemainingSeconds = Duration;
+	else
+		*RemainingSeconds = (StartStamp + Duration) - GetUnixtime();
+
+	if (*RemainingSeconds != 0)
 		return NO_ERROR;
 
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
@@ -540,7 +597,7 @@ int	License::GetRemainingSeconds(time_t &RemainingSeconds)
 * \param	Result - 0 if license is either expired or not using grace period. 1 if license is using grace period
 * \return	Error code. 0 is no error
 */
-int License::IsGracePeriodTriggered(int *RemainingSeconds)
+int License::IsGracePeriodTriggered(time_t *RemainingSeconds)
 {
 	//usage flags might get added to logs
 	UsageStateFlags |= LSF_GRACE_STATUS_QUERIED;
@@ -552,7 +609,7 @@ int License::IsGracePeriodTriggered(int *RemainingSeconds)
 	*RemainingSeconds = 0;
 
 	time_t RemainingSec = 0;
-	int er = GetRemainingSeconds(RemainingSec);
+	int er = GetRemainingSeconds(&RemainingSec);
 	if (er != 0 && er != ERROR_LICENSE_EXPIRED)
 	{
 		Log(LL_ERROR, "Could not get time info from license.dat");
@@ -580,7 +637,7 @@ int License::IsGracePeriodTriggered(int *RemainingSeconds)
 		//license is in a valid grace period
 		if (IsGraceTriggered != 0 && GracePeriodRemaining > 0)
 		{
-			*RemainingSeconds = (int)GracePeriodRemaining;
+			*RemainingSeconds = GracePeriodRemaining;
 			return NO_ERROR;
 		}
 	}
@@ -590,17 +647,18 @@ int License::IsGracePeriodTriggered(int *RemainingSeconds)
 
 	return NO_ERROR;
 }
-
 /**
 * \brief    Save the licesense content to a file
 * \details  Save the license info to a file. The content of the license will be encoded and can only be decoded on the machine the fingerprint was generated
 * \author   Jozsa Istvan
 * \date     2017-03-20
 * \param	FileName - The path and the name of the file where to save the content
-* \param	FingerprintFilename - The path and the name of the fingerprint file that will be used to encode the content of the license
+* \param	Key - encryption key
+* \param	KeyLen - encryption key length
+* \param	Append - append multiple licenses to the same file ?
 * \return	Error code. 0 is no error
 */
-int	License::SaveToFile(const char *FileName, const char *FingerprintFilename, int Append)
+int	License::SaveToFile(const char *FileName, const char *Key, const int KeyLen, int Append)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 
@@ -614,41 +672,35 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename, i
 	if (FileName == NULL)
 		return ERROR_BAD_PATHNAME;
 
+	if (Key == NULL || KeyLen == 0)
+		return ERROR_MISSING_ENCRYPTION_KEY;
+
 	int TotalSize = NodeList->GetDataSize();
 	unsigned char *TempBuff = new unsigned char[TotalSize];
 	unsigned int EncryptSalt = 0;
 
 	//if we have a fingerprint file than we can use it for simetric encryption
-	if (FingerprintFilename != NULL)
+	NodeList->SetEncription(DCE_EXTERNAL_FINGERPRINT);
+	memcpy(TempBuff, NodeList->GetData(), TotalSize);
+	EncryptSalt = GenerateSaltKey(StartStamp, Duration);
+	int er = EncryptWithFingerprintContent((unsigned char*)Key, KeyLen, (unsigned int)EncryptSalt, TempBuff, TotalSize);
+	if (er != 0)
 	{
-		NodeList->SetEncription(DCE_EXTERNAL_FINGERPRINT);
-		memcpy(TempBuff, NodeList->GetData(), TotalSize);
-		EncryptSalt = GenerateSaltKey(StartStamp, Duration);
-		int er = EncryptWithFingerprint(FingerprintFilename, (unsigned int)EncryptSalt, TempBuff, TotalSize);
-		if (er != 0)
-		{
-			delete TempBuff;
-			return er;
-		}
+		delete TempBuff;
+		return er;
 	}
-	else
-#ifdef _DEBUG
-		memcpy(TempBuff, NodeList->GetData(), TotalSize);
-#else
-		return ERROR_MISSING_PARAMETER;
-#endif
 
 	//dump the content to a file
 	//open file
 	FILE *f;
-	errno_t er;
+	errno_t erf;
 
 	if (Append != 0)
-		er = fopen_s(&f, FileName, "ab"); //can stack multiple licenses into a single file
+		erf = fopen_s(&f, FileName, "ab"); //can stack multiple licenses into a single file
 	else
-		er = fopen_s(&f, FileName, "wb");
+		erf = fopen_s(&f, FileName, "wb");
 
-	if (er != NO_ERROR)
+	if (erf != NO_ERROR)
 	{
 		Log(LL_ERROR, "Could not save license. Error opening file %s", FileName);
 		return er;
@@ -673,6 +725,37 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename, i
 	return NO_ERROR;
 }
 /**
+* \brief    Save the licesense content to a file
+* \details  Save the license info to a file. The content of the license will be encoded and can only be decoded on the machine the fingerprint was generated
+* \author   Jozsa Istvan
+* \date     2017-03-20
+* \param	FileName - The path and the name of the file where to save the content
+* \param	FingerprintFilename - The path and the name of the fingerprint file that will be used to encode the content of the license
+* \return	Error code. 0 is no error
+*/
+int	License::SaveToFile(const char *FileName, const char *FingerprintFilename, int Append)
+{
+	if (FingerprintFilename == NULL)
+		return ERROR_BAD_PATHNAME;
+
+	//if we have a fingerprint file than we can use it for simetric encryption
+	ComputerFingerprint CF;
+	if (CF.LoadFingerprint(FingerprintFilename) != 0)
+		return ERROR_BAD_PATHNAME;
+
+	//load the encryption key from file
+	char *EncryptKey;
+	int KeyLen;
+	if (CF.DupEncryptionKey(&EncryptKey, KeyLen) != 0)
+		return ERROR_BAD_ARGUMENTS;
+
+	int er = SaveToFile(FileName, EncryptKey, KeyLen, Append);
+
+	FreeDup(EncryptKey);
+
+	return er;
+}
+/**
 * \brief    Load the content of a license from a file
 * \details  Buffer the content of the license into internal storage container
 * \author   Jozsa Istvan
@@ -680,7 +763,7 @@ int	License::SaveToFile(const char *FileName, const char *FingerprintFilename, i
 * \param	FileName - The path and the name of the file where to load from the content of the license
 * \return	Error code. 0 is no error
 */
-int	License::LoadFromFile(char *FileName)
+int	License::LoadFromFile(const char *FileName)
 {
 	return LoadFromFile(FileName, NULL);
 }
@@ -699,7 +782,7 @@ long GetFileSize(const char *filename);
 * \param	FingerprintFilename - a file ( or NULL ) containing the decode key
 * \return	Error code. 0 is no error
 */
-int	License::InitFromBuffer(char *TempBuff, int TotalSize, unsigned int EncryptSalt, char *FingerprintFilename)
+int	License::InitFromBuffer(char *TempBuff, int TotalSize, unsigned int EncryptSalt, char *Key, int KeyLen)
 {
 
 #ifdef _DEBUG		// test random bad input
@@ -719,7 +802,7 @@ int	License::InitFromBuffer(char *TempBuff, int TotalSize, unsigned int EncryptS
 	//deobfuscate
 	int erDecrypt = 0;
 	if (EncryptSalt)
-		erDecrypt = DecryptWithFingerprint(FingerprintFilename, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
+		erDecrypt = EncryptWithFingerprintContent((unsigned char*)Key, KeyLen, EncryptSalt, (unsigned char*)TempBuff, TotalSize);
 
 	//make sure we can store it
 	NodeList->DisposeData();
@@ -763,13 +846,13 @@ int	License::InitFromBuffer(char *TempBuff, int TotalSize, unsigned int EncryptS
 
 #ifdef ENABLE_ANTI_HACK_CHECKS
 	time_t TempRemainingSeconds = 0;
-	if (GetRemainingSeconds(TempRemainingSeconds) == 0)
+	if (GetRemainingSeconds(&TempRemainingSeconds) == 0)
 	{
 		time_t ExpectedSaltKey = GenerateSaltKey(StartStamp, Duration);
 		if (ExpectedSaltKey != EncryptSalt)
 		{
 			NodeList->DisposeData();
-			Log(LL_DEBUG_INFO, "Encryption mismatch while loading license content");
+			Log(LL_HACKING, "Encryption mismatch while loading license content");
 			return ERROR_LICENSE_INVALID;
 		}
 	}
@@ -787,7 +870,7 @@ int	License::InitFromBuffer(char *TempBuff, int TotalSize, unsigned int EncryptS
 * \param	FingerprintFilename - optional paramether. You should leave this NULL
 * \return	Error code. 0 is no error
 */
-int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
+int	License::LoadFromFile(const char *FileName, char *FingerprintFilename)
 {
 	Log(LL_DEBUG_DEBUG_ONLY, "%s-%d-%s", __FILE__, __LINE__, __FUNCTION__);
 
@@ -801,6 +884,19 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 	if (FileName == NULL)
 		return ERROR_FILE_INVALID;
 
+	//if we have a fingerprint file than we can use it for simetric encryption
+	ComputerFingerprint CF;
+	if (FingerprintFilename != NULL && CF.LoadFingerprint(FingerprintFilename) != 0)
+		return ERROR_BAD_PATHNAME;
+	else if (CF.GenerateFingerprint() != 0)
+		return ERROR_FILE_INVALID;
+
+	//load the encryption key from file
+	char *EncryptKey;
+	int KeyLen;
+	if (CF.DupEncryptionKey(&EncryptKey, KeyLen) != 0)
+		return ERROR_BAD_ARGUMENTS;
+
 	//open file
 	FILE *f;
 	errno_t er = fopen_s(&f, FileName, "rb");
@@ -813,7 +909,9 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 
 	if (f == NULL)
 	{
-		Log(LL_ERROR, "Could not load license. Error opening file %s", FileName);
+		char buffer[MAX_PATH];
+		GetModuleFileName(NULL, buffer, MAX_PATH);
+		Log(LL_ERROR, "Could not load license. Error opening file %s/%s", buffer, FileName);
 		return ERROR_FILE_INVALID;
 	}
 
@@ -863,11 +961,13 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 			return ERROR_FILE_INVALID;
 		}
 
-		FoundDecodableLicense = InitFromBuffer(TempBuff, TotalSize, EncryptSalt, FingerprintFilename);
+		FoundDecodableLicense = !InitFromBuffer(TempBuff, TotalSize, EncryptSalt, EncryptKey, KeyLen);
 		delete TempBuff;
 	} while (!feof(f) && TotalBytesRead < FileSize && FoundDecodableLicense==0);
 	//done with the FILE
 	fclose(f);
+
+	FreeDup(EncryptKey);
 
 	if (FoundDecodableLicense == 0)
 		return ERROR_FILE_INVALID;
@@ -876,7 +976,24 @@ int	License::LoadFromFile(char *FileName, char *FingerprintFilename)
 	//all good
 	return NO_ERROR;
 }
+/**
+* \brief    Deallocate memory allocated by dup functions
+* \details  This is a very important function if you are using different versions of compilers. You might get heap corruption warnings if you mix different versions of CRT
+* \author   Jozsa Istvan
+* \date     2017-04-19
+* \param	p - pointer returned by one of the Dup functions
+* \return	Error code. 0 is no error
+*/
+int FreeDup(void *p)
+{
+	if (p == NULL)
+		return ERROR_MISSING_PARAMETER;
 
+	//using same CRT free as the one we used to allocate the memory
+	free(p);
+
+	return 0;
+}
 
 //////////////////// BEGIN ASYNC CALLBACK IMPLEMENTATION FOR WINDOWS //////////////////////////////////
 //getting activation key in async way might seem a bit hecktic. Feel free to use simple way

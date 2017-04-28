@@ -4,12 +4,22 @@
 #include <crtdbg.h>
 #include <stdio.h>
 #include <conio.h>
+#include "../LicenseDLL/License_API.h"
 #include "../LicenseDLL/src/ComputerFingerprint.h"
+#include "../LicenseDLL/src/DataPacker.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/LicenseDLL.lib")
+#ifndef X64
+	#ifdef _DEBUG
+		#pragma comment(lib, "../Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#endif
 #else
-	#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#ifdef _DEBUG
+		#pragma comment(lib, "../x64/Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../x64/Release/LicenseDLL.lib")
+	#endif
 #endif
 
 int main()
@@ -36,7 +46,7 @@ int main()
 	}
 
 	//test load
-	er = ClientSeed->LoadFingerprint("../ClientSeed.dat");
+	er = ClientSeed->LoadFingerprint("../LicenseSeed.dat");
 	if (er != 0)
 	{
 		printf("Could not load ComputerFingerprint content\n");
@@ -48,10 +58,20 @@ int main()
 	printf("Client PC fingerprint containes :\n\n");
 	ClientSeed->Print();
 
+	//get a specific field
+	char *Host;
+	int Size;
+	if (ClientSeed->DupField(&Host, &Size, DB_COMPUTER_NAME) == 0 && Host != NULL)
+	{
+		printf("Hostname is : %s\n", Host);
+		FreeDup(Host);
+	}
+
 	//destroy
 	DestroyComputerFingerprint(&ClientSeed);
 
 	//wait for keypress
+	printf("Press any key to exit\n");
 	_getch();
 
 	_CrtMemCheckpoint(&s2);

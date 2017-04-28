@@ -120,7 +120,8 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 
 	// send GET / HTTP
 	int BytesToSend = (int)strlen(get_http.c_str());
-	send(Socket, get_http.c_str(), (int)BytesToSend, 0);
+	int BytesTotalSent = 0;
+	BytesTotalSent = send(Socket, get_http.c_str(), (int)BytesToSend, 0);
 
 	// recieve html
 //#define DEBUG_HTTP_BEHAVIOR 1
@@ -144,7 +145,7 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 #endif
 
 	closesocket(Socket);
-	return 0;
+	return !(BytesTotalSent == BytesToSend);
 }
 
 int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
@@ -178,9 +179,7 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 	if (max_amt>0)
 		AppendURLQuery(get_http, "MaxAmtNow", max_amt);
 
-	HTTPPostData(get_http,"",0);
-
-	return 0;
+	return HTTPPostData(get_http, "", 0);
 }
 
 void HTTP_GenerateMaps()
@@ -245,34 +244,35 @@ int	KeepPlayerPushThreadsRunning = 1;
 
 void QueueObjectToProcess(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].type = type;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].k = k;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].x = x;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].y = y;
+	int WriteIndex = PlayerCircularBufferWriteIndex;
+	PlayerCircularBuffer[WriteIndex].type = type;
+	PlayerCircularBuffer[WriteIndex].k = k;
+	PlayerCircularBuffer[WriteIndex].x = x;
+	PlayerCircularBuffer[WriteIndex].y = y;
 
 	if (name != NULL)
-		strcpy_s_max(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name), name, MAX_BUILDING_NAME);
+		strcpy_s_max(PlayerCircularBuffer[WriteIndex].name, sizeof(PlayerCircularBuffer[WriteIndex].name), name, MAX_BUILDING_NAME);
 	else
-		PlayerCircularBuffer[PlayerCircularBufferWriteIndex].name[0] = 0;
+		PlayerCircularBuffer[WriteIndex].name[0] = 0;
 	if (guild != NULL)
-		strcpy_s_max(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild), guild, MAX_GUILD_SHORT_NAME);
+		strcpy_s_max(PlayerCircularBuffer[WriteIndex].guild, sizeof(PlayerCircularBuffer[WriteIndex].guild), guild, MAX_GUILD_SHORT_NAME);
 	else
-		PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guild[0] = 0;
+		PlayerCircularBuffer[WriteIndex].guild[0] = 0;
 	if (guildf != NULL)
-		strcpy_s_max(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf, sizeof(PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf), guildf, MAX_GUILD_FULL_NAME);
+		strcpy_s_max(PlayerCircularBuffer[WriteIndex].guildf, sizeof(PlayerCircularBuffer[WriteIndex].guildf), guildf, MAX_GUILD_FULL_NAME);
 	else
-		PlayerCircularBuffer[PlayerCircularBufferWriteIndex].guildf[0] = 0;
+		PlayerCircularBuffer[WriteIndex].guildf[0] = 0;
 
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].clevel = clevel;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].kills = kills;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].vip = vip;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].grank = grank;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].might = might;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].StatusFlags = StatusFlags;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].plevel = plevel;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].title = title;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].max_amt_now = max_amt;
-	PlayerCircularBuffer[PlayerCircularBufferWriteIndex].monstertype = monstertype;
+	PlayerCircularBuffer[WriteIndex].clevel = clevel;
+	PlayerCircularBuffer[WriteIndex].kills = kills;
+	PlayerCircularBuffer[WriteIndex].vip = vip;
+	PlayerCircularBuffer[WriteIndex].grank = grank;
+	PlayerCircularBuffer[WriteIndex].might = might;
+	PlayerCircularBuffer[WriteIndex].StatusFlags = StatusFlags;
+	PlayerCircularBuffer[WriteIndex].plevel = plevel;
+	PlayerCircularBuffer[WriteIndex].title = title;
+	PlayerCircularBuffer[WriteIndex].max_amt_now = max_amt;
+	PlayerCircularBuffer[WriteIndex].monstertype = monstertype;
 
 	PlayerCircularBufferWriteIndex = (PlayerCircularBufferWriteIndex + 1) % MAX_PLAYERS_CIRCULAR_BUFFER;
 }
@@ -289,13 +289,16 @@ DWORD WINAPI BackgroundProcessPlayers(LPVOID lpParam)
 		//can we pop a packet from the queue ?
 		if (PlayerCircularBufferReadIndex != PlayerCircularBufferWriteIndex)
 		{
-			printf("process player : in queue %d\n", PlayerCircularBufferWriteIndex - PlayerCircularBufferReadIndex);
+			printf("process player : in queue %d ( slots remain %d)\n", PlayerCircularBufferWriteIndex - PlayerCircularBufferReadIndex, MAX_PLAYERS_CIRCULAR_BUFFER - PlayerCircularBufferWriteIndex);
 			if (HTTPPostData(PlayerCircularBuffer[PlayerCircularBufferReadIndex]) == 0)
 				PlayerCircularBufferReadIndex = (PlayerCircularBufferReadIndex + 1) % MAX_PLAYERS_CIRCULAR_BUFFER;
 		}
 		else
+		{
+			PlayerCircularBufferWriteIndex = PlayerCircularBufferReadIndex = 0;
 			//avoid 100% CPU usage. There is no scientific value here
 			Sleep(10);
+		}
 	}
 	KeepPlayerPushThreadsRunning = 0;
 	return 0;

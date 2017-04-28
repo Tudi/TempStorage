@@ -95,6 +95,7 @@ public:
 	int						LoadFromFile(const char *FileName);			// load + Deobfuscate the content of a list
 	int						SetEncription(unsigned char EncryptType);	// do we use internal encryption or external ? Maybe in the future more modes will be added
 	int						IsDataValid();								// try to guess if the content loaded into the store is a valid store
+	int						GetDataDup(char **Data, int *Size, int Type);	//duplicate a field content into a newly allocated buffer. If it exists
 
 	void					PrintContent();								// Debugging the content of the list
 	void					DisposeData();								// get rid of the content of the cache

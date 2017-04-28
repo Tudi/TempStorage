@@ -204,7 +204,9 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 
 	//capturing all TCP packets from IP
 	if (ih->ip_protocol == PROTOCOL_TCPIP
-		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 && ((unsigned char*)&ih->ip_srcaddr)[2] == 47 && ((unsigned char*)&ih->ip_srcaddr)[3] == 118)
+//		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 && ((unsigned char*)&ih->ip_srcaddr)[2] == 47 && ((unsigned char*)&ih->ip_srcaddr)[3] == 118)
+//		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 && ((unsigned char*)&ih->ip_srcaddr)[2] == 47 && ((unsigned char*)&ih->ip_srcaddr)[3] == 39)
+		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 )
 		)
 	{
 		tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + 14 + ip_len);

@@ -7,10 +7,18 @@
 #include <Windows.h>
 #include "../LicenseDLL/License.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/LicenseDLL.lib")
+#ifndef X64
+	#ifdef _DEBUG
+		#pragma comment(lib, "../Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#endif
 #else
-	#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#ifdef _DEBUG
+		#pragma comment(lib, "../x64/Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../x64/Release/LicenseDLL.lib")
+	#endif
 #endif
 
 //this list should be generated from "ProjectNameIDs.txt"
@@ -18,7 +26,7 @@ enum SiemensProjects
 {
 	ALMA = 1,
 	WDR = 2,
-	MAX_USED_SIEMENS_PROJECT_IDS = 255
+	MAX_USED_SIEMENS_PROJECT_IDS = 50
 };
 
 //this list should be generated from "FeatureNameIDs.txt"
@@ -26,7 +34,7 @@ enum SiemensProjectFeatures
 {
 	WDR_SSL = 1,
 	ALMA_KPI = 2,
-	MAX_USED_SIEMENS_FEATURE_IDS = 255,
+	MAX_USED_SIEMENS_FEATURE_IDS = 50,
 };
 
 int main()
@@ -58,17 +66,15 @@ int main()
 		er = TestLicense->LoadFromFile("License.dat", "LicenseSeed.dat");
 	if (er != 0)
 	{
-		printf("Error %d while loading license. Please solve it to continue\n");
+		printf("Error %d while loading license. Please solve it to continue\n", er);
 		delete TestLicense;
 		return 1;
 	}
 
 	time_t RemainingSecondsInLicense = 0;
-	er = TestLicense->GetRemainingSeconds(RemainingSecondsInLicense);
+	er = TestLicense->GetRemainingSeconds(&RemainingSecondsInLicense);
 	if (er != 0)
-	{
 		printf("Could not extract remaining seconds from license. Error code %d\n", er);
-	}
 	printf("License is still valid for %d seconds\n", (int)RemainingSecondsInLicense);
 
 	//find the key we need to activate a feature

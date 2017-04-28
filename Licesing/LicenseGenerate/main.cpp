@@ -10,11 +10,33 @@
 #include "../LicenseDLL/ProjectFeatureKeys.h"
 #include "../LicenseDLL/License.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/LicenseDLL.lib")
+#ifndef X64
+	#ifdef _DEBUG
+		#pragma comment(lib, "../Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#endif
 #else
-	#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#ifdef _DEBUG
+		#pragma comment(lib, "../x64/Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../x64/Release/LicenseDLL.lib")
+	#endif
 #endif
+
+void AddAlmaTestRequiredData(License *TestLicense)
+{
+#define LICENSE_PRODUCT_ID_WINCCOA			9
+#define LICENSE_FEATURE_ID_MAJOR_REV		9
+#define LICENSE_FEATURE_ID_MINOR_REV		10
+#define LICENSE_PRODUCT_ID_ALMA				1
+#define LICENSE_FEATURE_ID_KPI_STATIC		3
+	int er;
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_WINCCOA, LICENSE_FEATURE_ID_MAJOR_REV, "3");
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_WINCCOA, LICENSE_FEATURE_ID_MINOR_REV, "12");
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_ALMA, LICENSE_FEATURE_ID_KPI_STATIC, "STATIC.Config");
+	er = TestLicense->AddProjectFeature(1, 2, "KPITestEnable");
+}
 
 int main()
 {
@@ -28,6 +50,7 @@ int main()
 	_CrtMemState s1, s2, s3;
 	_CrtMemCheckpoint(&s1);
 
+	int er;
 	ProjectFeatureKeyDB *ProjectFeatureDropdownList;
 	ProjectFeatureDropdownList = new ProjectFeatureKeyDB;
 
@@ -48,16 +71,25 @@ int main()
 	ProjectFeatureKeyStore *desc1 = ProjectFeatureDropdownList->ListStart();
 	ProjectFeatureKeyStore *desc2 = ProjectFeatureDropdownList->ListNext();
 
-	int LicenseDuration = 30 * 24 * 60 * 60;	// given in seconds
+	int LicenseDuration = 7 * 24 * 60 * 60;			// given in seconds. 1 week to test warning
 	time_t LicenseStart = time(NULL) + 5 * 60;		// 5 minutes in the future
 
 	//create a license
 	License *TestLicense = new License;
-	TestLicense->SetDuration(LicenseStart, LicenseDuration, 5 * 60);
-	TestLicense->AddProjectFeature(desc1->ProjectID, desc1->FeatureID);
-//	TestLicense->AddProjectFeature(desc2->ProjectID, desc2->FeatureID);
+	er = TestLicense->SetDuration(LicenseStart, LicenseDuration, 5 * 60);
+	if (er != 0)
+		printf("Could not set duration of license\n");
+	er = TestLicense->AddProjectFeature(desc1->ProjectID, desc1->FeatureID, desc1->ActivatorKey);
+	if (er != 0)
+		printf("Could not add activation key\n");
+	//	TestLicense->AddProjectFeature(desc2->ProjectID, desc2->FeatureID, desc2->ActivatorKey);
 
-	TestLicense->SaveToFile("../License.dat","../LicenseSeed.dat");
+	//this is for testing ALMA
+	AddAlmaTestRequiredData(TestLicense);
+
+	er = TestLicense->SaveToFile("../License.dat","../LicenseSeed.dat");
+	if (er != 0)
+		printf("Could not save license\n");
 
 	delete TestLicense;
 	TestLicense = NULL;

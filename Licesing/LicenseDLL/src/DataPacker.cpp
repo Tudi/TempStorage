@@ -175,7 +175,7 @@ int GenericDataStore::LoadFromFile(const char *FileName)
 	size_t BytesRead;
 	int TotalSize;
 	BytesRead = fread(&TotalSize, 1, sizeof(int), f);
-	if (BytesRead < sizeof(int) || TotalSize <= 0 || TotalSize >= MAX_EXPECTED_FILE_SIZE)
+	if (BytesRead != sizeof(int) || TotalSize <= 0 || TotalSize >= MAX_EXPECTED_FILE_SIZE)
 	{
 		fclose(f);
 		return ERROR_FILE_INVALID;
@@ -186,7 +186,7 @@ int GenericDataStore::LoadFromFile(const char *FileName)
 
 	//read the whole thing into memory
 	BytesRead = fread(Data, 1, TotalSize, f);
-	if ((int)BytesRead < TotalSize)
+	if ((int)BytesRead != TotalSize)
 	{
 		DisposeData();
 		fclose(f);
@@ -195,7 +195,7 @@ int GenericDataStore::LoadFromFile(const char *FileName)
 
 	unsigned int OldHash;
 	BytesRead = fread(&OldHash, 1, sizeof(int), f);
-	if (BytesRead < sizeof(int))
+	if (BytesRead != sizeof(int))
 	{
 		DisposeData();
 		fclose(f);
@@ -203,6 +203,12 @@ int GenericDataStore::LoadFromFile(const char *FileName)
 	}
 
 	fclose(f);
+
+	if (Data->Ver != CURRENT_PACKER_VERSION || (int)Data->Size != TotalSize || Data->Count >= Data->Size || Data->EncryptType >= DCE_INVALID_ENCRYPTION_TYPE)
+	{
+		DisposeData();
+		return ERROR_FILE_INVALID;
+	}
 
 	//deobfuscate
 	if (Data->EncryptType == DCE_INTERNAL_CyclicXOR_KEY)
@@ -250,29 +256,21 @@ void GenericDataStore::PrintContent()
 				printf("%02X ", (unsigned char)buff[i]);
 		}
 		else if (Type == DB_MB_SN)
-		{
 			printf("Mothernoard SN : \t%s", buff);
-		}
 		else if (Type == DB_C_SN)
-		{
 			printf("C Drive SN : \t\t%d", *(int*)buff);
-		}
 		else if (Type == DB_COMPUTER_NAME)
-		{
 			printf("Computer name : \t%s", buff);
-		}
 		else if (Type == DB_NETBIOS_NAME)
-		{
 			printf("Netbios Name : \t%ls", buff);
-		}
 		else if (Type == DB_DOMAIN_NAME)
-		{
 			printf("Domain Name : \t%ls", buff);
-		}
+		else if (Type == DB_MACHINE_ROLE)
+			printf("Machine role : \t%s", buff);
+		else if (Type == DB_CLIENT_NAME)
+			printf("Client name : \t%s", buff);
 		else
-		{
 			printf("Unk block type %d with size : \t%d", Type, Size);
-		}
 		printf("\n");
 	}
 }
@@ -313,6 +311,7 @@ void DataCollectionIterator::Init(DataCollectionHeader *pIterateWhat)
 		return;
 	IterateWhat = pIterateWhat;
 	NextData = pIterateWhat->Blocks;
+	AtBlock = 0;
 }
 
 int DataCollectionIterator::GetNext(char **Data, int &Size, int &Type)
@@ -391,4 +390,32 @@ int	GenericDataStore::IsDataValid()
 	}
 
 	return 1;
+}
+
+int	GenericDataStore::GetDataDup(char **Data, int *Size, int Type)
+{
+	//sanity checks
+	if (Data == NULL || Size == NULL)
+		return ERROR_BAD_ARGUMENTS;
+
+	//in case we do not find the field we are looking for
+	*Data = NULL;
+	*Size = 0;
+
+	//search for the field
+	DataCollectionIterator itr;
+	itr.Init(this);
+	char *tData;
+	int tSize;
+	int tType;
+	while (DCI_SUCCESS == itr.GetNext(&tData, tSize, tType))
+		if (Type == tType)
+		{
+			*Data = (char*)malloc(tSize);
+			memcpy(*Data, tData, tSize);
+			*Size = tSize;
+			return 0;
+		}
+
+	return 0;
 }

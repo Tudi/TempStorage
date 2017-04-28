@@ -6,10 +6,18 @@
 #include <conio.h>
 #include "../LicenseDLL/src/ComputerFingerprint.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/LicenseDLL.lib")
+#ifndef X64
+	#ifdef _DEBUG
+		#pragma comment(lib, "../Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#endif
 #else
-	#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#ifdef _DEBUG
+		#pragma comment(lib, "../x64/Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../x64/Release/LicenseDLL.lib")
+	#endif
 #endif
 
 int main()
@@ -44,8 +52,11 @@ int main()
 		return 1;
 	}
 
+	//test extended computer info
+	ClientSeed->AppendClientInfo("NoRole", "Istvan");
+
 	//test save
-	er = ClientSeed->SaveFingerprint("../ClientSeed.dat");
+	er = ClientSeed->SaveFingerprint("../LicenseSeed.dat");
 	if (er != 0)
 	{
 		printf("Could not save ComputerFingerprint content\n");

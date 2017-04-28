@@ -619,8 +619,11 @@ DWORD WINAPI BackgroundProcessPackets(LPVOID lpParam)
 			}
 		}
 		else
-		//avoid 100% CPU usage. There is no scientific value here
+		{
+			PacketCircularBufferReadIndex = PacketCircularBufferWriteIndex = 0;
+			//avoid 100% CPU usage. There is no scientific value here
 			Sleep(10);
+		}
 	}
 	KeepThreadsRunning = 0;
 	return 0;

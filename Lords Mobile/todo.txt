@@ -1,5 +1,7 @@
 - site feature : gold give to burn someone( bounty without kills )
-- live parse player data
-- new bot project with : parse thread with queued commands, pause capability, console access for commands
 - check if screeen could get extended 
 - log number of times seen with prisoner
+- show time since last burnt, min might when burnt
+- 
+
+LU9LhqNX9rWC

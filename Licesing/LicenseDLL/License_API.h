@@ -18,7 +18,9 @@ extern "C"
 	// for extra security we could detach ourself to a new thread and return result later to an unknown buffer
 	LIBRARY_API void GetActivationKeyAsync(int ProjectId, int FeatureId, void *CallBackFunc);
 	// for user notification about license incomming expiration
-	LIBRARY_API int	GetRemainingTime(int *LicenseTime, int *GraceTime, int *GraceReasonCode);
+	LIBRARY_API int	GetRemainingTime(time_t *LicenseTime, time_t *GraceTime, int *GraceReasonCode);
+	// Use this deallocator for all the function returns that duplicate data. Mostly used when constructing a license
+	LIBRARY_API int FreeDup(void *);
 #ifdef _DEBUG
 	//for debugging only
 #endif

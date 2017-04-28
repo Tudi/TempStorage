@@ -10,10 +10,18 @@
 #include "../LicenseDLL/License.h"
 #include "../LicenseDLL/License_grace.h"
 
-#ifdef _DEBUG
-	#pragma comment(lib, "../Debug/LicenseDLL.lib")
+#ifndef X64
+	#ifdef _DEBUG
+		#pragma comment(lib, "../Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#endif
 #else
-	#pragma comment(lib, "../Release/LicenseDLL.lib")
+	#ifdef _DEBUG
+		#pragma comment(lib, "../x64/Debug/LicenseDLL.lib")
+	#else
+		#pragma comment(lib, "../x64/Release/LicenseDLL.lib")
+	#endif
 #endif
 
 //this list should be generated from "ProjectNameIDs.txt"
@@ -29,6 +37,12 @@ enum SiemensProjectFeatures
 	WDR_SSL		= 1,
 	ALMA_KPI	= 2,
 };
+
+void ExePath() {
+	char buffer[MAX_PATH];
+	GetModuleFileName(NULL, buffer, MAX_PATH);
+	printf("Current Exe path %s\n", buffer);
+}
 
 char GlobalKeyStoreTestCallback[2000];
 int ReceivedCallback = 0;
@@ -53,6 +67,30 @@ int main()
 	_CrtMemState s1, s2, s3;
 	_CrtMemCheckpoint(&s1);
 
+	ExePath();
+
+	//////////// most common way to use licensing module ////
+	{
+		time_t LicenseRemainingTime;
+		time_t GracePeriodRemainingTime;
+		int GraceStatusCode;
+		int LicenseCheckRes = GetRemainingTime(&LicenseRemainingTime, &GracePeriodRemainingTime, &GraceStatusCode);
+		if (LicenseCheckRes != 0 || (LicenseRemainingTime == 0 && GracePeriodRemainingTime == 0))
+		{
+			printf("LicenseCheckRes %d", LicenseCheckRes);
+			printf("LicenseRemainingTime %d", (int)LicenseRemainingTime);
+			printf("GracePeriodRemainingTime %d", (int)GracePeriodRemainingTime);
+		}
+
+		char ActivationKeyBuffer[200];
+		int GetKeyRes = GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
+		if (GetKeyRes == 0)
+			printf("For project ALMA and Feature KPI we obtained activation key '%s'\n", ActivationKeyBuffer);
+		else
+			printf("License did not contain a valid activation key\n");
+	}
+	//////////// most common way to use licensing module ////
+
 	///////////////////////////////////////// get the key using class ////////////////////////////////////
 	//create a license
 	License *TestLicense = new License;
@@ -69,7 +107,7 @@ int main()
 	int er = TestLicense->LoadFromFile("../License.dat");
 	if (er != 0)
 	{
-		printf("Error %d while loading license. Please solve it to continue\n");
+		printf("Error %d while loading license. Please solve it to continue\n",er);
 		delete TestLicense;
 		_getch();
 		return 1;
@@ -139,7 +177,7 @@ int main()
 	//wait for the license to expire
 	Sleep(1000);
 	//check if we can query an activation key. It should succeed as we are in grace period
-	int GracePeriodTriggered;
+	time_t GracePeriodTriggered;
 	GetKeyRes = TestLicense->IsGracePeriodTriggered(&GracePeriodTriggered);
 	GetKeyRes = TestLicense->GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
 	//this is for debugging only, you should not need to check for return value inside siemens projects. Hacker might be able to intercept the event and track the variable used for the activation key
@@ -172,8 +210,8 @@ int main()
 	EnableErrorTests();
 	for (int i = 0; i < 201; i++)	// the 500 is a fictional number, should know the sizeo of the license file
 	{
-		GetKeyRes = GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
-		printf("Corrupting byte %d from license file. Got result %s\n", i, ActivationKeyBuffer);
+ 		GetKeyRes = GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
+		printf("Corrupting byte %d from license file. Got result '%s'\n", i, ActivationKeyBuffer);
 	}
 #endif
 	///////////////////////////////////////// simulate bad license file content and check error proofness ////////////////////////////////////

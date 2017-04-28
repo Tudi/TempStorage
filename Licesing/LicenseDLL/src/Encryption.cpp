@@ -128,7 +128,7 @@ int EncryptWithFingerprintContent(unsigned char *EncryptKey, int KeyLen, unsigne
 		return er2;
 	return 0;
 }
-
+/*
 int EncryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned char *buf, int BufLen)
 {
 	ComputerFingerprint CF;
@@ -158,3 +158,4 @@ int DecryptWithFingerprint(const char *Filename, unsigned int Salt, unsigned cha
 	//right now this is simetric. Later might change it
 	return EncryptWithFingerprint(Filename, Salt, buf, BufLen);
 }
+*/

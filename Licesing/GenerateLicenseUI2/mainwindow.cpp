@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QComboBox>
 #include <QFileInfo>
+#include <set>
 
 #define LIBRARY_API __declspec(dllimport)
 #include "../LicenseDLL/SimpleList.h"
@@ -14,9 +15,9 @@
 #include "../LicenseDLL/License.h"
 
 #ifdef _DEBUG
-    #pragma comment(lib, "../LicenseDLL/Debug/LicenseDLL.lib")
+    #pragma comment(lib, "../Debug/LicenseDLL.lib")
 #else
-    #pragma comment(lib, "../LicenseDLL/Release/LicenseDLL.lib")
+    #pragma comment(lib, "../Release/LicenseDLL.lib")
 #endif
 
 #define LICENSE_SEED_CONSTANT_NAME "LicenseSeed.dat"
@@ -82,15 +83,20 @@ void MainWindow::RefreshProductFeatureDropdownContent(int SelectedProductIndex)
         int HasContent = ui->CB_ProductIdPicker->count();
         //add new content
         int SelectedProductId = -1;
+        std::set<int> UniqueProducts;
         for (ProjectFeatureKeyStore *itr = ProjectFeatureDropdownList->ListStart(); itr != NULL; itr = ProjectFeatureDropdownList->ListNext())
         {
             if(DropdownIndex == SelectedProductIndex)
                 SelectedProductId = itr->ProjectID;
-            DropdownIndex++;
-            if(HasContent == 0)
+            if(UniqueProducts.find(itr->ProjectID)==UniqueProducts.end())
             {
-                QString itm( itr->ProjectName );
-                ui->CB_ProductIdPicker->addItem( itm );
+                UniqueProducts.insert(itr->ProjectID);
+                DropdownIndex++;
+                if(HasContent == 0)
+                {
+                    QString itm( itr->ProjectName );
+                    ui->CB_ProductIdPicker->addItem( itm );
+                }
             }
         }
 
@@ -210,6 +216,12 @@ void MainWindow::OnGenerateLicenseClicked()
     //create a license
     License *TestLicense = new License;
     er = TestLicense->SetDuration(LicenseStart, LicenseDuration, GraceDuration);
+    if( er != 0 )
+    {
+        QMessageBox Msgbox;
+        Msgbox.setText("There was an error setting license duration");
+        Msgbox.exec();
+    }
     ers += er;
 
     //iterate through the table and add rows 1 by 1
@@ -218,7 +230,14 @@ void MainWindow::OnGenerateLicenseClicked()
     {
         QString ProductName = ui->table_LicenseContent->item(row,0)->text();
         QString FeatureName = ui->table_LicenseContent->item(row,1)->text();
-        TestLicense->AddProjectFeature( ProductName.toStdString().c_str(), FeatureName.toStdString().c_str());
+        er = TestLicense->AddProjectFeature( ProductName.toStdString().c_str(), FeatureName.toStdString().c_str());
+        if( er != 0 )
+        {
+            QMessageBox Msgbox;
+            Msgbox.setText("There was an error adding activation key to the license");
+            Msgbox.exec();
+        }
+        ers += er;
     }
 
     //where to save the output
@@ -227,6 +246,12 @@ void MainWindow::OnGenerateLicenseClicked()
     OutputPath += LICENSE_FILE_CONSTANT_NAME;
 
     er = TestLicense->SaveToFile(OutputPath.toStdString().c_str(),FingerprintFilePath.toStdString().c_str());
+    if( er != 0 )
+    {
+        QMessageBox Msgbox;
+        Msgbox.setText("There was an error saving the license");
+        Msgbox.exec();
+    }
     ers += er;
 
     delete TestLicense;
