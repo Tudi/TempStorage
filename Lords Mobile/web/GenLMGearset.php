@@ -4,56 +4,97 @@ set_time_limit( 7 * 30 * 60 );
 
 $Debug = 0;
 
+// leading army : "infantry", "cavalry", "ranged"
+// setup "phalanx" - needs "chp","cdef" / "idef","ihp" / "rhp","rdef" based on who is tanking, "wedge" only frontline to use hp / def
+
 $ItemSlotNames = array("helm","body","feet","mhand","ohand","trinket","trinket","trinket");
 
-echo "=====================================================================================================================================================<br>";
-echo "*Army composition : infantry + cavalry + ranged <br>";
-$InterestedParams = array("chp","cdef","catk","ratk", "ihp","idef","iatk");
-unset( $itemsCatInt );
-LoadItemInfo();
-GenGearSet();
-echo "<br><br>";
+//infantry phalanx = $InterestedParams = array("chp","cdef","catk") + array("iatk","idef","ihp");
+{
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : infantry(defending) + cavalry(attacking)+ ranged(attacking) <br>";
+	$InterestedParams = array("catk","ratk", "ihp","idef","iatk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
 
-echo "=====================================================================================================================================================<br>";
-echo "*Army composition : cavalry + ranged <br>";
-$InterestedParams = array("chp","cdef","catk","ratk");
-unset( $itemsCatInt );
-LoadItemInfo();
-GenGearSet();
-echo "<br><br>";
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : infantry(attacking) + cavalry(defending)+ ranged(attacking) <br>";
+	$InterestedParams = array("chp","cdef","catk","ratk","iatk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
 
-echo "=====================================================================================================================================================<br>";
-echo "*Army composition : infantry + ranged <br>";
-$InterestedParams = array("ihp","idef","iatk","ratk");
-unset( $itemsCatInt );
-LoadItemInfo();
-GenGearSet();
-echo "<br><br>";
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : infantry(attacking) + cavalry(attacking)+ ranged(defending) <br>";
+	$InterestedParams = array("catk","rhp","rdef","ratk","iatk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
+}
+/**/
 
-echo "=====================================================================================================================================================<br>";
-echo "*Army composition : cavalry <br>";
-$InterestedParams = array("chp","cdef","catk");
-unset( $itemsCatInt );
-LoadItemInfo();
-GenGearSet();
-echo "<br><br>";
+{
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : infantry + cavalry + ranged <br>";
+	$InterestedParams = array("chp","cdef","catk","ratk", "ihp","idef","iatk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
 
-echo "=====================================================================================================================================================<br>";
-echo "*Army composition : infantry <br>";
-$InterestedParams = array("ihp","idef","iatk");
-unset( $itemsCatInt );
-LoadItemInfo();
-GenGearSet();
-echo "<br><br>";
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : cavalry + infantry <br>";
+	$InterestedParams = array("chp","cdef","catk","iatk","idef","ihp");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
 
-echo "=====================================================================================================================================================<br>";
-echo "*Army composition : ranged <br>";
-$InterestedParams = array("rdef", "rhp", "ratk");
-unset( $itemsCatInt );
-LoadItemInfo();
-GenGearSet();
-echo "<br><br>";
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : cavalry + ranged <br>";
+	$InterestedParams = array("chp","cdef","catk","ratk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
 
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : infantry + ranged <br>";
+	$InterestedParams = array("ihp","idef","iatk","ratk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
+
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : cavalry <br>";
+	$InterestedParams = array("chp","cdef","catk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
+
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : infantry <br>";
+	$InterestedParams = array("ihp","idef","iatk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
+
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : ranged <br>";
+	$InterestedParams = array("rdef", "rhp", "ratk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
+}
+/**/
 /*
 echo "Most used items from best sets : <br>";
 arsort($MostUsedItems);
@@ -136,9 +177,11 @@ function LoadItemInfo()
 		//			$items[ count($items) ] = $item;
 		//			$itemsCat[$item["slot"]][count($itemsCat[$item["slot"]])] = $item;
 					
+					//only keep the best 2 options from the same category ( free / payed / gathering / hunting )
 					$ItemNameIndex = ItemSlotNameToIndex( $item["slot"] );
+					$itemsCatInt[$ItemNameIndex] = KeepBestInSlotOfCategory($ItemNameIndex,$item);
 		//echo count($itemsCatInt[$ItemNameIndex])." - $ItemNameIndex<br>";
-					$itemsCatInt[$ItemNameIndex][count($itemsCatInt[$ItemNameIndex])] = $item;
+//					$itemsCatInt[$ItemNameIndex][count($itemsCatInt[$ItemNameIndex])] = $item;
 				}
 			}	
 		}
@@ -149,11 +192,11 @@ function LoadItemInfo()
 	//echo "<br><br>";
 	for( $i=0;$i<count($ItemSlotNames);$i++)
 	{
-	//	print_r( $itemsCatInt[$i] ); echo "<br><br>";
+//		print_r( $itemsCatInt[$i] ); echo "<br><br>";
 		SortItemsBasedOnScore($itemsCatInt[$i]);
 	//	print_r( $itemsCatInt[$i] ); echo "<br>**<br>";
 	}
-
+	
 	//need to duplicate the list of items where slotname is duplicated
 	for( $i=1;$i<count($ItemSlotNames);$i++)
 		if( $ItemSlotNames[$i-1] == $ItemSlotNames[$i] )
@@ -161,6 +204,57 @@ function LoadItemInfo()
 		
 	//print_r($items);
 	@unlink("gearsOut.txt");
+//exit("remove me after debugging");
+}
+
+function GetGearsetCategory($Gearset)
+{
+	if((int)$Gearset==1)
+		return 1;
+	if((int)$Gearset==2)
+		return 2;
+	//monster hunting 
+	return 3;
+}
+
+function KeepBestInSlotOfCategory($ItemNameIndex, $item)
+{
+	global $itemsCatInt;
+	$NoNeedToAdd = 0;
+	$ItemCount = count( $itemsCatInt[$ItemNameIndex] );
+	$ItGearsetCat = GetGearsetCategory( $item["GearSet"] );
+//echo "Items in this slot : $ItemCount - ".$item["slot"]."<br>";
+	for($i=0;$i<$ItemCount;$i++)
+	{
+		$ItGearsetCat2 = GetGearsetCategory( $itemsCatInt[$ItemNameIndex][$i]["GearSet"] );
+//echo $itemsCatInt[$ItemNameIndex][$i]["GearSet"]."==".$item["GearSet"]."<br>";
+//		if($itemsCatInt[$ItemNameIndex][$i]["GearSet"]==$item["GearSet"])
+		if($ItGearsetCat2==$ItGearsetCat)
+		{
+//echo "gearset match for ".$itemsCatInt[$ItemNameIndex][$i]["name"]." and ".$item["name"]."<br>";
+			if($itemsCatInt[$ItemNameIndex][$i]["SumScore"]<$item["SumScore"])
+			{
+//				echo "Can remove item name ".$itemsCatInt[$ItemNameIndex][$i]["name"]."-".$itemsCatInt[$ItemNameIndex][$i]["GearSet"]." because it's score ".$itemsCatInt[$ItemNameIndex][$i]["SumScore"]." is smaller than new item ".$item["name"]."-".$item["GearSet"]." score ".$item["SumScore"]."<br>";
+//				unset($itemsCatInt[$ItemNameIndex][$i]);
+			}
+			else
+			{
+				$ItemListRet[count($ItemListRet)] = $itemsCatInt[$ItemNameIndex][$i];
+//				echo "No need to add item name ".$item["name"]."-".$item["GearSet"]." because it's score ".$item["SumScore"]." is smaller than new item ".$itemsCatInt[$ItemNameIndex][$i]["name"]."-".$itemsCatInt[$ItemNameIndex][$i]["GearSet"]." score ".$itemsCatInt[$ItemNameIndex][$i]["SumScore"]."<br>";				
+				$NoNeedToAdd = 1;
+			}
+		}
+		else
+		{
+			$ItemListRet[count($ItemListRet)] = $itemsCatInt[$ItemNameIndex][$i];			
+		}
+	}
+	if($NoNeedToAdd==0)
+	{
+//		echo "Adding item name ".$item["name"]."-".$item["GearSet"]."  score ".$item["SumScore"]."<br>";
+		$ItemListRet[count($ItemListRet)] = $item;
+	}
+	return $ItemListRet;
 }
 
 function SortItemsBasedOnScore( &$ItemList )
@@ -205,6 +299,7 @@ function IsParamKnown( $IndexName )
 			return 1;
 	return 0;
 }
+
 function IsParamImportant( $IndexName )
 {
 	global $InterestedParams;
@@ -225,8 +320,28 @@ function GetParamMultiplier( $IndexName )
 {
 //	return $IndexName[0];
 //	return $IndexName[0].$IndexName[1];
-	if($IndexName[1]=='a')
-		return 100 / 75;
+/*	{
+		if($IndexName[1]=='a')
+			return 100 / 75;
+	}*/
+	{
+//ia / id = 5.3498293515358361774744027303684
+//aa / ad = 14.786885245901639344262295081973
+//ca / cd = 9.1460602364148587029130725218387
+		if($IndexName[1]=='a')
+			return 5;		
+		if($IndexName[1]=='h')
+			return 2.5;		
+	}/**/
+/*	{
+//ia / id = 5.3498293515358361774744027303684
+//aa / ad = 14.786885245901639344262295081973
+//ca / cd = 9.1460602364148587029130725218387
+		if($IndexName[1]=='a')
+			return 5 / 2 ;		
+		if($IndexName[1]=='h')
+			return 2.5 / 2;		
+	}/**/	
 	return 1;
 }
 function GetItemScore( $item )
@@ -288,7 +403,7 @@ function SetGearsetScore( $GearSet, $PrintInfo )
 					$MostUsedItemsH[$CurItem["name"]]++;
 			}
 			
-			MyEcho( $key.")item name ".$CurItem["name"]." in slot ".$ItemSlotNames[ $key ]." from set ".$CurItem["GearSet"]."<br>" );
+			MyEcho( $key.")item name ".$CurItem["name"]." in slot ".$ItemSlotNames[ $key ]." from set ".$CurItem["GearSet"].", score ".$CurItem["SumScore"]."<br>" );
 //			PrintItemInfo( $CurItem );
 			foreach( $CurItem["ScroreGroups"] as $key2 => $val2 )
 				$GearSetScore[ $key2 ] += $val2;
@@ -391,7 +506,7 @@ function GenGearSet()
 				$CurScore += 0.01;
 			$BestCraftableSets[$CurScore] = $CurGearset;
 		}
-		if( $CurScore > $BestMultiSet )
+/*		if( $CurScore > $BestMultiSet )
 		{
 			$Sets = CountDifferentSets( $CurGearset );
 			if( $Sets >= $SlotCount )
@@ -399,7 +514,7 @@ function GenGearSet()
 				$BestMultiSet = $CurScore;
 				$BestMultiSetSet = $CurGearset;
 			}
-		}
+		}/**/
 		//gen next setup
 		$Ind = 0;
 		$CurGearset[$Ind]++;
@@ -418,9 +533,9 @@ function GenGearSet()
 	SetGearsetScore($BestScoreSet,2);
 	echo "<br>Best item set if you are a casual player that hardly spends money on the game : <br>";
 	SetGearsetScore($BestCraftableSet,1);
-	echo "<br>Best item set if you invest a lot in monster hunting : <br>";
-	SetGearsetScore($BestMultiSetSet,3);
-	
+//	echo "<br>Best item set if you invest a lot in monster hunting : <br>";
+//	SetGearsetScore($BestMultiSetSet,3);
+/*	
 	krsort($BestCraftableSets);
 	echo "<br>Top x item sets that you can craft from resource gathering and monster hunting : <br>";	
 	//print out the best 10 variants
@@ -431,5 +546,6 @@ function GenGearSet()
 		$i++;
 		if($i>=5) break;
 	}
+	/**/
 }
 ?>

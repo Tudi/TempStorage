@@ -97,4 +97,31 @@ function AutoCacheEnd()
 	file_put_contents($file,$StaticFileContent);
 	echo $StaticFileContent;
 }
+
+function UpdateUsedMap($x,$y)
+{
+	global $dbi;
+	$xl = (int)($x/31);
+	$xs = (int)($x % 31);
+	$flag = 1 << $xs;
+	$key = $y * 10000 + $xl;
+
+	$query1 = "select mask,1 from used_locations where `key`=$key";
+	$result1 = mysql_query($query1,$dbi) or die("2017022001".$query1." ".mysql_error($dbi));
+	list( $mask, $exists ) = mysql_fetch_row( $result1 );
+	
+	$mask = $mask | $flag;
+	
+	if($exists==0)
+	{
+		$query1 = "insert ignore into used_locations values ($key,$mask)";
+		mysql_query($query1,$dbi) or die("2017022001".$query1." ".mysql_error($dbi));
+	}
+	else
+	{
+		$query1 = "update used_locations set mask=$mask where `key`=$key";
+//echo "$query1<br>";return;
+		mysql_query($query1,$dbi) or die("2017022001".$query1." ".mysql_error($dbi));
+	}
+}
 ?>

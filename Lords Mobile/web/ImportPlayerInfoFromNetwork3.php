@@ -18,6 +18,7 @@ function ImportFromWebCall()
 	global $k,$x,$y,$name,$guild,$CLevel,$guildF,$kills,$vip,$GuildRank,$might,$LastUpdated,$objtype,$StatusFlags,$title,$monstertype,$MaxAmtNow;
 	echo "Importing from url<br>";
 	$LastUpdated = time();
+	UpdateUsedMap($x,$y);
 //echo "we are importing type '$objtype' $x $y";
 	//guess it's a player
 	if(!isset($objtype) || $objtype == 8)

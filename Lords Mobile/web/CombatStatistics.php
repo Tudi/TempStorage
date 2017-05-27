@@ -1,6 +1,7 @@
 For now this is a static table. When i have enough data i will turn it into a combat simulator<br>
 Below data contains ZERO combat stat changers. Infantry phalanx setup.<br>
 <?php
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 $cnt = 0;
 
 $struct["A"]="Infantry";
@@ -155,6 +156,27 @@ $struct["AIC"]=0;
 $struct["AAC"]=0;
 $struct["ACC"]=100;
 $struct["ATC"]=0;
+$struct["D"]="Cavalry";
+$struct["DIC"]=0;
+$struct["DAC"]=0;
+$struct["DCC"]=100;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=25;
+$struct["ATCD"]=0;
+$struct["DICD"]=0;
+$struct["DACD"]=0;
+$struct["DCCD"]=25;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=100;
+$struct["ATC"]=0;
 $struct["D"]="Trebuchet";
 $struct["DIC"]=0;
 $struct["DAC"]=0;
@@ -171,24 +193,66 @@ $struct["DCCD"]=0;
 $struct["DTCD"]=58;
 $StatisticsList[$cnt++] = $struct;
 
-$struct["A"]="Infantry + Cavalry + Archer";
-$struct["AIC"]=100;
-$struct["AAC"]=100;
-$struct["ACC"]=100;
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=200;
+$struct["ACC"]=0;
 $struct["ATC"]=0;
-$struct["D"]="Infantry + Cavalry + Archer";
-$struct["DIC"]=100;
-$struct["DAC"]=100;
-$struct["DCC"]=100;
+$struct["D"]="Infantry";
+$struct["DIC"]=200;
+$struct["DAC"]=0;
+$struct["DCC"]=0;
 $struct["DTC"]=0;
 
-$struct["AICD"]=66;
-$struct["AACD"]=0;
-$struct["ACCD"]=14;
+$struct["AICD"]=0;
+$struct["AACD"]=128;
+$struct["ACCD"]=0;
 $struct["ATCD"]=0;
-$struct["DICD"]=66;
+$struct["DICD"]=12;
 $struct["DACD"]=0;
-$struct["DCCD"]=14;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=200;
+$struct["ATC"]=0;
+$struct["D"]="Infantry";
+$struct["DIC"]=200;
+$struct["DAC"]=0;
+$struct["DCC"]=0;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=16;
+$struct["ATCD"]=0;
+$struct["DICD"]=108;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=200;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Cavalry";
+$struct["DIC"]=0;
+$struct["DAC"]=0;
+$struct["DCC"]=200;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=16;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=0;
+$struct["DACD"]=0;
+$struct["DCCD"]=108;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
 
@@ -250,27 +314,6 @@ $struct["AACD"]=0;
 $struct["ACCD"]=0;
 $struct["ATCD"]=0;
 $struct["DICD"]=23;
-$struct["DACD"]=0;
-$struct["DCCD"]=0;
-$struct["DTCD"]=0;
-$StatisticsList[$cnt++] = $struct;
-
-$struct["A"]="Infantry ";
-$struct["AIC"]=99;
-$struct["AAC"]=0;
-$struct["ACC"]=0;
-$struct["ATC"]=0;
-$struct["D"]="Infantry + Cavalry + Archer";
-$struct["DIC"]=33;
-$struct["DAC"]=33;
-$struct["DCC"]=33;
-$struct["DTC"]=0;
-
-$struct["AICD"]=18;
-$struct["AACD"]=0;
-$struct["ACCD"]=0;
-$struct["ATCD"]=0;
-$struct["DICD"]=26;
 $struct["DACD"]=0;
 $struct["DCCD"]=0;
 $struct["DTCD"]=0;
@@ -339,27 +382,6 @@ $struct["DCCD"]=24;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
 
-$struct["A"]="Cavalry ";
-$struct["AIC"]=0;
-$struct["AAC"]=0;
-$struct["ACC"]=99;
-$struct["ATC"]=0;
-$struct["D"]="Infantry + Cavalry + Archer";
-$struct["DIC"]=33;
-$struct["DAC"]=33;
-$struct["DCC"]=33;
-$struct["DTC"]=0;
-
-$struct["AICD"]=0;
-$struct["AACD"]=0;
-$struct["ACCD"]=23;
-$struct["ATCD"]=0;
-$struct["DICD"]=16;
-$struct["DACD"]=0;
-$struct["DCCD"]=17;
-$struct["DTCD"]=0;
-$StatisticsList[$cnt++] = $struct;
-
 $struct["A"]="Archer ";
 $struct["AIC"]=0;
 $struct["AAC"]=100;
@@ -423,6 +445,69 @@ $struct["DCCD"]=50;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
 
+$struct["A"]="Infantry + Cavalry + Archer";
+$struct["AIC"]=100;
+$struct["AAC"]=100;
+$struct["ACC"]=100;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry + Archer";
+$struct["DIC"]=100;
+$struct["DAC"]=100;
+$struct["DCC"]=100;
+$struct["DTC"]=0;
+
+$struct["AICD"]=66;
+$struct["AACD"]=0;
+$struct["ACCD"]=14;
+$struct["ATCD"]=0;
+$struct["DICD"]=66;
+$struct["DACD"]=0;
+$struct["DCCD"]=14;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Infantry ";
+$struct["AIC"]=99;
+$struct["AAC"]=0;
+$struct["ACC"]=0;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry + Archer";
+$struct["DIC"]=33;
+$struct["DAC"]=33;
+$struct["DCC"]=33;
+$struct["DTC"]=0;
+
+$struct["AICD"]=18;
+$struct["AACD"]=0;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=26;
+$struct["DACD"]=0;
+$struct["DCCD"]=0;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry ";
+$struct["AIC"]=0;
+$struct["AAC"]=0;
+$struct["ACC"]=99;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Cavalry + Archer";
+$struct["DIC"]=33;
+$struct["DAC"]=33;
+$struct["DCC"]=33;
+$struct["DTC"]=0;
+
+$struct["AICD"]=0;
+$struct["AACD"]=0;
+$struct["ACCD"]=23;
+$struct["ATCD"]=0;
+$struct["DICD"]=16;
+$struct["DACD"]=0;
+$struct["DCCD"]=17;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
 $struct["A"]="Archer ";
 $struct["AIC"]=0;
 $struct["AAC"]=99;
@@ -444,66 +529,66 @@ $struct["DCCD"]=0;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
 
-$struct["A"]="Archer ";
-$struct["AIC"]=0;
-$struct["AAC"]=200;
+$struct["A"]="Infantry + Archer ";
+$struct["AIC"]=51;
+$struct["AAC"]=51;
 $struct["ACC"]=0;
 $struct["ATC"]=0;
-$struct["D"]="Infantry";
-$struct["DIC"]=200;
-$struct["DAC"]=0;
-$struct["DCC"]=0;
+$struct["D"]="Infantry + Archer + Cavalry";
+$struct["DIC"]=34;
+$struct["DAC"]=34;
+$struct["DCC"]=34;
 $struct["DTC"]=0;
 
-$struct["AICD"]=0;
-$struct["AACD"]=128;
+$struct["AICD"]=26;
+$struct["AACD"]=0;
 $struct["ACCD"]=0;
 $struct["ATCD"]=0;
-$struct["DICD"]=12;
+$struct["DICD"]=14;
 $struct["DACD"]=0;
 $struct["DCCD"]=0;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
 
-$struct["A"]="Cavalry ";
-$struct["AIC"]=0;
+$struct["A"]="Infantry + Cavalry ";
+$struct["AIC"]=51;
 $struct["AAC"]=0;
-$struct["ACC"]=200;
+$struct["ACC"]=51;
 $struct["ATC"]=0;
-$struct["D"]="Infantry";
-$struct["DIC"]=200;
-$struct["DAC"]=0;
-$struct["DCC"]=0;
+$struct["D"]="Infantry + Archer + Cavalry";
+$struct["DIC"]=34;
+$struct["DAC"]=34;
+$struct["DCC"]=34;
+$struct["DTC"]=0;
+
+$struct["AICD"]=23;
+$struct["AACD"]=0;
+$struct["ACCD"]=0;
+$struct["ATCD"]=0;
+$struct["DICD"]=22;
+$struct["DACD"]=0;
+$struct["DCCD"]=7;
+$struct["DTCD"]=0;
+$StatisticsList[$cnt++] = $struct;
+
+$struct["A"]="Cavalry + Archer ";
+$struct["AIC"]=0;
+$struct["AAC"]=51;
+$struct["ACC"]=51;
+$struct["ATC"]=0;
+$struct["D"]="Infantry + Archer + Cavalry";
+$struct["DIC"]=34;
+$struct["DAC"]=34;
+$struct["DCC"]=34;
 $struct["DTC"]=0;
 
 $struct["AICD"]=0;
 $struct["AACD"]=0;
-$struct["ACCD"]=16;
+$struct["ACCD"]=23;
 $struct["ATCD"]=0;
-$struct["DICD"]=108;
+$struct["DICD"]=18;
 $struct["DACD"]=0;
-$struct["DCCD"]=0;
-$struct["DTCD"]=0;
-$StatisticsList[$cnt++] = $struct;
-
-$struct["A"]="Archer ";
-$struct["AIC"]=0;
-$struct["AAC"]=200;
-$struct["ACC"]=0;
-$struct["ATC"]=0;
-$struct["D"]="Cavalry";
-$struct["DIC"]=0;
-$struct["DAC"]=0;
-$struct["DCC"]=200;
-$struct["DTC"]=0;
-
-$struct["AICD"]=0;
-$struct["AACD"]=16;
-$struct["ACCD"]=0;
-$struct["ATCD"]=0;
-$struct["DICD"]=0;
-$struct["DACD"]=0;
-$struct["DCCD"]=108;
+$struct["DCCD"]=3;
 $struct["DTCD"]=0;
 $StatisticsList[$cnt++] = $struct;
 //1 Infantry kills 0.08 Cavalry
@@ -575,12 +660,31 @@ function AttackSim(&$A,&$D,$round)
 		<td>Defender</td>
 		<td>Atackers dead</td>
 		<td>Defenders dead</td>
-		<td>Attackers survived</td>
-		<td>Defenders survived</td>
+<!--		<td>Attackers survived</td>
+		<td>Defenders survived</td> -->
+		<td>Attacker KillPower</td>
+		<td>Defenders KillPower</td>
+		<td>Attacker Combat score</td>
+		<td>Defender Combat score</td>
 	</tr>
 	<?php
 	for($i=0;$i<$cnt;$i++)
 	{
+		$AttackerCountTotal = ($StatisticsList[$i]["AIC"]+$StatisticsList[$i]["AAC"]+$StatisticsList[$i]["ACC"]+$StatisticsList[$i]["ATC"]);
+		$DefenderCountTotal = ($StatisticsList[$i]["DIC"]+$StatisticsList[$i]["DAC"]+$StatisticsList[$i]["DCC"]+$StatisticsList[$i]["DTC"]);
+		$AttackerDeadCountTotal = ($StatisticsList[$i]["AICD"]+$StatisticsList[$i]["AACD"]+$StatisticsList[$i]["ACCD"]+$StatisticsList[$i]["ATCD"]);
+		$DefenderDeadCountTotal = ($StatisticsList[$i]["DICD"]+$StatisticsList[$i]["DACD"]+$StatisticsList[$i]["DCCD"]+$StatisticsList[$i]["DTCD"]);
+		$AttackerKillPower = TwoDigitPrecision($DefenderDeadCountTotal / $AttackerCountTotal);
+		$DefenderKillPower = TwoDigitPrecision($AttackerDeadCountTotal / $DefenderCountTotal);
+
+		// a good combat is when we kill as most as possible, while loosing as little as possible
+		$AttackerKillPCT = $DefenderDeadCountTotal * 100 / $DefenderCountTotal;
+		$AttackerSurvivePCT = ( $AttackerCountTotal - $AttackerDeadCountTotal ) * 100 / $AttackerCountTotal;
+		$AttackerCombatScore = (int)( $AttackerKillPCT * $AttackerSurvivePCT / 100 );
+		$DefenderKillPCT = $AttackerDeadCountTotal * 100 / $AttackerCountTotal;
+		$DefenderSurvivePCT = ( $DefenderCountTotal - $DefenderDeadCountTotal ) * 100 / $DefenderCountTotal;
+		$DefenderCombatScore = (int)( $DefenderKillPCT * $DefenderSurvivePCT / 100 );
+		
 		$Attacker = "";
 		$AttackerA = "";
 		$AttackerD = "";
@@ -593,9 +697,9 @@ function AttackSim(&$A,&$D,$round)
 		}
 		if( $StatisticsList[$i]["AAC"] )
 		{
-			$Attacker .= $StatisticsList[$i]["AAC"]." Archer";
+			$Attacker .= $StatisticsList[$i]["AAC"]." Archer ";
 			if($StatisticsList[$i]["AACD"]>0)
-				$AttackerD .= $StatisticsList[$i]["AACD"]." Archer";
+				$AttackerD .= $StatisticsList[$i]["AACD"]." Archer ";
 			$AttackerA .= ($StatisticsList[$i]["AAC"]-$StatisticsList[$i]["AACD"])." Archer ";
 		}
 		if( $StatisticsList[$i]["ACC"] )
@@ -650,10 +754,20 @@ function AttackSim(&$A,&$D,$round)
 		<td><?php echo $Defender; ?></td>
 		<td><?php echo $AttackerD;?></td>
 		<td><?php echo $DefenderD;?></td>
-		<td><?php echo $AttackerA;?></td>
-		<td><?php echo $DefenderA;?></td>
+<!--		<td><?php echo $AttackerA;?></td>
+		<td><?php echo $DefenderA;?></td> -->
+		<td><?php echo $AttackerKillPower;?></td>
+		<td><?php echo $DefenderKillPower;?></td>
+		<td><?php echo $AttackerCombatScore;?></td>
+		<td><?php echo $DefenderCombatScore;?></td>
 	</tr>
 	<?php
 	}
 	?>
 </table>
+<?php
+function TwoDigitPrecision($a)
+{
+	return ((int)($a * 100) ) / 100;
+}
+?>
