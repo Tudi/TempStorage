@@ -17,4 +17,4 @@ enum LogLevels
 
 void InitLogging();
 void ShutDownLogging();
-void Log(int level = LL_DEBUG_ALL, char *Msg = 0, ...);
+void Log(int level = LL_DEBUG_ALL, int ErrorCode = 0, char *Msg = 0, ...);

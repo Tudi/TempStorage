@@ -178,7 +178,8 @@ int main()
 	Sleep(1000);
 	//check if we can query an activation key. It should succeed as we are in grace period
 	time_t GracePeriodTriggered;
-	GetKeyRes = TestLicense->IsGracePeriodTriggered(&GracePeriodTriggered);
+	char IsGraceTriggered;
+	GetKeyRes = TestLicense->IsGracePeriodTriggered(&GracePeriodTriggered, &IsGraceTriggered);
 	GetKeyRes = TestLicense->GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
 	//this is for debugging only, you should not need to check for return value inside siemens projects. Hacker might be able to intercept the event and track the variable used for the activation key
  	if (GetKeyRes == 0)
@@ -193,7 +194,9 @@ int main()
 	//wait for the license to expire
 	Sleep(1000);
 	//query an activation key. It should fail as grace period ended
-	GetKeyRes = TestLicense->IsGracePeriodTriggered(&GracePeriodTriggered);
+	GetKeyRes = TestLicense->IsGracePeriodTriggered(&GracePeriodTriggered, &IsGraceTriggered);
+	if (GetKeyRes != 0)
+		printf("Error obtaining grace data %d\n", GetKeyRes);
 	GetKeyRes = TestLicense->GetActivationKey(ALMA, ALMA_KPI, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
 	//this is for debugging only, you should not need to check for return value inside siemens projects. Hacker might be able to intercept the event and track the variable used for the activation key
 	if (GetKeyRes == WARNING_NO_LICENSE_FOUND)

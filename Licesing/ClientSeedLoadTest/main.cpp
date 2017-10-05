@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <conio.h>
 #include "../LicenseDLL/License_API.h"
-#include "../LicenseDLL/src/ComputerFingerprint.h"
-#include "../LicenseDLL/src/DataPacker.h"
+#include "../LicenseDLL/ComputerFingerprint.h"
+#include "../LicenseDLL/DataPacker.h"
 
 #ifndef X64
 	#ifdef _DEBUG

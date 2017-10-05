@@ -1,3 +1,4 @@
+#if 0
 #include "stdafx.h"
 #include "ProjectFeatureKeys.h"
 #include <stdio.h>
@@ -321,3 +322,4 @@ int ProjectFeatureKeyDB::ReloadDB()
 	//should 
 	return 0;
 }
+#endif

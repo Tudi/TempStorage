@@ -1,7 +1,8 @@
 #pragma once
+/// @cond DEV
 
 //has to be enough to be able to store a valid fingerprint
-#define COMPUTER_FINGERPRINT_STORE_SIZE	500
+//#define COMPUTER_FINGERPRINT_STORE_SIZE	500
 #define GRACE_PERIOD_STORE_SIZE			(1000 + COMPUTER_FINGERPRINT_STORE_SIZE)
 
 #define ERROR_COULD_NOT_LOAD_GRACE_DATA		(-1)
@@ -9,8 +10,11 @@
 #define ERROR_INPUT_BUFFER_TOO_SMALL		(-3)
 #define ERROR_INVALID_PARAMETER_G			(-4)
 #define ERROR_COULD_NOT_SAVE_GRACE_DATA		(-5)
+#define ERROR_STORE_VERSION_MISMATCH		(-6)
 
 #define MAX_GRACE_PERIOD_SECONDS			(31*24*60*60)		// 1 month ? Even if they reset everything, they can hack it only once
+
+//#define ENABLE_INCLUDE_BACKUP_DECRYPT_KEY_GRACE
 
 enum GracePeriodUpdateTypes
 {
@@ -21,14 +25,19 @@ enum GracePeriodUpdateTypes
 	GP_LICENSE_LIFETIME_USE_FLAGS,			// on this PC license was used with specific API calls. Clients should never use some of the API calls
 };
 
+#define GRACE_STORE_VERSION (0x010002)		// max 4 bytes
+
 // use resource inside the DLL to store the grace period related data
 #pragma pack(push,1)
 struct GraceStatusResourceStore
 {
 	char	IsFileInitialized;		// Mark that we did run this function at least once. Required for decoding
-	int		XORKey;					// slightly encrypt ourself to avoid humanly readable mode
+	unsigned int XORKey;			// slightly encrypt ourself to avoid humanly readable mode
 	//everything below should get encrypted
+	int		StoreVersion;			// Use it to check if we loaded something valid and usable
+#ifdef ENABLE_INCLUDE_BACKUP_DECRYPT_KEY_GRACE
 	char	FingerPrint[COMPUTER_FINGERPRINT_STORE_SIZE];	// on first time init we store a valid fingerprint. We will need this to be able to decode our license on HW changes
+#endif
 	int		FingerPrintSize;		//number of bytes used for fingerprinting
 	int		TriggerCount;
 	int		APIsUsedFlags;			// License APIs called will set flags. These flags are never removed, only set
@@ -47,7 +56,7 @@ struct GraceStatusDLLResourceStore
 	char						Header[25];				// we will seek to this header inside the DLL
 	GraceStatusResourceStore	Data;
 };
-extern char GracePeriodStore[GRACE_PERIOD_STORE_SIZE];
+//extern char GracePeriodStore[GRACE_PERIOD_STORE_SIZE];
 #pragma pack(pop)
 
 class LicenseGracePeriod
@@ -65,3 +74,5 @@ private:
 #define PERIODIC_UPDATE_EXPECTED_YEARLY_DEVIATION_SECONDS	5126	
 void StartLicenseGraceWatchdogThread();
 void EndLicenseGraceWatchdogThread();
+
+/// @endcond

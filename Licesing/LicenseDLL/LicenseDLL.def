@@ -1,5 +1,4 @@
 LIBRARY	"LicenseDLL"
 
 EXPORTS
-	CreateComputerFingerprint
-	DestroyComputerFingerprint
+

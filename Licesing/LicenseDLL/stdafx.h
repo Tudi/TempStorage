@@ -12,7 +12,7 @@
 #endif
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
-#define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
+#define _WIN32_WINNT 0x0601	// Change this to the appropriate value to target other versions of Windows.
 #endif						
 
 #ifndef _WIN32_WINDOWS		// Allow use of features specific to Windows 98 or later.
@@ -31,6 +31,35 @@
 #    define LIBRARY_API __declspec(dllimport)
 //#    define LIBRARY_API 
 #endif
+
+#include <cassert>
+
+#define MAX_BUFFER_TO_SEND	( 512 )	// UUID should be 128 bytes long
+
+//#define ALLOW_CONSOLE_PRINT
+#ifdef _DEBUG
+	#define ALLOW_CONSOLE_PRINT
+#endif
+#ifdef ALLOW_CONSOLE_PRINT
+	#include <iostream>
+	#define DEBUG_SSL_PRINT(codetoprint)	{ codetoprint }
+	#define DEBUG_LIC_PRINT(codetoprint)	{ codetoprint }
+	#define DEBUG_FP_PRINT(codetoprint)		{ codetoprint }
+	#define DEBUG_CONF_PRINT(codetoprint)	{ codetoprint }
+	#define DEBUG_GRACE_PRINT(codetoprint)	{ codetoprint }
+	#define DEBUG_LOG_PRINT(codetoprint)	{ codetoprint }
+#else
+	#define DEBUG_SSL_PRINT(x)		{;}
+	#define DEBUG_LIC_PRINT(x)		{;}
+	#define DEBUG_FP_PRINT(x)		{;}
+	#define DEBUG_CONF_PRINT(x)		{;}
+	#define DEBUG_GRACE_PRINT(x)	{;}
+	#define DEBUG_LOG_PRINT(x)		{;}
+#endif
+
+//#include <iostream>
+//#define DEBUG_GRACE_PRINT(codetoprint)	{ codetoprint }
+
 
 #include <windows.h>
 #include "SimpleList.h"

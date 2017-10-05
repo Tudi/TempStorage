@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>604</width>
-    <height>103</height>
+    <width>501</width>
+    <height>195</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,41 +20,138 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QTextEdit" name="te_OutputPath">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>20</y>
-      <width>451</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pb_BrowsePath">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>20</y>
-      <width>81</width>
-      <height>41</height>
+      <x>40</x>
+      <y>160</y>
+      <width>111</width>
+      <height>23</height>
      </rect>
     </property>
     <property name="text">
-     <string>Browse</string>
+     <string>Browse output path</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pb_Generate">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>70</y>
+      <x>220</x>
+      <y>160</y>
       <width>241</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
-     <string>Generate</string>
+     <string>Generate license seed</string>
     </property>
+   </widget>
+   <widget class="QLabel" name="la_SelectMachine">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>47</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Select machine role :</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="co_Role">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>47</y>
+      <width>161</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>MCC (master control center)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>RCC (regional)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BCC (backup control center)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>LF (landfall)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>PST (pump station local)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>WS (Client Workstation)</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>EWS (engineering WS)</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="la_ClientName">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>17</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Customer name:</string>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="te_Name">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>10</y>
+      <width>361</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>471</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Output path</string>
+    </property>
+    <widget class="QTextEdit" name="te_OutputPath">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>451</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>

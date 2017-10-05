@@ -4,14 +4,14 @@
 #include "stdafx.h"
 #include "License_Grace.h"
 #include "License.h"
-#include "src/Encryption.h"
+#include "Encryption.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
 #include <io.h>
-#include "src\ComputerFingerprint.h"
-
-char GracePeriodStore[GRACE_PERIOD_STORE_SIZE] = "RoundBrownFoxJumpedTheFence";
+#include "ComputerFingerprint.h"
+#include "License_API.h"
+#include "Tools.h"
 
 long GetFileSize(const char *filename)
 {
@@ -42,7 +42,7 @@ void RemoveEndSlashes(char *Path)
 		return;
 	while (Path[0] != 0)
 	{
-		int Len = strlen(Path);
+		int Len = (int)strlen(Path);
 		if (Len > 0 && Path[Len - 1] == '\\')
 			Path[Len - 1] = 0;
 		else
@@ -187,6 +187,7 @@ int CODECGraceData(GraceStatusResourceStore *StaticDLLResourceDataInFile, int En
 	return er;
 }
 /*
+char GracePeriodStore[GRACE_PERIOD_STORE_SIZE] = "RoundBrownFoxJumpedTheFence";
 int LoadCurrectGracePeriodDataDLL(GraceStatusResourceStore *StaticDLLResourceDataInFile, long *StaticDataStoredAt)
 {
 	//make sure we do not return uninitialized values
@@ -248,6 +249,11 @@ int LoadCurrectGracePeriodDataFile(const char *FileName,GraceStatusResourceStore
 
 	//if data is encoded, decode it
 	int erEncrypt = CODECGraceData(StaticDLLResourceDataInFile, 0);
+	if (erEncrypt == 0)
+	{
+		if (StaticDLLResourceDataInFile->IsFileInitialized != 1 || StaticDLLResourceDataInFile->StoreVersion != GRACE_STORE_VERSION)
+			return ERROR_STORE_VERSION_MISMATCH;
+	}
 
 	//pass through errors
 	return erEncrypt;
@@ -273,13 +279,13 @@ int LoadCurrectGracePeriodData(GraceStatusResourceStore *StaticDLLResourceDataIn
 		sprintf_s(FullPath, sizeof(FullPath), "%s\\grace.dat", PathList[i]);	// TODO : Add some randomization to filename
 		int erLoad = LoadCurrectGracePeriodDataFile(FullPath, &CurStore);
 		if (erLoad != 0)
-			Log(LL_DEBUG_DEBUG_ONLY, "Could not save grace period status to sources!");
+			Log(LL_DEBUG_DEBUG_ONLY, ERROR_COULD_NOT_STORE_GRACE_PERIOD, "Could not load grace period status from source!");
 		else
 		{
 #ifdef ENABLE_ANTI_HACK_CHECKS
 			CurStore.XORKey = StaticDLLResourceDataInFile->XORKey;//because this is different for each save
 			if (SuccesfulLoads > 0 && CurStore.IsFileInitialized == StaticDLLResourceDataInFile->IsFileInitialized && memcmp(&CurStore, StaticDLLResourceDataInFile, sizeof(GraceStatusResourceStore)) != 0)
-				Log(LL_ERROR, "Grace period state does not match when loaded from multiple places. If it persist, investigate the issue");
+				Log(LL_ERROR, ERROR_COULD_NOT_LOAD_GRACE_PERIOD, "Grace period state does not match when loaded from multiple places. If it persist, investigate the issue");
 #endif
 			if (CurStore.LicenseSecondsUsed > StaticDLLResourceDataInFile->LicenseSecondsUsed)
 				memcpy(StaticDLLResourceDataInFile, &CurStore, sizeof(GraceStatusResourceStore));
@@ -290,7 +296,7 @@ int LoadCurrectGracePeriodData(GraceStatusResourceStore *StaticDLLResourceDataIn
 	//check if both loads where successfull
 	if (SuccesfulLoads == 0)
 	{
-		Log(LL_ERROR, "Could not load grace period status from any sources!");
+		Log(LL_ERROR, ERROR_COULD_NOT_LOAD_GRACE_PERIOD, "Could not load grace period status from any sources!");
 		return ERROR_COULD_NOT_LOAD_GRACE_DATA;
 	}
 	return 0;
@@ -372,9 +378,9 @@ int SaveCurrectGracePeriodData(GraceStatusResourceStore *StaticDLLResourceDataIn
 	{
 		char FullPath[500];
 		sprintf_s(FullPath, sizeof(FullPath), "%s\\grace.dat", PathList[i]);
-		int erSave = SaveCurrectGracePeriodDataFile(FullPath, i, StaticDLLResourceDataInFile);
+		int erSave = SaveCurrectGracePeriodDataFile(FullPath, i + 1, StaticDLLResourceDataInFile);
 		if (erSave != 0)
-			Log(LL_DEBUG_DEBUG_ONLY, "Could not save grace period status to sources!");
+			Log(LL_DEBUG_DEBUG_ONLY, ERROR_COULD_NOT_STORE_GRACE_PERIOD, "Could not save grace period status to sources!");
 		else
 			SuccesfulSaves++;
 		delete [] PathList[i];
@@ -382,7 +388,10 @@ int SaveCurrectGracePeriodData(GraceStatusResourceStore *StaticDLLResourceDataIn
 
 	//no path were good to save the grace data
 	if (SuccesfulSaves == 0)
+	{
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Grace period failed to save to file." << std::endl;);
 		return ERROR_COULD_NOT_SAVE_GRACE_DATA;
+	}
 
 	//we managed to save it at least once
 	return 0;
@@ -400,14 +409,19 @@ int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
 	//load current status
 	LoadErr = LoadCurrectGracePeriodData(&StaticDLLResourceDataInFile);
 	if (LoadErr != 0)
+	{
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Failed to load persisted data. " << std::endl;);
 		return LoadErr;
+	}
 
 	if (StaticDLLResourceDataInFile.IsFileInitialized != 1)
 	{
 		//this should never happen. At the point this API is available we already should have data initialized
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Grace period failed to load from file. Bad data. " << std::endl;);
 		return ERROR_UNHANDLED_EXCEPTION;
 	}
 
+	*SecondsRemain = StaticDLLResourceDataInFile.GracePeriod;
 	if (StaticDLLResourceDataInFile.GraceRemainingSeconds > 0)
 	{
 		// double check values. Just in case our dynamic clock got shut down for some reason, check differential clock
@@ -422,6 +436,9 @@ int LicenseGracePeriod::GetStatus(int *IsTriggered, time_t *SecondsRemain)
 		else
 			*SecondsRemain = StaticDLLResourceDataInFile.GraceRemainingSeconds;
 	}
+
+	if (StaticDLLResourceDataInFile.GraceTriggeredAt != 0)
+		*IsTriggered = 1;
 	else
 		*IsTriggered = 0;
 
@@ -448,7 +465,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 	memcpy(&OldValues, &StaticDLLResourceDataInFile, sizeof(OldValues));
 
 	//first and oncetime initialization
-	if (StaticDLLResourceDataInFile.IsFileInitialized != 1)
+	if (StaticDLLResourceDataInFile.IsFileInitialized != 1 || StaticDLLResourceDataInFile.StoreVersion != GRACE_STORE_VERSION)
 	{
 		memset(&StaticDLLResourceDataInFile, 0, sizeof(StaticDLLResourceDataInFile)); //generic set all to 0 just in case we forgot to set some manually
 		StaticDLLResourceDataInFile.XORKey = 0;
@@ -462,7 +479,9 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		StaticDLLResourceDataInFile.LicensePeriodicLastUpdate = time(NULL);
 		StaticDLLResourceDataInFile.FingerPrintSize = 0;
 		StaticDLLResourceDataInFile.GraceTriggeredAt = 0;
-		Log(LL_IMPORTANT, "License first time use at %d", time(NULL));
+		StaticDLLResourceDataInFile.StoreVersion = GRACE_STORE_VERSION;
+		Log(LL_IMPORTANT, 0, "License first time use at %d", time(NULL));
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Grace period first time init " << std::endl;);
 	}
 
 	//this happens when a valid!! license is used. Reset grace period status.
@@ -471,7 +490,8 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		//avoid extra large values
 		if (Value > MAX_GRACE_PERIOD_SECONDS)
 		{
-			Log(LL_HACKING, "Grace period is getting set to %d seconds. Max allowed is %d\n", Value);
+			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Grace period too large. Truncating it " << std::endl;);
+			Log(LL_HACKING, ERROR_API_INVALID_USAGE, "Grace period is getting set to %d seconds. Max allowed is %d\n", Value);
 			Value = MAX_GRACE_PERIOD_SECONDS;
 		}
 		if (StaticDLLResourceDataInFile.GraceTriggeredAt != 0)
@@ -481,15 +501,17 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 			StaticDLLResourceDataInFile.GracePeriod = Value;
 			StaticDLLResourceDataInFile.GraceRemainingSeconds = 0;
 			StaticDLLResourceDataInFile.TriggerCount++;	// it would be strange to trigger grace period multiple times
-			Log(LL_IMPORTANT, "Grace period removed by valid license. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
+			Log(LL_IMPORTANT, 0, "Grace period removed by valid license. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
+			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Reset grace period status. New interval is " << StaticDLLResourceDataInFile.GracePeriod << ". Valid license found " << std::endl;);
 		}
 		//generate and save a valid fingerprint and store it. Maybe later we will need it on Hardware changes
 		if (StaticDLLResourceDataInFile.FingerPrintSize == 0)
 		{
+#ifdef ENABLE_INCLUDE_BACKUP_DECRYPT_KEY_GRACE
 			ComputerFingerprint CF;
 			CF.GenerateFingerprint();
 			char *Key;
-			int er = CF.DupEncryptionKey(&Key, StaticDLLResourceDataInFile.FingerPrintSize);
+			int er = CF.DupEncryptionKey(&Key, &StaticDLLResourceDataInFile.FingerPrintSize);
 			//store this fingerprint
 			if (StaticDLLResourceDataInFile.FingerPrintSize < COMPUTER_FINGERPRINT_STORE_SIZE && er == 0)
 				memcpy(StaticDLLResourceDataInFile.FingerPrint, Key, StaticDLLResourceDataInFile.FingerPrintSize);
@@ -498,7 +520,8 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 
 			//strdup uses free
 			if (Key != NULL)
-				free(Key);
+				FreeDup(Key);
+#endif
 		}
 	}
 
@@ -513,8 +536,9 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		if (TimeNow < StaticDLLResourceDataInFile.LicensePeriodicLastUpdate)
 		{
 			int Diff = (int)(StaticDLLResourceDataInFile.LicensePeriodicLastUpdate - TimeNow);
-			Log(LL_IMPORTANT, "Time rewind detected. Seconds difference %d. Last Update %d. Now %d\n", Diff, (int)StaticDLLResourceDataInFile.LicensePeriodicLastUpdate, (int)TimeNow);
+			Log(LL_IMPORTANT, ERROR_API_INVALID_USAGE, "Time rewind detected. Seconds difference %d. Last Update %d. Now %d\n", Diff, (int)StaticDLLResourceDataInFile.LicensePeriodicLastUpdate, (int)TimeNow);
 			ConsumeAmount = ExternalTimeDiffSec;
+			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Possible time rewind detected " << std::endl;);
 		}
 		//periodic update came faster than what we expected
 		else if (TimeNow < StaticDLLResourceDataInFile.LicensePeriodicLastUpdate + ExternalTimeDiffSec)
@@ -525,8 +549,11 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		else
 			ConsumeAmount = ExternalTimeDiffSec;
 		// never assume, always know
-		if (ConsumeAmount<=0)
-			Log(LL_DEBUG_RARE, "Unexpected grace period state. Time passed %d. Val %d\n", ConsumeAmount, Value);
+		if (ConsumeAmount <= 0)
+		{
+			Log(LL_DEBUG_RARE, ERROR_API_INVALID_USAGE, "Unexpected grace period state. Time passed %d. Val %d\n", ConsumeAmount, Value);
+			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Negative time consume should be impossible. Investigate! " << std::endl;);
+		}
 		StaticDLLResourceDataInFile.LicenseSecondsUsed += ConsumeAmount;
 		if (StaticDLLResourceDataInFile.GraceTriggeredAt != 0)
 			StaticDLLResourceDataInFile.GraceRemainingSeconds -= ConsumeAmount;
@@ -534,19 +561,25 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 	}
 
 	//this should be triggered when a NON valid license is getting used. Expired / HW changes...
-	if (ActionType == GP_TRIGGER_GRACE_PERIOD && StaticDLLResourceDataInFile.GraceTriggeredAt == 0)
+	if (ActionType == GP_TRIGGER_GRACE_PERIOD )
 	{
-		Log(LL_IMPORTANT, "Grace period started. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
-		StaticDLLResourceDataInFile.GraceTriggeredAt = time(NULL);
-		StaticDLLResourceDataInFile.GraceShouldEnd = StaticDLLResourceDataInFile.GraceTriggeredAt + StaticDLLResourceDataInFile.GracePeriod;
-		StaticDLLResourceDataInFile.GraceRemainingSeconds = StaticDLLResourceDataInFile.GracePeriod;
+		if (StaticDLLResourceDataInFile.GraceTriggeredAt == 0)
+		{
+			Log(LL_IMPORTANT, 0, "Grace period started. Triggered %d times\n", StaticDLLResourceDataInFile.TriggerCount);
+			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Grace period triggered " << std::endl;);
+			StaticDLLResourceDataInFile.GraceTriggeredAt = time(NULL);
+			StaticDLLResourceDataInFile.GraceShouldEnd = StaticDLLResourceDataInFile.GraceTriggeredAt + StaticDLLResourceDataInFile.GracePeriod;
+			StaticDLLResourceDataInFile.GraceRemainingSeconds = StaticDLLResourceDataInFile.GracePeriod;
+		}
+//		else
+//			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Grace period already triggered. Remaining :" << StaticDLLResourceDataInFile.GraceRemainingSeconds  << std::endl;);
 	}
 
 	//backup when license ends
 	if (ActionType == GP_SET_LICENSE_END)
 	{
 		if (StaticDLLResourceDataInFile.LicenseShouldEnd!=0)
-			Log(LL_IMPORTANT, "License duration got extended. A new license should been loaded. End date %d\n", StaticDLLResourceDataInFile.LicenseShouldEnd);
+			Log(LL_IMPORTANT, 0, "License duration got extended. A new license should been loaded. End date %d\n", StaticDLLResourceDataInFile.LicenseShouldEnd);
 		StaticDLLResourceDataInFile.LicenseShouldEnd = Value;
 		_itoa_s(Value, StaticDLLResourceDataInFile.LicenseShouldEndc, sizeof(StaticDLLResourceDataInFile.LicenseShouldEndc), 10);
 	}
@@ -557,7 +590,7 @@ int LicenseGracePeriod::UpdateStatus(int ActionType, int Value)
 		//report strange behavior
 #ifdef ENABLE_ANTI_HACK_CHECKS
 		if ((Value & LSF_SIEMENS_ONLY_FLAGS) != 0 && (StaticDLLResourceDataInFile.APIsUsedFlags & LSF_SIEMENS_ONLY_FLAGS) == 0 )
-			Log(LL_HACKING, "Client used forbidden API calls %d", Value);
+			Log(LL_HACKING, ERROR_DISABLED_FUNCTION, "Client used forbidden API calls %d", Value);
 #endif
 		StaticDLLResourceDataInFile.APIsUsedFlags |= Value;
 	}
@@ -575,9 +608,15 @@ int LicenseGracePeriod::GetSavedFingerprint(unsigned char *Store, int MaxStoreLe
 {
 	//sanity checks
 	if (Store == NULL || RetSize == NULL || MaxStoreLen == 0)
+	{
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Invalid parameters " << std::endl;);
 		return ERROR_INVALID_PARAMETER_G;
+	}
 	*RetSize = 0;
 
+#ifndef ENABLE_INCLUDE_BACKUP_DECRYPT_KEY_GRACE
+	return ERROR_GRACE_DATA_NOT_INITIALIZED;
+#else
 	GraceStatusResourceStore StaticDLLResourceDataInFile;
 	int LoadErr;
 
@@ -589,16 +628,23 @@ int LicenseGracePeriod::GetSavedFingerprint(unsigned char *Store, int MaxStoreLe
 		return LoadErr;
 
 	if (StaticDLLResourceDataInFile.FingerPrintSize == 0 || StaticDLLResourceDataInFile.IsFileInitialized == 0)
+	{
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Watchdog data is not yet initialized " << std::endl;);
 		return ERROR_GRACE_DATA_NOT_INITIALIZED;
+	}
 
 	if (StaticDLLResourceDataInFile.FingerPrintSize > MaxStoreLen)
+	{
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Watchdog data too large to store " << std::endl;);
 		return ERROR_INPUT_BUFFER_TOO_SMALL;
+	}
 
 	//return the fingerprint data
 	memcpy(Store, StaticDLLResourceDataInFile.FingerPrint, StaticDLLResourceDataInFile.FingerPrintSize);
 	*RetSize = StaticDLLResourceDataInFile.FingerPrintSize;
 
 	return 0;
+#endif
 }
 
 int WatchdogThreadIsRunning = 0;
@@ -614,6 +660,7 @@ DWORD __stdcall LicenseGraceWatchdogThread(LPVOID lpParam)
 		RemainingTimeUntilNextUpdate -= OneLoopSleepAmt; //multiple small sleeps, in case we want to shut down the thread, to have time to react to the command
 		if (RemainingTimeUntilNextUpdate <= 0)
 		{
+			DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Watchdog thread heartbeat ticked " << std::endl;);
 			LicenseGracePeriod::UpdateStatus(GP_CONSUME_REMAINING, LICENSE_DURATION_UPDATE_INTERVAL - RemainingTimeUntilNextUpdate);
 			RemainingTimeUntilNextUpdate = LICENSE_DURATION_UPDATE_INTERVAL;
 		}
@@ -628,7 +675,7 @@ DWORD __stdcall LicenseGraceWatchdogThread(LPVOID lpParam)
 
 void StartLicenseGraceWatchdogThread()
 {
-	Log(LL_DEBUG_INFO,"Started timer thread");
+	Log(LL_DEBUG_INFO, 0, "Started timer thread");
 	WatchdogThreadIsRunning = 1;
 	
 	DWORD   ThreadId;
@@ -643,8 +690,13 @@ void StartLicenseGraceWatchdogThread()
 	//this is bad
 	if (WatchdogThread == 0)
 	{
-		Log(LL_ERROR, "Could not start timer thread");
+		Log(LL_ERROR, ERROR_COULD_NOT_CREATE_THREAD, "Could not start timer thread");
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Failed to start watchdog thread " << std::endl;);
 		WatchdogThreadIsRunning = 0;
+	}
+	else
+	{
+		DEBUG_GRACE_PRINT(std::cout << __FILE__ << ":" << __LINE__ << " Watchdog thread started " << std::endl;);
 	}
 }
 
@@ -666,5 +718,5 @@ void EndLicenseGraceWatchdogThread()
 		result = WaitForSingleObject(WatchdogThread, 0);
 	}
 	WatchdogThread = 0;
-	Log(LL_DEBUG_INFO,"Stopped timer thread");
+	Log(LL_DEBUG_INFO, 0, "Stopped timer thread");
 }

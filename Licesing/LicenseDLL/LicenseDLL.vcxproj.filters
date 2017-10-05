@@ -1,110 +1,186 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="FingerprintingFunction">
+      <UniqueIdentifier>{2fd0d750-6ff7-4f56-9ba7-b596c73f21ed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="LicensingFunction">
+      <UniqueIdentifier>{35f811c7-49c6-4fcf-ba44-8f763d191703}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    <Filter Include="EncryptionFunction">
+      <UniqueIdentifier>{f087e4d5-1b65-4f88-b2d5-62f73d0e2923}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Linux">
-      <UniqueIdentifier>{c26c56f5-3e24-42bc-b246-f5cbb20b7195}</UniqueIdentifier>
+    <Filter Include="LoggingFunction">
+      <UniqueIdentifier>{f22e0d0c-7d18-412c-89b9-5e9d7dfe78e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraceFunction">
+      <UniqueIdentifier>{bfb709ff-8e5e-40c8-a042-eefa6341dd97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VirtualMachineFunction">
+      <UniqueIdentifier>{bf0ab2c0-da9e-42d4-9ac2-749522a260ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{68a3a120-4a3a-4504-b122-e9af50a76952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LicenseSeedClient">
+      <UniqueIdentifier>{b05e0249-51c4-48be-b9bc-cec534d494f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LicenseSeedServer">
+      <UniqueIdentifier>{b1e3be63-bbc5-4676-8da6-f4cb20fe1a61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ConfigLoader">
+      <UniqueIdentifier>{7d2bf774-14b8-4bba-9d6b-d9f913ee002e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedMem">
+      <UniqueIdentifier>{e495655d-1088-49a6-ac48-3343316e30d3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LicenseDLL.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ComputerFingerprint.cpp">
+      <Filter>FingerprintingFunction</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="DataPacker.cpp">
+      <Filter>LicensingFunction</Filter>
     </ClCompile>
-    <ClCompile Include="src\ComputerFingerprint.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GetBiosUUID_Lin.cpp">
+      <Filter>FingerprintingFunction</Filter>
     </ClCompile>
-    <ClCompile Include="src\DataPacker.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GetBiosUUID_Win.cpp">
+      <Filter>FingerprintingFunction</Filter>
     </ClCompile>
-    <ClCompile Include="src\Encryption.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GetInterfaceMacs_Lin.cpp">
+      <Filter>FingerprintingFunction</Filter>
     </ClCompile>
-    <ClCompile Include="src\GetBiosUUID_Win.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GetInterfaceMacs_Win.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GetBiosUUID_Lin.cpp">
-      <Filter>Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GetInterfaceMacs_Lin.cpp">
-      <Filter>Linux</Filter>
-    </ClCompile>
-    <ClCompile Include="ProjectFeatureKeys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SimpleList.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GetInterfaceMacs_Win.cpp">
+      <Filter>FingerprintingFunction</Filter>
     </ClCompile>
     <ClCompile Include="License.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>LicensingFunction</Filter>
     </ClCompile>
-    <ClCompile Include="license_grace.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SimpleList.cpp">
+      <Filter>LicensingFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="Encryption.cpp">
+      <Filter>EncryptionFunction</Filter>
     </ClCompile>
     <ClCompile Include="Logging.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>LoggingFunction</Filter>
     </ClCompile>
+    <ClCompile Include="license_grace.cpp">
+      <Filter>GraceFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="VMTools.cpp">
+      <Filter>VirtualMachineFunction</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLClient\RemoteInfo.cpp">
+      <Filter>LicenseSeedClient</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLClient\SSLClient.cpp">
+      <Filter>LicenseSeedClient</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLServer\GenericServer.cpp">
+      <Filter>LicenseSeedServer</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLServer\NetworkPacket.cpp">
+      <Filter>LicenseSeedServer</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLServer\sslserver.cpp">
+      <Filter>LicenseSeedServer</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLServer\RemoteInfoServer.cpp">
+      <Filter>LicenseSeedServer</Filter>
+    </ClCompile>
+    <ClCompile Include="Config\ConfigLoader.cpp">
+      <Filter>ConfigLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedMem\SharedMem_Lin.cpp">
+      <Filter>SharedMem</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedMem\SharedMem_Win.cpp">
+      <Filter>SharedMem</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLServer\GenericServerPacketHandlers.cpp">
+      <Filter>LicenseSeedServer</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="LicenseDLL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LicenseDLL.def">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ComputerFingerprint.h">
+      <Filter>FingerprintingFunction</Filter>
     </ClInclude>
-    <ClInclude Include="src\DumpSMBIOS.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="DumpSMBIOS.h">
+      <Filter>FingerprintingFunction</Filter>
     </ClInclude>
-    <ClInclude Include="src\ComputerFingerprint.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="GetBiosUUID.h">
+      <Filter>FingerprintingFunction</Filter>
     </ClInclude>
-    <ClInclude Include="src\DataPacker.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="GetInterfaceMacs.h">
+      <Filter>FingerprintingFunction</Filter>
     </ClInclude>
-    <ClInclude Include="src\Encryption.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\GetBiosUUID.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\GetInterfaceMacs.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="DataPacker.h">
+      <Filter>LicensingFunction</Filter>
     </ClInclude>
     <ClInclude Include="License.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SimpleList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProjectFeatureKeys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Logging.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="License_Grace.h">
-      <Filter>Header Files</Filter>
+      <Filter>LicensingFunction</Filter>
     </ClInclude>
     <ClInclude Include="License_API.h">
-      <Filter>Header Files</Filter>
+      <Filter>LicensingFunction</Filter>
     </ClInclude>
+    <ClInclude Include="SimpleList.h">
+      <Filter>LicensingFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="Encryption.h">
+      <Filter>EncryptionFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="Logging.h">
+      <Filter>LoggingFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="License_Grace.h">
+      <Filter>GraceFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="VMTools.h">
+      <Filter>VirtualMachineFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="SSLClient\RemoteInfo_API.h">
+      <Filter>LicenseSeedClient</Filter>
+    </ClInclude>
+    <ClInclude Include="SSLClient\SSLClient.h">
+      <Filter>LicenseSeedClient</Filter>
+    </ClInclude>
+    <ClInclude Include="SSLServer\GenericServer.h">
+      <Filter>LicenseSeedServer</Filter>
+    </ClInclude>
+    <ClInclude Include="SSLServer\NetworkPacket.h">
+      <Filter>LicenseSeedServer</Filter>
+    </ClInclude>
+    <ClInclude Include="SSLServer\sslserver.h">
+      <Filter>LicenseSeedServer</Filter>
+    </ClInclude>
+    <ClInclude Include="Config\ConfigLoader.h">
+      <Filter>ConfigLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedMem\SharedMem.h">
+      <Filter>SharedMem</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="VMWareDetect.asm">
+      <Filter>VirtualMachineFunction</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LicenseDLL.def" />
   </ItemGroup>
 </Project>

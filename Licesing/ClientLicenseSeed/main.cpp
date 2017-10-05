@@ -4,7 +4,7 @@
 #include <crtdbg.h>
 #include <stdio.h>
 #include <conio.h>
-#include "../LicenseDLL/src/ComputerFingerprint.h"
+#include "../LicenseDLL/ComputerFingerprint.h"
 
 #ifndef X64
 	#ifdef _DEBUG

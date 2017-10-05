@@ -1,4 +1,6 @@
 #pragma once
+#if 0
+/// @cond DEV
 
 #define MISSING_OR_INVALID_ID	(-1)
 #define DB_LOAD_ERROR			(-1)
@@ -22,7 +24,8 @@ struct NameIdStore
 	int		ID;
 };
 
-class LIBRARY_API ProjectFeatureKeyDB
+//class LIBRARY_API ProjectFeatureKeyDB	// second version is using SQLite instead of text file. No longer exporting it to DLL
+class ProjectFeatureKeyDB
 {
 public:
 	ProjectFeatureKeyDB();
@@ -47,3 +50,5 @@ protected:
 	LinkedList<NameIdStore*>				FeatureIDs;
 	LinkedList<NameIdStore*>				Keys;
 };
+/// @endcond
+#endif

@@ -6,6 +6,7 @@
 #include <conio.h>
 #include <Windows.h>
 #include "../LicenseDLL/License.h"
+#include "../LicenseDLL/License_API.h"
 
 #ifndef X64
 	#ifdef _DEBUG
@@ -37,6 +38,45 @@ enum SiemensProjectFeatures
 	MAX_USED_SIEMENS_FEATURE_IDS = 50,
 };
 
+void PrintNonEncryptedData(License *TestLicense)
+{
+	printf("Printing non encrypted license data : \n");
+#define LICENSE_PRODUCT_ID_SALES_DEPARTMENT			10
+#define LICENSE_FEATURE_ID_CONTACT_NAME				1
+#define LICENSE_FEATURE_ID_CONTACT_EMAIL			2
+#define LICENSE_PRODUCT_ID_WINCCOA					9
+#define LICENSE_FEATURE_ID_MAJOR_REV				9
+#define LICENSE_FEATURE_ID_MINOR_REV				10
+	char ActivationKeyBuffer[200];
+	char ProductList[] = { LICENSE_PRODUCT_ID_SALES_DEPARTMENT, LICENSE_PRODUCT_ID_WINCCOA, 0 };
+	char FeatureList[] = { LICENSE_FEATURE_ID_CONTACT_NAME, LICENSE_FEATURE_ID_CONTACT_EMAIL, LICENSE_FEATURE_ID_MAJOR_REV, LICENSE_FEATURE_ID_MINOR_REV, 0 };
+	for (int IndP = 0; ProductList[IndP] != 0; IndP++)
+		for (int IndF = 0; FeatureList[IndF] != 0; IndF++)
+		{
+			int GetKeyRes = TestLicense->GetActivationKey(ProductList[IndP], FeatureList[IndF], ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
+			if (GetKeyRes == 0)
+				printf("\rFor project %d and Feature %d we obtained activation key '%s'\n", ProductList[IndP], FeatureList[IndF], ActivationKeyBuffer);
+		}
+	printf("\n");
+}
+
+void PrintScanActivationKeys(License *TestLicense)
+{
+	printf("Printing all license activation keys : \n");
+	//find the key we need to activate a feature
+	char PB[4] = { '\\', '|', '/', '-' };
+	for (int ProductID = 0; ProductID < MAX_USED_SIEMENS_PROJECT_IDS; ProductID++)
+		for (int FeatureId = 0; FeatureId < MAX_USED_SIEMENS_FEATURE_IDS; FeatureId++)
+		{
+			char ActivationKeyBuffer[200];
+			int GetKeyRes = TestLicense->GetActivationKey(ProductID, FeatureId, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
+			if (GetKeyRes == 0)
+				printf("\rFor project %d and Feature %d we obtained activation key '%s'\n", ProductID, FeatureId, ActivationKeyBuffer);
+			printf("\r%c %d", PB[FeatureId % 4], ((1 + FeatureId + MAX_USED_SIEMENS_FEATURE_IDS * ProductID) * 100) / (MAX_USED_SIEMENS_PROJECT_IDS * MAX_USED_SIEMENS_FEATURE_IDS));
+		}
+	printf("\n");
+}
+
 int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_CHECK_CRT_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_EVERY_16_DF);
@@ -60,40 +100,97 @@ int main()
 
 	//for testing, load up the saved license and check if we can extract feature keys
 	printf("Load license into temp buffer\n");
-	int er = TestLicense->LoadFromFile("../License.dat", "../LicenseSeed.dat");
+//	int er = TestLicense->LoadFromFile("d:/Temp/Licensing builds/3 - LicenseInfo/License.dat");
+	int er = 1;
+/*	if (er != 0)
+	{
+		printf("Loading license from ../ \n");
+		er = TestLicense->LoadFromFile("../License.dat");
+	}
+	if (er != 0)
+	{
+		printf("Error : %d\n", er);
+		printf("Loading license from ../ and also loading licenseSeed\n");
+		er = TestLicense->LoadFromFile("../License.dat", "../LicenseSeed.dat");
+	}*/
 	//maybe we are running it in a local directory ? 
-	if (er!=0)
+	if (er != 0)
+	{
+		printf("Error : %d\n", er);
+		printf("Loading license from ./ \n");
+		er = TestLicense->LoadFromFile("License.dat");
+	}
+/*	if (er != 0)
+	{
+		printf("Error : %d\n", er);
+		printf("Loading license from ./ and also loading licenseSeed\n");
 		er = TestLicense->LoadFromFile("License.dat", "LicenseSeed.dat");
+	}
+	//	int er = TestLicense->LoadFromFile("D:/Projects/Licensing_SVN/trunk/src/build-LicenseManager-MyQT-Release/release/License.dat");
 	if (er != 0)
 	{
 		printf("Error %d while loading license. Please solve it to continue\n", er);
 		delete TestLicense;
 		return 1;
-	}
+	}*/
+
+	//check data that should not be encrypted and available all the time. Even if we did not have a valid decrypt key
+	PrintNonEncryptedData(TestLicense);
 
 	time_t RemainingSecondsInLicense = 0;
 	er = TestLicense->GetRemainingSeconds(&RemainingSecondsInLicense);
 	if (er != 0)
 		printf("Could not extract remaining seconds from license. Error code %d\n", er);
 	printf("License is still valid for %d seconds\n", (int)RemainingSecondsInLicense);
+	time_t RemainingSecondsGracePeriod = 0;
+	char IsGraceTriggered;
+	er = TestLicense->IsGracePeriodTriggered(&RemainingSecondsGracePeriod, &IsGraceTriggered);
+	if (IsGraceTriggered == 1)
+		printf("Grace period has been triggered and we have %d seconds remaining\n", RemainingSecondsGracePeriod);
+	else
+		printf("Grace period has not been triggered\n");
 
-	//find the key we need to activate a feature
-	char PB[4] = { '\\', '|', '/', '-' };
-	for (int ProductID = 0; ProductID < MAX_USED_SIEMENS_PROJECT_IDS; ProductID++)
-		for (int FeatureId = 0; FeatureId < MAX_USED_SIEMENS_FEATURE_IDS; FeatureId++)
-		{
-			char ActivationKeyBuffer[200];
-			int GetKeyRes = TestLicense->GetActivationKey(ProductID, FeatureId, ActivationKeyBuffer, sizeof(ActivationKeyBuffer));
-			if (GetKeyRes == 0)
-				printf("\rFor project %d and Feature %d we obtained activation key '%s'\n", ProductID, FeatureId, ActivationKeyBuffer);
-			printf("\r%c %d", PB[FeatureId % 4], ((1 + FeatureId + MAX_USED_SIEMENS_FEATURE_IDS * ProductID) * 100) / (MAX_USED_SIEMENS_PROJECT_IDS * MAX_USED_SIEMENS_FEATURE_IDS) );
-		}
+//	if (er != 0 || RemainingSecondsGracePeriod)
+	if (RemainingSecondsInLicense < 0)
+		printf("License has expired. There is no point searching for activation keys inside it");
+	else
+		PrintScanActivationKeys(TestLicense);
+
+#ifdef _DEBUG
+	// added late to debug what is happening in the background
+	printf("\nDumping license content using internal debug function\n");
+	TestLicense->PrintNodes();
+//	printf("Max grace time in license is : %d\n", (int)TestLicense->GracePeriod);
+#endif
 
 	//cleanup
 	delete TestLicense;
 	TestLicense = NULL;
 
-	printf("\n\nAll done. Push a key to exit.");
+	printf("\n\nStart monitoring grace status changes. Push a 'Esc' key to exit.\n");
+
+	//periodically test licenso to see how grace triggers or disables
+	int PrevGraceReasonCode = -1;
+	int PrevTick = GetTickCount();
+	while (GetAsyncKeyState(VK_ESCAPE)==false)
+	{
+		time_t LicenseTime, GraceTime;
+		int GraceReasonCode;
+		int	er = GetRemainingTime(&LicenseTime, &GraceTime, &GraceReasonCode);
+		if (er != 0 || GraceReasonCode != PrevGraceReasonCode)
+		{
+			if (PrevGraceReasonCode != -1)
+				printf("#### Grace status changed, new code is : %d. Remaining time is : %d. Remaining grace time is : %d\n", GraceReasonCode, (int)LicenseTime, (int)GraceTime);
+			PrevGraceReasonCode = GraceReasonCode;
+		}
+		if (GetTickCount() - PrevTick > 5000)
+		{
+			PrevTick = GetTickCount();
+			printf("#### Still monitoring grace status changes\n");
+		}
+		Sleep(2000);
+		printf("\n\n\n");
+	}
 	_getch();
 
 	_CrtMemCheckpoint(&s2);

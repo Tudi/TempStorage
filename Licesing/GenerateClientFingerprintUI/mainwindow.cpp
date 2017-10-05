@@ -3,16 +3,20 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFileDialog>
+#include <QDateTime>
 
 #define LIBRARY_API __declspec(dllimport)
-#include "../../LicenseDLL/src/ComputerFingerprint.h"
+#include "../LicenseDLL/ComputerFingerprint.h"
+#include "../LicenseDLL/VMTools.h"
+#include "../LicenseDLL/Config/ConfigLoader.h"
+#include "../LicenseDLL/SSLClient/RemoteInfo_API.h"
 
-#define LICENSE_SEED_CONSTANT_NAME "LicenseSeed.dat"
+#define LICENSE_SEED_CONSTANT_NAME "LicenseSeed"
 
 #ifdef _DEBUG
-    #pragma comment(lib, "../Debug/LicenseDLL.lib")
+    #pragma comment(lib, "../x64/Debug/LicenseDLL.lib")
 #else
-    #pragma comment(lib, "../Release/LicenseDLL.lib")
+    #pragma comment(lib, "../x64/Release/LicenseDLL.lib")
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -67,12 +71,20 @@ int MainWindow::GenerateSeedFile(QString path)
     er = ClientSeed->AppendClientInfo( Role.c_str(), cName.c_str() );
     if (er != 0)
     {
+
         printf("Could not append client info\n");
         DestroyComputerFingerprint(&ClientSeed);
         return 1;
     }
 
-    QString FullPath = path + "\\" + LICENSE_SEED_CONSTANT_NAME;
+    QDateTime TimeNow = QDateTime::currentDateTime();
+    QString dateTimeString = TimeNow.toString("yyyy_MMM_dd_hh_mm");
+
+    QString FullPath = path;
+    FullPath += QString("\\LicenseSeed_");
+    FullPath += QString(Role.c_str()).split("(")[0];
+    FullPath += "_" + dateTimeString;
+    FullPath += QString(".dat");
 
     //test save
     er = ClientSeed->SaveFingerprint( (char*)FullPath.toStdString().c_str() );
@@ -91,6 +103,37 @@ int MainWindow::GenerateSeedFile(QString path)
 
 void MainWindow::GenerateSeedFile()
 {
+    //if we are inside a VM, we will need to connect to a fingerprinting service
+    if( Detect_VM() != 0 )
+    {
+        //open config file
+        char	ConfigIP[20];
+        int		ConfigPort;
+        if (GetStrConfig("config.txt", "QueryServiceIP", ConfigIP, sizeof(ConfigIP)))
+        {
+            QMessageBox Msgbox;
+            Msgbox.setText("Could not load QueryServiceIP config value from config.txt");
+            Msgbox.exec();
+            return;
+        }
+        if (GetIntConfig("config.txt", "QueryServicePort", &ConfigPort))
+        {
+            QMessageBox Msgbox;
+            Msgbox.setText("Could not load QueryServicePort config value from config.txt");
+            Msgbox.exec();
+            return;
+        }
+        //connect to the fingerprinting service
+        char RemoteUUID[16];
+        int err = GetRemoteUUID(ConfigIP, ConfigPort, RemoteUUID, sizeof(RemoteUUID));
+        if( err != 0)
+        {
+            QMessageBox Msgbox;
+            Msgbox.setText("There was issue " + QString().number(err) + " obtaining info from remote server " + QString(ConfigIP) + ":" + QString().number(ConfigPort) + ". Check QueryServiceIP and QueryServicePort values inside config.txt");
+            Msgbox.exec();
+            return;
+        }
+    }
     QString FullPath( ui->te_OutputPath->toPlainText() );
     QDir path = ui->te_OutputPath->toPlainText();
 

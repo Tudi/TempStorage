@@ -26,16 +26,26 @@
 
 void AddAlmaTestRequiredData(License *TestLicense)
 {
-#define LICENSE_PRODUCT_ID_WINCCOA			9
-#define LICENSE_FEATURE_ID_MAJOR_REV		9
-#define LICENSE_FEATURE_ID_MINOR_REV		10
 #define LICENSE_PRODUCT_ID_ALMA				1
 #define LICENSE_FEATURE_ID_KPI_STATIC		3
 	int er;
-	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_WINCCOA, LICENSE_FEATURE_ID_MAJOR_REV, "3");
-	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_WINCCOA, LICENSE_FEATURE_ID_MINOR_REV, "12");
 	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_ALMA, LICENSE_FEATURE_ID_KPI_STATIC, "STATIC.Config");
 	er = TestLicense->AddProjectFeature(1, 2, "KPITestEnable");
+}
+
+void AddGenericUnencryptedLicenseData(License *TestLicense)
+{
+#define LICENSE_PRODUCT_ID_SALES_DEPARTMENT			10
+#define LICENSE_FEATURE_ID_CONTACT_NAME				1
+#define LICENSE_FEATURE_ID_CONTACT_EMAIL			2
+	int er;
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_SALES_DEPARTMENT, LICENSE_FEATURE_ID_CONTACT_NAME, "Andales Mercador");
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_SALES_DEPARTMENT, LICENSE_FEATURE_ID_CONTACT_EMAIL, "hombre@internet.net");
+#define LICENSE_PRODUCT_ID_WINCCOA			9
+#define LICENSE_FEATURE_ID_MAJOR_REV		9
+#define LICENSE_FEATURE_ID_MINOR_REV		10
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_WINCCOA, LICENSE_FEATURE_ID_MAJOR_REV, "3");
+	er = TestLicense->AddProjectFeature(LICENSE_PRODUCT_ID_WINCCOA, LICENSE_FEATURE_ID_MINOR_REV, "12");
 }
 
 int main()
@@ -51,25 +61,6 @@ int main()
 	_CrtMemCheckpoint(&s1);
 
 	int er;
-	ProjectFeatureKeyDB *ProjectFeatureDropdownList;
-	ProjectFeatureDropdownList = new ProjectFeatureKeyDB;
-
-	if (ProjectFeatureDropdownList == NULL)
-	{
-		printf("Unexpected error: feature list object is NULL\n");
-		return 1;
-	}
-
-	//print out what we could add to the dropdown
-	printf("Printing all available projects and their features : \n");
-	for (ProjectFeatureKeyStore *itr = ProjectFeatureDropdownList->ListStart(); itr != NULL; itr = ProjectFeatureDropdownList->ListNext())
-		printf("%s %s %s\n", itr->ProjectName, itr->FeatureName, itr->ActivatorKey);
-	printf("\n");
-
-	printf("Started generating license :\n");
-	//pick 2 whatever rows for the sake of our testing
-	ProjectFeatureKeyStore *desc1 = ProjectFeatureDropdownList->ListStart();
-	ProjectFeatureKeyStore *desc2 = ProjectFeatureDropdownList->ListNext();
 
 	int LicenseDuration = 7 * 24 * 60 * 60;			// given in seconds. 1 week to test warning
 	time_t LicenseStart = time(NULL) + 5 * 60;		// 5 minutes in the future
@@ -79,22 +70,35 @@ int main()
 	er = TestLicense->SetDuration(LicenseStart, LicenseDuration, 5 * 60);
 	if (er != 0)
 		printf("Could not set duration of license\n");
-	er = TestLicense->AddProjectFeature(desc1->ProjectID, desc1->FeatureID, desc1->ActivatorKey);
-	if (er != 0)
-		printf("Could not add activation key\n");
-	//	TestLicense->AddProjectFeature(desc2->ProjectID, desc2->FeatureID, desc2->ActivatorKey);
+
 
 	//this is for testing ALMA
 	AddAlmaTestRequiredData(TestLicense);
 
-	er = TestLicense->SaveToFile("../License.dat","../LicenseSeed.dat");
+	er = TestLicense->SaveToFile_("../License.dat", "../LicenseSeed.dat");
 	if (er != 0)
 		printf("Could not save license\n");
 
 	delete TestLicense;
 	TestLicense = NULL;
-	delete ProjectFeatureDropdownList;
-	ProjectFeatureDropdownList = NULL;
+
+
+
+	// add a new unencrypted license that should contain sales department related info
+	{
+		TestLicense = new License;
+		er = TestLicense->SetDuration(time(NULL), PERMANENT_LICENSE_MAGIC_DURATION, 0);
+		if (er != 0)
+			printf("Could not set duration of license\n");
+		AddGenericUnencryptedLicenseData(TestLicense);
+		er = TestLicense->SaveToFile("../License.dat", NULL, 1);
+		if (er != 0)
+			printf("Could not save license\n");
+
+		delete TestLicense;
+		TestLicense = NULL;
+	}/**/
+
 
 	printf("\n\nAll done. Push a key to exit.");
 	_getch();
