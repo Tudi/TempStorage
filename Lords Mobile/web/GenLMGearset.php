@@ -10,6 +10,15 @@ $Debug = 0;
 $ItemSlotNames = array("helm","body","feet","mhand","ohand","trinket","trinket","trinket");
 
 //infantry phalanx = $InterestedParams = array("chp","cdef","catk") + array("iatk","idef","ihp");
+
+	echo "=====================================================================================================================================================<br>";
+	echo "*Army composition : cavalry + ranged <br>";
+	$InterestedParams = array("chp","cdef","catk","ratk");
+	unset( $itemsCatInt );
+	LoadItemInfo();
+	GenGearSet();
+	echo "<br><br>";
+/*
 {
 	echo "=====================================================================================================================================================<br>";
 	echo "*Army composition : infantry(defending) + cavalry(attacking)+ ranged(attacking) <br>";
@@ -36,7 +45,7 @@ $ItemSlotNames = array("helm","body","feet","mhand","ohand","trinket","trinket",
 	echo "<br><br>";
 }
 /**/
-
+/*
 {
 	echo "=====================================================================================================================================================<br>";
 	echo "*Army composition : infantry + cavalry + ranged <br>";
@@ -111,10 +120,13 @@ function LoadItemInfo()
 {
 	global $itemsCatInt,$ItemSlotNames;
 	$f = fopen("GearsLM.txt","rt");
+//	$f = fopen("GearsLM_cur.txt","rt");
 	if($f)
 	{
+		$LineCounter = 0;
 		while (($line = fgets($f)) !== false) 
 		{
+			$LineCounter++;
 			if($line[0]=='#')
 				continue;
 			if(strlen($line)<5)
@@ -137,13 +149,13 @@ function LoadItemInfo()
 						if( $key % 2 == 0 )
 							$IndName = $val;
 						else
-							$IndVal = (int)$val;
+							$IndVal = (float)$val;
 
 						if( $key % 2 == 0 )
 						{
 							// sanity checks
 							if( $IndVal <= 0 )
-								echo "Something is wrong for item ".$item["name"]." it has atr ".$IndName." value ".$IndVal." for line $line<br>";
+								echo "Something is wrong for item ".$item["name"]." it has atr ".$IndName." value ".$IndVal." for line $LineCounter)$line<br>";
 							if( IsParamKnown($IndName) == 0 )
 								echo "Unknown param name : $IndName for line $line <br>";
 							
@@ -180,7 +192,7 @@ function LoadItemInfo()
 					//only keep the best 2 options from the same category ( free / payed / gathering / hunting )
 					$ItemNameIndex = ItemSlotNameToIndex( $item["slot"] );
 					$itemsCatInt[$ItemNameIndex] = KeepBestInSlotOfCategory($ItemNameIndex,$item);
-		//echo count($itemsCatInt[$ItemNameIndex])." - $ItemNameIndex<br>";
+//echo count($itemsCatInt[$ItemNameIndex])." - $ItemNameIndex<br>";
 //					$itemsCatInt[$ItemNameIndex][count($itemsCatInt[$ItemNameIndex])] = $item;
 				}
 			}	
@@ -194,7 +206,7 @@ function LoadItemInfo()
 	{
 //		print_r( $itemsCatInt[$i] ); echo "<br><br>";
 		SortItemsBasedOnScore($itemsCatInt[$i]);
-	//	print_r( $itemsCatInt[$i] ); echo "<br>**<br>";
+//		print_r( $itemsCatInt[$i] ); echo "<br>**<br>";
 	}
 	
 	//need to duplicate the list of items where slotname is duplicated
@@ -506,7 +518,7 @@ function GenGearSet()
 				$CurScore += 0.01;
 			$BestCraftableSets[$CurScore] = $CurGearset;
 		}
-/*		if( $CurScore > $BestMultiSet )
+		if( $CurScore > $BestMultiSet )
 		{
 			$Sets = CountDifferentSets( $CurGearset );
 			if( $Sets >= $SlotCount )
@@ -533,8 +545,8 @@ function GenGearSet()
 	SetGearsetScore($BestScoreSet,2);
 	echo "<br>Best item set if you are a casual player that hardly spends money on the game : <br>";
 	SetGearsetScore($BestCraftableSet,1);
-//	echo "<br>Best item set if you invest a lot in monster hunting : <br>";
-//	SetGearsetScore($BestMultiSetSet,3);
+	echo "<br>Best item set if you invest a lot in monster hunting : <br>";
+	SetGearsetScore($BestMultiSetSet,3);
 /*	
 	krsort($BestCraftableSets);
 	echo "<br>Top x item sets that you can craft from resource gathering and monster hunting : <br>";	

@@ -22,7 +22,7 @@ if(isset($_SESSION['k']))
 }
 else if( !isset($k) || $k <= 0 )
 {
-	$k = 82;
+	$k = 99;
 	echo "No kingdom was selected. Using default #$k<br>";
 }
 
