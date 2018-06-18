@@ -1,0 +1,28 @@
+﻿<UserControl x:Class="BLFClient.IndexCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BLFClient"
+             mc:Ignorable="d" 
+             d:DesignHeight="20" d:DesignWidth="100">
+    <!-- Index card has a tab and drawarea. The tab itself is dynamically allocated. Below is the draw area-->
+    <StackPanel>
+        <local:GridContentArea x:Name="DrawArea"/>
+    </StackPanel>
+    
+    <!-- static resources that will get assigned dinamically to objects-->
+    <UserControl.Resources>
+        
+        <!-- if you wish to give a custom design to the tab header-->
+        <Style x:Key="tabItem" TargetType="{x:Type TabItem}">
+            <Setter Property="Background" Value="LightGray"/>
+        </Style>
+        
+        <!-- if you wish to give a custom design context menu-->
+        <ContextMenu x:Key="contextMenu">
+            <MenuItem Header="Rename..." Click="Click_Context_RenameIndexCard"/>
+            <MenuItem Header="Delete" Click="Click_Context_DeleteIndexCard"/>
+        </ContextMenu>
+    </UserControl.Resources>
+</UserControl>

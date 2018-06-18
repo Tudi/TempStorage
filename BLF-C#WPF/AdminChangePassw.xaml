@@ -1,0 +1,27 @@
+﻿<Window x:Class="BLFClient.AdminChangePassw"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BLFClient"
+        mc:Ignorable="d"
+        Title="AdminChangePassw" Height="161.598" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <Label Content="Old password"/>
+            <TextBox Name="OldPassw"/>
+            <Label Content="New password"/>
+            <TextBox Name="NewPassw"/>
+            <Label Content="Confirm new password"/>
+            <TextBox Name="NewPasswConfirm"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1">
+            <Button Content="Ok" Click="Button_Click_OK"/>
+            <Button Content="Cancel" Click="Button_Click_Cancel"/>
+        </StackPanel>
+    </Grid>
+</Window>

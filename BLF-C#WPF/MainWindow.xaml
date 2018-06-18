@@ -1,0 +1,113 @@
+﻿<Window x:Class="BLFClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BLFClient"
+        xmlns:control = "clr-namespace:BLFClient"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525"
+        SizeChanged="WindowSizeChanged"
+        Deactivated="Window_Deactivated"
+        >
+    <DockPanel>
+
+        <!-- The menu -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File" >
+                <MenuItem Header="_New" />
+                <MenuItem Header="_Save" Name="FILE_SAVE" IsEnabled="False"/>
+                <MenuItem Header="Save as" Name="FILE_SAVE_AS" IsEnabled="False"/>
+                <MenuItem Header="Open" />
+                <Separator/>
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_New index card..." Click="Click_Menu_NewIndexCard"/>
+                <MenuItem Header="_Delete actual index card" Click="Click_Menu_DeleteIndexCard"/>
+                <MenuItem Header="_Rename actual index card" Click="Click_Menu_RenameIndexCard"/>
+                <Separator/>
+                <MenuItem Header="Call forwarding" IsEnabled="False"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Menu" IsCheckable="True" IsChecked="True" />
+                <MenuItem Header="_Gridlines" IsCheckable="True" IsChecked="True" Click="Click_Menu_GridToggle"/>
+                <MenuItem Header="_Names" IsCheckable="True" InputGestureText="F7" Click="Click_Menu_ShowNameToggle"/>
+                <MenuItem Header="_Legend" IsCheckable="True" IsChecked="True" Click="Click_Menu_LegendToggle"/>
+                <MenuItem Header="_Absence management" IsCheckable="True" Click="Click_Menu_ViewAbsenceManagementToggle"/>
+                <MenuItem Header="_Always on top" IsCheckable="True" Click="Click_Menu_TopmostToggle"/>
+                <MenuItem Header="_Canonical number" IsCheckable="True" Click="Click_Menu_CanonicalToggle"/>
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="Options" >
+                    <MenuItem Header="Colors..." Click="Click_Menu_Color" />
+                    <MenuItem Header="Cellsize..." Click="Click_Menu_OpenCellSizeEdit"/>
+                    <MenuItem Header="Font..." Click="Click_Menu_OpenFontEdit"/>
+                    <MenuItem Header="Prefix..." Click="Click_Menu_OpenPrefixEdit"/>
+                </MenuItem>
+                <MenuItem Header="User" >
+                    <MenuItem Header="Administration mode..." IsCheckable="True" Click="Click_Menu_OpenAdminLogin" Name="Tools_User_Admin"/>
+                    <MenuItem Header="Change password..." Click="Click_Menu_OpenChangePassw" />
+                </MenuItem>
+                <MenuItem Header="Absence management..." Click="Click_Menu_OpenAbsenceManagement"/>
+                <MenuItem Header="BLF server configuration..." Click="Click_Menu_OpenBLFServerConfig"/>
+            </MenuItem>
+            <MenuItem Header="_Help" >
+                <MenuItem Header="Contents..." InputGestureText="F1" Click="Click_Menu_OpenHelp"/>
+                <MenuItem Header="About..." Click="Click_Menu_OpenAbout"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- this is the grid where we will show status codes -->
+        <StatusBar DockPanel.Dock ="Bottom" >
+            
+            <!-- how the status bar items should look like -->
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20"/>
+                        </Grid.RowDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+
+            <!-- status bar content -->
+            <StatusBarItem Name="StatusIdle" Grid.Column="0" HorizontalAlignment="Stretch">
+                <Label Padding="0">Idle</Label>
+            </StatusBarItem>
+            <StatusBarItem Name="StatusRinging" Grid.Column="1" HorizontalAlignment="Stretch">
+                <Label Padding="0">Ringing</Label>
+            </StatusBarItem>
+            <StatusBarItem Name="StatusOutOfService" Grid.Column="2" HorizontalAlignment="Stretch">
+                <Label Padding="0" >Out Of Service</Label>
+            </StatusBarItem>
+            <StatusBarItem Name="StatusBusy" Grid.Column="3" HorizontalAlignment="Stretch">
+                <Label Padding="0">Busy</Label>
+            </StatusBarItem>
+            <StatusBarItem Name="StatusNotExisting" Grid.Column="4" HorizontalAlignment="Stretch">
+                <Label Padding="0">Not Existing</Label>
+            </StatusBarItem>
+            <StatusBarItem Name="StatusConnectionStatus" Grid.Column="5" HorizontalAlignment="Stretch">
+                <Label Padding="0">Connecting</Label>
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- The content of the window -->
+        <StackPanel>
+            <!-- Store the tabs here. When we create a new view -->
+            <TabControl Name="TabHolder" SelectionChanged="TabControl_SelectionChanged">
+            </TabControl>
+            <local:AbsenceManageView x:Name="AbsenceView" Visibility="Hidden"/>
+        </StackPanel>
+
+    </DockPanel>
+</Window>
