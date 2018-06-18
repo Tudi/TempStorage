@@ -15,3 +15,5 @@ void DivTest6parts();
 void DivTestRecDiv();
 void DivTestDecrement();
 void DivTestabSQ();
+void DivTest_xytn();
+void DivTest_xytn2();

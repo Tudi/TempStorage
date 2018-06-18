@@ -41,7 +41,7 @@ int CheckCandidateMatch_RecDiv( LargeNumber *tN, LargeNumber *k1, LargeNumber *k
 
 int IsPrime( int p )
 {
-    if( p & 1 == 0 )
+    if( (p & 1) == 0 )
         return 0;
     for( int i = 3; i < p / 2; i++ )
         if( p % i == 0 )

@@ -149,3 +149,19 @@ int isqrt(int n)
 
   return b - 1;
 }
+
+int IsLarger(LargeNumber *Larger, LargeNumber *Smaller)
+{
+	if (Larger->Len > Smaller->Len)
+		return 1;
+	if (Larger->Len < Smaller->Len)
+		return 0;
+	for (int i = Larger->Len; i >= 0; i--)
+	{
+		if (Larger->Digits[i] > Smaller->Digits[i])
+			return 1;
+		if (Larger->Digits[i] < Smaller->Digits[i])
+			return 0;
+	}
+	return 0;
+}

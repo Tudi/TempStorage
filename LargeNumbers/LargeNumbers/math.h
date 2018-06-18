@@ -10,8 +10,14 @@
 
 struct LargeNumber
 {
+	LargeNumber()
+	{
+		Len = Pos = 0;
+		memset(Digits, 0, sizeof(Digits));
+	}
     int Digits[MAX_DIGIT_COUNT];
     int Len;    // not used yet ?
+	int Pos;    // position of digit we are working on
 };
 
 void InitLN( LargeNumber *N );
@@ -41,3 +47,4 @@ void PrintLN( LargeNumber *N, int EndPos = -1 );
 void PrintLN( LargeNumber &N, int EndPos = -1 );
 
 int isqrt(int n);
+int IsLarger(LargeNumber *Larger, LargeNumber *Smaller);

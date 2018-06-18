@@ -12,7 +12,9 @@ void main()
 //    DivTest6parts();
 //    DivTestRecDiv();
 //    DivTestDecrement();
-    DivTestabSQ();
+//    DivTestabSQ();
+//	  DivTest_xytn();
+	DivTest_xytn2();
 
     printf("All done\n");
 }
