@@ -1,5 +1,6 @@
 <?php
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
+ini_set('memory_limit','64M');
 $EnergyToSpendPerDay = 80000;
 $MonsterHitCost[1] = 1952;
 $MonsterHitsToKill[1] = 2; // 1 grim reaper, 1 queen bee, 1 frost wing
@@ -27,6 +28,63 @@ $LevelLoot_Count = array();
 $LevelHits_RowsInFile_Count = array();
 $LootGroupLooted_RowsInFile_Counts = array();
 $LootNr = $HitsMadeInFiles = 0;
+$FoundLootTypes["10 Minute Research Speed up"]=0;
+$FoundLootTypes["15 Minute Research Speed up"]=0;
+$FoundLootTypes["30 Minute Research Speed up"]=0;
+$FoundLootTypes["60 Minute Research Speed up"]=0;
+$FoundLootTypes["3h Research Speed up"]=0;
+$FoundLootTypes["8h Research Speed up"]=0;
+$FoundLootTypes["15h Research Speed up"]=0;
+$FoundLootTypes["10 Minute Speed up"]=0;
+$FoundLootTypes["15 Minute Speed up"]=0;
+$FoundLootTypes["30 Minute Speed up"]=0;
+$FoundLootTypes["60 Minute Speed up"]=0;
+$FoundLootTypes["3h Speed up"]=0;
+$FoundLootTypes["8h Speed up"]=0;
+$FoundLootTypes["15h Speed up"]=0;
+$FoundLootTypes["50 Gems"]=0;
+$FoundLootTypes["100 Gems"]=0;
+$FoundLootTypes["200 Gems"]=0;
+$FoundLootTypes["300 Gems"]=0;
+$FoundLootTypes["400 Gems"]=0;
+$FoundLootTypes["500 Gems"]=0;
+$FoundLootTypes["600 Gems"]=0;
+$FoundLootTypes["800 Gems"]=0;
+$FoundLootTypes["mat 0"]=0;
+$FoundLootTypes["mat 1"]=0;
+$FoundLootTypes["mat 2"]=0;
+$FoundLootTypes["mat 3"]=0;
+$FoundLootTypes["mat 4"]=0;
+$FoundLootTypes["4h Shield"]=0;
+$FoundLootTypes["8h Shield"]=0;
+$FoundLootTypes["24h Shield"]=0;
+$FoundLootTypes["3Day Shield"]=0;
+$FoundLootTypes["10k Ore"]=0;
+$FoundLootTypes["50k Ore"]=0;
+$FoundLootTypes["150k Ore"]=0;
+$FoundLootTypes["10k Stone"]=0;
+$FoundLootTypes["50k Stone"]=0;
+$FoundLootTypes["150k Stone"]=0;
+$FoundLootTypes["500k Stone"]=0;
+$FoundLootTypes["10k Wood"]=0;
+$FoundLootTypes["50k Wood"]=0;
+$FoundLootTypes["150k Wood"]=0;
+$FoundLootTypes["500k Wood"]=0;
+$FoundLootTypes["30k Food"]=0;
+$FoundLootTypes["150k Food"]=0;
+$FoundLootTypes["500k Food"]=0;
+$FoundLootTypes["2m Food"]=0;
+$FoundLootTypes["3k Gold"]=0;
+$FoundLootTypes["15k Gold"]=0;
+$FoundLootTypes["50k Gold"]=0;
+$FoundLootTypes["200k Gold"]=0;
+$FoundLootTypes["Jewel"]=0;
+$FoundLootTypes["Random Relocator"]=0;
+$FoundLootTypes["Relocator"]=0;
+$FoundLootTypes["Common Hero Chest"]=0;
+$FoundLootTypes["Uncommon Hero Chest"]=0;
+$FoundLootTypes["Rare Hero Chest"]=0;
+$FoundLootTypes["Epic Hero Chest"]=0;
 
 if( 1==1 )
 	LoadDataFromFile( "loots.txt" );
@@ -86,13 +144,20 @@ for($i=0;$i<$LootNr;$i++)
 
 sort($FoundMonsterTypes);
 sort($FoundLevelTypes);
-ksort($FoundLootTypes);
 foreach($FoundLootGroupTypes as $key => $val)
 	if($val == 0)
 		unset($FoundLootGroupTypes[$key]);
+/*{
+	ksort($FoundLootTypes);
+	$FoundLootTypes = KeySortInt($FoundLootTypes);
+	foreach($FoundLootTypes as $key => $val)	
+		echo "\$FoundLootTypes[\"$key\"]=0;<br>";
+}/**/
 
+foreach($FoundLootTypes as $key => $val)
+	if($val == 0)
+		unset($FoundLootTypes[$key]);
 
-$FoundLootTypes = KeySortInt($FoundLootTypes);
 
 //loot group chances
 $RowIndex = 0;
@@ -444,6 +509,8 @@ function LookupLootType( $l, $m )
 		return "8h Speed up";
 	if( $l == "15h")
 		return "15h Speed up";
+	if( $l == "24h")
+		return "24h Speed up";
 	
 	if( $l == "10mr")
 		return "10 Minute Research Speed up";
@@ -459,6 +526,8 @@ function LookupLootType( $l, $m )
 		return "8h Research Speed up";
 	if( $l == "15hr")
 		return "15h Research Speed up";
+	if( $l == "24hr")
+		return "24h Research Speed up";
 	
 	if( $l == "10wood")
 		return "10k Wood";
@@ -477,6 +546,8 @@ function LookupLootType( $l, $m )
 		return "150k Stone";
 	if( $l == "500stone")
 		return "500k Stone";
+	if( $l == "1.5stone")
+		return "1.5m Stone";
 	
 	if( $l == "10ore")
 		return "10k Ore";
@@ -486,6 +557,8 @@ function LookupLootType( $l, $m )
 		return "150k Ore";
 	if( $l == "500ore")
 		return "500k Ore";
+	if( $l == "1.5ore")
+		return "1.5m Ore";
 	
 	if( $l == "30food")
 		return "30k Food";
@@ -493,6 +566,8 @@ function LookupLootType( $l, $m )
 		return "150k Food";
 	if( $l == "500food")
 		return "500k Food";
+	if( $l == "2mfood")
+		return "2m Food";
 	
 	if( $l == "3gold")
 		return "3k Gold";
@@ -500,6 +575,8 @@ function LookupLootType( $l, $m )
 		return "15k Gold";
 	if( $l == "50gold")
 		return "50k Gold";
+	if( $l == "200gold")
+		return "200k Gold";
 	
 	// Voodoo Shaman
 	if( $m == "vs")
@@ -567,12 +644,17 @@ function LookupLootType( $l, $m )
 		if( $l == "teeth")
 		{
 			return "mat 2";
-			return "Terrorteeth";
+			return "Terror Teeth";
 		}
 		if( $l == "vine")
 		{
 			return "mat 3";
-			return "Terrorvine";
+			return "Terror Vine";
+		}
+		if( $l == "pollen")
+		{
+			return "mat 4";
+			return "Terror Pollen";
 		}
 	}
 	
@@ -903,6 +985,11 @@ function LookupLootType( $l, $m )
 			return "mat 3";
 			return "Wyrm Spine";
 		}
+		if( $l == "horn")
+		{
+			return "mat 4";
+			return "Wyrm Horn";
+		}
 	}
 	
 	//bon apeti
@@ -938,6 +1025,8 @@ function LookupLootType( $l, $m )
 		return "Rare Hero Chest";
 	if( $l == "chest4")
 		return "Epic Hero Chest";
+	if( $l == "chest5")
+		return "Legendary Hero Chest";
 	
 	if( $l == "rrelocator")
 		return "Random Relocator";
@@ -950,6 +1039,8 @@ function LookupLootType( $l, $m )
 		return "8h Shield";
 	if( $l == "24hshield")
 		return "24h Shield";
+	if( $l == "3dshield")
+		return "3Day Shield";
 
 	if( $l == "15mheal")
 		return "15m Troop Heal";
@@ -1013,6 +1104,8 @@ function LookupLootCountFromType( $l )
 		return 8*60/$ToHourConvert;
 	if( $l == "15h")
 		return 15*60/$ToHourConvert;
+	if( $l == "24h")
+		return 24*60/$ToHourConvert;
 	
 	if( $l == "10mr")
 		return 10/$ToHourConvert;
@@ -1028,6 +1121,8 @@ function LookupLootCountFromType( $l )
 		return 8*60/$ToHourConvert;
 	if( $l == "15hr")
 		return 15*60/$ToHourConvert;
+	if( $l == "24hr")
+		return 24*60/$ToHourConvert;
 	
 	if( $l == "3gold")
 		return 3000;
@@ -1035,6 +1130,8 @@ function LookupLootCountFromType( $l )
 		return 15000;
 	if( $l == "50gold")
 		return 50000;
+	if( $l == "200gold")
+		return 200000;
 
 	if( $l == "4hshield" )
 		return 4;
@@ -1042,6 +1139,8 @@ function LookupLootCountFromType( $l )
 		return 8;
 	if( $l == "24hshield" )
 		return 24;
+	if( $l == "3dshield" )
+		return 3*24;
 
 	if( $l == "15mheal")
 		return 15;
@@ -1064,6 +1163,10 @@ function LookupLootCountFromType( $l )
 	if( $l == "fi")
 		return 1;
 	
+	if( strpos( ".".$l, "2m" ) == 1 )
+		return 2*1000*1000;
+	if( strpos( ".".$l, "1.5" ) == 1 )
+		return 1.5*1000*1000;
 	if( strpos( ".".$l, "500" ) == 1 )
 		return 500*1000;
 	if( strpos( ".".$l, "150" ) == 1 )
@@ -1102,13 +1205,13 @@ function LookupLootGroup( $l, $LootParsed )
 	if( $l == "50gems" || $l == "100gems" || $l == "200gems" || $l == "300gems" || $l == "400gems" || $l == "500gems" || $l == "600gems" || $l == "800gems")
 		return "gem";
 	
-	if( $l == "10mr" || $l == "15mr" || $l == "30mr" || $l == "60mr" || $l == "3hr" || $l == "8hr" || $l == "15hr")
+	if( $l == "10mr" || $l == "15mr" || $l == "30mr" || $l == "60mr" || $l == "3hr" || $l == "8hr" || $l == "15hr" || $l == "24hr")
 		return "speedup hours";
 	
 	if( $l == "10m" || $l == "15m" || $l == "30m" || $l == "60m" || $l == "3h" || $l == "8h" || $l == "15h")
 		return "speedup hours";
 	
-	if( $l == "3gold" || $l == "15gold" || $l == "50gold")
+	if( $l == "3gold" || $l == "15gold" || $l == "50gold" || $l == "200gold")
 		return "Gold";
 	
 	if( strpos( $l, "wood" ) || strpos( $l, "ore" ) || strpos( $l, "stone" ) )
@@ -1118,7 +1221,7 @@ function LookupLootGroup( $l, $LootParsed )
 		return "Resource";
 //		return "Food";
 
-	if( $l == "4hshield" || $l == "8hshield" || $l == "24hshield" )
+	if( $l == "4hshield" || $l == "8hshield" || $l == "24hshield" || $l == "3dshield" )
 		return "Shield hours";
 
 	if( $l == "jewel" )
@@ -1133,7 +1236,7 @@ function LookupLootGroup( $l, $LootParsed )
 function LookupLootCount( $l, $lt )
 {
 	$l = (int)$l;
-	if( $l <=0 || $l > 64 )
+	if( $l <=0 || $l > 128 )
 	{
 		echo "Could not find Monster loot count $l<br>";
 		return "";
@@ -1141,11 +1244,11 @@ function LookupLootCount( $l, $lt )
 	if( $l > 7 )
 	{
 		$IsMaterial = ( strpos( "#".$lt, "mat") == 1 );
-		$IsJewel = ( strpos( "#".$lt, "jewel") == 1 );
+		$IsJewel = ( strpos( "#".$lt, "Jewel") == 1 );
 //echo "stangely large : $l $lt $IsMaterial $IsJewel<br>";
 		if( $IsMaterial != 1 && $IsJewel != 1 )
 		{
-			echo "Monster loot count is strangely large $l<br>";
+			echo "Monster loot count is strangely large $l for $lt<br>";
 			return "";
 		}
 	}
@@ -1181,6 +1284,23 @@ function ParseLine($line)
 	{
 		$struct["LootNumericCountWithStacks"] = LookupLootCountFromType($parts[2]) * $struct["LootCount"];
 	}
+
+	if($struct["Level"] == 2 && strpos($parts[2],"gems") && $struct["LootNumericCountWithStacks"] < 100)
+		return "";
+	if($struct["Level"] == 3 && strpos($parts[2],"gems") && $struct["LootNumericCountWithStacks"] < 100)
+		return "";
+	if($struct["Level"] == 4 && strpos($parts[2],"gems") && $struct["LootNumericCountWithStacks"] < 100)
+		return "";
+	if($struct["Level"] == 1 && strpos($parts[2],"chest") && $parts[2] != "chest1")
+		return "";
+	if($struct["Level"] == 2 && strpos($parts[2],"chest") && $parts[2] != "chest2")
+		return "";
+	if($struct["Level"] == 3 && strpos($parts[2],"chest") && $parts[2] != "chest3")
+		return "";
+	if($struct["Level"] == 4 && strpos($parts[2],"chest") && $parts[2] != "chest4")
+		return "";
+	if($struct["Level"] == 5 && strpos($parts[2],"chest") && $parts[2] != "chest5")
+		return "";
 	
 //if( $parts[0] == "hd" && $struct["Loot"] == "mat 0")	echo "$line<br>";
 //if( $struct["Loot"] == "mat 0")	echo "$line ".$struct["LootCount"]."<br>";
