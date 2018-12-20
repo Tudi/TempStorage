@@ -1,0 +1,769 @@
+// rows with invalid data will be skipped
+// values are tab separated
+// first value : string ID  - will be used to match string translations. Can be any number as long as it will not collide with other translations
+// second value : Context - will be used only when a special location based translation is required. This number will be hardcoded inside the program
+// third value : Lang Id : 0 - English, 1 - Italian, 2 - German
+
+0	0	0	_File
+0	0	1	_File
+0	0	2	_Datei
+
+1	0	0	_New
+1	0	1	_Nuovo
+1	0	2	_Neu
+
+2	0	0	_Save
+2	0	1	_Salva
+2	0	2	_Speichern
+
+3	0	0	Save as
+3	0	1	Salva con nome...
+3	0	2	Speichern als...
+
+4	0	0	Open
+4	0	1	Apri...
+4	0	2	Öffnen...
+
+5	0	0	_Exit
+5	0	1	_Esci
+5	0	2	_Beenden
+
+6	0	0	_Edit
+6	0	1	_Modificare
+6	0	2	_Bearbeiten
+
+7	0	0	_New index card...
+7	0	1	_Nuova scheda indice...
+7	0	2	_Neue Karteikarte...
+
+8	0	0	_Delete actual index card
+8	0	1	_Elimina la scheda indice attuale
+8	0	2	_Löschen der aktuellen Karteikarte
+
+9	0	0	_Rename actual index card
+9	0	1	_Nome di indice effettivo
+9	0	2	_Nennen Sie die aktuelle Karteikarte neu
+
+10	0	0	Call forwarding
+10	0	1	Deviata
+10	0	2	Anrufumleitung
+
+11	0	0	_View
+11	0	1	_Visualizza
+11	0	2	_Ansicht
+
+12	0	0	_Menu
+12	0	1	_Menu
+12	0	2	_Menü
+
+13	0	0	_Gridlines
+13	0	1	_Griglia
+13	0	2	_Gitternetzlinien
+
+14	0	0	_Names
+14	0	1	_Nomi
+14	0	2	_Namen
+
+15	0	0	_Legend
+15	0	1	_Legenda
+15	0	2	_Legende
+
+16	0	0	_Absence management
+16	0	1	_Gestione assenze
+16	0	2	_Abwesenheitsinformation
+
+17	0	0	_Always on top
+17	0	1	_Sempre in primo piano
+17	0	2	_Immer im Vordergrund
+
+18	0	0	_Canonical number
+18	0	1	_Canonical number
+18	0	2	_Kanonische Nummer
+
+19	0	0	_Tools
+19	0	1	_Strumenti
+19	0	2	_Extras
+
+20	0	0	Options
+20	0	1	Opzioni
+20	0	2	Optionen
+
+21	0	0	Colors...
+21	0	1	Colori...
+21	0	2	Farben...
+
+22	0	0	Cellsize...
+22	0	1	Dimensione cella...
+22	0	2	Zellgröße...
+
+23	0	0	Font...
+23	0	1	Carattere...
+23	0	2	Schriftart...
+
+24	0	0	Prefix...
+24	0	1	Prefisso...
+24	0	2	Präfix...
+
+25	0	0	User
+25	0	1	Utente
+25	0	2	Benutzer
+
+26	0	0	Administration mode...
+26	0	1	Modalità Amministrazione...
+26	0	2	Administratormodus...
+
+28	0	0	Change password...
+28	0	1	Cambio password...
+28	0	2	Passwort ändern...
+
+29	0	0	Absence management...
+29	0	1	Gestione assenze...
+29	0	2	Abwesenheitsinformation...
+
+30	0	0	BLF server configuration...
+30	0	1	Configurazione del BLF Server...
+30	0	2	BLF Server Konfiguration...
+
+31	0	0	_Help
+31	0	1	_Guida
+31	0	2	_Hilfe
+
+32	0	0	Contents...
+32	0	1	Contenuti...
+32	0	2	Inhalt...
+
+33	0	0	About...
+33	0	1	Informazioni su...
+33	0	2	Über...
+
+34	0	0	Idle
+34	0	1	Libero
+34	0	2	Frei
+
+35	0	0	Ringing
+35	0	1	In Chiamata
+35	0	2	Ruf
+
+36	0	0	Out Of Service
+36	0	1	Fuori Servizio
+36	0	2	Ausser Betrieb
+
+37	0	0	Busy
+37	0	1	Occupato
+37	0	2	Besetzt
+
+38	0	0	Not Existing
+38	0	1	Non esistente
+38	0	2	Nicht vorhanden
+
+39	0	0	Connecting
+39	0	1	Collegamento
+39	0	2	Verbinden
+
+40	0	0	Version:
+40	0	1	Versione:
+40	0	2	Ausführung:
+
+41	0	0	Product ID:
+41	0	1	Codice prodotto:
+41	0	2	Sachnummer:
+
+42	0	0	Client License:
+42	0	1	Licenza client:
+42	0	2	Kundenlizenz:
+
+43	0	0	All Rights reserved
+43	0	1	Tutti i diritti riservati
+43	0	2	Alle Rechte vorbehalten
+
+44	0	0	Ok
+44	0	1	Ok
+44	0	2	Ok
+
+45	0	0	Workday hours
+45	0	1	Orario di lavoro
+45	0	2	Werktag
+
+46	0	0	Start Time
+46	0	1	Inizio
+46	0	2	Beginn
+
+47	0	0	End Time
+47	0	1	Fine
+47	0	2	Ende
+
+48	0	0	Number of checked days
+48	0	1	Durata assenza in giorni
+48	0	2	Tage im Voraus prüfen
+
+49	0	0	Refresh time
+49	0	1	Intervallo aggiornamento
+49	0	2	Aktualisierungsintervall
+
+50	0	0	Show Outlook profile dialog
+50	0	1	Mostra Outlook profile dialog
+50	0	2	Outlook Profil beim Start auswählen
+
+51	0	0	Apply
+51	0	1	Applica
+51	0	2	Übernehmen
+
+52	0	0	Cancel
+52	0	1	Cancella
+52	0	2	Abbrechen
+
+53	0	0	Settings
+53	0	1	Impostazioni
+53	0	2	Optionen 
+
+55	0	0	Select outlook profile
+55	0	1	Seleziona Profilo Outlook...
+55	0	2	Outlook Profil auswählen...
+
+56	0	0	Profile Name :
+56	0	1	Nome Profilo:
+56	0	2	Profilname
+
+57	0	0	Absence Management
+57	0	1	Assenza di gestione
+57	0	2	Abwesenheitsverwaltung
+
+58	0	0	Date
+58	0	1	Data
+58	0	2	Datum
+
+60	0	0	Status
+60	0	1	Stato
+60	0	2	Status
+
+61	0	0	Old password
+61	0	1	Vecchia password
+61	0	2	Altes Passwort
+
+62	0	0	New password
+62	0	1	Nuova password
+62	0	2	Neues Kennwort
+
+63	0	0	Confirm new password
+63	0	1	Conferma nuova password
+63	0	2	Neues Passwort bestätigen
+
+64	0	0	Change password
+64	0	1	Cambio password
+64	0	2	Passwort ändern
+
+65	0	0	Absence manager
+65	0	1	Responsabile dell'assenza
+65	0	2	Abwesenheitsmanager
+
+66	0	0	Login
+66	0	1	Accesso
+66	0	2	Anmeldung
+
+67	0	0	Password
+67	0	1	Password
+67	0	2	Passwort
+
+68	0	0	BLF Server Configuration
+68	0	1	Configurazione del server BLF
+68	0	2	BLF Server Konfiguration
+
+69	0	0	BLF Server IP
+69	0	1	IP server:
+69	0	2	Server IP:
+
+70	0	0	BLF server port
+70	0	1	Numero porta:
+70	0	2	Port Nummer:
+
+71	0	0	Forwardable subscribers:
+71	0	1	Utenti deviabili:
+71	0	2	Teilnehmer umleiten:
+
+72	0	0	Forward Type:
+72	0	1	Tipo deviata:
+72	0	2	Anrufumleitungstyp:
+
+73	0	0	Forward to
+73	0	1	Deviato a
+73	0	2	Umleitung zu:
+
+74	0	0	VoiceMail
+74	0	1	VoiceMail
+74	0	2	VoiceMail
+
+75	0	0	Destination
+75	0	1	Destinazione
+75	0	2	AUL Ziel
+
+76	0	0	Forwarding enabled
+76	0	1	Abilita deviate
+76	0	2	Anrufumleitung aktivieren
+
+77	0	0	Outlook login
+77	0	1	Accesso di Outlook
+77	0	2	Outlook Anmeldung
+
+78	0	0	Email
+78	0	1	Email
+78	0	2	Email
+
+79	0	0	Unsaved new
+79	0	1	Nuovo non salvato
+79	0	2	Ungespeichert neu
+
+80	0	0	Rename...
+80	0	1	Rinominare...
+80	0	2	Umbenennen...
+
+81	0	0	Delete
+81	0	1	Elimina
+81	0	2	Löschen
+
+82	0	0	Name:
+82	0	1	Nome:
+82	0	2	Name:
+
+83	0	0	Rename tab
+83	0	1	Nome Foglio
+83	0	2	Name der Registerkarte
+
+84	0	0	BLF Client
+84	0	1	Client BLF
+84	0	2	BLF Kunde
+
+85	0	0	Unsaved 
+85	0	1	Non salvato 
+85	0	2	Nicht gespeichert 
+
+86	0	0	Edit subscriber...
+86	0	1	Modifica sottoscrittore ...
+86	0	2	Teilnehmer bearbeiten ...
+
+87	0	0	Delete subscriber
+87	0	1	Elimina sottoscrittore
+87	0	2	Teilnehmer löschen
+
+88	0	0	Edit subscriber range...
+88	0	1	Modifica intervallo sottoscrittore ...
+88	0	2	Abonnentenbereich bearbeiten ...
+
+89	0	0	Delete subscriber range
+89	0	1	Elimina intervallo di iscritti
+89	0	2	Teilnehmerbereich löschen
+
+90	0	0	Call forwarding...
+90	0	1	Inoltro chiamata...
+90	0	2	Anrufweiterleitung...
+
+91	0	0	Connected
+91	0	1	Collegato
+91	0	2	In Verbindung gebracht
+
+92	0	0	Extension edit
+92	0	1	Utente 
+92	0	2	Teilnehmer 
+
+93	0	0	Subscriber's number
+93	0	1	Numero utente:
+93	0	2	Teilnehmer Nummer
+
+94	0	0	Email address:
+94	0	1	Indirizzo email:
+94	0	2	Email Adresse:
+
+95	0	0	Note
+95	0	1	Osservazioni:
+95	0	2	Notizfeld
+
+96	0	0	_Font
+96	0	1	_Carattere
+96	0	2	_Schriftart
+
+97	0	0	Extension range edit
+97	0	1	Serie utenti
+97	0	2	Teilnehmerbereich
+
+98	0	0	You have to enter the extension without the last number. All the subscribers with the extension beggining by your entry and ending with 0...9 will be monitorized
+98	0	1	Inserire il numero senza l'ultima cifra. Tutti gli utenti con la stessa radice e l'utima cifra da 0 a 9 saranno monitorati.
+98	0	2	Geben Sie bitte die Rufnummer ohne der letzen Ziffer an. Alle Teilnehmer mit der Endung 0 bis 9 werden hinzugefügt.
+
+99	0	0	PhoneNumberPrefix Edit
+99	0	1	Prefix
+99	0	2	Prefix
+
+100	0	0	Prefix of Subscriber's number
+100	0	1	Prefisso del numero dell'iscritto
+100	0	2	Prefix der Nummer aller Teilnehmer
+
+101	0	0	Extension box size edit
+101	0	1	Modifica delle dimensioni della scatola di estensione
+101	0	2	Erweiterungsboxgröße bearbeiten
+
+102	0	0	Horizontal:
+102	0	1	Orizzontale:
+102	0	2	Horizontal:
+	
+103	0	0	Vertical:
+103	0	1	Verticale:
+103	0	2	Vertikal:
+	
+104	0	0	Status Color Editor
+104	0	1	Colori
+104	0	2	Farben
+	
+105	0	0	Default
+105	0	1	Predefinite
+105	0	2	Standard
+
+107	0	0	BLF-Win - initialising - 
+107	0	1	BLF-Win - inizializzando - 
+107	0	2	BLF-Win - Initialisierung - 
+
+108	0	0	BLF-Win - Demo - 
+108	0	1	BLF-Win - Demo - 
+108	0	2	BLF-Win - Demo - 
+
+109	0	0	BLF-Win  - 
+109	0	1	BLF-Win  - 
+109	0	2	BLF-Win - 
+
+110	0	0	Inserts a new folder in BLF-Win.
+110	0	1	Inserisci nuovo foglio in BLF-Win.
+110	0	2	Einfügen eines neuen Ordners für BLf-Win
+
+111	0	0	Please create an index card first!
+111	0	1	Prima crea un nuovo foglio!
+111	0	2	Bitte fügen Sie zuerst eine Registerkarte hinzu.
+
+112	0	0	AC-Win Interface name is missing!
+112	0	1	Manca nome interfaccia AC-Win!
+112	0	2	AC-Win Schnittstellenname fehlt!
+
+113	0	0	Error initialising OLE! You will not be able to access DS-Win.
+113	0	1	Errore di inizializzazione OLE! Non sara' possibile accedere a DS-Win.
+113	0	2	Fehler bei OLE Initialisierung! Keine Verbindung zu DS-Win erlaubt.
+
+114	0	0	OLE initialization failed. Make sure that the OLE libraries are the correct version. You will not be able to access AC-Win.
+114	0	1	Inizializzazione OLE fallita. Accertarsi che le librerie OLE abbiano la versione corretta. Non sara' possibile accedere a  AC-Win.
+114	0	2	OLE Initialisierung nicht durchgeführt. Stellen sie sicher, dass die OLE Libraries aktuell sind. Sie haben keinen Zugang zu AC-Win.
+
+115	0	0	You are not allowed to Set Feature Forwarding in Demo mode!
+115	0	1	Non siete autorizzati a configurare il Servizio Deviate nella versione Demo!
+115	0	2	Es ist nicht erlaubt die Anrufumleitung im Demo Mode zu setzen!
+
+116	0	0	Are you sure you want to quit this program?
+116	0	1	Siete sicuri di volere uscire dal programma?
+116	0	2	Möchten Sie das Programm wirklich beenden?
+
+117	0	0	Error reading the Server Name from the registry
+117	0	1	Errore durante la lettura del nome server dai registri.
+117	0	2	Fehler beim Lesen des Server Namen von der Registrierung.
+
+118	0	0	Allocation error ServerName: CBLF_w32Dlg::GetUShortServerName!
+118	0	1	Errore durante l'allocazione del nome server: CBLF_w32Dlg::GetUShortServerName!
+118	0	2	Zurordunungsfehler Server Name: CBLF_w32Dlg::GetUShortServerName!
+
+119	0	0	Allocation error ACWin interface! You will not be able to use ACWin.
+119	0	1	Errore durante l'allocazione dell'interfaccia ACWin! Non sara' possibile accedere a ACWin.
+119	0	2	Zurordnungsfehler ACWin Schnittstelle! Sie können ACWin nicht verwenden.
+
+120	0	0	This extension is not configured on the CAP-User-Management or
+120	0	1	Questo utente non e' configurato in HiPath 4000. Vuoi continuare?
+120	0	2	Der neue Teilnehmer ist nicht im CAP-User-Management eingerichtet oder die BLF-Datenbasis wurde noch nicht mit dem CAP-User-Management synchronisiert. Möchten Sie weiter?
+
+121	0	0	Set feature forwarding failure for the extension
+121	0	1	Configurazione del servizio deviata fallita
+121	0	2	Fehler beim Schalten der Anrufumleitung für Teilnehmer
+
+123	0	0	Not enough place for the new folder.
+123	0	1	Non abbastanza spazio per il nuovo foglio.
+123	0	2	Kein Speicherplatz für einen neuen Ordner.
+
+124	0	0	BLF-Win
+124	0	1	BLF-Win - inizializzando - 
+124	0	2	BLF-Win - Initialisierung - 
+
+125	0	0	Maximum number of folders reached.
+125	0	1	Raggiunto il numero massimo di fogli.
+125	0	2	Maximale Anzahl von Ordnern erreicht.
+
+126	0	0	Not enough memory for a new hunting group.
+126	0	1	Non abbastanza spazio per un nuovo gruppo passi progressivi.
+126	0	2	Nicht genug Speicherplatz für einen neuen Sammelanschluss.
+
+127	0	0	Not enough memory for a new subscriber.
+127	0	1	Non abbastanza spazio per un nuovo utente.
+127	0	2	Nicht genug Speicherplatz für einen neuen Teilnehmer.
+
+128	0	0	Not enough memory for a new group display.
+128	0	1	Non abbastanza spazio per una nuova serie d'utenti.
+128	0	2	Nicht genug Speicherplatz für eine neue Teilnehmerbereich.
+
+129	0	0	Not enough memory.
+129	0	1	Non abbastanza memoria.
+129	0	2	Nicht genug Speicherplatz.
+
+130	0	0	Do you want to save the changes?
+130	0	1	Vuoi salvare i cambiamenti?
+130	0	2	Möchten Sie die Änderungen speichern?
+
+131	0	0	Applhand.dll not found.
+131	0	1	Applhand.dll non trovato.
+131	0	2	Applhand.dll nicht gefunden.
+
+132	0	0	Do you want to delete the index card?
+132	0	1	Vuoi cancellare il foglio?
+132	0	2	Möchten Sie die Registerkarte löschen?
+
+133	0	0	Hardlock not found.
+133	0	1	Hardlock non trovato.
+133	0	2	Softkey nicht gefunden.
+
+134	0	0	Hardlock error.
+134	0	1	Hardlock errore.
+134	0	2	Softkey Fehler.
+
+135	0	0	Hardlock not available.
+135	0	1	Hardlock non disponibile.
+135	0	2	Kein Softkey vorhanden.
+
+136	0	0	Hardlock initialized.
+136	0	1	Hardlock inizializzato.
+136	0	2	Softkey Initialisierung.
+
+137	0	0	HLVD.DLL for Hardlock not found.
+137	0	1	HLVD.DLL per Hardlock non trovato.
+137	0	2	HLVD.DLL for Hardlock not found.
+
+138	0	0	HLVD.DLL for Hardlock not correct.
+138	0	1	HLVD.DLL per Hardlock non corretto.
+138	0	2	HLVD.DLL for Hardlock not correct.
+
+139	0	0	Error
+139	0	1	Errore
+139	0	2	Fehler
+
+140	0	0	The horizontal field size must be between 100 and 300.
+140	0	1	La dimensione del campo orizzontale deve essere compresa tra 100 e 300.
+140	0	2	Feldgröße muss zwischen 100 und 300 liegen.
+
+141	0	0	The vertical field size must be between 10 and 30.
+141	0	1	La dimensione del campo verticale deve essere compresa tra 10 e 30.
+141	0	2	Feldgröße muss zwischen 10 und 30 liegen.
+
+142	0	0	Change field size.
+142	0	1	Cambia dimensione campo.
+142	0	2	Ändern Feldgröße
+
+143	0	0	Can´t open password file.
+143	0	1	Non e' possibile aprire il file di password.
+143	0	2	Kann Passwortfile nich öffnen.
+
+144	0	0	Invalid password!
+144	0	1	Password non valida!
+144	0	2	Falsches Passwort!
+
+145	0	0	Passwords are different.
+145	0	1	Le password sono differenti.
+145	0	2	Passwörter sind nicht gleich.
+
+146	0	0	Old password is invalid.
+146	0	1	Vecchia password non valida.
+146	0	2	Altes Passwort ist falsch.
+
+147	0	0	Show menu
+147	0	1	Mostra menu.
+147	0	2	Zeige Menü
+
+148	0	0	BLF-Win - connected - 
+148	0	1	BLF-Win - connesso - 
+148	0	2	BLF-Win - verbunden - 
+
+149	0	0	BLF-Win - not connected - 
+149	0	1	BLF-Win - non connesso - 
+149	0	2	BLF-Win - keine Verbindung - 
+
+150	0	0	Inf&o about BLF-Win...
+150	0	1	Inf&ormazioni su BLF-Win...
+150	0	2	In&fo über BLF-Win...
+
+152	0	0	Out of service
+152	0	1	Fuori servizio
+152	0	2	Ausser Betrieb
+
+154	0	0	Override possible
+154	0	1	Inclusione possibile
+154	0	2	Aufschalten
+
+156	0	0	Forwarding to 
+156	0	1	Deviata a 
+156	0	2	Umleitung zu 
+
+157	0	0	BLF-WinServer is using more BLF-WinClients than the licensed number.
+157	0	1	BLF-WinServer sta usando piu'  BLF-WinClients di quanto previsto nelle licenze.
+157	0	2	BLF-WinServer benutzt mehr BLF-Win Clients als gestattet.
+
+158	0	0	BLF-WinServer has no LICENSE.
+158	0	1	BLF-WinServer non ha licenze.
+158	0	2	Keine Lizenz für BLF-WinServer.
+
+159	0	0	Index card 1
+159	0	1	Foglio 1
+159	0	2	Registerkarte 1
+
+161	0	0	CV
+161	0	1	CV
+161	0	2	KV
+
+163	0	0	The chosen subscriber is already being monitored.
+163	0	1	L'utente scelto e' gia' monitorato.
+163	0	2	Die ausgewählte Nummer ist bereit konfiguriert.
+
+164	0	0	The chosen group is already being monitored.
+164	0	1	La serie d'utenti e' gia' monitorata.
+164	0	2	Die ausgewählte Teilnehmernummer ist bereit konfiguriert.
+
+165	0	0	The CAP - HiPath 4000 connection was interrupted! Please wait until you will be announced that the connection is reestablished.
+165	0	1	La connessione Connectivity Adapter - HiPath 4000 e' stata interrotta! Attendere fino a quando verra' notificato il ripristino della connessione.
+165	0	2	Die Verbindung zwischen CAP und HiPath 4000 ist unterbrochen. Es wird versucht, die Verbindung wieder herzustellen.
+
+166	0	0	The CAP - HiPath 4000 connection was reestablished.
+166	0	1	La connessione Connectivity Adapter - HiPath 4000 e' stata ripristinata.
+166	0	2	Die Verbindung zwischen CAP und HiPath 4000 ist wiederhergestellt.
+
+170	0	0	Free
+170	0	1	Libero
+170	0	2	Frei
+
+171	0	0	Tentative
+171	0	1	Prova
+171	0	2	mit Vorbehalt
+
+172	0	0	BLF Server Config
+172	0	1	BLF-Win - inizializzando - 
+172	0	2	BLF-Win - Initialisierung - 
+
+173	0	0	Out of office
+173	0	1	Assente dall'ufficio
+173	0	2	nicht anwesend
+
+174	0	0	Unknown
+174	0	1	Non conosciuto
+174	0	2	unbekannt
+
+176	0	0	Time
+176	0	1	Ora
+176	0	2	Zeit
+
+178	0	0	%I:00 %p
+178	0	1	%H:00
+178	0	2	%H:00
+
+179	0	0	%b. %d
+179	0	1	%d %b
+179	0	2	%d.%b.
+
+180	0	0	%I:%M%p
+180	0	1	%H:%M
+180	0	2	%H:%M
+
+181	0	0	Error: absence information could not be retrieved
+181	0	1	Errore: motivo dell'assenza non può essere visualizzato.
+181	0	2	Fehler: Abwesenheitsinformation konnte nicht gelesen werden
+
+182	0	0	Invalid time values. The End time must be later than the Start time.
+182	0	1	Incongruenza orario. L'orario di termine deve essere maggiore di quello d'inizio.
+182	0	2	Ungültige Eingabe. Die Start-Zeit muß vor der Ende-Zeit liegen.
+
+183	0	0	Absence Information for 
+183	0	1	Informazione d'assenza per 
+183	0	2	Abwesenheitsinformation für 
+
+184	0	0	No Exchange email address could be found for this subscriber. Please enter a valid email address in the Email field.
+184	0	1	Nessuna e-mail del server Exchange è stata possibile abbinare al nuovo utente. Per favore inserire un indirizzo e-mail valido nel campo Email.
+184	0	2	Es konnte keine Email-Adresse für den Teilnehmer automatisch ermittelt werden. Bitte geben sie eine gültige Adresse im Email Feld ein.
+
+185	0	0	Please enter an email address for the subscriber.
+185	0	1	Per favore inserire un indirizzo e-mail per il nuovo utente.
+185	0	2	Bitte geben sie eine Email-Adresse für den Teilnehmer ein.
+
+186	0	0	connected
+186	0	1	Connesso
+186	0	2	verbunden
+
+187	0	0	disconnected
+187	0	1	Non connesso
+187	0	2	keine Verbindung
+
+188	0	0	An error occured when trying to login to the exchange server! Check your outlook settings.
+188	0	1	Si è verificato un errore di accesso al server! Controllare le impostazioni di Outlook e se esso è in funzione
+188	0	2	Beim Login am Exchange-Server ist ein Fehler aufgetreten ! Prüfen und korrigieren sie die Outlook-Einstellungen.
+
+189	0	0	Configfile not found !
+189	0	1	Configfile not found!
+189	0	2	Configfile nicht gefunden !
+	
+190	0	0	New subscriber...
+190	0	1	Nuovo sottoscrittore...
+190	0	2	Neuen Teilnehmer...
+
+191	0	0	New subscriber range...
+191	0	1	Nuovo intervallo sottoscrittore ...
+191	0	2	Neuen Abonnentenbereich ...
+	
+192	0	0	New and confirm password does not match
+192	0	1	Nuovo e conferma la password non corrisponde
+192	0	2	Neues und bestätigtes Passwort stimmt nicht überein
+	
+193	0	0	Could not connect to Exchange server
+193	0	1	Impossibile connettersi al server Exchange
+193	0	2	Es konnte keine Verbindung zum Exchange-Server hergestellt werden
+	
+194	0	0	Error : Name is already used
+194	0	1	Errore: il nome è già utilizzato
+194	0	2	Fehler: Name wird bereits verwendet
+	
+195	0	0	Old password is incorrect
+195	0	1	La vecchia password non è corretta
+195	0	2	Das alte Passwort ist falsch
+	
+196	0	0	Error : Help file missing
+196	0	1	Errore: file della guida mancante
+196	0	2	Fehler: Hilfedatei fehlt
+	
+197	0	0	Email is empty
+197	0	1	L'email è vuota
+197	0	2	E-Mail ist leer
+	
+198	0	0	Could not confirm email
+198	0	1	Non posso confermare l'email
+198	0	2	E-Mail konnte nicht bestätigt werden
+	
+199	0	0	Outlook said email address exists
+199	0	1	Outlook ha detto che l'indirizzo e-mail esiste
+199	0	2	Outlook besagt, dass die E-Mail-Adresse existiert
+	
+200	0	0	Invalid values
+200	0	1	Valori non validi
+200	0	2	Ungültige Werte
+	
+201	0	0	The BLF-Win server connection was interrupted! Please wait until you will be announced that the connection is reestablished
+201	0	1	La connessione al server BLF-Win è stata interrotta! Attendere fino a quando non verrà annunciato che la connessione è ristabilita
+201	0	2	Die BLF-Win Server-Verbindung wurde unterbrochen! Bitte warten Sie, bis Sie eine erneute Verbindung erhalten
+	
+202	0	0	Use BLF-Win in english language
+202	0	1	
+202	0	2	
+	
+203	0	0	Use BLF-Win in german language
+203	0	1	
+203	0	2	
+	
+204	0	0	Use BLF-Win in Italian language
+204	0	1	
+204	0	2	
+	
+	0	0	Cancel
+	0	1	
+	0	2	

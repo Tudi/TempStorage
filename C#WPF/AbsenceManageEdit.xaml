@@ -1,0 +1,69 @@
+﻿<Window x:Class="BLFClient.AbsenceManageEdit"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BLFClient"
+        mc:Ignorable="d"
+        Title="Absence manager" Height="160" Width="400">
+    <StackPanel>
+        <GroupBox Header="Workday hours">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="1.5*"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Start Time" Grid.Column="0" /> 
+                <ComboBox Name="StartTime" IsEditable="False" Grid.Column="1" SelectedIndex="7"/>
+                <Label Content="End Time" Grid.Column="2" />
+                <ComboBox Name="EndTime" IsEditable="False" Grid.Column="3" SelectedIndex="15"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Settings">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Label Content="Number of checked days" Grid.Column="0" Grid.Row="0"/>
+                <ComboBox Name="CheckedDays" IsEditable="False" Grid.Column="1" Grid.Row="0" SelectedIndex="0">
+                    <ComboBoxItem Content="1"/>
+                    <ComboBoxItem Content="2"/>
+                    <ComboBoxItem Content="3"/>
+                    <ComboBoxItem Content="4"/>
+                    <ComboBoxItem Content="5"/>
+                    <ComboBoxItem Content="6"/>
+                    <ComboBoxItem Content="7"/>
+                </ComboBox>
+                <Label Content="Refresh time" Grid.Column="0" Grid.Row="1" />
+                <ComboBox Name="RefreshTime" IsEditable="False" Grid.Column="1" Grid.Row="1" SelectedIndex="0">
+                    <ComboBoxItem Content="1 Min"/>
+                    <ComboBoxItem Content="2 Min"/>
+                    <ComboBoxItem Content="3 Min"/>
+                    <ComboBoxItem Content="4 Min"/>
+                    <ComboBoxItem Content="5 Min"/>
+                </ComboBox>
+                <CheckBox Name="cb_ShowOutlookDialog" Content="Show Outlook profile dialog" Grid.Row="0" Grid.Column="2" />
+                <Button Content="Select outlook profile" Grid.Row="1" Grid.Column="2" Click="Button_Click_SelectProfile"/>
+            </Grid>
+        </GroupBox>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Ok" Grid.Column="1" Click="Button_Click_OK"/>
+            <Button Content="Apply" Grid.Column="2" Click="Button_Click_Apply"/>
+            <Button Content="Cancel" Grid.Column="3" Click="Button_Click_Cancel"/>
+        </Grid>
+    </StackPanel>
+</Window>

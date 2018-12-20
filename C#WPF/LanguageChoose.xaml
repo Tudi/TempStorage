@@ -1,0 +1,41 @@
+﻿<Window x:Class="BLFClient.LanguageChoose"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BLFClient"
+        mc:Ignorable="d"
+        Title="Choose Language" Height="339.084" Width="487.324">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Button Grid.Row="0" Grid.Column="0" Width="90" Height="60" Click="Button_Click_En">
+            <Image Source="pack://application:,,,/Resources/FlagEng.png" Width="30" Height="22"/>
+        </Button>
+        <Button Grid.Row="1" Grid.Column="0" Width="90" Height="60" Click="Button_Click_Ger">
+            <Image Source="pack://application:,,,/Resources/FlagGer.png" Width="30" Height="22"/>
+        </Button>
+        <Button Grid.Row="2" Grid.Column="0" Width="90" Height="60" Click="Button_Click_It">
+            <Image Source="pack://application:,,,/Resources/FlagIt.png" Width="30" Height="22"/>
+        </Button>
+        <StackPanel Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
+            <Label Content="English" FontWeight="Bold"/>
+            <Label Content="Use BLF-Win in english language" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
+            <Label Content="German" FontWeight="Bold"/>
+            <Label Content="Use BLF-Win in german language" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
+            <Label Content="Itallian" FontWeight="Bold"/>
+            <Label Content="Use BLF-Win in Italian language" />
+        </StackPanel>
+    </Grid>
+</Window>

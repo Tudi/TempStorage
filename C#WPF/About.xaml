@@ -1,0 +1,40 @@
+﻿<Window x:Class="BLFClient.About"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BLFClient"
+        mc:Ignorable="d"
+        Title="About" Height="200" Width="250">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Image Source="pack://application:,,,/Resources/BLF.ico" Width="32" Height="32" Grid.Column="0" Grid.Row="0"/>
+        <Label Content="Busy lamp field - BLF-Win" Grid.Column="1" Grid.Row="0" FontWeight="Bold"/>
+
+        <Label Content="Version:" Grid.Column="0" Grid.Row="1" FontWeight="Bold"/>
+        <Label Content="V3.0 R17.17.0" Grid.Column="1" Grid.Row="1" FontWeight="Bold"/>
+
+        <Label Content="Product ID:" Grid.Column="0" Grid.Row="2" FontWeight="Bold"/>
+        <Label Content="P30152-P1140-P30" Grid.Column="1" Grid.Row="2" FontWeight="Bold"/>
+
+        <Label Content="Client License:" Grid.Column="0" Grid.Row="3" FontWeight="Bold"/>
+        <Label Content="F31505-K4-P30" Grid.Column="1" Grid.Row="3" FontWeight="Bold"/>
+
+        <Label Content="© Unify 1997-2019" Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2"/>
+        <Label Content="All Rights reserved" Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2"/>
+
+        <Button Content="Ok" Grid.Row="6" Grid.ColumnSpan="2" Width="70" Click="Button_Click_OK"/>
+    </Grid>
+</Window>

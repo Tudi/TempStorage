@@ -1,0 +1,23 @@
+﻿<Window x:Class="BLFClient.IndexCardRename"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BLFClient"
+        mc:Ignorable="d"
+        Title="Index card name" Height="90" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Name:" VerticalAlignment="Bottom"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Name="IndexCardNewName" Height="20"/>
+        <Button Grid.Row="0" Grid.Column="1" Content="Ok" Click="Button_AcceptRename" Height="20"/>
+        <Button Grid.Row="1" Grid.Column="1" Content="Cancel" Click="Button_DiscardRename" Height="20"/>
+    </Grid>
+</Window>
