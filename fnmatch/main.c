@@ -2,9 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#ifndef WIN
-	#include <fnmatch.h>
-#endif
+#include <fnmatch.h>
 
 int GetFileSize(const char *FileName) // path to file
 {
@@ -31,15 +29,6 @@ void ReadOneLine(FILE *f, unsigned char *OutputBuff)
 	}
 	OutputBuff[0] = '\0';
 }
-
-#ifdef WIN
-int fnmatch(char *pattern, char *str, int Flags)
-{
-	if (strstr(str, pattern) != NULL)
-		return 0;
-	return 1;
-}
-#endif
 
 int main(int argc, char **argv)
 {

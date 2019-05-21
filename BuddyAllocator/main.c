@@ -4,6 +4,8 @@
 #define NodeStatus_Taken 2
 #define NodeStatus_Split 3
 
+#define ParentBuddyNode 2
+
 typedef struct BuddyPart BuddyPart;
 
 struct BuddyPart
@@ -35,7 +37,7 @@ buddy_allocator_t *buddy_allocator_create(void *raw_memory, size_t	raw_memory_si
 	ret->BuddyMemory.BaseMemory = ((char*)raw_memory) + sizeof(buddy_allocator_t);
 	ret->BuddyMemory.SubBuddy[0] = NULL;
 	ret->BuddyMemory.SubBuddy[1] = NULL;
-	ret->BuddyMemory.SubBuddy[2] = NULL;
+	ret->BuddyMemory.SubBuddy[ParentBuddyNode] = NULL;
 	ret->BuddyMemory.Mysize = raw_memory_size - sizeof(buddy_allocator_t);
 	ret->BuddyMemory.NodeStatus = NodeStatus_Free;
 	return ret;
@@ -69,7 +71,7 @@ BuddyPart *SearchSmallestFreeNode(BuddyPart *CurNode, size_t size)
 		part->NodeStatus = NodeStatus_Free;
 		part->SubBuddy[0] = NULL;
 		part->SubBuddy[1] = NULL;
-		part->SubBuddy[2] = CurNode; // parent node
+		part->SubBuddy[ParentBuddyNode] = CurNode; // parent node
 		CurNode->SubBuddy[0] = part;
 
 		part = (BuddyPart *)malloc(sizeof(BuddyPart));
@@ -78,7 +80,7 @@ BuddyPart *SearchSmallestFreeNode(BuddyPart *CurNode, size_t size)
 		part->NodeStatus = NodeStatus_Free;
 		part->SubBuddy[0] = NULL;
 		part->SubBuddy[1] = NULL;
-		part->SubBuddy[2] = CurNode; // parent node
+		part->SubBuddy[ParentBuddyNode] = CurNode; // parent node
 		CurNode->SubBuddy[1] = part;
 
 		CurNode->NodeStatus = NodeStatus_Split;
@@ -111,7 +113,7 @@ void *buddy_allocator_alloc(buddy_allocator_t *buddy_allocator, size_t size)
 
 BuddyPart *SearchMemoryNodeAndFree(BuddyPart *CurNode, void *Block)
 {
-	if (CurNode->BaseMemory == Block)
+	if (CurNode->BaseMemory == Block && CurNode->NodeStatus == NodeStatus_Taken)
 	{
 		//free this node
 		CurNode->NodeStatus = NodeStatus_Free;
@@ -123,10 +125,10 @@ BuddyPart *SearchMemoryNodeAndFree(BuddyPart *CurNode, void *Block)
 			{
 				free(ParentNode->SubBuddy[0]);
 				free(ParentNode->SubBuddy[1]);
-				ParentNode->NodeStatus = NodeStatus_Free;
 				ParentNode->SubBuddy[0] = NULL;
 				ParentNode->SubBuddy[1] = NULL;
-				ParentNode = ParentNode->SubBuddy[2];
+				ParentNode->NodeStatus = NodeStatus_Free;
+				ParentNode = ParentNode->SubBuddy[ParentBuddyNode];
 			}
 			//nothing to merge anymore
 			else
@@ -169,4 +171,11 @@ int main()
 	buddy_allocator_free(MainBuddy,t1);
 	void *t5 = buddy_allocator_alloc(MainBuddy, 100 * 1024);
 	void *t6 = buddy_allocator_alloc(MainBuddy, 100 * 1024);
+	buddy_allocator_free(MainBuddy, t3);
+	buddy_allocator_free(MainBuddy, t6);
+	buddy_allocator_free(MainBuddy, t5);
+	buddy_allocator_free(MainBuddy, t4);
+//	if (MainBuddy->BuddyMemory.NodeStatus != NodeStatus_Free)
+//		return 1;
+	return 0;
 }
