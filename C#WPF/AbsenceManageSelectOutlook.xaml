@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Select Outlook Profile" Height="190" Width="250">
+        Title="Select Outlook Profile" Height="188" Width="250">
     <StackPanel>
         <GroupBox Margin="10">
             <Grid>
@@ -28,8 +28,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Content="Ok" Grid.Column="1" Click="Button_Click_OK"/>
-            <Button Content="Cancel" Grid.Column="2" Click="Button_Click_Cancel"/>
+            <Button Content="Ok" Grid.Column="1" Click="Button_Click_OK" Margin="4,4,4,4"/>
+            <Button Content="Cancel" Grid.Column="2" Click="Button_Click_Cancel" Margin="4,4,4,4"/>
         </Grid>
     </StackPanel>
 </Window>

@@ -5,27 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Extension edit" Height="300" Width="300">
+        Title="Extension edit" Height="310" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0">
+            <Label Content="Server Name"/>
+            <ComboBox Name="Servers" IsEditable="false" SelectionChanged="Servers_SelectionChanged" Margin="4,4,4,4"/>
             <Label Content="Subscriber's number"/>
-            <ComboBox Name="SubscriberExtension" IsEditable="True" SelectionChanged="SubscriberExtension_SelectionChanged"/>
+            <ComboBox Name="SubscriberExtension" IsEditable="True" SelectionChanged="SubscriberExtension_SelectionChanged" Margin="4,4,4,4" TextBoxBase.TextChanged="SubscriberExtension_TextChanged" />
             <Label Content="Name:"/>
-            <TextBox Name="TB_UserName"/>
+            <TextBox Name="TB_UserName" Margin="4,4,4,4"/>
             <Label Content="Email address:"/>
-            <TextBox Name="SubscriberEmail"/>
-            <Button Content="_Resolv" Click="Button_Click_Resolve"/>
+            <TextBox Name="SubscriberEmail" Margin="4,4,4,4"/>
+            <Button Content="_Resolve" Click="Button_Click_Resolve"/>
             <Label Content="Note"/>
-            <TextBox Name="SubscriberNote" Height="80"/>
+            <TextBox Name="SubscriberNote" Height="70" Margin="4,4,4,4"/>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <Button Content="Ok" Margin="0,10,0,10" Click="Button_Click_Ok"/>
-            <Button Content="Cancel" Margin="0,10,0,10" Click="Button_Click_Cancel"/>
-            <Button Content="_Font" Margin="0,10,0,10" Click="Button_Click_Font"/>
+            <Button Content="Ok" Margin="10,10,10,10" Click="Button_Click_Ok"/>
+            <Button Content="Cancel" Margin="10,10,10,10" Click="Button_Click_Cancel"/>
+            <Button Content="_Font" Margin="10,10,10,10" Click="Button_Click_Font"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -8,7 +8,7 @@
         Title="PhoneNumberPrefix Edit" Height="100" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -16,8 +16,8 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Label Content="Prefix of Subscriber's number"/>
-        <Button Content="Ok" Height="25" Grid.Row="0" Grid.Column="1" Click="Click_Ok"/>
-        <TextBox Name="SubscriberPrefix" Height="25"  Grid.Row="1" Grid.Column="0"/>
-        <Button Content="Cancel" Height="25" Grid.Row="1" Grid.Column="1" Click="Click_Cancel"/>
+        <Button Content="Ok"  Margin="4,4,4,4" Grid.Row="0" Grid.Column="1" Click="Click_Ok"/>
+        <TextBox Name="SubscriberPrefix" Height="25"  Grid.Row="1" Grid.Column="0" Margin="4,4,8,4"/>
+        <Button Content="Cancel"  Margin="4,4,4,4" Grid.Row="1" Grid.Column="1" Click="Click_Cancel"/>
     </Grid>
 </Window>

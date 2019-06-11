@@ -15,9 +15,50 @@ namespace BLFClient.Backend
     {
         IniData LoadedConfig = null;
         string LoadedFileName = null;
+        IniData OriLoaded = null;
 
         ~ConfigManager()
         {
+            SaveConfigsNoAdminRequired();
+        }
+
+        private int CompareUpdateOldConfid(string Section, string Config)
+        {
+            if (LoadedConfig[Section] == null || LoadedConfig[Section][Config] == null)
+                return 0;
+
+            if (OriLoaded.Sections.Any(x => x.SectionName == Section) == false)
+                OriLoaded.Sections.AddSection(Section);
+
+            if (OriLoaded[Section].Any(x => x.KeyName == Config) == false)
+                OriLoaded[Section].AddKey(Config);
+
+            if (LoadedConfig[Section][Config] != OriLoaded[Section][Config])
+            {
+                OriLoaded[Section][Config] = LoadedConfig[Section][Config];
+                return 1;
+            }
+
+            return 0;
+        }
+
+        public void SaveConfigsNoAdminRequired()
+        {
+            //save configs that should always save
+            if (OriLoaded == null || LoadedConfig == null)
+                return;
+            int SaveConfig = 0;
+            SaveConfig += CompareUpdateOldConfid("Windowposition", "Left");
+            SaveConfig += CompareUpdateOldConfid("Windowposition", "Right");
+            SaveConfig += CompareUpdateOldConfid("Windowposition", "Top");
+            SaveConfig += CompareUpdateOldConfid("Windowposition", "Bottom");
+            SaveConfig += CompareUpdateOldConfid("Windowposition", "Maximized");
+
+            if (SaveConfig > 0)
+            {
+                var parser = new FileIniDataParser();
+                parser.WriteFile(LoadedFileName, OriLoaded);
+            }
         }
 
         public void SetDefaultInitFileName(string NewName)
@@ -29,13 +70,31 @@ namespace BLFClient.Backend
             LoadedFileName = NewName;
         }
 
+        public void CreateEmptyConfig(string FileName)
+        {
+            LoadedFileName = FileName;
+            LoadedConfig = new IniData();
+            OriLoaded = new IniData(LoadedConfig);
+        }
+
         public bool LoadIni(string Filename)
         {
+            //create a new config ?
             if (File.Exists(Filename) == false)
+            {
+                CreateEmptyConfig(Filename);
                 return false;
+            }
             LoadedFileName = Filename;
             FileIniDataParser ConfigLoader = new FileIniDataParser();
-            LoadedConfig = ConfigLoader.ReadFile(Filename);
+
+            bool GuessedEncoding = false;
+            try { LoadedConfig = ConfigLoader.ReadFile(Filename, Encoding.UTF8); GuessedEncoding = true; }  catch {}
+            if (GuessedEncoding == false)
+            { try { LoadedConfig = ConfigLoader.ReadFile(Filename, Encoding.UTF7); GuessedEncoding = true; } catch { } }
+            if (GuessedEncoding == false)
+            { try { LoadedConfig = ConfigLoader.ReadFile(Filename); GuessedEncoding = true; } catch { } }
+            OriLoaded = new IniData(LoadedConfig);
             return true;
         }
 
@@ -53,20 +112,21 @@ namespace BLFClient.Backend
                 parser.WriteFile(FileName, LoadedConfig);
         }
 
-        public string GetConfig(string section, string Config, string Default = null)
+        public string GetConfig(string section, string Config, string Default = null, bool IgnoreWarning = false)
         {
             //check if section exists
             if (LoadedConfig == null || LoadedConfig.Sections.Any(x => x.SectionName == section) == false || LoadedConfig[section][Config] == null)
             {
-                Globals.Logger.LogString(LogManager.LogLevels.LogLevelDebug, "Could not find config " + LoadedFileName + ":" + section + ":" + Config + " = " + Default);
+                if(IgnoreWarning == false)
+                    Globals.Logger.LogString(LogManager.LogLevels.LogLevelDebug, "Could not find config " + LoadedFileName + ":" + section + ":" + Config + " = " + Default);
                 return Default;
             }
             return LoadedConfig[section][Config];
         }
 
-        public int GetConfigInt(string section, string Config, int DefaultValue)
+        public int GetConfigInt(string section, string Config, int DefaultValue, bool IgnoreWarning = false)
         {
-            string val = GetConfig(section, Config, null);
+            string val = GetConfig(section, Config, null, IgnoreWarning);
             if (val == null)
                 return DefaultValue;
             try
@@ -75,7 +135,8 @@ namespace BLFClient.Backend
             }
             catch (Exception e)
             {
-                Globals.Logger.LogString(LogManager.LogLevels.LogFlagError, "Config value integer expected, got something else : [" + section + "][" + Config + "]=" + val + " Exception : " + e.ToString());
+                if (IgnoreWarning == false)
+                    Globals.Logger.LogString(LogManager.LogLevels.LogFlagError, "Config value integer expected, got something else : [" + section + "][" + Config + "]=" + val + " Exception : " + e.ToString());
                 return DefaultValue;
             }
         }

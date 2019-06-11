@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Outlook login" Height="100" Width="200">
+        Title="Outlook login" Height="120" Width="200">
     <StackPanel>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -18,8 +18,8 @@
             </Grid.RowDefinitions>
             <Label Content="Email" Grid.Column="0" Grid.Row="0"/>
             <Label Content="Password" Grid.Column="0" Grid.Row="1" />
-            <TextBox Name="tb_Email" Grid.Row="0" Grid.Column="2" />
-            <PasswordBox Name="tb_Passw" Grid.Row="1" Grid.Column="2" />
+            <TextBox Name="tb_Email" Grid.Row="0" Grid.Column="2"  Margin="4,4,4,4"/>
+            <PasswordBox Name="tb_Passw" Grid.Row="1" Grid.Column="2"  Margin="4,4,4,4"/>
         </Grid>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -27,8 +27,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Content="Ok" Grid.Column="1" Click="Button_Click_OK"/>
-            <Button Content="Cancel" Grid.Column="2" Click="Button_Click_Cancel"/>
+            <Button Content="Ok" Click="Button_Click_OK" Margin="4,4,4,4" Grid.Column="1"/>
+            <Button Content="Cancel" Click="Button_Click_Cancel" Margin="4,4,4,4" Grid.Column="2"/>
         </Grid>
     </StackPanel>
 </Window>

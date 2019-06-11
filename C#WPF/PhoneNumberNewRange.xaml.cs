@@ -1,5 +1,6 @@
 ﻿using BLFClient.Backend;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,7 @@ namespace BLFClient
         long EditedGUID;
         PhoneNumberSetupSettings GeneralSettings;
         FontSettings FontSetting = null;
+        string SelectedServer = null;
 
         public PhoneNumberNewRange(PhoneNumber EditedNumber)
         {
@@ -31,23 +33,36 @@ namespace BLFClient
             EditedGUID = EditedNumber.GetGUID();
             //            if (App.Current != null && App.Current.MainWindow != null)
             //                this.SubscriberExtension.Text = (App.Current.MainWindow as MainWindow).GetPrefix();
+
             if (EditedNumber.GetExtension().Length != 0)
             {
-                string Prefix = EditedNumber.GetPrefix();
-                if (Prefix.Length > 0)
-                    Prefix = Prefix + "-";
+                string Prefix = EditedNumber.GetPrefixIfShown(true);
                 this.SubscriberExtension.Text = Prefix + EditedNumber.GetExtension().ToString();
+                this.Servers.Items.Add(EditedNumber.GetServerIPAndPort());
+                this.Servers.SelectedIndex = 0;
+                this.Servers.IsReadOnly = true;
             }
             else
             {
-                System.Collections.ObjectModel.ReadOnlyCollection<PersPortDataStore> possibleNames = Globals.persPortManager.GetServerExtensions();
-                HashSet<string> Ranges = new HashSet<string>();
-                foreach (PersPortDataStore i in possibleNames)
-                    Ranges.Add(i.Extension.Substring(0, i.Extension.Length-1));
-                foreach (var i in Ranges)
-                    SubscriberExtension.Items.Add(i);
-                if (possibleNames.Count > 0)
-                    SubscriberExtension.SelectedIndex = 0;
+                //select a server to show
+                if (SelectedServer == null)
+                {
+                    Servers.Items.Clear();
+                    ConcurrentBag<ServerConnectionStatus> Connections = Globals.ConnectionManager.GetConnections();
+                    foreach (ServerConnectionStatus sc in Connections)
+                    {
+                        if (sc.PendingRemove == true)
+                            continue;
+
+                        Servers.Items.Add(sc.GetServerIPAndPort());
+                    }
+                    if (Servers.Items.Count != 0)
+                    {
+                        Servers.SelectedIndex = 0;
+                        SelectedServer = Servers.Items.GetItemAt(Servers.SelectedIndex).ToString();
+                    }
+                }
+                GenerateFilteredExtensionDropdown();
             }
 
             this.SubscriberExtension.Focus();
@@ -62,6 +77,26 @@ namespace BLFClient
 
             Globals.MultilangManager.TranslateUIComponent(this);
             this.Owner = App.Current.MainWindow;
+            this.Left = this.Owner.Left + this.Owner.Width / 2 - this.Width / 2;
+            this.Top = this.Owner.Top + this.Owner.Height / 2 - this.Height / 2;
+        }
+
+        private void GenerateFilteredExtensionDropdown()
+        {
+            System.Collections.ObjectModel.ReadOnlyCollection<PersPortDataStore> possibleNames = Globals.persPortManager.GetServerExtensions();
+            HashSet<string> Ranges = new HashSet<string>();
+            foreach (PersPortDataStore i in possibleNames)
+            {
+                //ony list extensions from 1 server at a time
+                if (SelectedServer != null && i.ServerIPAndPort != SelectedServer)
+                    continue;
+                Ranges.Add(i.GetPrefixIfShown(true) + i.Extension.Substring(0, i.Extension.Length - 1));
+            }
+            SubscriberExtension.Items.Clear();
+            foreach (var i in Ranges)
+                SubscriberExtension.Items.Add(i);
+            if (possibleNames.Count > 0)
+                SubscriberExtension.SelectedIndex = 0;
         }
 
         private void Button_Click_Ok(object sender, RoutedEventArgs e)
@@ -70,9 +105,11 @@ namespace BLFClient
             if (EditedPhoneNumber != null)
             {
                 EditedPhoneNumber.SetIsRange(true);
-                EditedPhoneNumber.SetExtension(this.SubscriberExtension.Text);
                 if(FontSetting!=null)
                     EditedPhoneNumber.OnFontSettingChanged(FontSetting);
+                if (Servers.SelectedIndex >= 0)
+                    EditedPhoneNumber.SetServerIPAndPort(Servers.Items.GetItemAt(Servers.SelectedIndex).ToString());
+                EditedPhoneNumber.SetExtension(this.SubscriberExtension.Text);
             }
 
             //all done. close it
@@ -93,6 +130,12 @@ namespace BLFClient
                 FontSetting = MainWindow.FontDialogToFontSetting(fd);
                 Globals.FontManager.InsertNewSetting(FontSetting);
             }
+        }
+
+        private void Servers_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectedServer = Servers.SelectedItem as string;
+            GenerateFilteredExtensionDropdown();
         }
     }
 }

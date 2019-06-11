@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="About" Height="200" Width="250">
+        Title="About" Height="240" Width="250">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -35,6 +35,6 @@
         <Label Content="© Unify 1997-2019" Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2"/>
         <Label Content="All Rights reserved" Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2"/>
 
-        <Button Content="Ok" Grid.Row="6" Grid.ColumnSpan="2" Width="70" Click="Button_Click_OK"/>
+        <Button Content="Ok" Grid.Row="6" Grid.ColumnSpan="2" Width="70" Click="Button_Click_OK" Margin="4,4,4,4"/>
     </Grid>
 </Window>

@@ -22,7 +22,8 @@ namespace BLFClient.Backend
             LogFlagNetwork = 4,
             LogFlagUI = 8,
             LogFlagCallForwarding = 16,
-            LogLevelDebug = LogFlagInfo | LogFlagError | LogFlagNetwork | LogFlagUI | LogFlagCallForwarding,
+            LogFlagBinaryPackets = 32,
+            LogLevelDebug = LogFlagInfo | LogFlagError | LogFlagNetwork | LogFlagUI | LogFlagCallForwarding | LogFlagBinaryPackets,
             LogLevelAll = 0xFF
         }
 
@@ -62,6 +63,7 @@ namespace BLFClient.Backend
             FileName += DateTime.Now.Hour.ToString() + ".";
             FileName += DateTime.Now.Minute.ToString() + ".";
             FileName += DateTime.Now.Second.ToString();
+            FileName += ".log";
         }
 
         public void SetFileLogLevelsFromConfig(string config)
@@ -84,6 +86,11 @@ namespace BLFClient.Backend
                 LogToFile |= LogLevels.LogLevelAll;
         }
 
+        public void SetFileLogLevelAll()
+        {
+            LogToFile = LogLevels.LogLevelDebug;
+        }
+
         public void LogString(LogLevels Severity, string What, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
         {
             //log to screen ?
@@ -98,11 +105,30 @@ namespace BLFClient.Backend
                 StringBuilder sb = new StringBuilder();
                 sb.Append("Severity flag : " + Severity.ToString() + "\n");
                 sb.Append("File : " + filePath + ":" + lineNumber.ToString() + "\n");
-                sb.Append( Environment.TickCount.ToString() + " Msg : " + What + "\n\n");
+                sb.Append(DateTime.Now.ToLongTimeString() + ":" + (Environment.TickCount % 1000).ToString() + " Msg : " + What + "\n\n");
                 WriteQueue.Add(sb.ToString());
-                //should run this in a thread
-//                PeriodicFlushMessageQueue();
             }
+        }
+
+        public void LogPacket(byte []Pkt, bool ClientSending)
+        {
+            if (((int)LogToFile & (int)LogLevels.LogFlagNetwork) == 0)
+                return;
+
+            BLFWinNoEnvelopHeader pkt = new BLFWinNoEnvelopHeader();
+            pkt = NetworkPacketTools.ByteArrayToStructure<BLFWinNoEnvelopHeader>(Pkt);
+            StringBuilder sb = new StringBuilder();
+            if (ClientSending)
+                sb.Append("CMSG");
+            else
+                sb.Append("SMSG");
+            sb.Append(", T " + DateTime.Now.ToLongTimeString() + ":" + (Environment.TickCount % 1000).ToString());
+            sb.Append(", PktSize " + pkt.Length);
+            sb.Append(", CMD " + pkt.Type);
+            sb.Append(", BYTES : " + BitConverter.ToString(Pkt).Replace("-", string.Empty));
+            sb.Append(", AsString : " + Encoding.ASCII.GetString(Pkt));
+            sb.Append("\n\n");
+            WriteQueue.Add(sb.ToString());
         }
 
         public void PeriodicFlushMessageQueue(object source, ElapsedEventArgs arg)

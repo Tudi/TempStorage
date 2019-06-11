@@ -42,7 +42,7 @@ namespace BLFClient
 /// </summary>
 public partial class StatusColorEditor : Window
     {
-        private static SolidColorBrush[] Colors;  //settings that can be saved / loaded
+        private static SolidColorBrush[] Colors = new SolidColorBrush[(int)PhoneStatusCodes.NumberOfStatusCodes];  //settings that can be saved / loaded
 
         public StatusColorEditor()
         {
@@ -63,16 +63,18 @@ public partial class StatusColorEditor : Window
 
             Globals.MultilangManager.TranslateUIComponent(this);
             this.Owner = App.Current.MainWindow;
+            this.Left = this.Owner.Left + this.Owner.Width / 2 - this.Width / 2;
+            this.Top = this.Owner.Top + this.Owner.Height / 2 - this.Height / 2;
         }
 
         private void InitUIComponents()
         {
             //init our own components
-            ClrPcker_1.SelectedColor = GetStatusColor(PhoneStatusCodes.Idle).Color;
-            ClrPcker_2.SelectedColor = GetStatusColor(PhoneStatusCodes.Ringing).Color;
-            ClrPcker_3.SelectedColor = GetStatusColor(PhoneStatusCodes.OutOfService).Color;
-            ClrPcker_4.SelectedColor = GetStatusColor(PhoneStatusCodes.Busy).Color;
-            ClrPcker_5.SelectedColor = GetStatusColor(PhoneStatusCodes.PHONE_DOESNOT).Color;
+            ClrPcker_1.SelectedColor = GetStatusColor(PhoneStatusCodes.Idle);
+            ClrPcker_2.SelectedColor = GetStatusColor(PhoneStatusCodes.Ringing);
+            ClrPcker_3.SelectedColor = GetStatusColor(PhoneStatusCodes.OutOfService);
+            ClrPcker_4.SelectedColor = GetStatusColor(PhoneStatusCodes.Busy);
+            ClrPcker_5.SelectedColor = GetStatusColor(PhoneStatusCodes.PHONE_DOESNOT);
         }
 
         private static SolidColorBrush BrushFromRGB(int CompositeRGB)
@@ -86,9 +88,9 @@ public partial class StatusColorEditor : Window
         /// <summary>
         /// Default colors. This should be overwritten once we load settings from config file
         /// </summary>
-        private static void Init()
+        public static void Init()
         {
-            Colors = new SolidColorBrush[(int)PhoneStatusCodes.NumberOfStatusCodes];
+//            Colors = new SolidColorBrush[(int)PhoneStatusCodes.NumberOfStatusCodes];
 
             int CompositeRGB = Globals.Config.GetConfigInt("Options", "Color NotExisting", 0);
             if (CompositeRGB > 0)
@@ -132,7 +134,7 @@ public partial class StatusColorEditor : Window
         /// </summary>
         /// <param name="status"></param>
         /// <returns></returns>
-        public static SolidColorBrush GetStatusColor(PhoneStatusCodes status)
+        public static Brush GetStatusBrush(PhoneStatusCodes status)
         {
             if (Colors == null)
                 Init();
@@ -140,7 +142,46 @@ public partial class StatusColorEditor : Window
                 status = PhoneStatusCodes.Busy;
             if (status > PhoneStatusCodes.NumberOfStatusCodes)
                 status = PhoneStatusCodes.PHONE_DOESNOT;
+
             return Colors[(int)status];
+        }
+
+        public static LinearGradientBrush GetStatusBrushGradient(PhoneStatusCodes status)
+        {
+            if (Colors == null)
+                Init();
+            if (status == PhoneStatusCodes.PHONE_EXTERNAL)
+                status = PhoneStatusCodes.Busy;
+            if (status > PhoneStatusCodes.NumberOfStatusCodes)
+                status = PhoneStatusCodes.PHONE_DOESNOT;
+
+            LinearGradientBrush GradientColor = new LinearGradientBrush();
+            GradientColor.StartPoint = new Point(0, 0);
+            GradientColor.EndPoint = new Point(1, 1);
+
+            GradientStop StartGS = new GradientStop();
+            StartGS.Color = Colors[(int)status].Color;
+            StartGS.Offset = 0.0;
+            GradientColor.GradientStops.Add(StartGS);
+
+            GradientStop EndGS = new GradientStop();
+            EndGS.Color = Backend.StyleManager.GetGradientFadeToColor();
+            EndGS.Offset = 1.0;
+            GradientColor.GradientStops.Add(EndGS);
+
+            return GradientColor;
+        }
+
+        public static Color GetStatusColor(PhoneStatusCodes status, bool AsGradient = true)
+        {
+            if (Colors == null)
+                Init();
+            if (status == PhoneStatusCodes.PHONE_EXTERNAL)
+                status = PhoneStatusCodes.Busy;
+            if (status > PhoneStatusCodes.NumberOfStatusCodes)
+                status = PhoneStatusCodes.PHONE_DOESNOT;
+
+            return Colors[(int)status].Color;
         }
 
         private string CompositeRGBFromColor(Color val)

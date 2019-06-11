@@ -110,6 +110,13 @@ namespace BLFClient.Backend
         public byte Type;
     };
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct BLFWinNoEnvelopHeader
+    {
+        public short Length;
+        public byte Type;
+    };
+
     //#define	SNAPSHOTDEVICE			5
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct SnapshotDeviceStr

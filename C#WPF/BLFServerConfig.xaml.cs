@@ -1,5 +1,8 @@
-﻿using System;
+﻿using BLFClient.Backend;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,16 +17,43 @@ using System.Windows.Shapes;
 
 namespace BLFClient
 {
+    public class ServerConnectionRow
+    {
+        public string Connected { get; set; }
+        public int Enabled { get; set; }
+        public string IP { get; set; }
+        public int Port { get; set; }
+        public string Name { get; set; }
+        public int Delete_ { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for BLFServerConfig.xaml
     /// </summary>
     public partial class BLFServerConfig : Window
     {
-        public BLFServerConfig(string OldIp, int OldPort)
+        ObservableCollection<ServerConnectionRow> ServerConnectionRows;
+        public BLFServerConfig()
         {
             InitializeComponent();
-            this.ServerIP.Text = OldIp;
-            this.ServerPort.Text = OldPort.ToString();
+
+            if (Globals.ConnectionManager == null)
+                return;
+
+            ConcurrentBag<ServerConnectionStatus> Connections = Globals.ConnectionManager.GetConnections();
+
+            ServerConnectionRows = new ObservableCollection<ServerConnectionRow>();
+            int AddedConnections = 0;
+            foreach (ServerConnectionStatus sc in Connections)
+            {
+                if (sc.PendingRemove == true)
+                    continue;
+                ServerConnectionRows.Add(new ServerConnectionRow() { Connected = (sc.nclient != null).ToString(), Enabled = sc.Enabled, IP = sc.IP, Port = sc.Port, Name = sc.ServerName, Delete_ = 0 });
+                AddedConnections++;
+            }
+            for(; AddedConnections<10; AddedConnections++)
+                ServerConnectionRows.Add(new ServerConnectionRow() { Enabled = 0, IP = "", Port = 5050, Name = "", Delete_ = 0 });
+            this.ServerList.ItemsSource = ServerConnectionRows;
 
             //if we push enter we presume we pushed button "ok"
             RoutedCommand firstSettings = new RoutedCommand();
@@ -35,30 +65,13 @@ namespace BLFClient
 
             Globals.MultilangManager.TranslateUIComponent(this);
             this.Owner = App.Current.MainWindow;
+            this.Left = this.Owner.Left + this.Owner.Width / 2 - this.Width / 2;
+            this.Top = this.Owner.Top + this.Owner.Height / 2 - this.Height / 2;
         }
 
         private void Button_Click_OK(object sender, RoutedEventArgs e)
         {
-            //need to validate data
-            int Port = 0;
-            try
-            {
-                Port = Int32.Parse(this.ServerPort.Text);
-            }catch { };
-
-            //should do some basic checks on this
-            string IP = this.ServerIP.Text;
-            Globals.Config.SetConfig("Options", "BlfServerIp", IP);
-            Globals.Config.SetConfig("Options", "BlfServerPort", Port.ToString());
-            Globals.ConnectionManager.SetConnectionDetails(IP, Port);
-            Globals.ConnectionManager.Disconnect(); // supervisor thread should reconnect. Will not block main htread
-            //if it has not  yet been set
-            if (Globals.IniFile.GetConfig("Options", "ServerAddress", "").Length == 0)
-            {
-                Globals.IniFile.SetConfig("Options", "ServerAddress", IP);
-                Globals.IniFile.SetConfig("Options", "ServerListeningPort", Port.ToString());
-                Globals.IniFile.SaveIni();
-            }
+            Globals.ConnectionManager.UpdateConnectionsDetails(ServerConnectionRows);
 
             this.Close();
         }

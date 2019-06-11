@@ -62,8 +62,11 @@ namespace BLFClient.Backend
         private void _Load()
         {
             // wait for index cards and extension to load up. Also wait for a connection we can query
-            while (Globals.IndexCardsLoaded == false)
+            while (Globals.IndexCardsLoaded == false && Globals.IsAppRunning == true)
                 Thread.Sleep(100);
+
+            if (Globals.IsAppRunning == false)
+                return;
 
             int UpdateIntervalMinutes = Globals.Config.GetConfigInt("AbsenceInfo", "RefreshTime", 5);
             if (UpdateIntervalMinutes == 0)
@@ -72,8 +75,11 @@ namespace BLFClient.Backend
                 return;
             }
 
-            while (Globals.OutlookService.IsConnected() == false)
+            while (Globals.OutlookService.IsConnected() == false && Globals.IsAppRunning == true)
                 Thread.Sleep(100);
+
+            if (Globals.IsAppRunning == false)
+                return;
 
             TooltipUpdateTimer = new System.Timers.Timer(UpdateIntervalMinutes * 60 * 1000);
             TooltipUpdateTimer.Enabled = true;
@@ -90,12 +96,17 @@ namespace BLFClient.Backend
         {
             string OldEmail = MonitoredEmail;
             MonitoredEmail = NewEmail;
+            if (OldEmail == NewEmail)
+                return;
             if (OldEmail != NewEmail)
                 Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Async AbsenceStatus manager  : Started monitoring new email : " + NewEmail + " Old was : " + OldEmail);
             if (NewEmail != null && NewEmail.Length > 0 && (OldEmail == null || NewEmail.CompareTo(OldEmail) != 0))
                 Task.Factory.StartNew(() => _UpdateUI(true)); // just run it once in a new thread ( since it lags a lot )
             else
+            {
                 ClearGridContent();
+                UpdateGridHeaderWithSelectedEmail("");
+            }
         }
 
         /// <summary>
@@ -135,11 +146,17 @@ namespace BLFClient.Backend
                     RowDefinition rd = new RowDefinition();
                     rd.Height = new System.Windows.GridLength(25);
                     MainObject.AbsenceView.DataGrid.RowDefinitions.Add(rd);
+                    System.Windows.Media.SolidColorBrush BackColor;
+                    if (IsHeader == true)
+                        BackColor = System.Windows.Media.Brushes.LightGray;
+                    else if (RowCount % 2 == 1)
+                        BackColor = System.Windows.Media.Brushes.White;
+                    else
+                        BackColor = System.Windows.Media.Brushes.Transparent;
 
                     //date
                     Label lDate = new Label();
-                    if (IsHeader == true)
-                        lDate.Background = System.Windows.Media.Brushes.LightGray;
+                    lDate.Background = BackColor;
                     lDate.Content = Date;
                     Grid.SetColumn(lDate, 0);
                     Grid.SetRow(lDate, RowCount);
@@ -147,8 +164,7 @@ namespace BLFClient.Backend
 
                     //time
                     Label lDur = new Label();
-                    if (IsHeader == true)
-                        lDur.Background = System.Windows.Media.Brushes.LightGray;
+                    lDur.Background = BackColor;
                     lDur.Content = Duration;
                     Grid.SetColumn(lDur, 1);
                     Grid.SetRow(lDur, RowCount);
@@ -156,8 +172,7 @@ namespace BLFClient.Backend
 
                     //status
                     Label lStatus = new Label();
-                    if (IsHeader == true)
-                        lStatus.Background = System.Windows.Media.Brushes.LightGray;
+                    lStatus.Background = BackColor;
                     lStatus.Content = Status;
                     Grid.SetColumn(lStatus, 2);
                     Grid.SetRow(lStatus, RowCount);
@@ -247,6 +262,27 @@ namespace BLFClient.Backend
             TooltipUpdateTimer.Start();
         }
 
+        private void UpdateGridHeaderWithSelectedEmail(string Email)
+        {
+            if (App.Current != null)
+                App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                {
+                    MainWindow MainObject = (MainWindow)App.Current.MainWindow;
+
+                    if (MainObject == null)
+                        return;
+
+                    string OriHeader = MainObject.AbsenceView.ContentHolder.Header.ToString();
+                    int IndexEndStr = OriHeader.IndexOf(" - ");
+                    if (IndexEndStr > 0)
+                        OriHeader = OriHeader.Substring(0, IndexEndStr);
+                    if (Email != null && Email.Length > 0)
+                        MainObject.AbsenceView.ContentHolder.Header = OriHeader + " - " + Email;
+                    else
+                        MainObject.AbsenceView.ContentHolder.Header = OriHeader;
+                }));
+        }
+
         /// <summary>
         /// Periodically called to update the absence manage window
         /// </summary>
@@ -259,9 +295,14 @@ namespace BLFClient.Backend
             //do not spam updates due to user clicking repeatadly
             if (forced == false && DateTime.Now.Subtract(LastUpdated).TotalSeconds < Globals.Config.GetConfigInt("AbsenceInfo", "RefreshTime", 5*60))
                 return;
+
             LastUpdated = DateTime.Now;
+
             //empty old list
             ClearGridContent();
+            //update table header to show who we are monitoring
+            UpdateGridHeaderWithSelectedEmail(MonitoredEmail);
+
             //if we have nothing to monitor at this point
             if (MonitoredEmail == null || MonitoredEmail.Length == 0)
                 return;

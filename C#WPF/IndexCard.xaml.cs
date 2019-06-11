@@ -141,6 +141,11 @@ namespace BLFClient
             return GUID;
         }
 
+        public TabItem GetTabControl()
+        {
+            return VisualTab;
+        }
+
         public void SetConfigIndex(int Index)
         {
             ConfigIndex = Index;
@@ -243,7 +248,7 @@ namespace BLFClient
         /// <summary>
         /// Load the content of the index card from a file stream ( config file )
         /// </summary>
-        public void Load()
+        public void Load(bool BackgroundLoad = false)
         {
             lock (this) // we will load index cards in parallel
             {
@@ -257,7 +262,7 @@ namespace BLFClient
                 int PhoneNumberLoading = 0;
                 do
                 {
-                    PhoneNumber pn = new PhoneNumber(0, 0, GeneralSettings, GetGUID());
+                    PhoneNumber pn = Globals.ExtensionManager.FactoryNewPhoneNumber(0, 0, GeneralSettings, GetGUID());
                     //try to load from config having this index
                     //                pn.SetConfigIndex(PhoneNumberLoading);
                     //can we load it ?
@@ -272,7 +277,7 @@ namespace BLFClient
                 int RangeNumberLoading = 0;
                 do
                 {
-                    PhoneNumber pn = new PhoneNumber(0, 0, GeneralSettings, GetGUID());
+                    PhoneNumber pn = Globals.ExtensionManager.FactoryNewPhoneNumber(0, 0, GeneralSettings, GetGUID());
                     //try to load from config having this index
                     //                pn.SetConfigIndex(RangeNumberLoading);
                     //can we load it ?
@@ -283,6 +288,11 @@ namespace BLFClient
                     //try to load more
                     RangeNumberLoading++;
                 } while (true);
+
+                //try to place them inside the grid also
+                if (BackgroundLoad == true)
+                    CreateGridBasedOnSize();
+
                 long Endtime = Environment.TickCount;
                 Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "For index card " + GetName() + " we loaded " + PhoneNumberLoading.ToString() + " extensions and " + RangeNumberLoading.ToString() + " ranges in " + (Endtime - StartTime) + " ms");
             }
@@ -386,7 +396,7 @@ namespace BLFClient
                 if (NewNumber != null)
                     tcn = NewNumber;
                 else
-                    tcn = new PhoneNumber(x, y, GeneralSettings,GetGUID());
+                    tcn = Globals.ExtensionManager.FactoryNewPhoneNumber(x, y, GeneralSettings, GetGUID());
 
                 if (DemoType == 1 && (x + y) % 2 == 0)
                 {
@@ -405,29 +415,28 @@ namespace BLFClient
             return tcn;
         }
 
+        public int GetGridColumnCount()
+        {
+            return DrawArea.GetCellsInWidth();
+        }
+
         /// <summary>
         /// On resize of the window, we want to show as many as possible phone numbers
         /// </summary>
         private void CreateGridBasedOnSize()
         {
-            MainWindow MainObject = (MainWindow)App.Current.MainWindow;
+            //maybe we should not redraw everything all the time. If tab switching is slow, remake this
             GridContentArea grid = this.DrawArea;
-
-            //maybe we should nto redraw everything all the time. If tab switching is slow, remake this
             grid.ClearContent();
 
             //get the number of rows and columns this grid should have
-            double CellsFitInWidth = grid.GetGridCellsWidth();
-            double CellsFitInHeight = grid.GetGridCellsHeight();
+            int CellsFitInWidth = grid.GetCellsInWidth();
+            int CellsFitInHeight = grid.GetCellsInHeight();
 
             //generate new grid content based on the size of the window
             for (int cols = 0; cols < (int)CellsFitInWidth; cols++)
-            {
                 for (int rows = 0; rows < (int)CellsFitInHeight; rows++)
-                {
                     PhoneNumberAdd(cols, rows);
-                }
-            }
         }
 
         private void DoDemoUpdate()
@@ -442,8 +451,8 @@ namespace BLFClient
 
                 GridContentArea grid = this.DrawArea;
 
-                int Rows = grid.PaintArea.RowDefinitions.Count;
-                int Cols = grid.PaintArea.ColumnDefinitions.Count;
+                int Rows = grid.GetCellsInHeight();
+                int Cols = grid.GetCellsInWidth();
 
                 //get a random cell
                 Random rnd = new Random();

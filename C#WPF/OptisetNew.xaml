@@ -5,20 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="OptisetNew" Height="84.507" Width="215.845">
+        Title="OptisetNew" Height="100" Width="215.647">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="58*"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <CheckBox Name="UseOptisetExtension" Content="Use Optiset Extension" BorderThickness="2"/>
+        <StackPanel Grid.Column="0" Margin="0,0,0,0.2" Grid.RowSpan="2">
+            <CheckBox Name="UseOptisetExtension" Content="Use Optiset Extension" BorderThickness="2" Margin="4,4,4,4"/>
             <Label Content="Optiset Extension"/>
-            <TextBox Name="OptisetExtension"/>
+            <TextBox Name="OptisetExtension" Margin="4,4,4,8"/>
         </StackPanel>
-        <StackPanel Grid.Column="1">
-            <Button Content="Ok" Click="Button_Click_OK"/>
-            <Button Content="Cancel" Click="Button_Click_Cancel"/>
+        <StackPanel Grid.Column="1" Margin="0,0,-0.4,0.2" Grid.RowSpan="2">
+            <Button Content="Ok" Click="Button_Click_OK" Margin="4,4,4,4"/>
+            <Button Content="Cancel" Click="Button_Click_Cancel" Margin="4,4,4,4"/>
         </StackPanel>
     </Grid>
 </Window>

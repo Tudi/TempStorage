@@ -71,6 +71,7 @@ namespace BLFClient.Backend
         int PacketSizeCur = 0;
         int PacketSizeRecv = 0;
         byte[] packet = null;
+        int CounterStopReportingConnectionRetry = 1;
 
         public ACWinConnectionManager()
         {
@@ -83,12 +84,6 @@ namespace BLFClient.Backend
             //update which version of ACWin packetizer are we using
             SetACWinConfigType();
 
-            /*           m_CallInfoParam.m_lState = (long)(SCallInfoParamFlags.CIPS_CONNECTED |
-                                                  SCallInfoParamFlags.CIPS_ONHOLDPENDTRANSFER |
-                                                  SCallInfoParamFlags.CIPS_ONHOLD |
-                                                  SCallInfoParamFlags.CIPS_PARKED);
-
-                       m_CallInfoParam.m_lMisc = (long)SCallInfoParamFlags.CIPM_OUTGOING;*/
             UpdateTimer = new System.Threading.Timer(PeriodicUpdate, null, 1000, 100);
             Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Created ACWin connection manager");
         }
@@ -136,9 +131,17 @@ namespace BLFClient.Backend
                 //if we failed to create a connection, bail out
                 if (client_tcpClient == null || client_tcpClient.Connected == false)
                 {
-                    Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Failed to create ACWin connection");
+                    if (CounterStopReportingConnectionRetry > 0)
+                    {
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Failed to create ACWin connection");
+                        CounterStopReportingConnectionRetry--;
+                    }
                     Monitor.Exit(this);
                     return;
+                }
+                else
+                {
+                    CounterStopReportingConnectionRetry = 1;
                 }
                 //something must have went very wrong if we are missing a stream
                 if (NetStream == null)
@@ -203,7 +206,11 @@ namespace BLFClient.Backend
             {
                 // Log error that we were not able to connect to the server
                 client_tcpClient = null;
-                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "Could not connect to ACWin using connection details localhost:" + OLE_Port.ToString());
+                if (CounterStopReportingConnectionRetry > 0)
+                {
+                    Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "Could not connect to ACWin using connection details localhost:" + OLE_Port.ToString());
+                    CounterStopReportingConnectionRetry--;
+                }
                 return;
             }
             NetStream = client_tcpClient.GetStream();

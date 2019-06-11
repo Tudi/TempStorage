@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.Timers;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace BLFClient.Backend
 {
@@ -23,15 +24,24 @@ namespace BLFClient.Backend
         public long CallPartner;
         public long CallIdConsultation;
         public long CallPartnerConsultation;
+        public string ServerIPAndPort; // 127.0.0.1:5050 More than 1 server can have the exact same extension
+//        public string ExtensionFull; //Server:Prefix:Extension
+        public string Prefix; //this is probably already included in extension ( or not )
 
-        public MonitorStatusStore(string Ext)
+        public MonitorStatusStore(string ServerIPAndPort, string Prefix, string Ext)
         {
             Extension = Ext;
+//            ExtensionFull = ExtFull;
             OnConnectionLost();
         }
 
         public bool ShouldQueryStatus()
         {
+            //does it have a UI component ? Do not query status of the persport.txt extensions without a reason
+            PhoneNumber pn = Globals.ExtensionManager.PhoneNumberGetFirst(ServerIPAndPort, Prefix, Extension, true);
+            if (pn == null)
+                return false;
+
             //no query has been issued yet
             if (LastQueryStamp == 0)
             {
@@ -75,8 +85,15 @@ namespace BLFClient.Backend
         {
             if (HasMonitorSet())
                 return false;
+
             if (MonitorPacketStatus == ServerPacketStatus.PacketSent && LastMonitorQueryStamp + (long)ServerPacketStatus.MonitorTimeOutMS > Environment.TickCount)
                 return false;
+
+            //does it have a UI component ?
+            PhoneNumber pn = Globals.ExtensionManager.PhoneNumberGetFirst(ServerIPAndPort, Prefix, Extension, true);
+            if (pn == null)
+                return false;
+
             return true;
         }
 
@@ -84,20 +101,126 @@ namespace BLFClient.Backend
         {
             return (LastStatus != PhoneStatusCodes.PHONE_DOESNOT);
         }
+
+        public bool CheckSearchMatch(string pServerAndIP, string pPrefix, string pExtension)
+        {
+            if (ServerIPAndPort != null && pServerAndIP != null && pServerAndIP != ServerIPAndPort)
+                return false;
+            if (Prefix != null && pPrefix != null && Prefix != pPrefix)
+                return false;
+            return Extension == pExtension;
+        }
+    }
+
+    class PoolQueue<T>
+    {
+        T[] nodes;
+        int current;
+        int emptySpot;
+
+        public PoolQueue(int size)
+        {
+            nodes = new T[size];
+            this.current = 0;
+            this.emptySpot = 0;
+        }
+
+        public void Enqueue(T value)
+        {
+            nodes[emptySpot % nodes.Length] = value;
+            emptySpot++;
+        }
+
+        public T Dequeue()
+        {
+            int ret = current;
+            current++;
+            return nodes[ret % nodes.Length];
+        }
+
+        public bool Empty()
+        {
+            return emptySpot == current;
+        }
+
+        public bool Full()
+        {
+            return (emptySpot - current == nodes.Length - 1);
+        }
+    }
+
+    // window resize was slow. So i added this pool in hope to speed it up. But no, the issue seems to be somewhere else
+    class PhoneNumberFactory
+    {
+        int PoolSize = 500;
+        PoolQueue<PhoneNumber> PreparedObjects;
+        System.Timers.Timer UpdateTimer;
+
+        public PhoneNumberFactory()
+        {
+            //create a pool
+            PreparedObjects = new PoolQueue<PhoneNumber>(PoolSize);
+
+            //fill pool
+            PeriodicStatusUpdate(null, null);
+
+            //periodically try to refill pool
+            UpdateTimer = new System.Timers.Timer(10);
+            UpdateTimer.Enabled = true;
+            UpdateTimer.Elapsed += new ElapsedEventHandler(PeriodicStatusUpdate);
+        }
+
+        private void PeriodicStatusUpdate(object source, ElapsedEventArgs arg)
+        {
+            if (App.Current == null)
+            {
+                UpdateTimer.Dispose();
+                return;
+            }
+            //this will only help us when we create a new index cards
+            if (Globals.ConfigLoaded == false || Globals.IndexCardsLoaded == false)
+                return;
+            if (Globals.Config.GetIniName() == null)
+                return;
+            UpdateTimer.Stop();
+            App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+            {
+                int MaxAllocations = 2; // if we block the UI thread for too long, it will become unresponsive
+                while (PreparedObjects.Full() == false && MaxAllocations > 0)
+                {
+                    if (App.Current == null)
+                        break;
+                    PhoneNumber pn = new PhoneNumber();
+                    PreparedObjects.Enqueue(pn);
+                    MaxAllocations--;
+                }
+            }));
+            Thread.Sleep(10); //do not deadlock main update thread with our allocations
+            UpdateTimer.Start();
+        }
+
+        public PhoneNumber Get()
+        {
+            if (PreparedObjects.Empty())
+                return new PhoneNumber();
+            return PreparedObjects.Dequeue();
+        }
     }
 
     public class PhoneNumberManager
     {
         static long PhoneNumberGUID = 1;
-        List<PhoneNumber> PhoneNumbers;
-        List<MonitorStatusStore> ExtensionMonitors;
+        ConcurrentBag<PhoneNumber> PhoneNumbers;
+        ConcurrentBag<MonitorStatusStore> ExtensionMonitors;
         System.Timers.Timer UpdateTimer = null;
         PhoneNumber LastClickedExtension = null;
+        PhoneNumberFactory ExtensionFactory;
 
         public PhoneNumberManager()
         {
-            PhoneNumbers = new List<PhoneNumber>();
-            ExtensionMonitors = new List<MonitorStatusStore>();
+            PhoneNumbers = new ConcurrentBag<PhoneNumber>();
+            ExtensionMonitors = new ConcurrentBag<MonitorStatusStore>();
+            ExtensionFactory = new PhoneNumberFactory();
         }
 
         ~PhoneNumberManager()
@@ -125,68 +248,106 @@ namespace BLFClient.Backend
         private void _Load()
         {
             // wait for index cards and extension to load up. Also wait for a connection we can query
-            while (Globals.ConnectionManager == null || Globals.ConnectionManager.IsConnected() == false || Globals.IndexCardsLoaded == false)
+            while ((Globals.ConnectionManager == null || Globals.ConnectionManager.HasAnyActiveConnection() == false || Globals.IndexCardsLoaded == false) && Globals.IsAppRunning == true)
                 Thread.Sleep(100);
+
+            if (Globals.IsAppRunning == false)
+                return;
 
             Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Async extension status manager has started");
             //create a timer to periodically query extension forwarding status and issue callbacks to all cell cards on status change
             UpdateTimer = new System.Timers.Timer(100);
-            UpdateTimer.Enabled = true; 
+            UpdateTimer.Enabled = true;
             UpdateTimer.Elapsed += new ElapsedEventHandler(PeriodicStatusUpdate);
         }
 
         private void PeriodicStatusUpdate(object source, ElapsedEventArgs arg)
         {
             //nothing to be done for now
-            if (Globals.ConnectionManager == null || Globals.ConnectionManager.IsConnected() == false)
+            if (Globals.ConnectionManager == null || Globals.ConnectionManager.HasAnyActiveConnection() == false)
                 return;
 
             UpdateTimer.Stop();// in case network buffer gets full, the function might block and threadpool might call us multiple times
-            //get the list of all the extensions, query each for their forwarding status
-            HashSet<string> extl = GetExtensions();
-            foreach (string ext in extl)
+                               //get the list of all the extensions, query each for their forwarding status
+                               /*           HashSet<string> extl = GetExtensions();
+                                          foreach (string ext in extl)
+                                          {
+                                              //avoid burst flooding the server
+                                              while (Globals.AntiFloodManager.CanSendNewPacket() == false)
+                                                  Thread.Sleep(11); // should not have exact same value as other threads waiting on anti flood manager
+                                              //safe to send a new packet
+                                              PhoneNumberQueryDeviceStatus(ext);
+                                          } */
+            foreach (MonitorStatusStore ss in ExtensionMonitors)
             {
-                //avoid burst flooding the server
-                while (Globals.AntiFloodManager.CanSendNewPacket() == false)
-                    Thread.Sleep(11); // should not have exact same value as other threads waiting on anti flood manager
-                //safe to send a new packet
-                PhoneNumberQueryDeviceStatus(ext);
+                if (ss.ShouldQueryStatus() == true)
+                {
+                    if (ss.ServerIPAndPort != null && Globals.ConnectionManager != null)
+                    {
+                        NetworkClient nc = Globals.ConnectionManager.GetCLient(ss.ServerIPAndPort);
+                        if (nc != null)
+                        {
+                            ss.LastQueryStamp = Environment.TickCount; // if there is no reply comming for this extension, we should retry a bit later
+                            ss.PacketStatus = ServerPacketStatus.PacketSent;
+                            nc.PacketBuilder.SnapshotDevice(ss.Extension);
+                        }
+                    }
+                }
             }
             UpdateTimer.Start();
         }
 
-        private void PhoneNumberQueryDeviceStatus(string Extension)
+        private void PhoneNumberQueryDeviceStatus(string ServerIPAndPort, string Prefix, string Extension)
         {
             //ignore dummy extensions
             if (Extension.Length == 0)
                 return;
 
-            MonitorStatusStore ss = GetStatusStore(Extension);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
             if (ss.ShouldQueryStatus() == true)
             {
                 ss.LastQueryStamp = Environment.TickCount; // if there is no reply comming for this extension, we should retry a bit later
                 ss.PacketStatus = ServerPacketStatus.PacketSent;
-                NetworkClientBuildPacket.SnapshotDevice(Extension.ToString());
+                if (ss.ServerIPAndPort != null && Globals.ConnectionManager != null)
+                {
+                    NetworkClient nc = Globals.ConnectionManager.GetCLient(ss.ServerIPAndPort);
+                    if (nc != null)
+                        nc.PacketBuilder.SnapshotDevice(Extension.ToString());
+                }
             }
         }
 
-        private MonitorStatusStore GetStatusStore(string Extension)
+        private MonitorStatusStore GetStatusStore(string ServerIPAndPort, string Prefix, string Extension)
         {
+//            string ExtensionFull = GetMultiServerExtension(ServerIPAndPort, Prefix, Extension);
             foreach (MonitorStatusStore it in ExtensionMonitors)
-                if (it.Extension == Extension)
+                if (it.CheckSearchMatch(ServerIPAndPort,Prefix,Extension) == true)
                     return it;
 
             //if we got here, than we need to create a new store
-            MonitorStatusStore fw = new MonitorStatusStore(Extension);
+            MonitorStatusStore fw = new MonitorStatusStore(ServerIPAndPort, Prefix, Extension);
             ExtensionMonitors.Add(fw);
 
             return fw;
         }
 
-        private MonitorStatusStore GetStatusStoreXRef(long Xref)
+/*        private MonitorStatusStore GetStatusStoreMultiServer(string ServerIPAndPort, string Prefix, string Extension)
         {
             foreach (MonitorStatusStore it in ExtensionMonitors)
-                if (it.XrefId == Xref)
+                if (it.CheckSearchMatch(ServerIPAndPort, Prefix, Extension) == true)
+                    return it;
+
+            //if we got here, than we need to create a new store
+            MonitorStatusStore fw = new MonitorStatusStore(null, ExtensionFull);
+            ExtensionMonitors.Add(fw);
+
+            return fw;
+        }*/
+
+        private MonitorStatusStore GetStatusStoreXRef(string ServerIPAndPort, long Xref)
+        {
+            foreach (MonitorStatusStore it in ExtensionMonitors)
+                if (it.XrefId == Xref && it.ServerIPAndPort == ServerIPAndPort)
                     return it;
 
             return null;
@@ -195,38 +356,39 @@ namespace BLFClient.Backend
         public void PhoneNumberAdd(PhoneNumber pn)
         {
             pn.SetGUID(PhoneNumberGUID++);
-            lock (PhoneNumbers)
-            {
-                PhoneNumbers.Add(pn);
-            }
+            PhoneNumbers.Add(pn);
         }
 
-        public void PhoneNumberDelete(PhoneNumber pn)
+        public void PhoneNumberDelete(PhoneNumber pnDeleted)
         {
-            lock (PhoneNumbers)
-            {
-                PhoneNumbers.Remove(pn);
-            }
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if (pn.GetGUID() == pnDeleted.GetGUID())
+                {
+                    //            PhoneNumbers.Remove(pn);
+                }
         }
 
         public PhoneNumber PhoneNumberGet(long GUID)
         {
-            lock (PhoneNumbers)
-            {
-                foreach (PhoneNumber pn in PhoneNumbers)
-                    if (pn.GetGUID() == GUID)
-                        return pn;
-            }
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if (pn.GetGUID() == GUID)
+                    return pn;
             return null;
         }
 
-        public PhoneNumber PhoneNumberGetFirst(string Extension)
+        public PhoneNumber PhoneNumberGetFirst(string ServerAndIP, string Prefix, string Extension, bool IncludeRanges = false)
         {
-            lock (PhoneNumbers)
+            string ExtensionRange = Extension.Substring(0, Extension.Length - 1);
+            foreach (PhoneNumber pn in PhoneNumbers)
             {
-                foreach (PhoneNumber pn in PhoneNumbers)
-                    if (pn.GetExtension() == Extension)
-                        return pn;
+                //we are looking for server specific UI component
+                if (ServerAndIP != null && pn.GetServerIPAndPort() != null && ServerAndIP != pn.GetServerIPAndPort())
+                    continue;
+                //if we know the prefix of this extension, we might want to check for a match
+                if (Prefix != null && pn.GetPrefix() != null && Prefix != pn.GetPrefix())
+                    continue;
+                if (pn.GetExtension() == Extension || (IncludeRanges == true && pn.IsSubscriberRange() == true && pn.GetExtension() == ExtensionRange))
+                    return pn;
             }
             return null;
         }
@@ -243,36 +405,46 @@ namespace BLFClient.Backend
             return ic.PhoneNumberGet(x, y);
         }
 
-        public PhoneNumber PhoneNumberGetByXRef(long XRef)
+        public PhoneNumber PhoneNumberGetByXRef(string ServerIPAndPort, long XRef)
         {            
-            MonitorStatusStore ss = GetStatusStoreXRef(XRef);
+            MonitorStatusStore ss = GetStatusStoreXRef(ServerIPAndPort, XRef);
             if (ss != null)
-                return PhoneNumberGetFirst(ss.Extension);
+                return PhoneNumberGetFirst(ss.ServerIPAndPort, ss.Prefix, ss.Extension, true);
             return null;
         }
 
-        public void OnConnectionChanged(bool Connected)
+        public void OnConnectionChanged(string ServreIPAndPort, bool Connected)
         {
-            lock (PhoneNumbers)
-            {
-//                List<PhoneNumber> PhoneNumbers2 = new List<PhoneNumber>(PhoneNumbers); // this might bug out due to concurency. For some reason lock deadlocked. Maybe use a different lock
-                foreach (PhoneNumber pn in PhoneNumbers)
-                    pn.OnConnectionChanged(Connected);
-            }
+            //                List<PhoneNumber> PhoneNumbers2 = new List<PhoneNumber>(PhoneNumbers); // this might bug out due to concurency. For some reason lock deadlocked. Maybe use a different lock
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if(pn.GetServerIPAndPort() == ServreIPAndPort)
+                {
+                    if (App.Current != null)
+                        App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                        {
+                            if (App.Current == null)
+                                return;
+
+                            MainWindow MainObject = (MainWindow)App.Current.MainWindow;
+
+                            if (MainObject == null)
+                                return;
+                            pn.OnConnectionChanged(Connected);
+                        }));
+                }
             //set all monitors to false(even if this is a connect). Maybe server restarted and lost all monitors ?
             foreach (MonitorStatusStore it in ExtensionMonitors)
-                it.OnConnectionLost();
+                if(it.ServerIPAndPort == ServreIPAndPort)
+                    it.OnConnectionLost();
         }
 
-        public void OnServerExtensionNameReceive(string Extension, string Name)
+        public void OnServerExtensionNameReceive(string ServerIPAndPort, string Prefix, string Extension, string Name )
         {
-            List<PhoneNumber> PhoneNumbers2;
-            lock (PhoneNumbers)
-            {
-                PhoneNumbers2 = new List<PhoneNumber>(PhoneNumbers); // this might bug out due to concurency. For some reason lock deadlocked. Maybe use a different lock
-            }
-            foreach (PhoneNumber pn in PhoneNumbers2)
-                if (pn.GetExtension() == Extension)
+            OnClientReceivedPacketWithExtension_(ServerIPAndPort, Prefix, Extension);
+
+            string ExtensionRange = Extension.Substring(0, Extension.Length - 1);
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if (pn.GetExtension() == Extension || (pn.IsSubscriberRange() == true && pn.GetExtension() == ExtensionRange))
                     if (App.Current != null)
                         App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
                         {
@@ -284,7 +456,9 @@ namespace BLFClient.Backend
                             if (MainObject == null)
                                 return;
 
+                            pn.SetPrefix(Prefix);
                             pn.SetName(Name);
+                            pn.SetServerIPAndPort(ServerIPAndPort);
                         }));
         }
 
@@ -300,17 +474,17 @@ namespace BLFClient.Backend
             };
         }
 
-        public void OnMonitorStart(string Extension, string xRef)
+        public void OnMonitorStart(string ServerIPAndPort, string Prefix, string Extension, string xRef)
         {
-            MonitorStatusStore ss = GetStatusStore(Extension);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
             ss.XrefId = Int32Parse(xRef, 0);
             ss.MonitorPacketStatus = ServerPacketStatus.PacketReceived;
         }
 
-        public void OnMonitorStop(string pxRef)
+        public void OnMonitorStop(string ServerIPAndPort, string Prefix, string pxRef)
         {
             int xRef = Int32Parse(pxRef, -1);
-            MonitorStatusStore ss = GetStatusStoreXRef(xRef);
+            MonitorStatusStore ss = GetStatusStoreXRef(ServerIPAndPort, xRef);
             if (ss != null)
             {
                 ss.XrefId = 0;
@@ -319,7 +493,7 @@ namespace BLFClient.Backend
             }
         }
 
-        public void OnSystemStatusOk()
+        public void OnSystemStatusOk(string ServerIPAndPort)
         {
             //mark all extensions with valid monitors as they were updated recently
             foreach (MonitorStatusStore it in ExtensionMonitors)
@@ -327,10 +501,10 @@ namespace BLFClient.Backend
                     it.LastStatusUpdateStamp = Environment.TickCount;
         }
 
-        public void OnStatusChange(string Extension, PhoneStatusCodes NewStatus)
+        public void OnStatusChange(string ServerIPAndPort, string Prefix, string Extension, PhoneStatusCodes NewStatus)
         {
             //mark that we are alive
-            MonitorStatusStore ss = GetStatusStore(Extension);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
             ss.LastStatusUpdateStamp = Environment.TickCount;
             ss.PacketStatus = ServerPacketStatus.PacketReceived;
             ss.LastStatus = NewStatus;
@@ -340,16 +514,15 @@ namespace BLFClient.Backend
             {
                 ss.MonitorPacketStatus = ServerPacketStatus.PacketSent;
                 ss.LastMonitorQueryStamp = Environment.TickCount;
-                NetworkClientBuildPacket.MonitorStart(Extension);
+                if (Globals.ConnectionManager != null)
+                {
+                    NetworkClient nc = Globals.ConnectionManager.GetCLient(ss.ServerIPAndPort);
+                    nc.PacketBuilder.MonitorStart(Extension);
+                }
             }
 
             string ExtensionRange = Extension.Substring(0, Extension.Length - 1);
-            List<PhoneNumber> PhoneNumbers2;
-            lock (PhoneNumbers)
-            {
-                PhoneNumbers2 = new List<PhoneNumber>(PhoneNumbers); // this might bug out due to concurency. For some reason lock deadlocked. Maybe use a different lock
-            }
-            foreach (PhoneNumber pn in PhoneNumbers2)
+            foreach (PhoneNumber pn in PhoneNumbers)
                 if (pn.GetExtension() == Extension || (pn.IsSubscriberRange() == true && pn.GetExtension() == ExtensionRange))
                 {
                     if(App.Current!=null)
@@ -371,53 +544,38 @@ namespace BLFClient.Backend
         public HashSet<string> GetExtensions()
         {
             HashSet<string> ret = new HashSet<string>();
-            lock (PhoneNumbers)
-            try
-            {
-                foreach (PhoneNumber pn in PhoneNumbers)
-                    if (pn.GetExtension().Length != 0 && pn.GetGUID() != 0)
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if (pn.GetExtension().Length != 0 && pn.GetGUID() != 0)
+                {
+                    if (pn.IsSubscriberRange() == false)
                     {
-                        if (pn.IsSubscriberRange() == false)
-                        {
-                            ret.Add(pn.GetExtension());
-                        }
-                        else
-                        {
-                            for (int i = 0; i < 10; i++)
-                                ret.Add(pn.GetExtension() + i.ToString());
-                        }
+                        ret.Add(pn.GetExtension());
                     }
-            }
-            catch { }
+                    else
+                    {
+                        for (int i = 0; i < 10; i++)
+                            ret.Add(pn.GetExtension() + i.ToString());
+                    }
+                }
             return ret;
         }
 
         public HashSet<string> GetExtensionsQueryForward()
         {
             HashSet<string> ret = new HashSet<string>();
-            lock (PhoneNumbers)
-            try
-            {
-                foreach (PhoneNumber pn in PhoneNumbers)
-                    if (pn.GetExtension().Length > 0 && pn.GetGUID() != 0)
-                    {
-                        MonitorStatusStore ss = GetStatusStore(pn.GetExtension());
-                        if ( ss.LastStatus != PhoneStatusCodes.PHONE_DOESNOT && ss.ShouldQueryStatus() == false && ss.PacketStatus == ServerPacketStatus.PacketReceived)
-                            ret.Add(pn.GetExtension());
-                    }
-            }
-            catch { }
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if (pn.GetExtension().Length > 0 && pn.GetGUID() != 0)
+                {
+                    MonitorStatusStore ss = GetStatusStore(pn.GetServerIPAndPort(), pn.GetPrefix(), pn.GetExtension());
+                    if ( ss.LastStatus != PhoneStatusCodes.PHONE_DOESNOT && ss.ShouldQueryStatus() == false && ss.PacketStatus == ServerPacketStatus.PacketReceived)
+                        ret.Add(pn.GetExtension());
+                }
             return ret;
         }
 
         public void OnForwardingStatusUpdate(ForwardStatusStore fs)
         {
-            List<PhoneNumber> PhoneNumbers2;
-            lock (PhoneNumbers)
-            {
-                PhoneNumbers2 = new List<PhoneNumber>(PhoneNumbers); // this might bug out due to concurency. For some reason lock deadlocked. Maybe use a different lock
-            }
-            foreach (PhoneNumber pn in PhoneNumbers2)
+            foreach (PhoneNumber pn in PhoneNumbers)
                 if (pn.GetExtension() == fs.Extension)
                 {
                     App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
@@ -438,25 +596,15 @@ namespace BLFClient.Backend
         public HashSet<string> GetUniqueEmails()
         {
             HashSet<string> ret = new HashSet<string>();
-            lock (PhoneNumbers)
-            try
-            {
-                foreach (PhoneNumber pn in PhoneNumbers)
-                    if (pn.GetEmail() != null && pn.GetEmail().Length > 0 && pn.GetGUID() != 0)
-                        ret.Add(pn.GetEmail());
-            }
-            catch { }
+            foreach (PhoneNumber pn in PhoneNumbers)
+                if (pn.GetEmail() != null && pn.GetEmail().Length > 0 && pn.GetGUID() != 0)
+                    ret.Add(pn.GetEmail());
             return ret;
         }
 
         public void OnAbsenceStatusUpdate(string Email, bool Available)
         {
-            List<PhoneNumber> PhoneNumbers2;
-            lock (PhoneNumbers)
-            {
-                PhoneNumbers2 = new List<PhoneNumber>(PhoneNumbers); // this might bug out due to concurency. For some reason lock deadlocked. Maybe use a different lock
-            }
-            foreach (PhoneNumber pn in PhoneNumbers2)
+            foreach (PhoneNumber pn in PhoneNumbers)
                 if (pn.GetEmail() == Email)
                 {
                     App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
@@ -474,9 +622,9 @@ namespace BLFClient.Backend
                 }
         }
 
-        public bool HasMonitor(string Extension)
+        public bool HasMonitor(string ServerIPAndPort, string Prefix, string Extension)
         {
-            MonitorStatusStore ss = GetStatusStore(Extension);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
             return ss.HasMonitorSet();
         }
 
@@ -485,15 +633,15 @@ namespace BLFClient.Backend
         /// </summary>
         /// <param name="Extension"></param>
         /// <returns></returns>
-        public bool ExtensionExists(string Extension)
+        public bool ExtensionExists(string ServerIPAndPort, string Prefix, string Extension)
         {
-            MonitorStatusStore ss = GetStatusStore(Extension);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix,Extension);
             return ss.ExtensionExists();
         }
 
-        public PhoneStatusCodes GetCachedStatus(string Extension)
+        public PhoneStatusCodes GetCachedStatus(string ServerIPAndPort, string Prefix, string Extension)
         {
-            MonitorStatusStore ss = GetStatusStore(Extension);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
             return ss.LastStatus;
         }
 
@@ -513,7 +661,7 @@ namespace BLFClient.Backend
             return "";
         }
 
-        public void OnCallIdReceived(string CallerDevice, string CallId, string CalledDevice)
+        public void OnCallIdReceived(string ServerIPAndPort, string Prefix, string CallerDevice, string CallId, string CalledDevice)
         {
             if (CallerDevice[0] == 'N')
                 CallerDevice = CallerDevice.Substring(1);
@@ -528,32 +676,30 @@ namespace BLFClient.Backend
             int CallIdInt = Int32Parse(CallId, 0);
 //            int CalledDeviceInt = Int32Parse(CalledDevice, 0);
 
-            MonitorStatusStore ss = GetStatusStore(CallerDevice);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, CallerDevice);
             ss.CallId = CallIdInt;
             ss.CallPartner = Int32Parse(CalledDevice, 0);
 
-            ss = GetStatusStore(CalledDevice);
+            ss = GetStatusStore(ServerIPAndPort, Prefix, CalledDevice);
             ss.CallId = CallIdInt;
             ss.CallPartner = Int32Parse(CallerDevice, 0);
         }
 
-        public void OnCallIdClear(string CallerDevice, string CallId, string CalledDevice)
+        public void OnCallIdClear(string ServerIPAndPort, string Prefix, string CallerDevice, string CallId, string CalledDevice)
         {
-            OnCallIdReceived(CallerDevice, "0", CalledDevice);
+            OnCallIdReceived(ServerIPAndPort, Prefix, CallerDevice, "0", CalledDevice);
         }
 
-        public long GetCallId(string Extension)
+        public long GetCallId(string ServerIPAndPort, string Prefix, string Extension)
         {
-            foreach (MonitorStatusStore it in ExtensionMonitors)
-                if (it.Extension == Extension)
-                    return it.CallId;
-            return 0;
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
+            return ss.CallId;
         }
 
         public long GetOptisetCallId()
         {
             string OptisetExtenstion = PhoneNumber.GetExtensionFromFullNumber(Globals.Config.GetConfig("Options", "OptisetExtension", ""));
-            return GetCallId(OptisetExtenstion);
+            return GetCallId(null, null, OptisetExtenstion);
         }
 
         public long GetOptisetCallTarget()
@@ -565,7 +711,7 @@ namespace BLFClient.Backend
             return 0;
         }
 
-        public void OnConsultaionCallIdReceived(string CallerDevice, string CallId, string CalledDevice)
+        public void OnConsultaionCallIdReceived(string ServerIPAndPort, string Prefix, string CallerDevice, string CallId, string CalledDevice)
         {
             if (CallerDevice[0] == 'N')
                 CallerDevice = CallerDevice.Substring(1);
@@ -576,35 +722,33 @@ namespace BLFClient.Backend
             int CallIdInt = Int32Parse(CallId, 0);
 //            int CalledDeviceInt = Int32Parse(CalledDevice, 0);
 
-            MonitorStatusStore ss = GetStatusStore(CallerDevice);
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, CallerDevice);
             ss.CallIdConsultation = CallIdInt;
             ss.CallPartnerConsultation = Int32Parse(CalledDevice, 0);
 
-            ss = GetStatusStore(CalledDevice);
+            ss = GetStatusStore(ServerIPAndPort, Prefix, CalledDevice);
             ss.CallIdConsultation = CallIdInt;
             ss.CallPartnerConsultation = Int32Parse(CallerDevice, 0);
         }
 
-        public void OnConsultaionCallIdClear(string CallerDevice, string CallId, string CalledDevice)
+        public void OnConsultaionCallIdClear(string ServerIPAndPort, string Prefix, string CallerDevice, string CallId, string CalledDevice)
         {
-            OnConsultaionCallIdReceived(CallerDevice, "0", CalledDevice);
+            OnConsultaionCallIdReceived(ServerIPAndPort, Prefix, CallerDevice, "0", CalledDevice);
         }
 
-        public long GetConsultaionCallId(string Extension)
+        public long GetConsultaionCallId(string ServerIPAndPort, string Prefix, string Extension)
         {
-            foreach (MonitorStatusStore it in ExtensionMonitors)
-                if (it.Extension == Extension)
-                    return it.CallIdConsultation;
-            return 0;
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
+            return ss.CallIdConsultation;
         }
 
         public long GetOptisetConsultaionCallId()
         {
             string OptisetExtenstion = PhoneNumber.GetExtensionFromFullNumber(Globals.Config.GetConfig("Options", "OptisetExtension", ""));
-            return GetCallId(OptisetExtenstion);
+            return GetCallId(null, null, OptisetExtenstion);
         }
 
-        public void CreatePhantomExtension(string Extension)
+        public void CreatePhantomExtension(string ServerIPAndPort, string Prefix, string Extension)
         {
             //            lock (PhoneNumbers)
 /*            {
@@ -612,7 +756,7 @@ namespace BLFClient.Backend
                     if (pn.GetExtension() == Extension)
                         return;
             }*/
-            PhoneNumber pn2 = new PhoneNumber(0, 0, new PhoneNumberSetupSettings(), -1);
+            PhoneNumber pn2 = FactoryNewPhoneNumber();
             pn2.SetExtension(Extension);
         }
 
@@ -634,7 +778,48 @@ namespace BLFClient.Backend
             }
             //get the extension only from a full phone number
             string OptisetExtenstion = PhoneNumber.GetExtensionFromFullNumberStr(OptiSet);
-            CreatePhantomExtension(OptisetExtenstion);
+            CreatePhantomExtension(null, null, OptisetExtenstion);
+        }
+
+        //new phone numbers are created too slow, create a background thread to start creating a few of these
+        public PhoneNumber FactoryNewPhoneNumber()
+        {
+            return ExtensionFactory.Get();
+        }
+
+        public PhoneNumber FactoryNewPhoneNumber(int X, int Y, PhoneNumberSetupSettings settings, long OwnerGUID)
+        {
+            PhoneNumber pn = FactoryNewPhoneNumber();
+            pn.Init(X, Y, settings, OwnerGUID);
+            return pn;
+        }
+
+        public static void OnClientReceivedPacketWithExtension(NetworkClient nc, string Extension)
+        {
+            if (Globals.ExtensionManager != null)
+                Globals.ExtensionManager.OnClientReceivedPacketWithExtension_(nc.ServerIPAndPort, "", Extension);
+        }
+
+        public static string GetMultiServerExtension(string ServerIPAndPort, string Prefix, string Extension)
+        {
+            string ret = "";
+            if (Extension.IndexOf('-') < 0 && Extension.IndexOf('(') < 0)
+                ret = ServerIPAndPort + "@" + Prefix + '-' + Extension;
+            else
+                ret = ServerIPAndPort + "@" + Extension;
+            return ret;
+        }
+
+        public void OnClientReceivedPacketWithExtension_(string ServerIPAndPort, string Prefix, string Extension)
+        {
+            MonitorStatusStore ss = GetStatusStore(ServerIPAndPort, Prefix, Extension);
+            ss.ServerIPAndPort = ServerIPAndPort;
+            if (ss.Extension == null)
+                ss.Extension = Extension;
+            if (ss.Prefix == null)
+                ss.Prefix = Prefix;
+            ss.ServerIPAndPort = ServerIPAndPort;
+
         }
     }
 }

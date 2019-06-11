@@ -22,7 +22,7 @@ namespace BLFClient
         public NotificationTaskBar(string content, PhoneStatusCodes status)
         {
             InitializeComponent();
-            this.ContentBorder.Background = StatusColorEditor.GetStatusColor(status);
+            this.ContentBorder.Background = StatusColorEditor.GetStatusBrush(status);
             this.PopupContent.Text = content;
         }
 

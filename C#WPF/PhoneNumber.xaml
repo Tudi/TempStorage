@@ -5,62 +5,58 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:BLFClient"
              mc:Ignorable="d" 
-             d:DesignHeight="35" d:DesignWidth="100">
+             d:DesignHeight="25" d:DesignWidth="60">
 
     <!-- how the subscriber looks like by default -->
-    <Border Name="CellBorder" BorderBrush="Black" BorderThickness="1" Style="{DynamicResource ExtensionCellBorder}">
-        <Grid Name="TheControl" Width="100" Height="35" MouseLeftButtonDown="MouseLeftDownHandler" MouseRightButtonDown="MouseRightDownHandler" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Grid>
-                <Label Name="StatusText" Content="12345678" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0" Margin="1" Style="{DynamicResource ExtensionLabel}" Background="Transparent">
-                    <Label.ToolTip>
-                        <StackPanel Name="TooltipHolder">
-                            <TextBlock Name="TooltipName">Name</TextBlock>
-                            <TextBlock Name="TooltipNote">Note</TextBlock>
-                            <StackPanel Orientation="Horizontal">
-                                <Image HorizontalAlignment="Left" Source="pack://application:,,,/Resources/Phone.ico" Grid.Column="1" Height="16" Width="16"/>
-                                <TextBlock Name="TooltipStatus">Status</TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <Image HorizontalAlignment="Left" Source="pack://application:,,,/Resources/Calendar.ico" Grid.Column="1" Height="16" Width="16"/>
-                                <TextBlock Name="TooltipAvail"></TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Name="ToolTipForward" Visibility="Collapsed">
-                                <Image HorizontalAlignment="Left" Name="img_ttp_Forward" Source="pack://application:,,,/Resources/Forward.png" Grid.Column="1" Width="16"/>
-                                <TextBlock Name="t_TooltipFrw">Forwarded</TextBlock>
-                            </StackPanel>
-                        </StackPanel>
-                    </Label.ToolTip>
-                </Label>
-                <Image Name="img_Forward" HorizontalAlignment="Right" Source="pack://application:,,,/Resources/Forward.png" Grid.Column="1" Width="16"/>
-                <Image Name="img_External" HorizontalAlignment="Right" Source="pack://application:,,,/Resources/External.png" Grid.Column="1" Width="16"/>
-            </Grid>
-
-            <!-- 10 extra labels, each representing a specific subscriber -->
-            <Grid Name="StatusRange" Grid.Row="0" Grid.Column="0">
+    <Border Name="CellBorder" BorderBrush="Black" BorderThickness="1" Style="{DynamicResource ExtensionCellBorder}" Background="#FFFFFF">
+        <Border Name="CellBorderOverlay" BorderBrush="Transparent" Style="{DynamicResource ExtensionCellBorder}" BorderThickness="2" Background="Transparent">
+            <Grid Name="TheControl" Width="60" Height="30" MouseLeftButtonDown="MouseLeftDownHandler" MouseRightButtonDown="MouseRightDownHandler" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto" Name="ExtensionComponentHolder" />
+                    <ColumnDefinition Width="*" Name="RangeComponentSeparator" />
+                    <ColumnDefinition Width="Auto" Name="RangeComponentHolder"/>
                 </Grid.ColumnDefinitions>
-                <Label Name="StatusText0" Content="0" Grid.Column="0" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText1" Content="1" Grid.Column="1" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText2" Content="2" Grid.Column="2" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText3" Content="3" Grid.Column="3" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText4" Content="4" Grid.Column="4" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText5" Content="5" Grid.Column="5" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText6" Content="6" Grid.Column="6" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText7" Content="7" Grid.Column="7" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText8" Content="8" Grid.Column="8" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,1,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
-                <Label Name="StatusText9" Content="9" Grid.Column="9" Padding="0" Margin="0,4" Height="15" BorderThickness="0,1,0,1" BorderBrush="Black" VerticalAlignment="Bottom" Style="{DynamicResource ExtensionLabelRange}" HorizontalContentAlignment="Center"/>
+                <Grid Grid.Row="0" Grid.Column="0">
+                    <Label Name="StatusText" Content="1234" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0" Margin="4,0,0,0" Style="{DynamicResource ExtensionLabel}" Background="Transparent">
+                        <Label.ToolTip>
+                            <StackPanel Name="TooltipHolder">
+                                <TextBlock Name="TooltipName">Name</TextBlock>
+                                <TextBlock Name="TooltipNote">Note</TextBlock>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image HorizontalAlignment="Left" Source="pack://application:,,,/Resources/Phone.ico" Grid.Column="1" Height="16" Width="16"/>
+                                    <TextBlock Name="TooltipStatus">Status</TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image HorizontalAlignment="Left" Source="pack://application:,,,/Resources/Calendar.ico" Grid.Column="1" Height="16" Width="16"/>
+                                    <TextBlock Name="TooltipAvail"></TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Name="ToolTipForward" Visibility="Collapsed">
+                                    <Image HorizontalAlignment="Left" Name="img_ttp_Forward" Source="pack://application:,,,/Resources/Forward.png" Grid.Column="1" Width="16"/>
+                                    <TextBlock Name="t_TooltipFrw">Forwarded</TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </Label.ToolTip>
+                    </Label>
+                    <Image Name="img_Forward" HorizontalAlignment="Right" Source="pack://application:,,,/Resources/Forward.png" Width="16" Margin="0,0,2,0"/>
+                    <Image Name="img_External" HorizontalAlignment="Right" Source="pack://application:,,,/Resources/External.png" Width="16" Margin="0,0,2,0"/>
+                </Grid>
+
+                <!-- 10 extra labels, each representing a specific subscriber -->
+                <StackPanel Orientation="Horizontal" Name="StatusRange" Margin="4,0,8,0" Grid.Column="2">
+                    <Label Name="StatusText0" Content="0" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText1" Content="1" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText2" Content="2" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText3" Content="3" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText4" Content="4" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText5" Content="5" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText6" Content="6" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText7" Content="7" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText8" Content="8" Padding="0" Margin="0,4" BorderThickness="0,1,1,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}" />
+                    <Label Name="StatusText9" Content="9" Padding="0" Margin="0,4" BorderThickness="0,1,0,1" BorderBrush="Black" Style="{DynamicResource ExtensionLabelRange}"/>
+                </StackPanel>
+<!--            </StackPanel> -->
             </Grid>
-        </Grid>
+        </Border>
     </Border>
 
 
@@ -89,6 +85,10 @@
         <ContextMenu x:Key="contextMenuNew">
             <MenuItem Header="New subscriber..." Click="Click_Context_NewPhone"/>
             <MenuItem Header="New subscriber range..." Click="Click_Context_NewPhoneRange"/>
+        </ContextMenu>
+        <ContextMenu x:Key="contextMenuNewNoRange">
+            <MenuItem Header="New subscriber..." Click="Click_Context_NewPhone"/>
+            <MenuItem Header="New subscriber range..." Click="Click_Context_NewPhoneRange" IsEnabled="false"/>
         </ContextMenu>
     </UserControl.Resources>
 </UserControl>

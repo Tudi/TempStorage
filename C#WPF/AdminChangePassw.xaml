@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Change password" Height="161.598" Width="300">
+        Title="Change password" Height="188" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -13,15 +13,15 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0">
             <Label Content="Old password"/>
-            <PasswordBox Name="OldPassw" />
+            <PasswordBox Name="OldPassw" Margin="4,4,4,4" />
             <Label Content="New password"/>
-            <PasswordBox Name="NewPassw"/>
+            <PasswordBox Name="NewPassw" Margin="4,4,4,4"/>
             <Label Content="Confirm new password"/>
-            <PasswordBox Name="NewPasswConfirm"/>
+            <PasswordBox Name="NewPasswConfirm" Margin="4,4,4,4"/>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <Button Content="Ok" Click="Button_Click_OK"/>
-            <Button Content="Cancel" Click="Button_Click_Cancel"/>
+            <Button Content="Ok" Click="Button_Click_OK" Margin="4,4,4,4"/>
+            <Button Content="Cancel" Click="Button_Click_Cancel" Margin="4,4,4,4"/>
         </StackPanel>
     </Grid>
 </Window>

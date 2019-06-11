@@ -48,8 +48,10 @@ namespace BLFClient
         //        int ConfigIndex = -1;    // it's like a SUID ( section unique ID )
         int FontIndex;
         long GUID, GUIDOwner;  // will be assigned to us by the manager
+        int OldZIndex;
+        string ServerIPAndPort;
 
-        public PhoneNumber(int X, int Y, PhoneNumberSetupSettings settings, long OwnerGUID)
+        public PhoneNumber()
         {
             InitializeComponent();
 
@@ -59,39 +61,26 @@ namespace BLFClient
             //set some value to see how it looks like
             this.StatusText.Content = "";
             this.StatusRange.Visibility = Visibility.Collapsed;
+            ExtensionComponentHolder.Width = new GridLength(1, GridUnitType.Star);
+            RangeComponentSeparator.Width = new GridLength(0, GridUnitType.Pixel);
+            RangeComponentHolder.Width = new GridLength(0, GridUnitType.Pixel);
             this.img_Forward.Visibility = Visibility.Collapsed;
             this.img_External.Visibility = Visibility.Collapsed;
 
             //            SetStatus(PhoneStatusCodes.PHONE_DOESNOT);    //default status
             CurrentStatus = PhoneStatusCodes.NumberOfStatusCodes2; //invalid state
-            SetCoordinate(X, Y);
             //remove border if there is no border
-            SetShowGrid(settings.ShowGrid);
-
-            ShowName = settings.ShowName;
-
-            ShowCanonical = settings.ShowCanonical;
-
-            //update size
-            if (settings.CellWidth > 0 && settings.CellHeight > 0)
-                OnCellSizeChanged(settings.CellWidth, settings.CellHeight);
 
             //hide tooltip until we populate subscriber with data
             this.StatusText.ToolTip = null;
 
             IsRange = false;
 
-            GUIDOwner = OwnerGUID;
-            Globals.ExtensionManager.PhoneNumberAdd(this);
-            Prefix = settings.Prefix;
-
             //data has not yet been loaded, this will init only a dummy look
-            UpdateContextMenu();
+            //UpdateContextMenu();
 
             // prepare the UI for the case when the forwarding query reply will take a lot of time
             OnForwardingChange(null);
-            //try to update forwarding status. This will either do a query with callback or set the UI updates directly
-            Globals.ForwardManager.OnExtensionCreate(this);
 
             //implementation of drag and drop
             MouseLeave += new MouseEventHandler(OnMouseLeave);
@@ -101,6 +90,25 @@ namespace BLFClient
 
         ~PhoneNumber()
         {
+        }
+
+        public void Init(int X, int Y, PhoneNumberSetupSettings settings, long OwnerGUID)
+        {
+            SetCoordinate(X, Y);
+            GUIDOwner = OwnerGUID;
+            ShowName = settings.ShowName;
+
+            ShowCanonical = settings.ShowCanonical;
+
+            //update size
+            if (settings.CellWidth > 0 && settings.CellHeight > 0)
+                OnCellSizeChanged(settings.CellWidth, settings.CellHeight);
+
+            Prefix = settings.Prefix;
+
+            Globals.ExtensionManager.PhoneNumberAdd(this);
+            //try to update forwarding status. This will either do a query with callback or set the UI updates directly
+            Globals.ForwardManager.OnExtensionCreate(this);
         }
 
         /// <summary>
@@ -152,6 +160,26 @@ namespace BLFClient
             return Prefix;
         }
 
+        public string GetServerIPAndPort()
+        {
+            return ServerIPAndPort;
+        }
+
+        /// <summary>
+        /// Even if we have a prefix, this function can return "" because prefix is not shown
+        /// </summary>
+        /// <returns></returns>
+        public string GetPrefixIfShown(bool Forced)
+        {
+            if (Forced == true && Prefix.Length > 0)
+                return Prefix + "-";
+            if (App.Current != null && App.Current.MainWindow != null && (App.Current.MainWindow as MainWindow).ShowCannonical() == false)
+                return "";
+            if (Prefix.Length > 0)
+                return Prefix + "-";
+            return "";
+        }
+
         public string GetEmail()
         {
             return Email;
@@ -176,17 +204,30 @@ namespace BLFClient
                 //hide the label with simple extension number and tooltip
                 OnForwardingChange(null);
                 //make it override the label
-                this.StatusText.VerticalContentAlignment = VerticalAlignment.Top;
                 this.StatusRange.Visibility = Visibility.Visible;
+                this.SetValue(Grid.ColumnSpanProperty, 2);
+                OldZIndex = (int)this.GetValue(Canvas.ZIndexProperty);
+                this.SetValue(Canvas.ZIndexProperty, 2000);
+                int OneCellSize = Globals.Config.GetConfigInt("Options", "CellSizeHor", (int)TheControl.Width);
+                TheControl.Width = 2 * OneCellSize;
+                ExtensionComponentHolder.Width = new GridLength(1, GridUnitType.Auto);
+                RangeComponentSeparator.Width = new GridLength(1,GridUnitType.Star);
+                RangeComponentHolder.Width = new GridLength(1,GridUnitType.Auto);
             }
+            //right now, you can not convert it back
             else
             {
-                this.StatusText.VerticalContentAlignment = VerticalAlignment.Center;
                 this.StatusRange.Visibility = Visibility.Collapsed;
+                this.SetValue(Grid.ColumnSpanProperty, 1);
+                this.SetValue(Canvas.ZIndexProperty, OldZIndex);
+                TheControl.Width = Globals.Config.GetConfigInt("Options", "CellSizeHor", (int)TheControl.Width);
+                ExtensionComponentHolder.Width = new GridLength(1, GridUnitType.Star);
+                RangeComponentSeparator.Width = new GridLength(0, GridUnitType.Pixel);
+                RangeComponentHolder.Width = new GridLength(0, GridUnitType.Pixel);
             }
 
-            UpdateTooltipContent();
-            UpdateContextMenu();
+            //UpdateTooltipContent();
+            //UpdateContextMenu();
 
             //for each sub extension try to fetch the status
             Globals.ForwardManager.OnExtensionCreate(this);
@@ -195,13 +236,13 @@ namespace BLFClient
         public void SetEmail(string NewEmail)
         {
             Email = NewEmail;
-            UpdateTooltipContent();
+            //UpdateTooltipContent();
         }
 
         public void SetNote(string NewNote)
         {
             Note = NewNote;
-            UpdateTooltipContent();
+            //UpdateTooltipContent();
         }
 
         public void OnToggleShowName()
@@ -234,15 +275,49 @@ namespace BLFClient
             FontIndex = fs.Index;
             this.StatusText.FontFamily = new FontFamily(fs.FaceName);
             if (fs.FontSize != 0)
+            {
                 this.StatusText.FontSize = fs.FontSize;
+                this.StatusText0.FontSize = fs.FontSize;
+                this.StatusText1.FontSize = fs.FontSize;
+                this.StatusText2.FontSize = fs.FontSize;
+                this.StatusText3.FontSize = fs.FontSize;
+                this.StatusText4.FontSize = fs.FontSize;
+                this.StatusText5.FontSize = fs.FontSize;
+                this.StatusText6.FontSize = fs.FontSize;
+                this.StatusText7.FontSize = fs.FontSize;
+                this.StatusText8.FontSize = fs.FontSize;
+                this.StatusText9.FontSize = fs.FontSize;
+            }
+
+            FontWeight fw = FontWeights.Normal;
             if (fs.FontWeight == 1)
-                this.StatusText.FontWeight = FontWeights.Bold;
-            else
-                this.StatusText.FontWeight = FontWeights.Normal;
+                fw = FontWeights.Bold;
+            this.StatusText.FontWeight = fw;
+            this.StatusText0.FontWeight = fw;
+            this.StatusText1.FontWeight = fw;
+            this.StatusText2.FontWeight = fw;
+            this.StatusText3.FontWeight = fw;
+            this.StatusText4.FontWeight = fw;
+            this.StatusText5.FontWeight = fw;
+            this.StatusText6.FontWeight = fw;
+            this.StatusText7.FontWeight = fw;
+            this.StatusText8.FontWeight = fw;
+            this.StatusText9.FontWeight = fw;
+
+            FontStyle fst = FontStyles.Normal;
             if (fs.Italic == 1)
-                this.StatusText.FontStyle = FontStyles.Italic;
-            else
-                this.StatusText.FontStyle = FontStyles.Normal;
+                fst = FontStyles.Italic;
+            this.StatusText.FontStyle = fst;
+            this.StatusText0.FontStyle = fst;
+            this.StatusText1.FontStyle = fst;
+            this.StatusText2.FontStyle = fst;
+            this.StatusText3.FontStyle = fst;
+            this.StatusText4.FontStyle = fst;
+            this.StatusText5.FontStyle = fst;
+            this.StatusText6.FontStyle = fst;
+            this.StatusText7.FontStyle = fst;
+            this.StatusText8.FontStyle = fst;
+            this.StatusText9.FontStyle = fst;
         }
 
         public void OnPrefixChanged(string NewPrefix)
@@ -329,8 +404,13 @@ namespace BLFClient
                 SetName(IndexCardCollection["Name #" + ConfigIndex]);
                 SetPrefix(GetPrefixFromFullNumber(IndexCardCollection["Number #" + ConfigIndex]));
                 SetExtension(GetExtensionFromFullNumber(IndexCardCollection["Number #" + ConfigIndex]));
+
                 if (GetExtension().Length == 0)
                     Globals.Logger.LogString(LogManager.LogLevels.LogFlagError, "Expecting prefix-extension number format, but got :  [" + IndexCardName + "][" + "Number #" + ConfigIndex + "]=" + IndexCardCollection["Number #" + ConfigIndex]);
+                // if there is no prefix saved and persport has one, use that one
+                if (GetPrefix() == null || GetPrefix().Length == 0)
+                    SetPrefix(Globals.persPortManager.GetServerExtensionPrefix(GetExtension()));
+
                 OnFontSettingChanged(Globals.FontManager.GetFontSettingByIndex(FontIndex));
             }
             else
@@ -471,7 +551,10 @@ namespace BLFClient
             if (IsRange == false)
             {
                 CurrentStatus = NewStatus;
-                this.CellBorder.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                if (StyleManager.PhoneNumberHasGradientBackground() == true)
+                    this.CellBorder.Background = StatusColorEditor.GetStatusBrushGradient(NewStatus);
+                else
+                    this.CellBorder.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 UpdateTooltipContent();
                 if (NewStatus == PhoneStatusCodes.PHONE_EXTERNAL)
                     img_External.Visibility = Visibility.Visible;
@@ -506,25 +589,25 @@ namespace BLFClient
             if (NewStatus < PhoneStatusCodes.NumberOfStatusCodes)
             {
                 if (Index == 0)
-                    this.StatusText0.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText0.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 1)
-                    this.StatusText1.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText1.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 2)
-                    this.StatusText2.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText2.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 3)
-                    this.StatusText3.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText3.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 4)
-                    this.StatusText4.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText4.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 5)
-                    this.StatusText5.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText5.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 6)
-                    this.StatusText6.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText6.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 7)
-                    this.StatusText7.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText7.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 8)
-                    this.StatusText8.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText8.Background = StatusColorEditor.GetStatusBrush(NewStatus);
                 else if (Index == 9)
-                    this.StatusText9.Background = StatusColorEditor.GetStatusColor(NewStatus);
+                    this.StatusText9.Background = StatusColorEditor.GetStatusBrush(NewStatus);
             }
             //unknown status ? Bail out
             else
@@ -537,7 +620,13 @@ namespace BLFClient
         /// </summary>
         public void OnStatusColorChanged()
         {
-            SetStatus(CurrentStatus);
+            if(IsRange == false)
+                SetStatus(CurrentStatus);
+            else
+            {
+                for (int i = 0; i < 9; i++)
+                    SetRangeStatus(i, CurrentStatusRange[i]);
+            }
         }
 
         /// <summary>
@@ -555,19 +644,24 @@ namespace BLFClient
         {
             //reset it just in case
             ContextMenu PrevMenu = this.ContextMenu;
+            //default
             this.ContextMenu = Resources["contextMenuNew"] as ContextMenu;
+            //last column should not be able to create ranges as it would hang outside the window
+            if (App.Current != null && App.Current.MainWindow != null && GetX() >= (App.Current.MainWindow as MainWindow).GetGridColumnCount())
+                this.ContextMenu = Resources["contextMenuNewNoRange"] as ContextMenu;
+            //non empty phone number context menus
             if (GetExtension().Length > 0)
             {
                 if (IsRange == false)
                 {
-                    if (Globals.ConnectionManager.IsConnected() == true)
+                    if (Globals.ConnectionManager.HasAnyActiveConnection() == true)
                         this.ContextMenu = Resources["contextMenuUser"] as ContextMenu;
                     else
                         this.ContextMenu = Resources["contextMenuUserNotConnected"] as ContextMenu;
                 }
                 else
                 {
-                    if (Globals.ConnectionManager.IsConnected() == true)
+                    if (Globals.ConnectionManager.HasAnyActiveConnection() == true)
                         this.ContextMenu = Resources["contextMenuRange"] as ContextMenu;
                     else
                         this.ContextMenu = Resources["contextMenuRangeNotConnected"] as ContextMenu;
@@ -649,6 +743,17 @@ namespace BLFClient
         {
             if (pExtension == null)
                 pExtension = "";
+
+            // if this string contains prefix also. Explode the values
+            int ExtensionStart = pExtension.IndexOf('-');
+            if (ExtensionStart > 0)
+            {
+                string pprefix = pExtension.Substring(0, ExtensionStart);
+                if(GetPrefix() == null || GetPrefix().Length == 0 || (App.Current.MainWindow as MainWindow).GetPrefix() == GetPrefix())
+                    SetPrefix(pprefix); // a custom prefix was provided, use that instead what we have set
+                pExtension = pExtension.Substring(ExtensionStart + 1);
+            }
+
             //some sort of extension
             Extension = pExtension;
 
@@ -658,7 +763,7 @@ namespace BLFClient
                     this.StatusText.Content = Extension;
                 else
                 {
-                    if(Prefix.Length > 0 )
+                    if(Prefix != null && Prefix.Length > 0 && Extension.Length > 0)
                         this.StatusText.Content = Prefix + "-" + Extension;
                     else
                         this.StatusText.Content = Extension;
@@ -668,7 +773,7 @@ namespace BLFClient
             //query the status for this new extension
             if (IsRange == false)
             {
-                SetStatus(Globals.ExtensionManager.GetCachedStatus(GetExtension())); // get extension status if available right now. Else we will get updated later
+                SetStatus(Globals.ExtensionManager.GetCachedStatus(GetServerIPAndPort(), GetPrefix(), GetExtension())); // get extension status if available right now. Else we will get updated later
                 Globals.ForwardManager.OnExtensionCreate(this); // check forward status for this extension
             }
             else
@@ -678,11 +783,11 @@ namespace BLFClient
                 for (long i = 0; i < 10; i++)
                 {
                     string FullExtension = GetExtension() + i.ToString();
-                    SetStatus(Globals.ExtensionManager.GetCachedStatus(FullExtension), i.ToString()); // get extension status if available right now. Else we will get updated later
+                    SetStatus(Globals.ExtensionManager.GetCachedStatus(GetServerIPAndPort(), GetPrefix(), FullExtension), i.ToString()); // get extension status if available right now. Else we will get updated later
                 }
             }
-            UpdateContextMenu();
-            UpdateTooltipContent();
+            //UpdateContextMenu();
+            //UpdateTooltipContent();
         }
 
         public void SetName(string pName)
@@ -690,7 +795,7 @@ namespace BLFClient
             //assign a new user name
             UserName = pName;
 
-            UpdateTooltipContent();
+            //UpdateTooltipContent();
 
             //update visually
             if (ShowName == true && IsRange == false)
@@ -700,6 +805,12 @@ namespace BLFClient
                 else if (this.StatusText.Content.ToString().Length == 0)
                     SetExtension(GetExtension());
             }
+        }
+
+        public void SetServerIPAndPort(string pServerIPAndPort, bool Force = false)
+        {
+            if(ServerIPAndPort == null || Force == true)
+                ServerIPAndPort = pServerIPAndPort;
         }
 
         /// <summary>
@@ -746,7 +857,10 @@ namespace BLFClient
 
         public void OnCellSizeChanged(double NewWidth, double NewHeight)
         {
-            this.TheControl.Width = NewWidth;
+            if (IsRange == true)
+                this.TheControl.Width = NewWidth * 2;
+            else
+                this.TheControl.Width = NewWidth;
             this.TheControl.Height = NewHeight;
         }
 
@@ -784,7 +898,7 @@ namespace BLFClient
             if (GetExtension() == "" && GetStatus() == PhoneStatusCodes.NumberOfStatusCodes2)
                 return;
             SetStatus(PhoneStatusCodes.PHONE_DOESNOT);
-            UpdateContextMenu();
+            //UpdateContextMenu();
             UpdateTooltipContent(); // in case we want to show the connection status in proper color
         }
 
@@ -827,7 +941,7 @@ namespace BLFClient
                     if (OptisetExtenstion == Extensionstr)
                         return;
 
-                    long CurrentCallId = Globals.ExtensionManager.GetCallId(GetExtension());
+                    long CurrentCallId = Globals.ExtensionManager.GetCallId(GetServerIPAndPort(), GetPrefix(), GetExtension());
                     if (CurrentCallId != 0)
                     {
                         Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Extension " + GetExtension().ToString() + " is already in a call. Can't call him");
@@ -840,13 +954,24 @@ namespace BLFClient
                     {
                         Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "CallingDevice=" + OptisetExtenstion + ", CalledDirectoryNumber=" + Extensionstr);
                         //MakeCall(m_strOptisetExtension, m_strSelectedExtension, make_call_doNotPrompt);
-                        NetworkClientBuildPacket.MakeCall(OptisetExtenstion, Extensionstr, MakeCallPrompTypes.make_call_doNotPrompt);
+
+                        if (Globals.ConnectionManager != null)
+                        {
+                            NetworkClient nc = Globals.ConnectionManager.GetCLient(ServerIPAndPort);
+                            if(nc != null)
+                                nc.PacketBuilder.MakeCall(OptisetExtenstion, Extensionstr, MakeCallPrompTypes.make_call_doNotPrompt);
+                        }
                         return;
                     }
                     if (OptisetCallId != 0)
                     {
                         //Client.ConsultationCall(sDevice.GetBuffer(sDevice.GetLength()), strConsultedDevice.GetBuffer(strConsultedDevice.GetLength()), strExistingCallID.GetBuffer(strExistingCallID.GetLength()), "", 0);
-                        NetworkClientBuildPacket.ConsultationCall(OptisetExtenstion, Extensionstr, OptisetCallId.ToString(), "", 0);
+                        if (Globals.ConnectionManager != null)
+                        {
+                            NetworkClient nc = Globals.ConnectionManager.GetCLient(ServerIPAndPort);
+                            if(nc != null)
+                                nc.PacketBuilder.ConsultationCall(OptisetExtenstion, Extensionstr, OptisetCallId.ToString(), "", 0);
+                        }
                     }
                 }
             }
@@ -854,28 +979,69 @@ namespace BLFClient
 
         private void MouseRightDownHandler(object sender, MouseButtonEventArgs e)
         {
-            if (e.ClickCount == 2)
-            {
-                long OptisetCallId = Globals.ExtensionManager.GetOptisetCallId();
-            }
+            UpdateContextMenu();
         }
 
         private void OnMouseLeave(object Sender, RoutedEventArgs e)
         {
             if (Mouse.LeftButton == MouseButtonState.Pressed)
+            {
                 ((MainWindow)App.Current.MainWindow).OnPhoneNumberDrag(this, null);
+                Mouse.OverrideCursor = Cursors.Hand;
+            }
+            CellBorderOverlay.BorderBrush = Brushes.Transparent;
         }
 
         private void OnMouseEnter(object Sender, RoutedEventArgs e)
         {
             if (Mouse.LeftButton == MouseButtonState.Pressed)
                 ((MainWindow)App.Current.MainWindow).OnPhoneNumberDrag(null, this);
+            CellBorderOverlay.BorderBrush = Brushes.Black;
+            UpdateTooltipContent();
         }
 
         private void OnMouseUp(object Sender, MouseButtonEventArgs e)
         {
             if (Mouse.LeftButton == MouseButtonState.Released)
+            {
                 ((MainWindow)App.Current.MainWindow).OnPhoneNumberDrag(null, null);
+                Mouse.OverrideCursor = null;
+            }
+            if (e.ClickCount == 2)
+            {
+                long OptisetCallId = Globals.ExtensionManager.GetOptisetCallId();
+            }
+            if (e.ClickCount == 1)
+            {
+                Globals.ExtensionManager.OnPhoneNumberClick(this);
+                Globals.AbsenceManage.SetMonitoredEmail(this.GetEmail());
+            }
         }
+/*
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                // Package the data.
+                DataObject data = new DataObject();
+                data.SetData("Object", this);
+
+                // Inititate the drag-and-drop operation.
+                DragDrop.DoDragDrop(this, data, DragDropEffects.Copy | DragDropEffects.Move);
+            }
+        }
+
+        protected override void OnDrop(DragEventArgs e)
+        {
+            base.OnDrop(e);
+
+            // If the DataObject contains string data, extract it.
+            if (e.Data.GetDataPresent(DataFormats.StringFormat))
+            {
+                string dataString = (string)e.Data.GetData(DataFormats.StringFormat);
+            }
+            e.Handled = true;
+        }*/
     }
 }

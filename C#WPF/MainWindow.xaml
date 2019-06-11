@@ -17,7 +17,7 @@
     <DockPanel>
 
         <!-- The menu -->
-        <Menu Name="MenuObject" DockPanel.Dock="Top" Height="20">
+        <Menu Name="MenuObject" DockPanel.Dock="Top" Height="20" Background="LightGray">
             <MenuItem Header="_File" >
                 <MenuItem Header="_New" Click="Click_Menu_New"/>
                 <MenuItem Header="_Save" Name="FILE_SAVE" IsEnabled="False" Click="Click_Menu_Save"/>
@@ -62,56 +62,93 @@
             </MenuItem>
         </Menu>
 
-        <!-- this is the grid where we will show status codes -->
-        <StatusBar Name="StatusbarObject" DockPanel.Dock ="Bottom" Height="25">
-            
-            <!-- how the status bar items should look like -->
-            <StatusBar.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="25"/>
-                        </Grid.RowDefinitions>
-                    </Grid>
-                </ItemsPanelTemplate>
-            </StatusBar.ItemsPanel>
-
-            <!-- status bar content -->
-            <StatusBarItem Name="StatusIdle" Grid.Column="0" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
-                <Label Padding="0">Idle</Label>
-            </StatusBarItem>
-            <StatusBarItem Name="StatusRinging" Grid.Column="1" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
-                <Label Padding="0">Ringing</Label>
-            </StatusBarItem>
-            <StatusBarItem Name="StatusOutOfService" Grid.Column="2" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
-                <Label Padding="0">Out Of Service</Label>
-            </StatusBarItem>
-            <StatusBarItem Name="StatusBusy" Grid.Column="3" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
-                <Label Padding="0">Busy</Label>
-            </StatusBarItem>
-            <StatusBarItem Name="StatusNotExisting" Grid.Column="4" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
-                <Label Padding="0">Not Existing</Label>
-            </StatusBarItem>
-            <StatusBarItem Name="StatusConnectionStatus" Grid.Column="5" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
-                <Label Name="StatusConnectionStatusText" Padding="0">Connecting</Label>
-            </StatusBarItem>
-        </StatusBar>
-
         <!-- The content of the window -->
-        <StackPanel>
-            <!-- Store the tabs here. When we create a new view -->
-            <TabControl Name="TabHolder" SelectionChanged="TabControl_SelectionChanged">
-            </TabControl>
-            <local:AbsenceManageView x:Name="AbsenceView" Visibility="Hidden"/>
-        </StackPanel>
+        <Grid Background="LightGray">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" Name="GridRowPhoneNumberGrid" />
+                <RowDefinition Height="Auto" Name="GridRowAbsenceView"/>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Name="GridColumnPhoneNumberGrid"/>
+            </Grid.ColumnDefinitions>
+                <!-- Store the tabs here. When we create a new view -->
+            <TabControl Name="TabHolder" SelectionChanged="TabControl_SelectionChanged" Grid.Row="0" SizeChanged="Grid_SizeChanged">
+                    <TabControl.Template>
+                        <ControlTemplate TargetType="TabControl">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <ScrollViewer HorizontalScrollBarVisibility="Auto"  VerticalScrollBarVisibility="Hidden" >
+                                    <TabPanel x:Name="HeaderPanel"
+                          Panel.ZIndex ="1" 
+                          KeyboardNavigation.TabIndex="1"
+                          Grid.Column="0"
+                          Grid.Row="0"
+                          Margin="2,2,2,0"
+                          IsItemsHost="true"/>
+                                </ScrollViewer>
+                                <ContentPresenter x:Name="PART_SelectedContentHost"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                      Margin="{TemplateBinding Padding}"
+                                      ContentSource="SelectedContent" Grid.Row="1"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </TabControl.Template>
+                </TabControl>
+            
+            <local:AbsenceManageView x:Name="AbsenceView" VerticalAlignment="Bottom" Grid.Row="1"/>
+
+            <!-- this is the grid where we will show status codes -->
+            <StatusBar Name="StatusbarObject" DockPanel.Dock ="Bottom" Height="25" Grid.Row="2">
+
+                <!-- how the status bar items should look like -->
+                <StatusBar.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25"/>
+                            </Grid.RowDefinitions>
+                        </Grid>
+                    </ItemsPanelTemplate>
+                </StatusBar.ItemsPanel>
+
+                <!-- status bar content -->
+                <StatusBarItem Name="StatusIdle" Grid.Column="0" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1" Style="{DynamicResource StatusbarItem}">
+                    <Label Padding="0" Style="{DynamicResource StatusbarLabel}">Idle</Label>
+                </StatusBarItem>
+                <StatusBarItem Name="StatusRinging" Grid.Column="1" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1" Style="{DynamicResource StatusbarItem}">
+                    <Label Padding="0" Style="{DynamicResource StatusbarLabel}">Ringing</Label>
+                </StatusBarItem>
+                <StatusBarItem Name="StatusOutOfService" Grid.Column="2" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1" Style="{DynamicResource StatusbarItem}">
+                    <Label Padding="0" Style="{DynamicResource StatusbarLabel}">Out Of Service</Label>
+                </StatusBarItem>
+                <StatusBarItem Name="StatusBusy" Grid.Column="3" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1" Style="{DynamicResource StatusbarItem}">
+                    <Label Padding="0" Style="{DynamicResource StatusbarLabel}">Busy</Label>
+                </StatusBarItem>
+                <StatusBarItem Name="StatusNotExisting" Grid.Column="4" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1" Style="{DynamicResource StatusbarItem}">
+                    <Label Padding="0" Style="{DynamicResource StatusbarLabel}">Not Existing</Label>
+                </StatusBarItem>
+                <StatusBarItem Name="StatusConnectionStatus" Grid.Column="5" HorizontalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1,1,1,1">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Name="img_NotConnected" HorizontalAlignment="Right" Source="pack://application:,,,/Resources/NotConnected.png" Width="16" Margin="0,0,2,0"/>
+                        <Image Name="img_Connected" HorizontalAlignment="Right" Source="pack://application:,,,/Resources/Connected.png" Width="16" Margin="0,0,2,0" Visibility="Collapsed"/>
+                    <Label Name="StatusConnectionStatusText" Padding="0" Style="{DynamicResource StatusbarLabel}">Connecting</Label>
+                    </StackPanel>
+                </StatusBarItem>
+            </StatusBar>
+           
+        </Grid>
 
     </DockPanel>
     <Window.Resources>

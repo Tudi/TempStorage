@@ -6,6 +6,6 @@
              xmlns:local="clr-namespace:BLFClient"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid VerticalAlignment="Top" HorizontalAlignment="Left" MouseLeftButtonDown="OnMouseDownGrid" MouseLeftButtonUp="OnMouseUpGrid" Name="PaintArea">
+    <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Name="PaintArea">
     </Grid>
 </UserControl>

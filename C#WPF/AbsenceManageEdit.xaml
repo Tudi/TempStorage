@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Absence manager" Height="160" Width="400">
+        Title="Absence manager" Height="180" Width="408.858">
     <StackPanel>
         <GroupBox Header="Workday hours">
             <Grid>
@@ -50,8 +50,8 @@
                     <ComboBoxItem Content="4 Min"/>
                     <ComboBoxItem Content="5 Min"/>
                 </ComboBox>
-                <CheckBox Name="cb_ShowOutlookDialog" Content="Show Outlook profile dialog" Grid.Row="0" Grid.Column="2" />
-                <Button Content="Select outlook profile" Grid.Row="1" Grid.Column="2" Click="Button_Click_SelectProfile"/>
+                <CheckBox Name="cb_ShowOutlookDialog" Content="Show Outlook profile dialog" Grid.Row="0" Grid.Column="2" Margin="4,4,4,4" />
+                <Button Content="Select outlook profile" Grid.Row="1" Grid.Column="2" Click="Button_Click_SelectProfile" Margin="4,4,4,4"/>
             </Grid>
         </GroupBox>
         <Grid>
@@ -61,9 +61,9 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Content="Ok" Grid.Column="1" Click="Button_Click_OK"/>
-            <Button Content="Apply" Grid.Column="2" Click="Button_Click_Apply"/>
-            <Button Content="Cancel" Grid.Column="3" Click="Button_Click_Cancel"/>
+            <Button Content="Ok" Grid.Column="1" Click="Button_Click_OK" Margin="4,4,4,4" />
+            <Button Content="Apply" Grid.Column="2" Click="Button_Click_Apply" Margin="4,4,4,4"/>
+            <Button Content="Cancel" Grid.Column="3" Click="Button_Click_Cancel" Margin="4,4,4,4"/>
         </Grid>
     </StackPanel>
 </Window>

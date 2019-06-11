@@ -38,6 +38,8 @@ namespace BLFClient
 
             Globals.MultilangManager.TranslateUIComponent(this);
             this.Owner = App.Current.MainWindow;
+            this.Left = this.Owner.Left + this.Owner.Width / 2 - this.Width / 2;
+            this.Top = this.Owner.Top + this.Owner.Height / 2 - this.Height / 2;
         }
 
         private void Button_AcceptRename(object sender, RoutedEventArgs e)
@@ -50,13 +52,14 @@ namespace BLFClient
             }
 
             //check if name is already used. This would cause issues when saving
-            if(Globals.FolderManager.IndexCardGet(this.IndexCardNewName.Text) != null )
+            IndexCard RenameWho = Globals.FolderManager.IndexCardGet(EditedGUID);
+            IndexCard AlreadyTaken = Globals.FolderManager.IndexCardGet(this.IndexCardNewName.Text);
+            if (AlreadyTaken != null && AlreadyTaken != RenameWho)
             {
                 MessageBox.Show(Globals.MultilangManager.GetTranslation("Error : Name is already used"), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            IndexCard RenameWho = Globals.FolderManager.IndexCardGet(EditedGUID);
             if(RenameWho!=null)
                 RenameWho.SetName(this.IndexCardNewName.Text);
             this.Close();

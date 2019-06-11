@@ -1,6 +1,7 @@
 ﻿using BLFClient.Backend;
 using IniParser.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,6 +51,7 @@ namespace BLFClient
         public static DSWinConnectionManager DSWinManager = null;
         public static bool IsAppRunning = false;  // set it false when shutting down to allow parallel running managers to shut down correctly
         public static bool IndexCardsLoaded = false; // if each index card, and each extension data is loaded, only than set this value to true
+        public static bool ConfigLoaded = false;
         public static ApplicationGlobalVariables AppVars;
         public static bool WindowLoaded = false;
         public static string GetFullAppPath(string FileName)
@@ -62,6 +64,7 @@ namespace BLFClient
             ret = ret + "\\BLF\\" + FileName;
             return ret;
         }
+        public static PasswordStore AdminPassword;
     }
 
     public class ApplicationGlobalVariables
@@ -74,7 +77,7 @@ namespace BLFClient
         //        public string m_strDeviceIDTemp = "";
         //        public string m_strCallIDTemp = "";
         public NoConnection NoConnectionWindow = null;
-        public string SkinFileName = "RoundedStyles.xaml";
+        public string SkinFileName = "GradientStyles.xaml";
     }
 
     /// <summary>
@@ -85,7 +88,7 @@ namespace BLFClient
         List<IndexCard> IndexCards;
         bool TopmostWindow;
         TabSetupSettings GeneralSettings;
-        string AdminPassw = "HIPATH";
+//        string AdminPassw = "HIPATH";
         bool HasAdminPriviledges = false;
         bool ConnectedToServer = false; // do we need to update UI status when we get a connection heartbeat event
         bool LoadingData = false;   //set this status while loading data to avoid triggering UI events
@@ -96,6 +99,13 @@ namespace BLFClient
         public MainWindow()
         {
             InitializeComponent();
+
+            //last thing, add hotkeys
+            AddHotKeys();
+        }
+
+        private void InitializeApp()
+        {
             Globals.IsAppRunning = true;
 
             //as soon as we have the log file name, initialize the logger so we can give feedback 
@@ -114,29 +124,35 @@ namespace BLFClient
             Globals.ConnectionManager = new NetworkConnectionManager();
             Globals.ForwardManager = new CallForwardManager();
             Globals.persPortManager = new PersPortManager();
+            Globals.AdminPassword = new PasswordStore();
+            //only load managers that do not depend on the config file
             Globals.ExtensionManager.Load();
             Globals.ForwardManager.Load();
-            Globals.OutlookService.InitInBackground();
             Globals.AbsenceManage.Load();           //start monitoring extension emails. Requires a working outlook connection
             Globals.persPortManager.Load();
+
             TabHolder.ContextMenu = Resources["contextMenuNewIndexCard"] as ContextMenu;
 
-            Globals.MultilangManager.LoadDBFromFile("Resources/Translations.txt");
-
-            //            Globals.Config.LoadIni("BLF_Profine16_S.blf");
+            //load ini files
             if (Globals.IniFile.LoadIni(Globals.GetFullAppPath("Settings\\BLF.ini")) == false)
                 Globals.IniFile.LoadIni("BLF.ini");
             string LastConfigFile = Globals.IniFile.GetConfig("Files", "LastConfigFile");
             if (LastConfigFile == null || LastConfigFile.Length == 0 || File.Exists(LastConfigFile) == false)
                 LastConfigFile = "Init.blf";
+            if (File.Exists(LastConfigFile) == true)
+                Globals.Config.LoadIni(LastConfigFile);
+            else
+                Globals.Config.CreateEmptyConfig(LastConfigFile);
 
+            //load managers that might depend on ini files
+            Globals.MultilangManager.LoadDBFromFile("Resources/Translations.txt");
+            Globals.OutlookService.InitInBackground();
+
+            //before loading the content of the window, load skins 
+            Backend.StyleManager.RuntimeSkinning_Loaded(null, null);
+
+            //load UI content based on the ini file
             RedrawFromConfig(LastConfigFile);
-
-            //last thing, add hotkeys
-            AddHotKeys();
-
-            //apply a template if there is any
-            Loaded += Backend.StyleManager.RuntimeSkinning_Loaded;
         }
 
         /// <summary>
@@ -162,8 +178,9 @@ namespace BLFClient
                 Globals.Config.LoadIni(NewConfigFileName);
                 UpdateWindowTitle();
             }
-            else
-                Globals.Config.CloseOpenedConfig();
+//            else
+//                Globals.Config.CloseOpenedConfig();
+            StatusColorEditor.Init();
 
             Globals.FontManager.LoadFontSettingsFromConfig();
 
@@ -301,18 +318,22 @@ namespace BLFClient
 
         private void IndexCardMakeVisible(IndexCard ic)
         {
+            int SelectedIndex = 0;
             for (int i = 0; i < IndexCards.Count; i++)
             {
                 if (IndexCards[i] != ic)
                     continue;
-                TabHolder.SelectedIndex = i;
-                IndexCards[TabHolder.SelectedIndex].SetVisible(true);
+                SelectedIndex = i;
+//                TabHolder.SelectedIndex = i;
+                TabHolder.SelectedItem = IndexCards[i].GetTabControl();
+//                IndexCards[i].Focus();
+                IndexCards[i].SetVisible(true);
                 break;
             }
             //make sure others are hidded. No need to spam updates for idle extensions
             for (int i = 0; i < IndexCards.Count; i++)
             {
-                if (i == TabHolder.SelectedIndex)
+                if (i == SelectedIndex)
                     continue;
                 IndexCards[i].SetVisible(false);
             }
@@ -321,11 +342,11 @@ namespace BLFClient
         /// <summary>
         /// If we delete an index card, jump to the next index card and make it visible
         /// </summary>
-        private void SetVisibleIndexCardAuto()
+        private void SetVisibleIndexCardAuto(IndexCard ExceptToThis=null)
         {
             for (int i = 0; i < IndexCards.Count; i++)
             {
-                if (IndexCards[i].CanReceiveFocus() == false)
+                if (IndexCards[i].CanReceiveFocus() == false || IndexCards[i] == ExceptToThis)
                     continue;
                 IndexCardMakeVisible(IndexCards[i]);
                 break;
@@ -386,6 +407,8 @@ namespace BLFClient
             {
                 AppendIndexCard();
                 SetVisibleIndexCardAuto();
+                IndexCard nc = AppendIndexCard();
+                nc.ConvertToAddIndexCardTab();
                 Globals.IndexCardsLoaded = true;
             }
         }
@@ -402,7 +425,7 @@ namespace BLFClient
                     //this can happen if you close the window while it is still loading
                     if (IndexCards == null)
                         return;
-                    IndexCards[i - 1].Load();
+                    IndexCards[i - 1].Load(true);
                 }
                 IndexCard nc = AppendIndexCard();
                 nc.ConvertToAddIndexCardTab();
@@ -432,26 +455,21 @@ namespace BLFClient
         /// <param name="todel"></param>
         public void DeleteIndexCard(IndexCard todel)
         {
-            bool NeedsVisualRefresh;
-            if (TabHolder.SelectedIndex < IndexCards.Count && TabHolder.SelectedIndex >= 0 && todel == IndexCards[TabHolder.SelectedIndex])
-                NeedsVisualRefresh = true;
-            else
-                NeedsVisualRefresh = false;
+            // if this is the selected index card. try to select a new one
+            int SelectedIndex = GetTabControlSelectedIndex();
+            if (SelectedIndex < IndexCards.Count && todel == IndexCards[SelectedIndex])
+                SetVisibleIndexCardAuto(todel);
             //delete it
             todel.OnDelete();
             IndexCards.Remove(todel);
-            // if this is the selected index card. try to select a new one
-            if (NeedsVisualRefresh)
-            {
-               SetVisibleIndexCardAuto();
-            }
         }
 
         public IndexCard GetVisibleIndexCard()
         {
             if (TabHolder.SelectedIndex < 0 || IndexCards == null || TabHolder.SelectedIndex >= IndexCards.Count)
                 return null;
-            return IndexCards[TabHolder.SelectedIndex];
+            int SelectedIndex = GetTabControlSelectedIndex();
+            return IndexCards[SelectedIndex];
         }
 
         /// <summary>
@@ -474,11 +492,22 @@ namespace BLFClient
         /// </summary>
         public void InitStatusBar()
         {
-            this.StatusIdle.Background = StatusColorEditor.GetStatusColor(PhoneStatusCodes.Idle);
-            this.StatusRinging.Background = StatusColorEditor.GetStatusColor(PhoneStatusCodes.Ringing);
-            this.StatusOutOfService.Background = StatusColorEditor.GetStatusColor(PhoneStatusCodes.OutOfService);
-            this.StatusBusy.Background = StatusColorEditor.GetStatusColor(PhoneStatusCodes.Busy);
-            this.StatusNotExisting.Background = StatusColorEditor.GetStatusColor(PhoneStatusCodes.PHONE_DOESNOT);
+            if (StyleManager.StatusBarHasGradientBackground())
+            {
+                this.StatusIdle.Background = StatusColorEditor.GetStatusBrushGradient(PhoneStatusCodes.Idle);
+                this.StatusRinging.Background = StatusColorEditor.GetStatusBrushGradient(PhoneStatusCodes.Ringing);
+                this.StatusOutOfService.Background = StatusColorEditor.GetStatusBrushGradient(PhoneStatusCodes.OutOfService);
+                this.StatusBusy.Background = StatusColorEditor.GetStatusBrushGradient(PhoneStatusCodes.Busy);
+                this.StatusNotExisting.Background = StatusColorEditor.GetStatusBrushGradient(PhoneStatusCodes.PHONE_DOESNOT);
+            }
+            else
+            {
+                this.StatusIdle.Background = StatusColorEditor.GetStatusBrush(PhoneStatusCodes.Idle);
+                this.StatusRinging.Background = StatusColorEditor.GetStatusBrush(PhoneStatusCodes.Ringing);
+                this.StatusOutOfService.Background = StatusColorEditor.GetStatusBrush(PhoneStatusCodes.OutOfService);
+                this.StatusBusy.Background = StatusColorEditor.GetStatusBrush(PhoneStatusCodes.Busy);
+                this.StatusNotExisting.Background = StatusColorEditor.GetStatusBrush(PhoneStatusCodes.PHONE_DOESNOT);
+            }
         }
 
         /// <summary>
@@ -488,20 +517,24 @@ namespace BLFClient
         /// <param name="e"></param>
         private void WindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            if (Globals.WindowLoaded == false)
+                return;
             if (App.Current.MainWindow.WindowState == WindowState.Maximized)
+                Globals.Config.SetConfig("Windowposition", "Maximized", "1");
+            else
             {
-                App.Current.MainWindow.Top = 0;
-                App.Current.MainWindow.Left = 0;
+                Globals.Config.SetConfig("Windowposition", "Maximized", "0");
+                Globals.Config.SetConfig("Windowposition", "Left", ((int)App.Current.MainWindow.Left).ToString());
+                Globals.Config.SetConfig("Windowposition", "Right", ((int)(App.Current.MainWindow.Left + App.Current.MainWindow.ActualWidth)).ToString());
+                Globals.Config.SetConfig("Windowposition", "Top", ((int)App.Current.MainWindow.Top).ToString());
+                Globals.Config.SetConfig("Windowposition", "Bottom", ((int)(App.Current.MainWindow.Top + App.Current.MainWindow.ActualHeight)).ToString());
             }
-            Globals.Config.SetConfig("Windowposition", "Left", ((int)App.Current.MainWindow.Left).ToString());
-            Globals.Config.SetConfig("Windowposition", "Right", ((int)(App.Current.MainWindow.Left + App.Current.MainWindow.ActualWidth)).ToString());
-            Globals.Config.SetConfig("Windowposition", "Top", ((int)App.Current.MainWindow.Top).ToString());
-            Globals.Config.SetConfig("Windowposition", "Bottom", ((int)(App.Current.MainWindow.Top + App.Current.MainWindow.ActualHeight)).ToString());
-            RedrawIndexCards();
         }
 
         private void Window_LocationChanged(object sender, EventArgs e)
         {
+            if (Globals.WindowLoaded == false)
+                return;
             Globals.Config.SetConfig("Windowposition", "Left", ((int)App.Current.MainWindow.Left).ToString());
             Globals.Config.SetConfig("Windowposition", "Right", ((int)(App.Current.MainWindow.Left + App.Current.MainWindow.ActualWidth)).ToString());
             Globals.Config.SetConfig("Windowposition", "Top", ((int)App.Current.MainWindow.Top).ToString());
@@ -513,12 +546,13 @@ namespace BLFClient
             if (TabHolder.SelectedIndex < 0 || TabHolder.SelectedIndex >= IndexCards.Count || LoadingData == true)
                 return;
             //if we click last index card, we will add a new index card to the list
-            if(IndexCards[TabHolder.SelectedIndex].CanReceiveFocus() == false)
+            int SelectedIndex = GetTabControlSelectedIndex();
+            if (IndexCards[SelectedIndex].CanReceiveFocus() == false)
             {
                 Click_Menu_NewIndexCard(null,null);
                 return;
             }
-            IndexCardMakeVisible(IndexCards[TabHolder.SelectedIndex]);
+            IndexCardMakeVisible(IndexCards[SelectedIndex]);
         }
 
         private void Click_Menu_FileOpen(object sender, RoutedEventArgs e)
@@ -569,25 +603,31 @@ namespace BLFClient
             //make the last-1 tab to be visible
             IndexCardMakeVisible(IndexCards[IndexCards.Count - 2]);
             //open the rename index card window
-            Click_Menu_RenameIndexCard(null, null);
+            Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(500);
+                App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() => { Click_Menu_RenameIndexCard(null, null); }));
+            });
         }
 
         private void Click_Menu_DeleteIndexCard(object sender, RoutedEventArgs e)
         {
-            if (IndexCards[TabHolder.SelectedIndex].CanReceiveFocus() == false)
+            int SelectedIndex = GetTabControlSelectedIndex();
+            if (IndexCards[SelectedIndex].CanReceiveFocus() == false)
                 return;
             MessageBoxResult result = MessageBox.Show(Globals.MultilangManager.GetTranslation("Do you want to delete the index card?"), "Exit", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                DeleteIndexCard(IndexCards[TabHolder.SelectedIndex]);
+                DeleteIndexCard(IndexCards[SelectedIndex]);
             }
         }
 
         private void Click_Menu_RenameIndexCard(object sender, RoutedEventArgs e)
         {
-            if (IndexCards[TabHolder.SelectedIndex].CanReceiveFocus() == false)
+            int SelectedIndex = GetTabControlSelectedIndex();
+            if (IndexCards[SelectedIndex].CanReceiveFocus() == false)
                 return;
-            var cw = new IndexCardRename(IndexCards[TabHolder.SelectedIndex]);
+            var cw = new IndexCardRename(IndexCards[SelectedIndex]);
             cw.ShowInTaskbar = false;
             cw.ShowDialog();
         }
@@ -676,21 +716,26 @@ namespace BLFClient
                 IndexCards[i].OnToggleShowCanonical();
         }
 
+        public bool ShowCannonical()
+        {
+            return GeneralSettings.ShowCanonical;
+        }
+
         private void Click_Menu_ViewAbsenceManagementToggle(object sender, RoutedEventArgs e)
         {
-            if (this.AbsenceView.Visibility == Visibility.Hidden)
+//            if (this.AbsenceView.Visibility == Visibility.Hidden)
+            if(this.cbMenuViewAbsence.IsChecked == true)
             {
                 Globals.Config.SetConfig("Options", "AbsenceManagement", "YES");
-                this.AbsenceView.Visibility = Visibility.Visible;
+                GridRowAbsenceView.Height = new GridLength(AbsenceView.ContentHolder.Height);
                 Globals.AbsenceManage.ShowUI(true);
             }
             else
             {
                 Globals.Config.SetConfig("Options", "AbsenceManagement", "NO");
-                this.AbsenceView.Visibility = Visibility.Hidden;
+                GridRowAbsenceView.Height = new GridLength(1);
                 Globals.AbsenceManage.ShowUI(false);
             }
-            RedrawIndexCards();
         }
 
         private void Click_Menu_OpenAbsenceManagement(object sender, RoutedEventArgs e)
@@ -716,7 +761,9 @@ namespace BLFClient
             GeneralSettings.CellHeight = NewHeight;
             Globals.Config.SetConfig("Options", "CellSizeHor", NewWidth.ToString());
             Globals.Config.SetConfig("Options", "CellSizeVer", NewHeight.ToString());
-
+            this.MinHeight = GeneralSettings.CellHeight + 200;
+            this.MinWidth = GeneralSettings.CellWidth + 150;
+       
             //update all current index cards with new global settings
             for (int i = 0; i < IndexCards.Count; i++)
                 IndexCards[i].OnCellSizeChanged(NewWidth, NewHeight);
@@ -805,7 +852,7 @@ namespace BLFClient
 
         public void OnAdminLogin(string Passw)
         {
-            if (AdminPassw == Passw)
+            if (Globals.AdminPassword.PasswMatches(Passw))
             {
                 HasAdminPriviledges = true;
                 this.FILE_SAVE.IsEnabled = true;
@@ -826,20 +873,18 @@ namespace BLFClient
 
         public bool OnAdminChangePassw(string oldPassw, string Passw)
         {
-            if (oldPassw != AdminPassw)
+            if (Globals.AdminPassword.PasswMatches(oldPassw) == false)
             {
                 MessageBox.Show(Globals.MultilangManager.GetTranslation("Old password is incorrect"));
                 return false;
             }
-            AdminPassw = Passw;
+            Globals.AdminPassword.AdminPswSet(Passw);
             return true;
         }
 
         private void Click_Menu_OpenBLFServerConfig(object sender, RoutedEventArgs e)
         {
-            string BLFServerIP = Globals.Config.GetConfig("Options", "BlfServerIp", "");
-            int BLFServerPort = Globals.Config.GetConfigInt("Options", "BlfServerPort", 5050);
-            var cw = new BLFServerConfig(BLFServerIP, BLFServerPort);
+            var cw = new BLFServerConfig();
             cw.ShowInTaskbar = false;
             cw.Owner = System.Windows.Application.Current.MainWindow;
             cw.ShowDialog();
@@ -886,16 +931,22 @@ namespace BLFClient
                 return;
             ConnectedToServer = Connected;
             if (Connected == true)
+            {
                 this.StatusConnectionStatusText.Content = Globals.MultilangManager.GetTranslation("Connected");
+                img_NotConnected.Visibility = Visibility.Collapsed;
+                img_Connected.Visibility = Visibility.Visible;
+            }
             else
+            {
                 this.StatusConnectionStatusText.Content = Globals.MultilangManager.GetTranslation("Connecting");
+                img_NotConnected.Visibility = Visibility.Visible;
+                img_Connected.Visibility = Visibility.Collapsed;
+            }
             // we should initiate a new "phone" device state query and attach a new monitor for each extension.
             //            if (GetVisibleIndexCard() != null)
             //                GetVisibleIndexCard().OnServerConnectionChanged(Connected);
             //Toggle call forwarding support
             this.Menu_CallForwarding.IsEnabled = Connected;
-            //update the context menu of each extension to allow call forwarding clicking
-            Globals.ExtensionManager.OnConnectionChanged(Connected);
             //update window title
             UpdateWindowTitle();
         }
@@ -903,19 +954,40 @@ namespace BLFClient
         private void LoadSettings()
         {
             //load window position settings 
-            int t;
-            t = Globals.Config.GetConfigInt("Windowposition", "Left", -1);
-            if (t != -1)
-                App.Current.MainWindow.Left = t;
-            t = Globals.Config.GetConfigInt("Windowposition", "Top", -1);
-            if (t != -1)
-                App.Current.MainWindow.Top = t;
-            t = Globals.Config.GetConfigInt("Windowposition", "Right", -1);
-            if (t != -1 && t > App.Current.MainWindow.Left)
-                App.Current.MainWindow.Width = t - App.Current.MainWindow.Left;
-            t = Globals.Config.GetConfigInt("Windowposition", "Bottom", -1);
-            if (t != -1 && t > App.Current.MainWindow.Top)
-                App.Current.MainWindow.Height = t - App.Current.MainWindow.Top;
+            int M;
+
+            M = Globals.Config.GetConfigInt("Windowposition", "Maximized", -1);
+            if (M == 1)
+                App.Current.MainWindow.WindowState = System.Windows.WindowState.Maximized;
+            else
+                App.Current.MainWindow.WindowState = System.Windows.WindowState.Normal;
+
+            int L, T, R, B;
+            L = Globals.Config.GetConfigInt("Windowposition", "Left", -1);
+            T = Globals.Config.GetConfigInt("Windowposition", "Top", -1);
+            R = Globals.Config.GetConfigInt("Windowposition", "Right", -1);
+            B = Globals.Config.GetConfigInt("Windowposition", "Bottom", -1);
+            if (L >= 0 && R >= 0 && T >= 0 && B >= 0 && R > L && T < B)
+            {
+                App.Current.MainWindow.Left = L;
+                App.Current.MainWindow.Top = T;
+                App.Current.MainWindow.Width = R - App.Current.MainWindow.Left;
+                App.Current.MainWindow.Height = B - App.Current.MainWindow.Top;
+            }
+            else
+            {
+                L = Globals.IniFile.GetConfigInt("Windowposition", "Left", -1);
+                T = Globals.IniFile.GetConfigInt("Windowposition", "Top", -1);
+                R = Globals.IniFile.GetConfigInt("Windowposition", "Right", -1);
+                B = Globals.IniFile.GetConfigInt("Windowposition", "Bottom", -1);
+                if (L >= 0 && R >= 0 && T >= 0 && B >= 0 && R > L && T < B)
+                {
+                    App.Current.MainWindow.Left = L;
+                    App.Current.MainWindow.Top = T;
+                    App.Current.MainWindow.Width = R - App.Current.MainWindow.Left;
+                    App.Current.MainWindow.Height = B - App.Current.MainWindow.Top;
+                }
+            }
 
             if (Globals.Config.GetConfig("Options", "Grid", "With Grid") == "With Grid")
             {
@@ -983,25 +1055,42 @@ namespace BLFClient
 
             GeneralSettings.CellWidth = Globals.Config.GetConfigInt("Options", "CellSizeHor", (int)GridContentArea.GetDefaultCellWidth());
             GeneralSettings.CellHeight = Globals.Config.GetConfigInt("Options", "CellSizeVer", (int)GridContentArea.GetDefaultCellHeight());
+            this.MinHeight = GeneralSettings.CellHeight + 200;
+            this.MinWidth = GeneralSettings.CellWidth + 150;
+
             //            AdminPassw = "HIPATH";
             //            HasAdminPriviledges = false;
             //first load the root values
-            string BLFServerIP = Globals.IniFile.GetConfig("Options", "ServerAddress", "");
-            int BLFServerPort = Globals.IniFile.GetConfigInt("Options", "ServerListeningPort", 5050);
-            //try to override root values with local values
-            BLFServerIP = Globals.Config.GetConfig("Options", "BlfServerIp", BLFServerIP);
-            BLFServerPort = Globals.Config.GetConfigInt("Options", "BlfServerPort", BLFServerPort);
-            //if there is no special setting for this specific config file, try to fall back to original value
-            Globals.ConnectionManager.SetConnectionDetails(BLFServerIP, BLFServerPort);
+            for (int i = 0; i < 20; i++)
+            {
+                string Index = "";
+                bool IgnoreWarning = false;
+                if (i > 0)
+                {
+                    Index = i.ToString();
+                    IgnoreWarning = true;
+                }
+                string BLFServerIP = Globals.IniFile.GetConfig("Options", "ServerAddress" + Index, "", IgnoreWarning);
+                int BLFServerPort = Globals.IniFile.GetConfigInt("Options", "ServerListeningPort" + Index, -1, IgnoreWarning);
+                int BLFServerEnabled = Globals.IniFile.GetConfigInt("Options", "ServerEnabled" + Index, 0, IgnoreWarning);
+                string BLFServerName = Globals.IniFile.GetConfig("Options", "ServerName" + Index, "", IgnoreWarning);
+                //try to override root values with local values
+                BLFServerIP = Globals.Config.GetConfig("Options", "BlfServerIp" + Index, BLFServerIP, IgnoreWarning);
+                BLFServerPort = Globals.Config.GetConfigInt("Options", "BlfServerPort" + Index, BLFServerPort, IgnoreWarning);
+                BLFServerEnabled = Globals.Config.GetConfigInt("Options", "BlfServerEnabled" + Index, BLFServerEnabled, IgnoreWarning);
+                BLFServerName = Globals.Config.GetConfig("Options", "BlfServerName" + Index, BLFServerName, IgnoreWarning);
+                //if there is no special setting for this specific config file, try to fall back to original value
+                if (BLFServerPort == -1)
+                    continue;
+                Globals.ConnectionManager.SetConnectionDetails(BLFServerIP, BLFServerPort,i,BLFServerEnabled,BLFServerName);
+            }
 
             GeneralSettings.Prefix = Globals.Config.GetConfig("Options", "Prefix", "");
 
             //should we show absence manage window by default ? Should come after loading index cards to know the size of index cards ?
             if (Globals.Config.GetConfig("Options", "AbsenceManagement", "NO").CompareTo("YES") == 0)
-            {
                 this.cbMenuViewAbsence.IsChecked = true;
-                Click_Menu_ViewAbsenceManagementToggle(null, null);
-            }
+            Click_Menu_ViewAbsenceManagementToggle(null, null);
 
             if (Globals.IniFile.GetConfig("Options", "Language") == null)
             {
@@ -1009,13 +1098,48 @@ namespace BLFClient
             }
 
             Globals.Logger.SetFileLogLevelsFromConfig(Globals.IniFile.GetConfig("Options", "LogFlags", ""));
+
+            if (Globals.IniFile.GetConfig("Options", "ClientLogEnabled", "NO").CompareTo("YES") == 0)
+                Globals.Logger.SetFileLogLevelAll();
+
+            Globals.ConfigLoaded = true;
         }
 
         private void SaveConfigValues()
         {
+            Globals.IniFile.SaveConfigsNoAdminRequired();
+            Globals.Config.SaveConfigsNoAdminRequired();
+
             //only admin can save changes
             if (HasAdminPriviledges == false)
                 return;
+
+            //update the server connection settings 
+            for (int i = 0; i < 20; i++)
+            {
+                string Index = "";
+                if (i > 0)
+                    Index = i.ToString();
+                Globals.Config.RemoveConfig("Options", "BlfServerIp" + Index);
+                Globals.Config.RemoveConfig("Options", "BlfServerPort" + Index);
+                Globals.Config.RemoveConfig("Options", "BlfServerEnabled" + Index);
+                Globals.Config.RemoveConfig("Options", "BlfServerName" + Index);
+            }
+            ConcurrentBag<ServerConnectionStatus> Connections = Globals.ConnectionManager.GetConnections();
+            int ind = 0;
+            foreach (ServerConnectionStatus sc in Connections)
+            {
+                if (sc.PendingRemove == true)
+                    continue;
+                string Index = "";
+                if (ind > 0)
+                    Index = ind.ToString();
+                ind++;
+                Globals.Config.SetConfig("Options", "BlfServerIp" + Index,sc.IP);
+                Globals.Config.SetConfig("Options", "BlfServerPort" + Index,sc.Port.ToString());
+                Globals.Config.SetConfig("Options", "BlfServerEnabled" + Index,sc.Enabled.ToString());
+                Globals.Config.SetConfig("Options", "BlfServerName" + Index,sc.ServerName);
+            }
 
             long StartTime = Environment.TickCount;
 
@@ -1062,6 +1186,24 @@ namespace BLFClient
 
         }
 
+        private int GetTabControlSelectedIndex()
+        {
+            //as long as there is only 1 row of tab items it's all good. We are handling the case when it's not that case
+            if(TabHolder.SelectedItem == null)
+                return TabHolder.SelectedIndex;
+            IndexCard SelectedIndexCard = (TabHolder.SelectedItem as DragableTabItem).Content as IndexCard;
+            string SelectedName = SelectedIndexCard.GetName();
+            int Index = 0;
+            foreach (var t in IndexCards)
+            {
+                if (t.GetName() == SelectedName)
+                    return Index;
+                Index++;
+            }
+            //we should never get here :(
+            return TabHolder.SelectedIndex;
+        }
+
         public void OnTabItemDrag(TabItem GrabbedItem, TabItem ReleasedItem)
         {
             //we grabbed a tab, mark it as dragged
@@ -1080,7 +1222,6 @@ namespace BLFClient
                     DraggedTabIndex = -1;
                     return;
                 }
-                int SelectedIndex = TabHolder.SelectedIndex;
                 object ReleasedObject = TabHolder.Items[ReleasedIndex];
                 object DraggedObject = TabHolder.Items[DraggedTabIndex];
                 //create a list that is ordered differently
@@ -1090,8 +1231,8 @@ namespace BLFClient
                     object t = TabHolder.Items[i];
                     if (t == ReleasedObject)
                     {
-                        newList.Add(ReleasedObject);
                         newList.Add(DraggedObject);
+                        newList.Add(ReleasedObject);
                     }
                     else if (t != DraggedObject)
                         newList.Add(t);
@@ -1122,6 +1263,14 @@ namespace BLFClient
                 DraggedTabIndex = -1;
         }
 
+        public int GetGridColumnCount()
+        {
+            IndexCard ic = GetVisibleIndexCard();
+            if (ic != null)
+                return ic.GetGridColumnCount() - 1;
+            return 0;
+        }
+
         public void OnPhoneNumberDrag(PhoneNumber GrabbedItem, PhoneNumber ReleasedItem)
         {
             //did we stop dragging ?
@@ -1139,13 +1288,32 @@ namespace BLFClient
             //simple click on the same item
             if (ReleasedItem == DraggedPhoneNumber)
                 return;
-            //do not swap locations with already taken cells
-            if (ReleasedItem != null && ReleasedItem.GetExtension() != "")
-                return;
             //we released a mouse over a tab, if we were dragging another tab than swap places
             if (DraggedPhoneNumber != null && ReleasedItem != null)
             {
                 IndexCard ic = GetVisibleIndexCard();
+                //do not swap locations with already taken cells
+                if (ReleasedItem.GetExtension() != "")
+                    return;
+                //if we are a range, we take up 2 columns. Also do no swap if Next item to release target is taken
+                PhoneNumber pn;
+                if (DraggedPhoneNumber.IsSubscriberRange() == true)
+                {
+                    int NextColumnToRelease = ReleasedItem.GetX() + 1;
+                    pn = GetVisibleIndexCard().PhoneNumberGet(NextColumnToRelease, ReleasedItem.GetY());
+                    if (pn != null && pn.GetExtension() != "" && pn != DraggedPhoneNumber)
+                        return;
+
+                    if (ic != null)
+                        if (ReleasedItem.GetX() >= ic.GetGridColumnCount() - 1)
+                            return;
+                }
+                //if target location is covered by a range, skip the drag
+                int ColumnBeforeRelease = ReleasedItem.GetX() - 1;
+                pn = GetVisibleIndexCard().PhoneNumberGet(ColumnBeforeRelease, ReleasedItem.GetY());
+                if (pn != null && pn.IsSubscriberRange() == true && pn != DraggedPhoneNumber)
+                    return;
+
                 if (ic != null)
                     ic.SwapPhoneNumbersAtPos(DraggedPhoneNumber.GetX(), DraggedPhoneNumber.GetY(), ReleasedItem.GetX(), ReleasedItem.GetY());
             }
@@ -1154,6 +1322,10 @@ namespace BLFClient
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Globals.WindowLoaded = true;
+
+            this.Visibility = Visibility.Hidden;
+            InitializeApp();
+            this.Visibility = Visibility.Visible;
 
             //            if (Globals.Config.GetConfig("Options", "DSWin", "YES") == "YES")
             Globals.DSWinManager = new DSWinConnectionManager();
@@ -1166,12 +1338,12 @@ namespace BLFClient
         {
             string NewTitle = "BLF-WIN";
 
-            if (Globals.ConnectionManager.IsConnected() == true)
+            if (Globals.ConnectionManager.HasAnyActiveConnection() == true)
                 NewTitle += " - connected";
             else
                 NewTitle += " - not connected";
 
-            if (Globals.Config.GetIniName() != "")
+            if (Globals.Config.GetIniName() != null && Globals.Config.GetIniName() != "")
             {
                 if(Globals.Config.GetIniName().IndexOf('\\') > 0 )
                     NewTitle += " - " + Globals.Config.GetIniName().Substring((Globals.Config.GetIniName().LastIndexOf('\\'))+1);
@@ -1180,6 +1352,17 @@ namespace BLFClient
             }
 
             this.Title = NewTitle;
+        }
+
+        private void Grid_SizeChanged(object sender, RoutedEventArgs e)
+        {
+            RedrawIndexCards();
+/*            //wait until grid sizes refresh and only then redraw the index cards
+            Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(500);
+                App.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() => { RedrawIndexCards(); }));
+            });*/
         }
     }
 }

@@ -6,7 +6,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Status Color Editor" Height="210" Width="300">
+        Title="Status Color Editor" Height="250" Width="300">
     <StackPanel>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -22,15 +22,15 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Label Content="Idle" Grid.Row="0" Grid.Column="0"/>
-            <xctk:ColorPicker Grid.Row="0" Grid.Column="1" Name="ClrPcker_1" Height="30" DisplayColorAndName="True" IsOpen="false"/>
+            <xctk:ColorPicker Grid.Row="0" Grid.Column="1" Name="ClrPcker_1" Height="30" DisplayColorAndName="True" IsOpen="false" Margin="4,4,4,4"/>
             <Label Content="Ringing" Grid.Row="1" Grid.Column="0"/>
-            <xctk:ColorPicker Grid.Row="1" Grid.Column="2" Name="ClrPcker_2" Height="30" DisplayColorAndName="True" IsOpen="false"/>
+            <xctk:ColorPicker Grid.Row="1" Grid.Column="2" Name="ClrPcker_2" Height="30" DisplayColorAndName="True" IsOpen="false" Margin="4,4,4,4"/>
             <Label Content="Out of service" Grid.Row="2" Grid.Column="0"/>
-            <xctk:ColorPicker Grid.Row="2" Grid.Column="3" Name="ClrPcker_3" Height="30" DisplayColorAndName="True" IsOpen="false"/>
+            <xctk:ColorPicker Grid.Row="2" Grid.Column="3" Name="ClrPcker_3" Height="30" DisplayColorAndName="True" IsOpen="false" Margin="4,4,4,4"/>
             <Label Content="Busy" Grid.Row="3" Grid.Column="0"/>
-            <xctk:ColorPicker Grid.Row="3" Grid.Column="3" Name="ClrPcker_4" Height="30" DisplayColorAndName="True" IsOpen="false"/>
+            <xctk:ColorPicker Grid.Row="3" Grid.Column="3" Name="ClrPcker_4" Height="30" DisplayColorAndName="True" IsOpen="false" Margin="4,4,4,4"/>
             <Label Content="Not existing" Grid.Row="4" Grid.Column="0"/>
-            <xctk:ColorPicker Grid.Row="4" Grid.Column="3" Name="ClrPcker_5" Height="30" DisplayColorAndName="True" IsOpen="false"/>
+            <xctk:ColorPicker Grid.Row="4" Grid.Column="3" Name="ClrPcker_5" Height="30" DisplayColorAndName="True" IsOpen="false" Margin="4,4,4,4"/>
         </Grid>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -38,9 +38,9 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Content="Ok" Grid.Column="0" Click="Button_AcceptColorChanges"/>
-            <Button Content="Cancel" Grid.Column="1" Click="Button_DiscardColorChanges"/>
-            <Button Content="Default" Grid.Column="2" Click="Button_RestoreDefaultColors"/>
+            <Button Content="Ok" Grid.Column="0" Click="Button_AcceptColorChanges" Margin="4,4,4,4"/>
+            <Button Content="Cancel" Grid.Column="1" Click="Button_DiscardColorChanges" Margin="4,4,4,4"/>
+            <Button Content="Default" Grid.Column="2" Click="Button_RestoreDefaultColors" Margin="4,4,4,4"/>
         </Grid>
     </StackPanel>
 </Window>

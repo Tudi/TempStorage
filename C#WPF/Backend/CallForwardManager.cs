@@ -16,7 +16,7 @@ namespace BLFClient.Backend
         PacketTimeOutMS = 5000,         // wait this amount of time when we send out a packet. If no reply came, try to resend it
         MonitorTimeOutMS = 2*30*1000,  // wait this amount of time when we send out a packet. If no reply came, try to resend it
         CallFWDTimeOutMS = 5000,
-        HeartBeatTimeOutMS = 2 * 30 * 1000,
+        HeartBeatTimeOutMS = 10 * 30 * 1000,
     }
 
     /// <summary>
@@ -30,10 +30,14 @@ namespace BLFClient.Backend
         public long DestinationForward;
         public long LastQueryStamp; // in case we need to update the status from time to time
         public ServerPacketStatus PacketStatus;
+        public string ServerIPAndPort;
+        public string Prefix;
 
         public ForwardStatusStore(string Ext)
         {
             Extension = Ext;
+            Prefix = null;
+            ServerIPAndPort = null;
             OnConnectionLost();
         }
 
@@ -44,11 +48,11 @@ namespace BLFClient.Backend
         public bool ShouldQueryForwardStatus()
         {
             //if this extension is not available, there is no reason to query it. By default we presume extension forwarding is OFF
-            if (Globals.ExtensionManager.ExtensionExists(Extension) == false)
+            if (Globals.ExtensionManager.ExtensionExists(ServerIPAndPort, Prefix, Extension) == false)
                 return false;
 
             //if we know the status, and there is a monitor set, we no longer need to query this only once for the initial state
-            if (PacketStatus == ServerPacketStatus.PacketReceived && Globals.ExtensionManager.HasMonitor(Extension) == true)
+            if (PacketStatus == ServerPacketStatus.PacketReceived && Globals.ExtensionManager.HasMonitor(ServerIPAndPort, Prefix, Extension) == true)
                 return false;
 
             //recently sent a packet to the server. No need to flood it
@@ -116,8 +120,11 @@ namespace BLFClient.Backend
         private void _Load()
         {
             // wait for index cards and extension to load up. Also wait for a connection we can query
-            while (Globals.ConnectionManager == null || Globals.ConnectionManager.IsConnected() == false || Globals.IndexCardsLoaded == false)
+            while ((Globals.ConnectionManager == null || Globals.ConnectionManager.HasAnyActiveConnection() == false || Globals.IndexCardsLoaded == false) && Globals.IsAppRunning == true)
                 Thread.Sleep(100);
+
+            if (Globals.IsAppRunning == false)
+                return;
 
             Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Async extension forward status manager has started");
             //create a timer to periodically query extension forwarding status and issue callbacks to all cell cards on status change
@@ -134,7 +141,7 @@ namespace BLFClient.Backend
         private void PeriodicStatusUpdate(object source, ElapsedEventArgs arg)
         {
             //nothing to be done for now
-            if (Globals.ConnectionManager == null || Globals.ConnectionManager.IsConnected() == false)
+            if (Globals.ConnectionManager == null || Globals.ConnectionManager.HasAnyActiveConnection() == false)
                 return;
 
             UpdateTimer.Stop(); // in case network buffer gets full, the function might block and threadpool might call us multiple times
@@ -176,7 +183,7 @@ namespace BLFClient.Backend
         public void OnExtensionCreate(PhoneNumber NewNumber)
         {
             //if we are still in the loading process, delay this query for now. We will auto query the state as soon as we are done loading
-            if (Globals.ConnectionManager.IsConnected() == false || Globals.IndexCardsLoaded == false)
+            if (Globals.ConnectionManager.HasAnyActiveConnection() == false || Globals.IndexCardsLoaded == false)
                 return;
 
             // skip dummy placeholder extensions
@@ -203,7 +210,11 @@ namespace BLFClient.Backend
             {
                 fw.LastQueryStamp = Environment.TickCount; // if there is no reply comming for this extension, we should retry a bit later
                 fw.PacketStatus = ServerPacketStatus.PacketSent;
-                NetworkClientBuildPacket.QueryDeviceForwarding(Extension.ToString());
+                if (Globals.ConnectionManager != null)
+                {
+                    NetworkClient nc = Globals.ConnectionManager.GetCLient(fw.ServerIPAndPort);
+                    nc.PacketBuilder.QueryDeviceForwarding(Extension.ToString());
+                }
             }
         }
 
@@ -221,7 +232,11 @@ namespace BLFClient.Backend
             if (Type != CallForwardingTypes.CallForwardNone)
                 Enable = 1;
             Globals.Logger.LogString(LogManager.LogLevels.LogFlagCallForwarding, "Client : Set forwarding for extension " + Extension + " to Type " + Type + " to destination " + Destination);
-            NetworkClientBuildPacket.SetFeatureForwarding(Extension.ToString(), Destination.ToString(), 0, Enable);
+            if (Globals.ConnectionManager != null)
+            {
+                NetworkClient nc = Globals.ConnectionManager.GetCLient(fw.ServerIPAndPort);
+                nc.PacketBuilder.SetFeatureForwarding(Extension.ToString(), Destination.ToString(), 0, Enable);
+            }
         }
 
         public void PhoneNumberUpdateForwarding(string Extension, CallForwardingTypes Type, long VoiceMail, long Destination)

@@ -21,8 +21,17 @@ namespace BLFClient.Backend
         SystemStatus_Search_DeadClient = 9
     };
 
-    class NetworkClientInterpretPacket
+    public class NetworkClientInterpretPacket
     {
+        NetworkClient nclient = null;
+        public NetworkClientInterpretPacket(NetworkClient pclient)
+        {
+            nclient = pclient;
+        }
+        ~NetworkClientInterpretPacket()
+        {
+            nclient = null;
+        }
         public static PhoneStatusCodes PhoneStatusCodeTranslate(long ServerSideState)
         {
             PhoneStatusCodes code = PhoneStatusCodes.NumberOfStatusCodes;
@@ -129,35 +138,9 @@ namespace BLFClient.Backend
             return code;
         }
 
-        public static void InterpretMessage(byte [] ReceivedBytes)
+        public void InterpretMessage(byte [] ReceivedBytes2)
         {
-            //check for packet integrity
-            BLFWinHeader pkt = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<BLFWinHeader>(ReceivedBytes);
-
-            //incomplete packet. Should never happen. TCPIP ...
-            if(pkt.Length > ReceivedBytes.Length)
-            {
-                Globals.Logger.LogString(LogManager.LogLevels.LogFlagError, "Incomplete or unknown format packet received. Expecting " + pkt.Length.ToString() + " Got " + ReceivedBytes.Length.ToString());
-                return;
-            }
-
-            // check if packet length is correct. Are there leftover bytes ?
-            int ExpectedSize = ReceivedBytes.Length - System.Runtime.InteropServices.Marshal.SizeOf(typeof(BLFWinHeader));
-            if (pkt.Length != ExpectedSize) // + the 0x55 from the end
-            {
-                Globals.Logger.LogString(LogManager.LogLevels.LogFlagError, "Incomplete or unknown format packet received. Expecting " + ExpectedSize.ToString() + " Got " + pkt.Length.ToString());
-                return;
-            }
-
-            //check for packet delimiters
-            if (pkt.BEG != 0xaa || ReceivedBytes[ReceivedBytes.Length - 1] != 0x55) 
-            {
-                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "Packet does not have correct marker");
-                return;
-            }
-
-            byte[] ReceivedBytes2 = new byte[ReceivedBytes.Length-2];
-            Array.Copy(ReceivedBytes, 1, ReceivedBytes2, 0, ReceivedBytes.Length - 2);
+            BLFWinNoEnvelopHeader pkt = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<BLFWinNoEnvelopHeader>(ReceivedBytes2);
             switch ( pkt.Type )
             {
                 case PacketTypes.ON_CONNECTED:
@@ -182,16 +165,16 @@ namespace BLFClient.Backend
                         SystemStatusCodes ssc = (SystemStatusCodes)(pkt2.Type);
                         if (ssc == SystemStatusCodes.SystemStatus_Search_DeadClient)
                         {
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SYSTEMSTATUSSERVICEREQUEST System Status System_Status_DUMMY: " + pkt2.Type + " SystemStatus_Search_DeadClient ");
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SYSTEMSTATUSSERVICEREQUEST System Status System_Status_DUMMY: " + pkt2.Type + " SystemStatus_Search_DeadClient ");
                         }
                         else if ((ssc == SystemStatusCodes.SystemStatus_normal || ssc == SystemStatusCodes.SystemStatus_initializing))
                         {
                             //Write the problem to the log
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SYSTEMSTATUSSERVICEREQUEST System Status System_Status_OK: " + pkt2.Type + " SystemStatus_normal/SystemStatus_initializing ");
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SYSTEMSTATUSSERVICEREQUEST System Status System_Status_OK: " + pkt2.Type + " SystemStatus_normal/SystemStatus_initializing ");
 
                             //notify connection manager that the server is up and running
-                            Globals.ConnectionManager.OnHeartbeatReceived();
-                            Globals.ExtensionManager.OnSystemStatusOk(); // we presume that all monitors function correctly and no need to panic for lack of updates
+//                            Globals.ConnectionManager.OnHeartbeatReceived();
+                            Globals.ExtensionManager.OnSystemStatusOk(nclient.ServerIPAndPort); // we presume that all monitors function correctly and no need to panic for lack of updates
 
 //                            m_bDisconnected_From_Callbridge = FALSE;
 
@@ -208,13 +191,13 @@ namespace BLFClient.Backend
                         else if (ssc == SystemStatusCodes.SystemStatus_disabled)
                         {
                             //Write the problem to the log
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SYSTEMSTATUSSERVICEREQUEST System Status System_Status_Disabled: " + pkt2.Type );
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SYSTEMSTATUSSERVICEREQUEST System Status System_Status_Disabled: " + pkt2.Type );
                             //Open the switch problem dialog
                             //update status bar
                         }
                         else
                         {
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SYSTEMSTATUSSERVICEREQUEST System Status:" + pkt2.Type);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SYSTEMSTATUSSERVICEREQUEST System Status:" + pkt2.Type);
                         }
                         //                        m_pWnd->SystemStatusService(pStruct->Type);
                         break;
@@ -226,15 +209,15 @@ namespace BLFClient.Backend
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
                             string errorCategory = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.ErrorCategory);
                             string errorValue = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.ErrorValue);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : UNIVERSALERRORRESPONSE : device=" + device + ", ErrCat=" + errorCategory + ", Err=" + errorValue);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : UNIVERSALERRORRESPONSE : device=" + device + ", ErrCat=" + errorCategory + ", Err=" + errorValue);
                             //make sure we set the status of this device
                             if (errorCategory == "Operation" && errorValue == "invalidDeviceID")
                             {
-                                Globals.ExtensionManager.OnStatusChange(device, PhoneStatusCodes.PHONE_DOESNOT);
+                                Globals.ExtensionManager.OnStatusChange( nclient.ServerIPAndPort, null, device, PhoneStatusCodes.PHONE_DOESNOT);
                             }
                             else if (errorCategory == "System Resource Availability" && errorValue == "deviceOutOfService")
                             {
-                                Globals.ExtensionManager.OnStatusChange(device, PhoneStatusCodes.OutOfService); 
+                                Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, PhoneStatusCodes.OutOfService); 
                             }
                             //                            m_pWnd->UniversalErrorResponse(device, errorCategory, errorValue);
                         }
@@ -242,13 +225,13 @@ namespace BLFClient.Backend
                     }
                 case PacketTypes.SETFEATUREFORWARDINGRESPONSE: //nothing to do here
                     {
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SETFEATUREFORWARDINGRESPONSE");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SETFEATUREFORWARDINGRESPONSE");
                         //?! missing in CSink
                         break;
                     }
                 case PacketTypes.QUERYDEVICEFORWARDINGRESPONSE: //nothing to do here
                     {
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : QUERYDEVICEFORWARDINGRESPONSE");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : QUERYDEVICEFORWARDINGRESPONSE");
                         //?! missing in CSink
                         break;
                     }
@@ -260,7 +243,7 @@ namespace BLFClient.Backend
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
                             string callId = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.CallID);
                             string deviceId = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.DeviceID);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : CONSULTATIONCALLRESPONSE Device=" + device + " CallId=" + callId + " DeviceId=" + deviceId);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : CONSULTATIONCALLRESPONSE Device=" + device + " CallId=" + callId + " DeviceId=" + deviceId);
 
                             //                            m_pWnd->ConsultationCallResponse(device, callId, deviceId);
                             /// !!!!!!!!!!! not finished
@@ -269,10 +252,11 @@ namespace BLFClient.Backend
                                 string OptiSet = Globals.Config.GetConfig("Options", "OptisetExtension", "");
                                 //get the extension only from a full phone number
                                 string OptisetExtenstion = PhoneNumber.GetExtensionFromFullNumberStr(OptiSet);
-                                long CallId = Globals.ExtensionManager.GetCallId(OptisetExtenstion);
+                                long CallId = Globals.ExtensionManager.GetCallId(nclient.ServerIPAndPort, null, OptisetExtenstion);
                                 if (OptisetExtenstion == device)
                                 {
-                                    NetworkClientBuildPacket.TransferCall(OptisetExtenstion, OptisetExtenstion, CallId.ToString(), callId);
+                                    if (nclient != null)
+                                        nclient.PacketBuilder.TransferCall(OptisetExtenstion, OptisetExtenstion, CallId.ToString(), callId);
                                 }
                             }
                         }
@@ -284,7 +268,7 @@ namespace BLFClient.Backend
                         unsafe
                         {
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : TRANSFERCALLRESPONSE for device " + device);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : TRANSFERCALLRESPONSE for device " + device);
 //                            Globals.AppVars.m_bConsultationCall = false;
 //                            Globals.AppVars.m_strDeviceIDTemp = "";
 //                            Globals.AppVars.m_strCallIDTemp = "";				// BP-3.0.9.0-050816: Feature 'CallID as string': Modified: long m_lCallIDTemp -> CString m_strCallIDTemp
@@ -298,7 +282,7 @@ namespace BLFClient.Backend
                         unsafe
                         {
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SINGLESTEPTRANSFERRESPONSE " + device);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SINGLESTEPTRANSFERRESPONSE " + device);
                             //                            m_pWnd->SingleStepTransferResponse(device);
                         }
                         break;
@@ -309,7 +293,7 @@ namespace BLFClient.Backend
                         unsafe
                         {
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : MAKECALLRESPONSE for device " + device);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : MAKECALLRESPONSE for device " + device);
                             //                            m_pWnd->MakeCallResponse(device);
                         }
                         break;
@@ -320,10 +304,13 @@ namespace BLFClient.Backend
                         unsafe
                         {
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : UPDATEDEVICESTATE " + device + " " + pkt2.State.ToString());
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : UPDATEDEVICESTATE " + device + " " + pkt2.State.ToString());
                             PhoneStatusCodes code = PhoneStatusCodeTranslateMonitor(pkt2.State);
                             if (code < PhoneStatusCodes.NumberOfStatusCodes)
-                                Globals.ExtensionManager.OnStatusChange(device, code);
+                                Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, code);
+                            //mark this extension as valid on this server. Some extensions might exist on more than 1 server
+                            if( code == PhoneStatusCodes.Busy || code == PhoneStatusCodes.Idle || code == PhoneStatusCodes.PHONE_EXTERNAL || code == PhoneStatusCodes.Ringing)
+                                PhoneNumberManager.OnClientReceivedPacketWithExtension(nclient, device);
                             //                            m_pWnd->UpdateDeviceState(device,pkt2.state);
                         }
                         break;
@@ -341,8 +328,8 @@ namespace BLFClient.Backend
                             string calledDevice = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.CalledDevice);
                             string lastRedirectionDevice = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.LastRedirectionDevice);
                             short isExternal = pkt2.shExternal; //OSFOURK-6659
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : ESTABLISHEDEVENT" + " Device=" + device + " CallId=" + callId + " DeviceId=" + deviceId + " AnswerDevice=" + answeringDevice + " CallingDevice=" + callingDevice + " CalledDevice=" + calledDevice + " LastRedirectionDevice=" + lastRedirectionDevice + " IsExternal=" + isExternal.ToString());
-                            Globals.ExtensionManager.OnCallIdReceived(callingDevice, callId, calledDevice);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : ESTABLISHEDEVENT" + " Device=" + device + " CallId=" + callId + " DeviceId=" + deviceId + " AnswerDevice=" + answeringDevice + " CallingDevice=" + callingDevice + " CalledDevice=" + calledDevice + " LastRedirectionDevice=" + lastRedirectionDevice + " IsExternal=" + isExternal.ToString());
+                            Globals.ExtensionManager.OnCallIdReceived( nclient.ServerIPAndPort, null, callingDevice, callId, calledDevice);
                             //m_pWnd->EstablishedEvent(device, callId, deviceId, answeringDevice, callingDevice, calledDevice, lastRedirectionDevice, isExternal);
 /*                            if (device == Globals.Config.GetConfig("Options", "OptisetExtension", ""))
                             {
@@ -356,9 +343,9 @@ namespace BLFClient.Backend
                                 Globals.AppVars.m_strCallIDTemp = "";               // BP-3.0.9.0-050816: Feature 'CallID as string': Modified: long m_lCallIDTemp -> CString m_strCallIDTemp
                             }*/
                             if(isExternal == ServerSidePhoneStatusCodes.ZS_EXTERNVERBINDUNG)
-                                Globals.ExtensionManager.OnStatusChange(device, PhoneStatusCodeTranslate(ServerSidePhoneStatusCodes.ZS_EXTERNAL));
+                                Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, PhoneStatusCodeTranslate(ServerSidePhoneStatusCodes.ZS_EXTERNAL));
                             else
-                                Globals.ExtensionManager.OnStatusChange(device, PhoneStatusCodeTranslate(ServerSidePhoneStatusCodes.ZS_GESPRAECH));
+                                Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, PhoneStatusCodeTranslate(ServerSidePhoneStatusCodes.ZS_GESPRAECH));
                         }
                         break;
                     }
@@ -371,14 +358,14 @@ namespace BLFClient.Backend
                             string droppedCall = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.DroppedCall);
                             string droppedDevice = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.DroppedDevice);
                             string releasingDevice = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.ReleasingDevice);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : CONNECTIONCLEAREDEVENT Device=" + device + " CallId=" + droppedCall + " DroppedDevice=" + droppedDevice + " ReleasingDevice=" + releasingDevice + " State=" + pkt2.shLocalConnectionState.ToString() + " Cause=" + pkt2.shEventCause.ToString());
-                            Globals.ExtensionManager.OnCallIdClear(device, droppedCall, droppedDevice);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : CONNECTIONCLEAREDEVENT Device=" + device + " CallId=" + droppedCall + " DroppedDevice=" + droppedDevice + " ReleasingDevice=" + releasingDevice + " State=" + pkt2.shLocalConnectionState.ToString() + " Cause=" + pkt2.shEventCause.ToString());
+                            Globals.ExtensionManager.OnCallIdClear(nclient.ServerIPAndPort, null, device, droppedCall, droppedDevice);
                             //m_pWnd->ConnectionClearedEvent(device, droppedCall, droppedDevice, releasingDevice, pStruct->shLocalConnectionState, pStruct->shEventCause);
                             PhoneStatusCodes code = PhoneStatusCodeTranslateMonitor(pkt2.shLocalConnectionState);
                             if (code < PhoneStatusCodes.NumberOfStatusCodes )
-                                Globals.ExtensionManager.OnStatusChange(device, code);
+                                Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, code);
                             else
-                                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "CONNECTIONCLEAREDEVENT : Ignore handling status update as not recognized state");
+                                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CONNECTIONCLEAREDEVENT : Ignore handling status update as not recognized state");
                         }
                         break;
                     }
@@ -394,18 +381,20 @@ namespace BLFClient.Backend
                             string Exntension = device;
                             long Fwd = PhoneNumberManager.Int32Parse(pvtFwdDn, 0);
 
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : UPDATEFORWARDSTATESTR, device " + device + " forward "+ pvtFwdDn + " fwd type "+ pvtType);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : UPDATEFORWARDSTATESTR, device " + device + " forward "+ pvtFwdDn + " fwd type "+ pvtType);
 
                             if (Fwd != 0)
                                 Globals.ForwardManager.PhoneNumberUpdateForwarding(Exntension, CallForwardingTypes.CallForwardDestination, 0, Fwd);
                             else
                                 Globals.ForwardManager.PhoneNumberUpdateForwarding(Exntension, CallForwardingTypes.CallForwardNone, 0, Fwd);
+
+                            PhoneNumberManager.OnClientReceivedPacketWithExtension(nclient, device);
                         }
                         break;
                     }
                 case PacketTypes.NETWORKREACHEDEVENT:
                     {
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : NETWORKREACHEDEVENT");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : NETWORKREACHEDEVENT");
                         NetworkReachedEventStr pkt2 = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<NetworkReachedEventStr>(ReceivedBytes2);
                         unsafe
                         {
@@ -413,7 +402,7 @@ namespace BLFClient.Backend
                             string calledDeviceId = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.called_device_id);
                             //m_pWnd->NetworkReached(device, calledDeviceId);
                             //folders[i]->UpdateCell(_T((char*)bstrDevice), ZS_EXTERNAL, dc);
-                            Globals.ExtensionManager.OnStatusChange(device, PhoneStatusCodeTranslate(ServerSidePhoneStatusCodes.ZS_EXTERNAL));
+                            Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, PhoneStatusCodeTranslate(ServerSidePhoneStatusCodes.ZS_EXTERNAL));
                         }
                         break;
                     }
@@ -424,9 +413,11 @@ namespace BLFClient.Backend
                         {
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
                             string xRef = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Xref);
-                            Globals.ExtensionManager.OnMonitorStart(device, xRef);
+                            Globals.ExtensionManager.OnMonitorStart(nclient.ServerIPAndPort, null, device, xRef);
                             //m_pWnd->MonitorStartResult(device, xRef);
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : MONITORSTARTRESPONSE , device " + device + ", xref " + xRef);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : MONITORSTARTRESPONSE , device " + device + ", xref " + xRef);
+
+                            PhoneNumberManager.OnClientReceivedPacketWithExtension(nclient, device);
                         }
                         break;
                     }
@@ -436,16 +427,16 @@ namespace BLFClient.Backend
                         unsafe
                         {
                             string device = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.Device);
-                            Globals.ExtensionManager.OnMonitorStop(device);
+                            Globals.ExtensionManager.OnMonitorStop(nclient.ServerIPAndPort, null, device);
                             //m_pWnd->MonitorStopResult();
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : MONITORSTOPRESPONSE, device " + device);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : MONITORSTOPRESPONSE, device " + device);
                         }
                         break;
                     }
                 case PacketTypes.SNAPSHOTDEVICERESPONSE:
                     {
 
-//                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : SNAPSHOTDEVICERESPONSE");
+//                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : SNAPSHOTDEVICERESPONSE");
                         SnapshotDeviceResponseStr pkt2 = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<SnapshotDeviceResponseStr>(ReceivedBytes2);
                         unsafe
                         {
@@ -455,34 +446,35 @@ namespace BLFClient.Backend
                             PhoneStatusCodes code = PhoneStatusCodeTranslate(pkt2.State);
                             if (code < PhoneStatusCodes.NumberOfStatusCodes)
                             {
-                                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "SNAPSHOTDEVICERESPONSE : device '" + device + "', state '" + pkt2.State + "'");
-                                Globals.ExtensionManager.OnStatusChange(device, code);
+                                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SNAPSHOTDEVICERESPONSE : device '" + device + "', state '" + pkt2.State + "'");
+                                Globals.ExtensionManager.OnStatusChange(nclient.ServerIPAndPort, null, device, code);
+                                PhoneNumberManager.OnClientReceivedPacketWithExtension(nclient, device);
                             }
                             else
-                                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "SNAPSHOTDEVICERESPONSE : !Ignored! : device '" + device + "', state '" + pkt2.State + "'");
+                                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SNAPSHOTDEVICERESPONSE : !Ignored! : device '" + device + "', state '" + pkt2.State + "'");
                         }
                         break;
                     }
                 case PacketTypes.MONITORSTOPREQUEST:
                     {
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : MONITORSTOPREQUEST");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : MONITORSTOPREQUEST");
                         MonitorStopRequestStr pkt2 = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<MonitorStopRequestStr>(ReceivedBytes2);
                         unsafe
                         {
                             string xrefId = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.XREFId);
                             //m_pWnd->MonitorStopRequest(xrefId);
-                            Globals.ExtensionManager.OnMonitorStop(xrefId);
+                            Globals.ExtensionManager.OnMonitorStop(nclient.ServerIPAndPort, null, xrefId);
                         }
                         break;
                     }
                 case PacketTypes.DIVERTEDEVENT:
                     {
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : DIVERTEDEVENT");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : DIVERTEDEVENT");
                         MonitorStopRequestStr pkt2 = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<MonitorStopRequestStr>(ReceivedBytes2);
                         unsafe
                         {
                             string xrefId = NetworkPacketTools.BytesToString_MAX_STN_CHARNO(pkt2.XREFId);
-                            PhoneNumber pn = Globals.ExtensionManager.PhoneNumberGetByXRef(PhoneNumberManager.Int32Parse(xrefId, 0));
+                            PhoneNumber pn = Globals.ExtensionManager.PhoneNumberGetByXRef(nclient.ServerIPAndPort, PhoneNumberManager.Int32Parse(xrefId, 0));
                             if (pn != null)
                             {
                                 if (pn.GetStatus() == PhoneStatusCodes.Ringing)
@@ -510,40 +502,44 @@ namespace BLFClient.Backend
                 case PacketTypes.DBSENDCHK:
                     {
                         //OSFOURK-6654
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : DBSENDCHK");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : DBSENDCHK");
 
                         DbSendChkStr pkt2 = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<DbSendChkStr>(ReceivedBytes2);
                         ushort checksum = pkt2.Xchk;
-                        ushort ClientChecksum = Globals.persPortManager.GetChecksum();
+                        ushort ClientChecksum = Globals.persPortManager.GetChecksum(nclient.ServerIPAndPort);
                         //m_pWnd->ValidateChksum(checksum);
                         if (ClientChecksum != checksum)
                         {
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "Checksum mismatch, will request a new persport");
-                            NetworkClientBuildPacket.DBRequest((ushort)0xffff);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " Checksum mismatch, will request a new persport");
+                            if(nclient!=null)
+                                nclient.PacketBuilder.DBRequest((ushort)0xffff);
                         }
                         else
                         {
-                            Globals.persPortManager.ReParsePersportTXT();
-                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Checksum says persport is up to date");
+                            Globals.persPortManager.ReParsePersportTXT(nclient.ServerIPAndPort);
+                            Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, nclient.ServerIPAndPort + " Checksum says persport is up to date");
                         }
                         break;
                     }
                 case PacketTypes.DBCHUNK:
                     {
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : DBCHUNK");
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : DBCHUNK");
                         DbChunkHdrStr pkt2 = BLFClient.Backend.NetworkPacketTools.ByteArrayToStructure<DbChunkHdrStr>(ReceivedBytes2);
                         ushort maxChunk = pkt2.MaxChunk;
                         ushort chunk = pkt2.Chunk;
                         int HeaderSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(DbChunkHdrStr));
                         int chunkLen = pkt2.Size - HeaderSize + 2; // no idea from where that extra 2 comes from. As long as it works ...
                         //save the chunk
-                        Globals.persPortManager.SaveChunkToFile(chunk == 0, ReceivedBytes2, HeaderSize, chunkLen);
+                        Globals.persPortManager.SaveChunkToFile(chunk, ReceivedBytes2, HeaderSize, chunkLen, nclient.ServerIPAndPort);
                         //request the next chunk to be saved
                         if (chunk < maxChunk)
-                            NetworkClientBuildPacket.DBRequest(chunk);
+                        {
+                            if(nclient != null)
+                                nclient.PacketBuilder.DBRequest(chunk);
+                        }
                         else
                         {
-                            Globals.persPortManager.ReParsePersportTXT();
+                            Globals.persPortManager.ReParsePersportTXT(nclient.ServerIPAndPort);
                             Globals.Logger.LogString(LogManager.LogLevels.LogFlagInfo, "Fetched all " + maxChunk.ToString() + " chunks of passport.txt");
                         }
                         break;
@@ -551,7 +547,7 @@ namespace BLFClient.Backend
                 default:
                 {
                         // unhandled packet type
-                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "recv msg type : Unknown and unhandled, type " + pkt.Type.ToString() + " length " + pkt.Length.ToString());
+                        Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " SMSG : Unknown and unhandled, type " + pkt.Type.ToString() + " length " + pkt.Length.ToString());
                 }
                 break;
             };

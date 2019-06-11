@@ -5,22 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="BLF Server Configuration" Height="122.165" Width="221.134">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <Label Content="BLF Server IP"/>
-            <TextBox Name="ServerIP"/>
-            <Label Content="BLF server port"/>
-            <TextBox Name="ServerPort"/>
+        Title="BLF Server Configuration" Height="280" Width="410">
+    <StackPanel>
+        <DataGrid AutoGenerateColumns="False" HorizontalAlignment="Left" Name="ServerList" VerticalAlignment="Top" AlternatingRowBackground = "LightGray" AlternationCount = "2" Margin="4,4,4,4">
+            <DataGrid.Columns >
+                <DataGridTextColumn MinWidth="50" Header="Connected" Binding="{Binding Path=Connected}" IsReadOnly="True"/>
+                <DataGridCheckBoxColumn MinWidth="50" Header="Enabled" Binding="{Binding Path=Enabled}"/>
+                <DataGridTextColumn MinWidth="50" Header="IP" Binding="{Binding Path=IP}" />
+                <DataGridTextColumn MinWidth="50" Header="Port" Binding="{Binding Path=Port}" />
+                <DataGridTextColumn MinWidth="50" Header="Name" Binding="{Binding Path=Name}" />
+                <DataGridCheckBoxColumn MinWidth="20" Header="Delete" Binding="{Binding Path=Delete_}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Ok" Click="Button_Click_OK" Margin="4,4,4,4" />
+            <Button Content="Cancel" Click="Button_Click_Cancel" Margin="4,4,4,4"/>
         </StackPanel>
-        <StackPanel Grid.Column="1">
-            <Button Content="Ok" Click="Button_Click_OK"/>
-            <Button Content="Cancel" Click="Button_Click_Cancel"/>
-        </StackPanel>
-    </Grid>
-
+    </StackPanel>
 </Window>

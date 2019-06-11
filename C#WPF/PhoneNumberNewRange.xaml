@@ -5,23 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Extension range edit" Height="150" Width="300">
+        Title="Extension range edit" Height="220" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0">
+            <Label Content="Server Name"/>
+            <ComboBox Name="Servers" IsEditable="false" SelectionChanged="Servers_SelectionChanged" Margin="4,4,4,4"/>
             <Label Content="Subscriber's number"/>
-            <ComboBox Name="SubscriberExtension" IsEditable="True"/>
+            <ComboBox Name="SubscriberExtension" IsEditable="True" Margin="4,4,4,4"/>
             <TextBlock TextWrapping="WrapWithOverflow">
                 You have to enter the extension without the last number. All the subscribers with the extension beggining by your entry and ending with 0...9 will be monitorized
             </TextBlock>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <Button Content="Ok" Margin="0,10,0,10" Click="Button_Click_Ok"/>
-            <Button Content="Cancel" Margin="0,10,0,10" Click="Button_Click_Cancel"/>
-            <Button Content="_Font" Margin="0,10,0,10" Click="Button_Click_Font"/>
+            <Button Content="Ok" Margin="4,4,4,4" Click="Button_Click_Ok"/>
+            <Button Content="Cancel" Margin="4,4,4,4" Click="Button_Click_Cancel"/>
+            <Button Content="_Font" Margin="4,4,4,4" Click="Button_Click_Font"/>
         </StackPanel>
     </Grid>
 </Window>

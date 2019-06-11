@@ -8,7 +8,7 @@ namespace BLFClient.Backend
 {
     public class ServerAntiFloodManager
     {
-        const long AntiSpamIntervalMS = 1;  // avoid bursting down the server on loadup
+        const long AntiSpamIntervalMS = 0;  // avoid bursting down the server on loadup. Can put 1 for each packet to wait 1 ms before a new one is sent
         long LastPacketStamp = 0;
 
         public bool CanSendNewPacket()

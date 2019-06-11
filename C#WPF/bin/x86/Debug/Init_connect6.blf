@@ -1,0 +1,105 @@
+﻿[Options]
+BlfServerPort = 5050
+BlfServerIp = 10.111.2.12
+NumberofFonts = 1
+Optiset = YES
+OptisetExtension = 1101
+ACWin = YES
+AcWinConfigType = 3
+AbsenceManagement = YES
+Color NotExisting = 2237106
+Color Frei = 755384
+Color Ruf = 65535
+Color Außer Betrieb = 7829367
+Color Aufschalten möglich = 255
+Prefix = 1234
+BlfServerEnabled = 1
+BlfServerName = 10.111.2.12:5050
+BlfServerIp1 = 10.111.2.22
+BlfServerPort1 = 5050
+BlfServerEnabled1 = 1
+BlfServerName1 = centrala1
+
+[Folders1]
+Phone #0 = //////////////
+Name #0 = Natalia,Oreiro
+Number #0 = 1102
+Email #0 = 
+Comment #0 = 
+Position x #0 = 4
+Position y #0 = 7
+Font #0 = 0
+Phone #1 = //////////////
+Name #1 = Pista Bacsi
+Number #1 = 1103
+Email #1 = 
+Comment #1 = 
+Position x #1 = 1
+Position y #1 = 2
+Font #1 = 0
+Phone #2 = //////////////
+Name #2 = 
+Number #2 = 1107
+Email #2 = 
+Comment #2 = 
+Position x #2 = 3
+Position y #2 = 2
+Font #2 = 0
+Group #0 = //////////////
+GroupNumber #0 = 110
+GroupPosition x #0 = 2
+GroupPosition y #0 = 1
+GroupFont #0 = 0
+Phone #3 = //////////////
+Name #3 = Adiba
+Number #3 = 1101
+Email #3 = 
+Comment #3 = 
+Position x #3 = 0
+Position y #3 = 2
+Font #3 = 0
+
+[Fonts]
+Font #0 = //////////////
+Height #0 = 0
+Width #0 = 0
+Escapement #0 = 0
+Orientation #0 = 0
+Weight #0 = 1
+Italic #0 = 0
+Underline #0 = 0
+StrikeOut #0 = 0
+CharSet #0 = 0
+OutPrecision #0 = 0
+ClipPrecision #0 = 0
+Quality #0 = 0
+PitchAndFamily #0 = 0
+FaceName #0 = Microsoft Sans Serif
+Size #0 = 13.5999997456868
+
+[Windowposition]
+Left = 523
+Right = 1246
+Top = 174
+Bottom = 760
+Maximized = 0
+
+[Folders]
+Folder #0 = Geschäftsführung
+Folder #1 = äöüßÄÖÜ
+
+[AbsenceInfo]
+RefreshTime = 1
+NumCheckedDays = 1
+WorkDayStart = 08:00 AM
+WorkDayEnd = 05:00 PM
+
+[Geschäftsführung]
+Phone #0 = //////////////
+Name #0 = Ci�mpalac�l
+Number #0 = +49(62)202-2203
+Email #0 = 
+Comment #0 = 
+Position x #0 = 2
+Position y #0 = 2
+Font #0 = 0

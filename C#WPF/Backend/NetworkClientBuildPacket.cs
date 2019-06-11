@@ -8,16 +8,26 @@ namespace BLFClient.Backend
 {
     public class NetworkClientBuildPacket
     {
-
-        static bool SendMessageToSocket(object pkt) 
+        NetworkClient nclient = null;
+        public NetworkClientBuildPacket(NetworkClient pclient)
         {
-            if (Globals.ConnectionManager == null || Globals.ConnectionManager.IsConnected() == false)
+            nclient = pclient;
+        }
+        ~NetworkClientBuildPacket()
+        {
+            nclient = null;
+        }
+        bool SendMessageToSocket(object pkt) 
+        {
+            if (Globals.ConnectionManager == null || Globals.ConnectionManager.HasAnyActiveConnection() == false)
                 return false;
             Globals.AntiFloodManager.OnPacketSent(); // some of our managers shoudl be able queue up packets without flooding the server
-            return Globals.ConnectionManager.SendPacket(pkt);
+            //return Globals.ConnectionManager.SendPacket(pkt);
+            nclient.SendPacket(pkt);
+            return true;
         }
 
-        public static bool SnapshotDevice(string device)
+        public bool SnapshotDevice(string device)
         {
             SnapshotDeviceStr Msg = new SnapshotDeviceStr();
             Msg.BEG = 0xaa;
@@ -27,13 +37,13 @@ namespace BLFClient.Backend
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(device, Msg.Device); }
             if (SendMessageToSocket(Msg))
             {
-                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : SNAPSHOTDEVICE, device " + device);
+                Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : SNAPSHOTDEVICE, device " + device);
                 return true;
             }
             return false;
         }
 
-        public static bool QueryDeviceForwarding(string device)
+        public bool QueryDeviceForwarding(string device)
         {
             QueryDeviceForwardingStr Msg = new QueryDeviceForwardingStr();
             Msg.BEG = 0xaa;
@@ -41,11 +51,11 @@ namespace BLFClient.Backend
             Msg.Cmd = PacketTypes.QUERYDEVICEFORWARDING;
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(device, Msg.Device); }
             Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : QUERYDEVICEFORWARDING, device " + device);
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : QUERYDEVICEFORWARDING, device " + device);
             return SendMessageToSocket(Msg);
         }
 
-        public static bool MonitorStart(string device)
+        public bool MonitorStart(string device)
         {
             MonitorStartStr Msg = new MonitorStartStr();
             Msg.BEG = 0xaa;
@@ -53,11 +63,11 @@ namespace BLFClient.Backend
             Msg.Cmd = PacketTypes.MONITORSTART;
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(device, Msg.Device); }
             Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : MONITORSTART, device " + device);
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : MONITORSTART, device " + device);
             return SendMessageToSocket(Msg);
         }
 
-        public static bool MonitorStop(string xrefId)
+        public bool MonitorStop(string xrefId)
         {
             MonitorStopStr Msg = new MonitorStopStr();
             Msg.BEG = 0xaa;
@@ -65,11 +75,11 @@ namespace BLFClient.Backend
             Msg.Cmd = PacketTypes.MONITORSTOP;
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(xrefId, Msg.XrefId); }
             Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : MONITORSTOP, xrefid " + xrefId);
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : MONITORSTOP, xrefid " + xrefId);
             return SendMessageToSocket(Msg);
         }
 
-        public static bool SetFeatureForwarding(string device, string fwd_dn, short type, short shOn)
+        public bool SetFeatureForwarding(string device, string fwd_dn, short type, short shOn)
         {
             SetFeatureForwardingStr Msg = new SetFeatureForwardingStr();
             Msg.BEG = 0xaa;
@@ -80,11 +90,11 @@ namespace BLFClient.Backend
             Msg.Type = type;
 	        Msg.ShOn = shOn;
 	        Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : SETFEATUREFORWARDING, device " +device + " fwd_dn " + fwd_dn + " type "+ type.ToString() + " shon "+ shOn.ToString());
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : SETFEATUREFORWARDING, device " +device + " fwd_dn " + fwd_dn + " type "+ type.ToString() + " shon "+ shOn.ToString());
             return SendMessageToSocket(Msg);
         }
 
-        public static bool ConsultationCall(string held_device_id, string called_device_id, string held_call_id, string pvt_uu_data, short pvt_uu_data_len)
+        public bool ConsultationCall(string held_device_id, string called_device_id, string held_call_id, string pvt_uu_data, short pvt_uu_data_len)
         {
             ConsultationCallStr Msg = new ConsultationCallStr();
             Msg.BEG = 0xaa;
@@ -96,11 +106,11 @@ namespace BLFClient.Backend
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(pvt_uu_data, Msg.Pvt_uu_data); }
             Msg.Pvt_uu_data_len = pvt_uu_data_len;
         	Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : CONSULTATIONCALL, held_device_id " + held_device_id + " called_device_id " + called_device_id + " Held_called_id " + held_call_id + " pvt_uu_data " + pvt_uu_data);
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : CONSULTATIONCALL, held_device_id " + held_device_id + " called_device_id " + called_device_id + " Held_called_id " + held_call_id + " pvt_uu_data " + pvt_uu_data);
             return SendMessageToSocket(Msg);
         }
 
-        public static bool TransferCall(string held_device_id, string active_device_id, string held_call_id, string active_call_id)
+        public bool TransferCall(string held_device_id, string active_device_id, string held_call_id, string active_call_id)
         {
             TransferCallStr Msg = new TransferCallStr();
             Msg.BEG = 0xaa;
@@ -111,11 +121,11 @@ namespace BLFClient.Backend
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(held_call_id, Msg.Held_call_id); }
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(active_call_id, Msg.Active_call_id); }
             Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : TRANSFERCALL, held_device_id " + held_device_id + " active_device_id "+ active_device_id + " held_call_id "+ held_call_id + " active_call_id "+ active_call_id);
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : TRANSFERCALL, held_device_id " + held_device_id + " active_device_id "+ active_device_id + " held_call_id "+ held_call_id + " active_call_id "+ active_call_id);
             return SendMessageToSocket(Msg);
         }
 
-         public static bool SingleStepTransfer(string active_call_id, string active_device_id, string transfered_to_device_id, string pvt_uu_data, short pvt_uu_data_len)
+         public bool SingleStepTransfer(string active_call_id, string active_device_id, string transfered_to_device_id, string pvt_uu_data, short pvt_uu_data_len)
         {
             SingleStepTransferStr Msg = new SingleStepTransferStr();
             Msg.BEG = 0xaa;
@@ -127,11 +137,11 @@ namespace BLFClient.Backend
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(pvt_uu_data, Msg.Pvt_uu_data); }
             Msg.Pvt_uu_data_len = pvt_uu_data_len;
 	        Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : SINGLESTEPTRANSFER, active_call_id " + active_call_id.ToString() + " active_device_id "+ active_device_id.ToString() + " transfer_to_device_id "+ transfered_to_device_id.ToString() + " pvt_uu_data " + pvt_uu_data);
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : SINGLESTEPTRANSFER, active_call_id " + active_call_id.ToString() + " active_device_id "+ active_device_id.ToString() + " transfer_to_device_id "+ transfered_to_device_id.ToString() + " pvt_uu_data " + pvt_uu_data);
             return SendMessageToSocket(Msg);
         }
 
-        public static bool MakeCall(string calling_device, string called_directory_number, short shPrompt)
+        public bool MakeCall(string calling_device, string called_directory_number, short shPrompt)
         {
             MakeCallStr Msg = new MakeCallStr();
             Msg.BEG = 0xaa;
@@ -141,34 +151,34 @@ namespace BLFClient.Backend
             unsafe { NetworkPacketTools.StrinToBytes_MAX_STN_CHARNO(called_directory_number, Msg.Called_directory_number); }
             Msg.ShPrompt = shPrompt;
 	        Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : MAKECALL, device " + calling_device.ToString() + " dir number " + called_directory_number.ToString() + " shpromt " + shPrompt.ToString());
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : MAKECALL, device " + calling_device.ToString() + " dir number " + called_directory_number.ToString() + " shpromt " + shPrompt.ToString());
             return SendMessageToSocket(Msg);
         }
 
         //OSFOURK-6654
-        public static bool DbChecksumRequest()
+        public bool DbChecksumRequest()
         {
             DbGetChkRequestStr Msg = new DbGetChkRequestStr();
             Msg.BEG = 0xaa;
             Msg.Size = (short)(System.Runtime.InteropServices.Marshal.SizeOf(Msg) - NetworkPacketTools.PCK_HDR_TRM_LEN());
             Msg.Cmd = PacketTypes.DBGET_CHK_REQUEST;
         	Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : DBGET_CHK_REQUEST");
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : DBGET_CHK_REQUEST");
             return SendMessageToSocket(Msg);
         }
         //OSFOURK-8927
-        public static bool ReqSystemStatus()
+        public bool ReqSystemStatus()
         {
             ReqSystemSatusStr Msg = new ReqSystemSatusStr();
             Msg.BEG = 0xaa;
             Msg.Size = (short)(System.Runtime.InteropServices.Marshal.SizeOf(Msg) - NetworkPacketTools.PCK_HDR_TRM_LEN());
             Msg.Cmd = PacketTypes.REQSYSTEMSTATUS;
         	Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : REQSYSTEMSTATUS");
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : REQSYSTEMSTATUS");
             return SendMessageToSocket(Msg);
         }
 
-        public static bool AliveTest(long newState)
+        public bool AliveTest(long newState)
         {
             AliveTestStr Msg = new AliveTestStr();
             Msg.BEG = 0xaa;
@@ -176,11 +186,11 @@ namespace BLFClient.Backend
             Msg.Cmd = PacketTypes.ALIVETEST;
 	        Msg.NewState = newState;
 	        Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : ALIVETEST, new state " + newState.ToString());
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : ALIVETEST, new state " + newState.ToString());
             return SendMessageToSocket(Msg);
         }
 
-        public static bool DBRequest(ushort chunk)
+        public bool DBRequest(ushort chunk)
         {
             DbSendAckStr Msg = new DbSendAckStr();
             Msg.BEG = 0xaa;
@@ -188,7 +198,7 @@ namespace BLFClient.Backend
             Msg.Cmd = PacketTypes.DBSEND_ACK;
         	Msg.Chunk = chunk; 
         	Msg.END = 0x55;
-            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, "send msg type : DBSEND_ACK, chunk " + chunk.ToString());
+            Globals.Logger.LogString(LogManager.LogLevels.LogFlagNetwork, nclient.ServerIPAndPort + " CMSG : DBSEND_ACK, chunk " + chunk.ToString());
             return SendMessageToSocket(Msg);
         }
     }

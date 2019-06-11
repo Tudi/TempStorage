@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BLFClient"
         mc:Ignorable="d"
-        Title="Index card name" Height="90" Width="300">
+        Title="Index card name" Height="100" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -16,8 +16,8 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="0" Content="Name:" VerticalAlignment="Bottom"/>
-        <TextBox Grid.Row="1" Grid.Column="0" Name="IndexCardNewName" Height="20"/>
-        <Button Grid.Row="0" Grid.Column="1" Content="Ok" Click="Button_AcceptRename" Height="20"/>
-        <Button Grid.Row="1" Grid.Column="1" Content="Cancel" Click="Button_DiscardRename" Height="20"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Name="IndexCardNewName" Height="20" Margin="4,4,4,4"/>
+        <Button Content="Ok" Click="Button_AcceptRename" Margin="4,4,4,4" Grid.Row="0" Grid.Column="1"/>
+        <Button Content="Cancel" Click="Button_DiscardRename" Margin="4,4,4,4" Grid.Row="1" Grid.Column="1"/>
     </Grid>
 </Window>

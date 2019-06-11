@@ -43,7 +43,7 @@ namespace BLFClient.Backend
             if (Monitor.TryEnter(this))
             {
                 //get the monitored extension
-                PhoneNumber pn = Globals.ExtensionManager.PhoneNumberGetFirst(PrevMonitoredExtension);
+                PhoneNumber pn = Globals.ExtensionManager.PhoneNumberGetFirst(null, null, PrevMonitoredExtension);
                 //check if status changed
                 if(pn != null && pn.GetStatus() != PhoneStatus)
                 {
@@ -91,7 +91,7 @@ namespace BLFClient.Backend
                         FullNumber = FullNumber + BytesReceived[i];
                     }
                     //create a dummy ( invisible ) phone number to monitor and update status of it
-                    Globals.ExtensionManager.CreatePhantomExtension(FullNumber);
+                    Globals.ExtensionManager.CreatePhantomExtension(null, null, FullNumber);
                     //remmber what we should not monitor next time
                     PrevMonitoredExtension = FullNumber;
                     PhoneStatus = PhoneStatusCodes.PHONE_EXTERNAL; // invalid status
