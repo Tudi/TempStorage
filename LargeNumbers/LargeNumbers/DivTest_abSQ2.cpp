@@ -1,61 +1,57 @@
 #include "StdAfx.h"
 
-int CheckCandidateMatch_abSQ( LargeNumber *tN, LargeNumber **vLN, int Params, int pos, LargeNumber *TempRes1, LargeNumber *TempRes2 )
+LargeNumber m9;
+LargeNumber six, two;
+LargeNumber SQRTN2;
+
+
+int CheckCandidateMatch_abSQ2(LargeNumber *tN, LargeNumber **vLN, int Params, int pos, LargeNumber *TempRes1, LargeNumber *TempRes2)
 {
-    // b * b - a * a = N
-    // b * b = N + a * a
-    if( vLN[0]->Len > ( tN->Len + 1 ) / 2 || vLN[1]->Len > ( tN->Len + 1 ) / 2 )
-        return 0;
+	// Len(a) <= Len(N) / 2		Len(b) <= ( Len(N) + 1 ) / 2
+	if (vLN[0]->Len > (tN->Len + 1) / 2 || vLN[1]->Len > (tN->Len + 1) / 2)
+		return 0;
 
-    LargeNumber aa;
-    MulLN( vLN[1], vLN[1], TempRes1 );
-    
-    MulLN( vLN[0], vLN[0], &aa );
-    
-    AddLN( tN, &aa, TempRes2 );
+	// a = 3 + x	b = SQN + y
+	// for any already tested a * a we can also write : a * a + 2 * x * a + x * x + m = 2 * SQN * y + y * y
+	// simplified version is : a * a + 2 * x * a + x * x + N = b * b
+	// if ( a = ( B - A ) / 2 ) and a > 3 than : 9 + 6 * x + m = 2 * SQN * y + y * y
+	LargeNumber x6;
+	MulLN(vLN[0], &six, &x6);
+	LargeNumber xx;
+	MulLN(vLN[0], vLN[0], &xx);
+	LargeNumber m9x6;
+	AddLN(&m9, &x6, &m9x6);
+	AddLN(&xx, &m9x6, TempRes1);
 
-//    EatLeadingZeros( TempRes1 );
-//    EatLeadingZeros( TempRes2 );
-    for( int i = 0; i <= pos; i++ )
-        if( TempRes1->Digits[i] != TempRes2->Digits[i] )
-            return 0;
+	LargeNumber y2srtn;
+	MulLN(vLN[1], &SQRTN2, &y2srtn);
 
-	//funny because these are not required at all
-	{
-		// A = b - a	B = b + a		A * B = N
-		LargeNumber B;
-		LargeNumber A;
-		AddLN(vLN[0], vLN[1], &B);
-		SubLN(vLN[1], vLN[0], &A);
-		LargeNumber tn;
-		MulLN(&A, &B, &tn);
-		for (int i = 0; i <= pos; i++)
-			if (tN->Digits[i] != tn.Digits[i])
-				return 0;
+	LargeNumber yy;
+	MulLN(vLN[1], vLN[1], &yy);
+	AddLN(&y2srtn, &yy, TempRes2);
 
-		// 2 * b = A + B
-		LargeNumber b2;
-		LargeNumber ApB;
-		AddLN(vLN[1], vLN[1], &b2);
-		AddLN(&A, &B, &ApB);
-		for (int i = 0; i <= pos; i++)
-			if (b2.Digits[i] != ApB.Digits[i])
-				return 0;
+	for (int i = 0; i <= pos; i++)
+		if (TempRes1->Digits[i] != TempRes2->Digits[i])
+			return 0;
 
-		// 2 * a = B - A
-		LargeNumber a2;
-		LargeNumber BmA;
-		AddLN(vLN[0], vLN[0], &a2);
-		SubLN(&B, &A, &BmA);
-		for (int i = 0; i <= pos; i++)
-			if (a2.Digits[i] != BmA.Digits[i])
-				return 0;
-	}
-
-    return 1;
+	// a = 3 + x	b = SQN + y
+	// A = a - b	B = a + b
+	return 1;
 }
 
-void DivTest_abSQ( int iA, int iB)
+int CheckSolution2(LargeNumber &TempRes1, LargeNumber &TempRes2)
+{
+	EatLeadingZeros(TempRes1);
+	EatLeadingZeros(TempRes2);
+	if (TempRes1.Len != TempRes2.Len)
+		return 0;
+	for (int i = 0; i <= TempRes1.Len; i++)
+		if (TempRes1.Digits[i] != TempRes2.Digits[i])
+			return 0;
+	return 1;
+}
+
+void DivTest_abSQ2( int iA, int iB)
 {
     // ( a - b ) * ( a + b ) = N
     // a * a - b * b = N	
@@ -64,20 +60,30 @@ void DivTest_abSQ( int iA, int iB)
     SetLN( N, iN ); 
 	int ia = (iB - iA) / 2;
 	int ib = (iA + iB) / 2;
-    printf("Expecting solution a = %d, b = %d. N = %d, SQRT(N) = %d. Bruteforce trycount %d\n", ia, ib, iN, isqrt( iN ), isqrt( iN ) / 2 );
+	int iSQRTN = isqrt(iN);
+	int im = iA * iB - iSQRTN * iSQRTN;
+    printf("Expecting solution a = %d, b = %d. N = %d, SQRT(N) = %d. Bruteforce trycount %d\n", ia, ib, iN, iSQRTN, isqrt( iN ) / 2 );
 
     LargeNumber a, b;
+	LargeNumber EndSignal;
 
-    LargeNumber EndSignal;
 #define ParamCount 3
     LargeNumber *vLN[ParamCount];
     vLN[0] = &a;
     vLN[1] = &b;
-    vLN[2] = &EndSignal;
+	vLN[2] = &EndSignal;
 
     for( int i = 0; i < ParamCount; i++ )
         SetLN( vLN[i], 0 );
     InitLN( vLN[ ParamCount - 1 ] );
+
+	SetLN(&m9, im + 9);
+	SetLN(&six, 6);
+	SetLN(&two, 2);
+	SetLN(&SQRTN2, iSQRTN * 2);
+
+//	SetLN(&a, 198);
+//	SetLN(&b, 39);
 
     //start generating combinations and check if it's a feasable candidate
     int AtPos = 0;
@@ -92,14 +98,10 @@ void DivTest_abSQ( int iA, int iB)
         int GenNextCandidate = 0;
         StepsTaken++;
 #ifdef _DEBUG
-        /*
-        SetLN( a, ia );
-        SetLN( b, ib );
-        /**/
         for( int i = 0; i < ParamCount - 1; i++ )
             DEBUG_Combinations_generated[i][ ToIntLN(vLN[i]) % 100 ] = 1;
 #endif
-        int Match = CheckCandidateMatch_abSQ( &N, vLN, ParamCount, AtPos, &TempRes1, &TempRes2 );
+		int Match = CheckCandidateMatch_abSQ2(&N, vLN, ParamCount, AtPos, &TempRes1, &TempRes2);
         if( Match == 1 )
         {
             CandidatesFound++;
@@ -108,7 +110,7 @@ void DivTest_abSQ( int iA, int iB)
                 int chars[4]={'\\','|','/','-'};
                 printf("\r%c", chars[ ( CandidatesFound / 100 ) % 4 ] );
             }
-            int SolutionFound = CheckSolution( TempRes1, TempRes2 ); 
+            int SolutionFound = CheckSolution2( TempRes1, TempRes2 ); 
             if( SolutionFound == 1 )
             {
                 SolutionsFound++;
@@ -152,12 +154,12 @@ void DivTest_abSQ( int iA, int iB)
 #endif
 }
 
-void DivTestabSQ()
+void DivTestabSQ2()
 {
-    // 108k
-    DivTest_abSQ( 349, 751 ); // N = 262099 SN = 511
-    // 938k
-    DivTest_abSQ( 6871, 7673 ); // N = 52721183 , SN = 7260
+    // 121k
+    DivTest_abSQ2( 349, 751 ); // N = 262099 SN = 511
+    // 918k
+    DivTest_abSQ2( 6871, 7673 ); // N = 52721183 , SN = 7260
     // 9M tries
-    DivTest_abSQ( 26729, 31793 ); // N = 849795097 , SN = 29151
+    DivTest_abSQ2( 26729, 31793 ); // N = 849795097 , SN = 29151
 }

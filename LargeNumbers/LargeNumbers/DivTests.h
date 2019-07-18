@@ -16,4 +16,5 @@ void DivTestRecDiv();
 void DivTestDecrement();
 void DivTestabSQ();
 void DivTest_xytn();
-void DivTest_xytn2();
+void DivTestabSQ2();
+void DivTestLineDraw();

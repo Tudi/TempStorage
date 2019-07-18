@@ -28,8 +28,10 @@ void NormalizeLN( LargeNumber *N, int Start = 0 );
 void NormalizeLN( LargeNumber &N, int Start = 0 );
 void AddLN( LargeNumber *A, LargeNumber *B, LargeNumber *C );
 void AddLN( LargeNumber &A, LargeNumber &B, LargeNumber &C );
+//void AddLN(LargeNumber *A, int B, LargeNumber *C);
 void MulLN( LargeNumber *A, LargeNumber *B, LargeNumber *C );
 void MulLN( LargeNumber &A, LargeNumber &B, LargeNumber &C );
+//void MulLN( LargeNumber *A, int B, LargeNumber *C);
 void ToIntLN( LargeNumber *N, int *n );
 void ToIntLN( LargeNumber &N, int &n );
 int ToIntLN( LargeNumber *N );
@@ -39,6 +41,7 @@ void HalfLN( LargeNumber *N );
 void HalfLN( LargeNumber &N );
 void SubLN( LargeNumber *N, int n );
 void SubLN( LargeNumber &N, int n );
+void SubLN(LargeNumber *A, LargeNumber *B, LargeNumber *C);
 
 void EatLeadingZeros( LargeNumber *N );
 void EatLeadingZeros( LargeNumber &N );

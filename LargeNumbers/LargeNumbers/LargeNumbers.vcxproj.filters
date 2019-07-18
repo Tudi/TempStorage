@@ -63,7 +63,10 @@
     <ClCompile Include="DivTest_xytn.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
-    <ClCompile Include="DivTest_xytn2.cpp">
+    <ClCompile Include="DivTest_abSQ2.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_LineDraw.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
   </ItemGroup>

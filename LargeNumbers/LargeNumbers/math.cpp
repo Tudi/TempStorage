@@ -53,6 +53,16 @@ void AddLN( LargeNumber *A, LargeNumber *B, LargeNumber *C )
 }
 void AddLN( LargeNumber &A, LargeNumber &B, LargeNumber &C ) { AddLN( &A, &B, &C ); }
 
+void AddLN(LargeNumber *A, int B, LargeNumber *C)
+{
+	InitLN(C);
+	C->Digits[0] = A->Digits[0] + B;
+	for (int la = 1; la < A->Len; la++)
+		C->Digits[la] = A->Digits[la];
+	C->Len = A->Len;
+	NormalizeLN(C);
+}
+
 void MulLN( LargeNumber *A, LargeNumber *B, LargeNumber *C )
 {
     InitLN( C );
@@ -66,6 +76,19 @@ void MulLN( LargeNumber *A, LargeNumber *B, LargeNumber *C )
     C->Len = MAX( C->Len, A->Len + B->Len - 1 );
 }
 void MulLN( LargeNumber &A, LargeNumber &B, LargeNumber &C ) { MulLN( &A, &B, &C ); }
+
+void MulLN(LargeNumber *A, int B, LargeNumber *C)
+{
+	InitLN(C);
+	for (int la = 0; la < A->Len; la++)
+	{
+		C->Digits[la] += A->Digits[la] * B;
+		C->Len = la + 1;
+		NormalizeLN(C, la);
+	}
+	EatLeadingZeros(C);
+	NormalizeLN(C);
+}
 
 void ToIntLN( LargeNumber *N, int *n )
 {
@@ -164,4 +187,24 @@ int IsLarger(LargeNumber *Larger, LargeNumber *Smaller)
 			return 0;
 	}
 	return 0;
+}
+
+// DOES NOT SUPPORT NEGATIVE NUMBERS !
+//C = A - B
+void SubLN(LargeNumber *A, LargeNumber *B, LargeNumber *C)
+{
+	InitLN(C);
+	int MaxLen = MAX(A->Len, B->Len);
+	for (int i = 0; i < B->Len; i++)
+	{
+		C->Digits[i] += A->Digits[i] - B->Digits[i];
+		while (C->Digits[i] < 0)
+		{
+			C->Digits[i + 1]--;
+			C->Digits[i] += 10;
+		}
+	}
+	C->Len = B->Len;
+	for (int i = C->Len; i < MAX_DIGIT_COUNT && C->Digits[i] != 0; i++)
+		C->Digits[i] = 0;
 }
