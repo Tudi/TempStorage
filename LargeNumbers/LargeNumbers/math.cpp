@@ -159,9 +159,9 @@ void PrintLN( LargeNumber *N, int EndPos )
 }
 void PrintLN( LargeNumber &N, int EndPos ) { PrintLN( &N, EndPos ); }
 
-int isqrt(int n)
+unsigned int isqrt(__int64 n)
 {
-  int b = 0;
+	unsigned int b = 0;
 
   while(n >= 0)
   {
@@ -171,6 +171,81 @@ int isqrt(int n)
   }
 
   return b - 1;
+}
+
+__int64 isqrt2(__int64 n)
+{
+	if (n < 2)
+		return n; //0^2 = 0, 1^2 = 1
+	__int64 i = 1; // len(i) = len(n) / 2
+
+	while (n > i * i)
+		i++;
+
+	return i - 1;
+}
+
+__int64 isqrt3(__int64 n)
+{
+	if (n < 2)
+		return n; //0^2 = 0, 1^2 = 1
+
+	// len(res) = len(n) / 2		with rounddown sqrt(16) = 4^2
+	__int64 RoughSquare = 0;
+	for (int i = 64; i > 2; i--)
+	{
+		__int64 Mask = (__int64)1 << (__int64)i;
+		if (n & Mask)
+		{
+			RoughSquare = n >> (i / 2 + 1);
+			break;
+		}
+	}
+
+	while (n >= RoughSquare * RoughSquare)
+		RoughSquare++;
+
+	return RoughSquare - 1;
+}
+
+__int64 isqrt4(__int64 n)
+{
+	if (n < 0)
+		return 0;
+
+	if (n < 2)
+		return n; //0^2 = 0, 1^2 = 1
+
+	// len(res) = len(n) / 2		with rounddown sqrt(16) = 4^2
+	__int64 RoughSquare;
+	for (int i = 64; i > 0; i--)
+	{
+		__int64 Mask = (__int64)1 << (__int64)i;
+		if (n & Mask)
+		{
+			RoughSquare = n >> (i / 2 + 1);
+			break;
+			//			RoughSquare += ((__int64)1 << (i / 2 - 1));
+		}
+	}
+
+	__int64 Increase = RoughSquare / 2;
+
+	while (Increase > 1)
+	{
+		if (n < (RoughSquare + Increase) * (RoughSquare + Increase))
+			Increase = Increase / 2;
+		else
+		{
+			RoughSquare += Increase;
+			Increase = Increase / 2;
+		}
+	}
+
+	while (n >= RoughSquare * RoughSquare)
+		RoughSquare++;
+
+	return RoughSquare - 1;
 }
 
 int IsLarger(LargeNumber *Larger, LargeNumber *Smaller)

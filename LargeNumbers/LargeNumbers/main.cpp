@@ -16,7 +16,8 @@ void main()
 //	DivTestabSQ2();
 	//	  DivTest_xytn();
 //	DivTest_xytn2();
-	DivTestLineDraw();
+//	DivTestLineDraw();
+	DivTestLineDraw2();
 
     printf("All done\n");
 }

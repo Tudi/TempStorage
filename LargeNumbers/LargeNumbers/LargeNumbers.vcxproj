@@ -88,6 +88,7 @@
     <ClCompile Include="DivTest_Decrement.cpp" />
     <ClCompile Include="DivTest_edef.cpp" />
     <ClCompile Include="DivTest_LineDraw.cpp" />
+    <ClCompile Include="DivTest_LineDraw2.cpp" />
     <ClCompile Include="DivTest_recDiv.cpp" />
     <ClCompile Include="DivTest_SQNM.cpp" />
     <ClCompile Include="DivTest_xytn.cpp" />

@@ -49,5 +49,8 @@ void EatLeadingZeros( LargeNumber &N );
 void PrintLN( LargeNumber *N, int EndPos = -1 );
 void PrintLN( LargeNumber &N, int EndPos = -1 );
 
-int isqrt(int n);
+unsigned int isqrt(__int64 n);
+__int64 isqrt2(__int64 n);
+__int64 isqrt3(__int64 n);
+__int64 isqrt4(__int64 n);
 int IsLarger(LargeNumber *Larger, LargeNumber *Smaller);

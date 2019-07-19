@@ -18,3 +18,4 @@ void DivTestabSQ();
 void DivTest_xytn();
 void DivTestabSQ2();
 void DivTestLineDraw();
+void DivTestLineDraw2();
