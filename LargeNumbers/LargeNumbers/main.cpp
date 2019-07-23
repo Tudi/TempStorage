@@ -14,10 +14,12 @@ void main()
 //    DivTestDecrement();
 //    DivTestabSQ();
 //	DivTestabSQ2();
-	//	  DivTest_xytn();
+//	DivTest_xytn();
 //	DivTest_xytn2();
-//	DivTestLineDraw();
-	DivTestLineDraw2();
+	DivTestLineDraw();
+//	DivTestLineDraw2();
+//	DivTestaaToN();
+//	DivTestLineDraw3();
 
     printf("All done\n");
 }

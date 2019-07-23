@@ -81,6 +81,7 @@
     <ClCompile Include="DivTest_6parts.cpp" />
     <ClCompile Include="DivTest_99ab.cpp" />
     <ClCompile Include="DivTest_99_11ab.cpp" />
+    <ClCompile Include="DivTest_aaToN.cpp" />
     <ClCompile Include="DivTest_ab.cpp" />
     <ClCompile Include="DivTest_abc.cpp" />
     <ClCompile Include="DivTest_abSQ.cpp" />
@@ -89,6 +90,8 @@
     <ClCompile Include="DivTest_edef.cpp" />
     <ClCompile Include="DivTest_LineDraw.cpp" />
     <ClCompile Include="DivTest_LineDraw2.cpp" />
+    <ClCompile Include="DivTest_LineDraw3.cpp" />
+    <ClCompile Include="DivTest_Multiply.cpp" />
     <ClCompile Include="DivTest_recDiv.cpp" />
     <ClCompile Include="DivTest_SQNM.cpp" />
     <ClCompile Include="DivTest_xytn.cpp" />

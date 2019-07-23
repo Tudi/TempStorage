@@ -72,6 +72,15 @@
     <ClCompile Include="DivTest_LineDraw2.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_aaToN.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_LineDraw3.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_Multiply.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">

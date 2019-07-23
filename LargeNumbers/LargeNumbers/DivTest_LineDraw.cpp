@@ -16,53 +16,66 @@ namespace LineDraw
 
 	int CheckCandidateMatch_LineDraw()
 	{
-		// a / b < 2	:	 x * b - x * ( a - x ) + m = y * ( a - x )
-		// a / b < 3	:	 x * b - z * x * ( a - x ) + m = y * ( a - x )
+		// x * ( b - ( a - x ) ) + m = ( z - 1 + y ) * ( a - x )
 
-		// x * b - z * ( x + y ) * ( a - x ) + m - a + x = 0
-		// z * x * x + x * ( b - z * a + y * z + 1 ) + m - a * (z * y + 1) = 0
-		// z * x * x + x * ( b - z * a + y * z + 1 ) + m - a * (z * y + 1) = 0
 		// we are searching for an X by guessing the Y. z = b / a
-		// At the end a = A		A = a - x	B = b + x + y.....
+		// At the end a = A		A = a - x	B = b + x * z + y.....
 		// a and b can start off from a = sqrt(N) b = N / sqrt(N)
+		// !! conclusion : using Z does not bring a benefit ! Maybe Z can be integrated into the formula directly into y ?
+		// todo : test y = y + z
+		// same as saying x * b = y * ( a - x ) .....		x * ( b + y ) - a * y + m = 0		and y can be z + 1, 2 * z + 2
 
-		__int64 sa = z;
-		__int64 sb = (b - z * a + y);
-		__int64 sc = m - y * a;
-		__int64 x = (-sb + isqrt4(sb * sb - 4 * sa * sc)) / 2; // this is the increase on a side and not b
-		x = x / z;
+		__int64 x;
+		__int64 sa = 1;
+		__int64 sb = (b - a + z - 1 + y);
+		__int64 sc = m - z * a + a - y * a;
+		x = (-sb + isqrtNegative(sb * sb - 4 * sa * sc)) / 2; // this is the increase on a side and not b
 
-		__int64 tB = b + x + y;
-		__int64 tA = a - x;
-		__int64 tN = tA * tB;
+		//check back. since the remaining value does not increase liniarly
+		__int64 mx = m + x * (b - (a - x)); // we are expecting this to be y * ( a - x )
+		__int64 yax = (z - 1 + y) * (a - x);
 
-		if (x == ExpectedX || tN == N)
+		__int64 mxp = m + (x + 1)* (b - (a - (x + 1))); // we are expecting this to be y * ( a - x )
+		__int64 yaxp = (z - 1 + y) * (a - (x + 1));
+
+		assert(mx <= yax && mxp > yaxp);
+
+		if (x > 0 && x < a)
 		{
-			//			printf("Found solution : %lld \n", x);
-			return 1;
-		}
+			__int64 tB = b + z * x + y;
+			__int64 tA = a - x;
+			__int64 tN = tA * tB;
 
-		__int64 CurZ = tB / tA;
-		if (CurZ != z)
-		{
-			//should remake the calculations now based on	N = a * CurZ * a
-			// !!!! only valid if we can generate a valid A and B with the Z increments !
-			// if the new b is pair, than we should increase
-			__int64 iSN = isqrt(N / CurZ);
-			a = iSN;
-			b = N / a;
-			m = N - a * b;
-			z = b / a;
-			ExpectedX = a - A;
-			ExpectedY = B - b - z * ExpectedX; // we will remove more rows. we will go below the intended row count by the number of rows filled with the reminder
-			printf("New x=%lld y=%lld\n", ExpectedX, ExpectedY);
-			y = 1;
-//			PrevX = 0;
-			return 0;
+			if (x == ExpectedX || tN == N)
+			{
+				//			printf("Found solution : %lld \n", x);
+				return 1;
+			}
+
+			//		__int64 CurZ = ( b + z * x + y ) / ( a - x );
+			__int64 CurZ = tB / tA;
+			if (CurZ > z && CurZ < A)
+			{
+				//should remake the calculations now based on	N = a * CurZ * a
+				// !!!! only valid if we can generate a valid A and B with the Z increments !
+				// if the new b is pair, than we should increase
+				__int64 iSN = isqrt(N / CurZ);
+				a = iSN;
+				b = N / a;
+				m = N - a * b;
+				z = b / a; // must be a whole number. No subdivisions
+				ExpectedX = a - A;
+				ExpectedY = B - b - z * ExpectedX; // we will remove more rows. we will go below the intended row count by the number of rows filled with the reminder
+//				printf("New expected x=%lld y=%lld\n", ExpectedX, ExpectedY);
+				y = ( z - 1) + 1;
+//				y = 1;
+				return 0;
+			}/**/
 		}
 
 		//failed to calculate a valid x, try a new value
-		y++;
+//		y++;
+		y += z;
 
 		return 0;
 	}
@@ -111,7 +124,7 @@ namespace LineDraw
 
 void DivTestLineDraw()
 {
-	//	LineDraw::DivTest_LineDraw(7, 127);
+	LineDraw::DivTest_LineDraw(7, 127);
 	// 108k
 	LineDraw::DivTest_LineDraw(349, 751); // N = 262099 SN = 511
 	// 938k

@@ -19,3 +19,5 @@ void DivTest_xytn();
 void DivTestabSQ2();
 void DivTestLineDraw();
 void DivTestLineDraw2();
+void DivTestaaToN();
+void DivTestLineDraw3();

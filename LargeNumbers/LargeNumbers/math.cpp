@@ -7,7 +7,7 @@ void InitLN( LargeNumber *N )
 }
 void InitLN( LargeNumber &N ) {    InitLN( &N ); }
 
-void SetLN( LargeNumber *N, int n )
+void SetLN( LargeNumber *N, __int64 n )
 {
     InitLN( N );
     while( n > 0 )
@@ -16,7 +16,7 @@ void SetLN( LargeNumber *N, int n )
         n = n / USE_BASE;
     }
 }
-void SetLN( LargeNumber &N, int n ) { SetLN( &N, n ); }
+void SetLN( LargeNumber &N, __int64 n ) { SetLN( &N, n ); }
 
 void NormalizeLN( LargeNumber *N, int Start )
 {
@@ -246,6 +246,13 @@ __int64 isqrt4(__int64 n)
 		RoughSquare++;
 
 	return RoughSquare - 1;
+}
+
+__int64 isqrtNegative(__int64 n)
+{
+	if (n < 0)
+		return -isqrt4(-n);
+	return isqrt4(n);
 }
 
 int IsLarger(LargeNumber *Larger, LargeNumber *Smaller)

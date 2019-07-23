@@ -22,8 +22,8 @@ struct LargeNumber
 
 void InitLN( LargeNumber *N );
 void InitLN( LargeNumber &N );
-void SetLN( LargeNumber *N, int n );
-void SetLN( LargeNumber &N, int n );
+void SetLN( LargeNumber *N, __int64 n );
+void SetLN( LargeNumber &N, __int64 n );
 void NormalizeLN( LargeNumber *N, int Start = 0 );
 void NormalizeLN( LargeNumber &N, int Start = 0 );
 void AddLN( LargeNumber *A, LargeNumber *B, LargeNumber *C );
@@ -53,4 +53,5 @@ unsigned int isqrt(__int64 n);
 __int64 isqrt2(__int64 n);
 __int64 isqrt3(__int64 n);
 __int64 isqrt4(__int64 n);
+__int64 isqrtNegative(__int64 n);
 int IsLarger(LargeNumber *Larger, LargeNumber *Smaller);
