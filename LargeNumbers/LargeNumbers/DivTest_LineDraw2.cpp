@@ -95,7 +95,7 @@ namespace LineDraw2
 		w = 0;
 		ExpectedX = ( iB - b ) / z; // we keep adding columns to b until we reach B
 		ExpectedY = iA - (a - z * ExpectedX); // we will remove more rows. we will go below the intended row count by the number of rows filled with the reminder
-		printf("Expecting solution x=%lld y=%lld. N = %lld, SQRT(N) = %lld. Bruteforce steps %lld\n", ExpectedX, ExpectedY, N, iSN, iSN / 2);
+		printf("Expecting solution x=%lld y=%lld. N = %lld, SQRT(N) = %lld. Bruteforce steps %lld\n", ExpectedX, ExpectedY, N, iSN, (iSN - A) / 2);
 
 		//start generating combinations and check if it's a feasable candidate
 		int AtPos = 0;

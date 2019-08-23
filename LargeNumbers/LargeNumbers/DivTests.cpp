@@ -34,3 +34,39 @@ void ResetCandidateAtPos( LargeNumber **vLN, int ParamCount, int pos, int Forwar
         vLN[i]->Digits[ pos ] = 0;
     }
 }
+
+int GetBitCount(__int64 Nr)
+{
+	int ret = 0;
+	while (Nr > 0)
+	{
+		ret++;
+		Nr = Nr / 2;
+	}
+	return ret;
+}
+
+int GetDigitCount(__int64 Nr)
+{
+	if (Nr == 0)
+		return 1;
+	int ret = 0;
+	while (Nr > 0)
+	{
+		ret++;
+		Nr = Nr / 10;
+	}
+	return ret;
+}
+
+__int64 GetMaskDecimal(__int64 Nr1, __int64 Nr2)
+{
+	if (Nr2 < 1)
+		Nr2 = Nr1;
+	if (Nr1 == Nr2 && Nr1 == 0)
+		return 10;
+	int Mask = 1;
+	while (Mask <= Nr1 || Mask <= Nr2)
+		Mask *= 10;
+	return Mask;
+}

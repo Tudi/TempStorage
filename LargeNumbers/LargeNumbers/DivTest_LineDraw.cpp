@@ -19,7 +19,7 @@ namespace LineDraw
 		// x * ( b - ( a - x ) ) + m = ( z - 1 + y ) * ( a - x )
 
 		// we are searching for an X by guessing the Y. z = b / a
-		// At the end a = A		A = a - x	B = b + x * z + y.....
+		// At the end	A = a - x		B = b + x * z + y.....
 		// a and b can start off from a = sqrt(N) b = N / sqrt(N)
 		// !! conclusion : using Z does not bring a benefit ! Maybe Z can be integrated into the formula directly into y ?
 		// todo : test y = y + z
@@ -98,7 +98,7 @@ namespace LineDraw
 		y = 1;
 		ExpectedX = a - A;
 		ExpectedY = B - b - z * ExpectedX; // we will remove more rows. we will go below the intended row count by the number of rows filled with the reminder
-		printf("Expecting solution x=%lld y=%lld. N = %lld, SQRT(N) = %lld. Bruteforce steps %lld\n", ExpectedX, ExpectedY, N, iSN, iSN / 2);
+		printf("Expecting solution x=%lld y=%lld. N = %lld, SQRT(N) = %lld. Bruteforce steps %lld\n", ExpectedX, ExpectedY, N, iSN, (iSN - A)/2);
 
 		//start generating combinations and check if it's a feasable candidate
 		int AtPos = 0;
