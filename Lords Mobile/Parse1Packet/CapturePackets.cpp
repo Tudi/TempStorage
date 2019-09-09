@@ -288,7 +288,7 @@ int StartCapturePackets(int AutoPickAdapter)
 
 	if (adapterHandle == NULL)
 	{
-		fprintf(stderr, "\nUnable to open the adapter\n", adapter->name);
+		fprintf(stderr, "\nUnable to open the adapter : %s\n", adapter->name);
 
 		// Free the adapter list
 		pcap_freealldevs(allAdapters);
