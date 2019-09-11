@@ -1,0 +1,20 @@
+﻿<Window x:Class="CopyFilesHere.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CopyFilesHere"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        LostFocus="Window_LostFocus"
+        Title="" Height="450" Width="200">
+    <Grid>
+        <StackPanel Orientation="Vertical" MouseLeave="Window_MouseLeave">
+            <Label Name="ActionButton" Content="Copy files here" FontWeight="Bold" MouseLeftButtonUp="ActionButton_MouseLeftButtonUp"/>
+            <WrapPanel Name="FileList" MouseLeftButtonUp="ActionButton_MouseLeftButtonUp">
+                <Label Name="File1" Content="File1" />
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+</Window>
