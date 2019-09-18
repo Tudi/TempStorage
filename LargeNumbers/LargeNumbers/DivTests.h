@@ -7,6 +7,7 @@ int CheckSolution( LargeNumber &tN, LargeNumber &TempRes );
 int CheckCandidateMatch2( LargeNumber *tN, LargeNumber *mul, LargeNumber *a1, LargeNumber *b1, int pos, LargeNumber *TempRes );
 int GetDigitCount(__int64 Nr);
 __int64 GetMaskDecimal(__int64 Nr1, __int64 Nr2 =-1);
+int IsPrime(__int64 Nr);
 
 #ifndef MAX
 	#define MAX(a,b) ((a)>(b)?(a):(b))
@@ -36,3 +37,11 @@ void DivTestab2();
 void DivTestab3();
 void DivTestLineDraw4();
 void DivTestModulo3();
+void DivTestModulo4();
+void DivTestModulo5();
+void DivTestModulo6();
+void DivTestSplitHalf();
+void DivTestLineDraw5();
+void DivTestLineDraw6();
+void DivTestLineDraw7();
+void DivTestInvMul1();

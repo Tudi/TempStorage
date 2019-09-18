@@ -28,7 +28,15 @@ void main()
 //	DivTestab2();
 //	DivTestab3();
 //	DivTestLineDraw4();
-	DivTestModulo3();
+//	DivTestModulo3();
+//	DivTestModulo4();
+//	DivTestModulo5();
+//	DivTestModulo6();
+//	DivTestSplitHalf();
+//	DivTestLineDraw5();
+//	DivTestLineDraw6();
+//	DivTestLineDraw7();
+	DivTestInvMul1();
 
     printf("All done\n");
 }

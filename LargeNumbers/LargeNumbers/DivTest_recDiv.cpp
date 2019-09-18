@@ -69,7 +69,7 @@ int LargestFact( int Limit )
     return ret;
 }
 
-void DivTest_RecDiv( __int64 iA, __int64 iB)
+void DivTest_RecDiv( int iA, int iB)
 {
     // (k1*a + m1)*(k2 * b + m2) = N
     // m1 < k1      m2 < k2     k1 < k2     len(k1)+len(a)-1 < len( SQ(N ) )
@@ -124,7 +124,7 @@ void DivTest_RecDiv( __int64 iA, __int64 iB)
         StepsTaken++;
 for( int i = 0; i < ParamCount; i++ )
 {
-    int Combo;
+	__int64 Combo;
     ToIntLN( vLN[i], &Combo );
     DEBUG_Combinations_generated[i][ Combo % 100 ] = 1;
 }

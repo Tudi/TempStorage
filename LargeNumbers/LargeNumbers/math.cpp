@@ -17,6 +17,15 @@ void SetLN( LargeNumber *N, __int64 n )
     }
 }
 void SetLN( LargeNumber &N, __int64 n ) { SetLN( &N, n ); }
+/*void SetLN(LargeNumber *dst, LargeNumber *src)
+{
+	InitLN(dst);
+	while (dst->Len < src->Len)
+	{
+		dst->Digits[dst->Len] = src->Digits[dst->Len];
+		dst->Len++;
+	}
+}*/
 
 void NormalizeLN( LargeNumber *N, int Start )
 {
@@ -90,16 +99,16 @@ void MulLN(LargeNumber *A, int B, LargeNumber *C)
 	NormalizeLN(C);
 }
 
-void ToIntLN( LargeNumber *N, int *n )
+void ToIntLN( LargeNumber *N, __int64 *n )
 {
     *n = 0;
     for( int i = N->Len - 1; i >= 0; i-- )
         *n = *n * USE_BASE + N->Digits[ i ];
 }
-void ToIntLN( LargeNumber &N, int &n ) { ToIntLN( &N, &n ); }
-int ToIntLN( LargeNumber *N ) 
+void ToIntLN( LargeNumber &N, __int64 &n ) { ToIntLN( &N, &n ); }
+__int64 ToIntLN( LargeNumber *N ) 
 { 
-    int n;
+	__int64 n;
     ToIntLN( N, &n ); 
     return n;
 }

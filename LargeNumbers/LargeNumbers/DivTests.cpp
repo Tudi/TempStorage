@@ -70,3 +70,14 @@ __int64 GetMaskDecimal(__int64 Nr1, __int64 Nr2)
 		Mask *= 10;
 	return Mask;
 }
+
+int IsPrime(__int64 Nr)
+{
+	if (Nr % 2 == 0)
+		return 0;
+	__int64 SN = isqrt(Nr);
+	for (__int64 i = 3; i < SN; i += 2)
+		if (Nr % i == 0)
+			return 0;
+	return 1;
+}

@@ -79,7 +79,7 @@ SetLN( b1, ib );
 /**/
 for( int i = 0; i < ParamCount - 1; i++ )
 {
-    int Combo;
+	__int64 Combo;
     ToIntLN( vLN[i], &Combo );
     DEBUG_Combinations_generated[i][ Combo % 100 ] = 1;
 }

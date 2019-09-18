@@ -108,6 +108,30 @@
     <ClCompile Include="DivTest_Modulo3.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_Modulo4.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_Modulo5.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_Modulo6.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_Split.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_LineDraw5.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_LineDraw6.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_LineDraw7.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_InvMul.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">

@@ -35,7 +35,7 @@ int CheckCandidateMatch_DivTestDecrement( LargeNumber *tN, LargeNumber *a, Large
     return 1;
 }
 
-void DivTest_DivTestDecrement( __int64 iA, __int64 iB)
+void DivTest_DivTestDecrement( int iA, int iB)
 {
     // ( aa - a ) * ( bb - b ) = N
     // aa * bb - aa * b - a * bb + a * b = N
@@ -84,7 +84,7 @@ void DivTest_DivTestDecrement( __int64 iA, __int64 iB)
         StepsTaken++;
 for( int i = 0; i < ParamCount - 1; i++ )
 {
-    int Combo;
+	__int64 Combo;
     ToIntLN( vLN[i], &Combo );
     DEBUG_Combinations_generated[i][ Combo % 100 ] = 1;
 }

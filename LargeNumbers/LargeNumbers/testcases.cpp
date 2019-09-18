@@ -3,7 +3,7 @@
 void TestSetAddMull()
 {
     LargeNumber A,B,C;
-    int Ci;
+	__int64 Ci;
 #define TestCorrectnessLimit 2048
     for( int a = 0; a < TestCorrectnessLimit; a++ )
         for( int b = 0; b < TestCorrectnessLimit; b++ )
@@ -15,19 +15,19 @@ void TestSetAddMull()
             AddLN( A, B, C );
             ToIntLN( C, Ci );
             if( add != Ci )
-                printf("Add failed for %d + %d = %d != %d\n", a, b, add, Ci );
+                printf("Add failed for %d + %d = %d != %lld\n", a, b, add, Ci );
 
             int mul = a * b;
             MulLN( A, B, C );
             ToIntLN( C, Ci );
             if( mul != Ci )
-                printf("Add failed for %d * %d = %d != %d\n", a, b, mul, Ci );
+                printf("Add failed for %d * %d = %d != %lld\n", a, b, mul, Ci );
 
             int half = mul /2;
             HalfLN( C );
             ToIntLN( C, Ci );
             if( half != Ci )
-                printf("half failed for %d * %d = %d != %d\n", a, b, half, Ci );
+                printf("half failed for %d * %d = %d != %lld\n", a, b, half, Ci );
 
             if( mul >= 1 )
             {
@@ -36,7 +36,7 @@ void TestSetAddMull()
                 SubLN( C, 1 );
                 ToIntLN( C, Ci );
                 if( dec != Ci )
-                    printf("dec failed for %d * %d = %d != %d\n", a, b, dec, Ci );
+                    printf("dec failed for %d * %d = %d != %lld\n", a, b, dec, Ci );
             }
         }
 }
