@@ -18,5 +18,5 @@
 
 extern "C"
 {
-	LIBRARY_API int GetRegisterValue(int Register);
+	LIBRARY_API int __stdcall GetRegisterValue(int Register);
 }

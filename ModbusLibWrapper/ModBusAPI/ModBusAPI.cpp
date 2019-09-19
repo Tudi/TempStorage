@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "modbus.h"
 
-LIBRARY_API int GetRegisterValue(int Register)
+LIBRARY_API int __stdcall GetRegisterValue(int Register)
 {
 	modbus_t *mb;
 	uint16_t tab_reg[32];
