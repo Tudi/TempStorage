@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include "StreamWriter.h"
 
 int ForniteMetaParser::ParseMeta(StreamParser *sp, int PrintValues)
 {
@@ -164,20 +165,33 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 	{
 		sp->SkipBytes(87);
 		int UUIDOffset = sp->GetOffset();
+
+		unsigned char *UIDKIller = sp->GetByteArray();
 		DebugPrint0(PrintValues, "GUID1:");
 		for (int i = 0; i < 16; i++)
-			DebugPrint1(PrintValues, "%02x", sp->ReadUInt8());
+		{
+			int Val = sp->ReadUInt8();
+			DebugPrint1(PrintValues, "%02x", Val);
+		}
 		DebugPrint0(PrintValues, "\n");
 		sp->SkipBytes(2);
+
+		unsigned char *UIDKIlled = sp->GetByteArray();
 		DebugPrint0(PrintValues, "GUID2:");
 		for (int i = 0; i < 16; i++)
-			DebugPrint1(PrintValues, "%02x", sp->ReadUInt8());
+		{
+			int Val = sp->ReadUInt8();
+			DebugPrint1(PrintValues, "%02x", Val);
+		}
 		DebugPrint0(PrintValues, "\n");
 
 		unsigned char gun_type = sp->ReadUInt8();
 		DebugPrint1(PrintValues, "gun_type:%d\n", gun_type);
 		unsigned int knocked = sp->ReadUInt32();
 		DebugPrint1(PrintValues, "knocked:%d\n", knocked);
+
+		GetWriter().AddJsonKill(UIDKIller, UIDKIlled, knocked, gun_type);
+		GetWriter().Flush();
 
 		//			sp->SkipBytes(Size);
 		HandledParsing = 1;

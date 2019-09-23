@@ -118,11 +118,13 @@
     <ClCompile Include="FortniteParsers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="StreamReader.cpp" />
+    <ClCompile Include="StreamWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FortniteDefines.h" />
     <ClInclude Include="FortniteParsers.h" />
     <ClInclude Include="StreamReader.h" />
+    <ClInclude Include="StreamWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

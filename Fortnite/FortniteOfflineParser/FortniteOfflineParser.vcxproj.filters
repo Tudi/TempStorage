@@ -24,6 +24,9 @@
     <ClCompile Include="FortniteParsers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StreamWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FortniteDefines.h">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="FortniteParsers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamWriter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

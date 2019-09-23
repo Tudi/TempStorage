@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -5,15 +7,31 @@
 #include "FortniteDefines.h"
 #include "StreamReader.h"
 #include "FortniteParsers.h"
+#include "StreamWriter.h"
 
-int main()
+int main(int argc, char **argv)
 {
 	// Our parser that needs to support resumed parsing
 	StreamParser sp;
 
+	const char *FileName = "UnsavedReplay-2019.09.18-18.53.22.replay";
+	const char *JSonFileName = "FortniteLogParsed.json";
+	for (int i = 0; i < argc; i++)
+	{
+		if (strcmp(argv[i], "-i") == 0 && i + 1 <= argc)
+		{
+			FileName = argv[i + 1];
+			printf("Will try to parse input file : %s\n", FileName);
+		}
+		if (strcmp(argv[i], "-o") == 0 && i + 1 <= argc)
+		{
+			JSonFileName = argv[i + 1];
+			printf("Will try to write output to file : %s\n", JSonFileName);
+		}
+	}
+
 	//open the replay for parsing
-	FILE *f;
-	errno_t opener = fopen_s(&f, "UnsavedReplay-2019.09.18-18.53.22.replay", "rb");
+	FILE *f = fopen( FileName, "rb");
 	if (f == NULL)
 	{
 		printf("Could not open input file\n");
@@ -30,8 +48,11 @@ int main()
 
 	int VerboseParsing = 0;
 #ifdef _DEBUG
-	VerboseParsing = 1;
+//	VerboseParsing = 1;
 #endif
+	GetWriter().SetOutputFileName(JSonFileName);
+	GetWriter().SetOutputType(SWOT_CONSOLE_FLAG, 1);
+	GetWriter().SetOutputType(SWOT_FILE_FLAG, 1);
 
 	//Parse in a separate loop to be able to debug more properly
 	int MetaParseError = ForniteMetaParser::ParseMeta(&sp, VerboseParsing);

@@ -21,6 +21,7 @@ public:
 	int GetOffset();
 	void SkipToChunkEnd(int ChunkStart, int ChunkSize);
 	int GetByteAt(int Offset);
+	unsigned char *GetByteArray() { return (unsigned char *)&Data[BytesRead]; }
 private:
 	int				BytesRead; // index in our data stream
 	int				BytesInData;
