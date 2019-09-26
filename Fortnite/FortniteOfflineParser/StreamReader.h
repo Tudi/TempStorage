@@ -19,8 +19,11 @@ public:
 	void GuessNext4Values();
 	int EndReached();
 	int GetOffset();
+	int GetMaxByteIndex();
+	void JumpTo(int NewIndex);
 	void SkipToChunkEnd(int ChunkStart, int ChunkSize);
 	int GetByteAt(int Offset);
+	int GetBytesRemain();
 	unsigned char *GetByteArray() { return (unsigned char *)&Data[BytesRead]; }
 private:
 	int				BytesRead; // index in our data stream

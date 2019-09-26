@@ -1,10 +1,27 @@
-#include "FortniteDefines.h"
-#include "StreamReader.h"
-#include "FortniteParsers.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
+#include "FortniteDefines.h"
+#include "StreamReader.h"
+#include "FortniteParsers.h"
 #include "StreamWriter.h"
+
+int ForniteMetaParser::ParseMetaRewind(StreamParser *sp, int PrintValues)
+{
+	//not yet enough bytes in stream to read a structure
+	if (sp->GetBytesRemain() < 10 * sizeof(int))
+		return 1;
+
+	int SavedOffset = sp->GetOffset();
+	int ret = ParseMeta(sp, PrintValues);
+	if (ret != 0 || sp->EndReached())
+	{
+		sp->JumpTo(SavedOffset);
+		return 1; // could not parse it
+	}
+	return ret;
+}
 
 int ForniteMetaParser::ParseMeta(StreamParser *sp, int PrintValues)
 {
@@ -40,6 +57,23 @@ int ForniteMetaParser::ParseMeta(StreamParser *sp, int PrintValues)
 	return 0;
 }
 
+int FortniteReadChuck::ParseChunkRewind(StreamParser *sp, int PrintValues)
+{
+	//not yet enough bytes in stream to read a structure
+	if (sp->GetBytesRemain() < 2 * sizeof(int))
+		return 1;
+
+	int SavedOffset = sp->GetOffset();
+	int ret = ParseChunk(sp, PrintValues);
+	if (ret != 0 || sp->EndReached())
+	{
+		sp->JumpTo(SavedOffset);
+		ClearData();
+		return 1; // could not parse it
+	}
+	return ret;
+}
+
 int FortniteReadChuck::ParseChunk(StreamParser *sp, int PrintValues)
 {
 	chunk_type = sp->ReadUInt32();
@@ -48,7 +82,24 @@ int FortniteReadChuck::ParseChunk(StreamParser *sp, int PrintValues)
 	chunk_size = sp->ReadUInt32();
 	DebugPrint2(PrintValues, "chunk_size: %d = %08X\n", chunk_size, chunk_size);
 
+	HasData = 1;
 	return 0;
+}
+
+int ForniteHeaderParser::ParseHeaderRewind(StreamParser *sp, int ChunkSize, int PrintValues)
+{
+	//not yet enough bytes in stream to read a structure
+	if (sp->GetBytesRemain() < 18 * sizeof(int))
+		return 1;
+
+	int SavedOffset = sp->GetOffset();
+	int ret = ParseHeader(sp, ChunkSize, PrintValues);
+	if (ret != 0 || sp->EndReached())
+	{
+		sp->JumpTo(SavedOffset);
+		return 1; // could not parse it
+	}
+	return ret;
 }
 
 int ForniteHeaderParser::ParseHeader(StreamParser *sp, int ChunkSize, int PrintValues)
@@ -132,7 +183,31 @@ int ForniteHeaderParser::ParseHeader(StreamParser *sp, int ChunkSize, int PrintV
 	return 0;
 }
 
-int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintValues)
+int CompareGUIDMatch(const unsigned char *GUID1, const unsigned char *GUID2)
+{
+	if (GUID1 == NULL)
+		return 1;
+	if (GUID2 == NULL)
+		return 1;
+	for (int i = 0; i < FORTNITE_GUID_LEN; i++)
+		if (GUID1[i] != GUID2[i])
+			return 0;
+	return 1;
+}
+
+int ForniteEventParser::ParseEventRewind(StreamParser *sp, int ChunkSize, const unsigned char *FilterOutputByGUID, int PrintValues)
+{
+	int SavedOffset = sp->GetOffset();
+	int ret = ParseEvent(sp, ChunkSize, FilterOutputByGUID, PrintValues);
+	if (ret != 0 || sp->EndReached())
+	{
+		sp->JumpTo(SavedOffset);
+		return 1; // could not parse it
+	}
+	return ret;
+}
+
+int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, const unsigned char *FilterOutputByGUID, int PrintValues)
 {
 	int StartOffset = sp->GetOffset();
 
@@ -166,9 +241,9 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 		sp->SkipBytes(87);
 		int UUIDOffset = sp->GetOffset();
 
-		unsigned char *UIDKIller = sp->GetByteArray();
+		unsigned char *UIDKilled = sp->GetByteArray();
 		DebugPrint0(PrintValues, "GUID1:");
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < FORTNITE_GUID_LEN; i++)
 		{
 			int Val = sp->ReadUInt8();
 			DebugPrint1(PrintValues, "%02x", Val);
@@ -176,9 +251,9 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 		DebugPrint0(PrintValues, "\n");
 		sp->SkipBytes(2);
 
-		unsigned char *UIDKIlled = sp->GetByteArray();
+		unsigned char *UIDKiller = sp->GetByteArray();
 		DebugPrint0(PrintValues, "GUID2:");
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < FORTNITE_GUID_LEN; i++)
 		{
 			int Val = sp->ReadUInt8();
 			DebugPrint1(PrintValues, "%02x", Val);
@@ -190,8 +265,8 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 		unsigned int knocked = sp->ReadUInt32();
 		DebugPrint1(PrintValues, "knocked:%d\n", knocked);
 
-		GetWriter().AddJsonKill(UIDKIller, UIDKIlled, knocked, gun_type);
-		GetWriter().Flush();
+		if (CompareGUIDMatch(UIDKiller, FilterOutputByGUID) != 0 || CompareGUIDMatch(UIDKilled, FilterOutputByGUID) != 0)
+			GetWriter().AddJsonKill(UIDKiller, UIDKilled, knocked, gun_type);
 
 		//			sp->SkipBytes(Size);
 		HandledParsing = 1;
@@ -223,6 +298,8 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 		unsigned int total_traveled = sp->ReadUInt32();
 		DebugPrint1(PrintValues, "total_traveled:%d\n", total_traveled);
 		HandledParsing = 1;
+
+		GetWriter().AddJsonMatchStats(accuracy, assists, eliminations, weapon_damage, other_damage, revives, damage_taken, damage_structures, materials_gathered, materials_used, total_traveled);
 	}
 
 	if (strcmp(EV_TEAM_STATS, (char*)metadata) == 0)
@@ -234,6 +311,12 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 		unsigned int total_players = sp->ReadUInt32();
 		DebugPrint1(PrintValues, "total_players:%d\n", total_players);
 		HandledParsing = 1;
+	}
+
+	if (strcmp(EV_ENCRYPTION_KEY, (char*)group) == 0)
+	{
+		HandledParsing = 1;
+		sp->SkipBytes(Size);
 	}
 
 	if (HandledParsing == 0)
@@ -250,4 +333,26 @@ int ForniteEventParser::ParseEvent(StreamParser *sp, int ChunkSize, int PrintVal
 
 
 	return 0;
+}
+
+int StrToHex(unsigned char byte)
+{
+	if (byte >= '0' && byte <= '9')
+		return byte - '0';
+	if (byte >= 'a' && byte <= 'f')
+		return 10 + byte - 'a';
+	if (byte >= 'A' && byte <= 'F')
+		return 10 + byte - 'A';
+	assert(0);
+	return 0;
+}
+unsigned char *strGUIDToHexGUID(const unsigned char *StrGUID)
+{
+	unsigned char *ret = (unsigned char *)malloc(FORTNITE_GUID_LEN);
+	for (int i = 0; i < FORTNITE_GUID_LEN; i++)
+	{
+		ret[i] = StrToHex(StrGUID[2 * i + 0]) * 16;
+		ret[i] += StrToHex(StrGUID[2 * i + 1]);
+	}
+	return ret;
 }

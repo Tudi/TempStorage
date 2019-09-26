@@ -8,7 +8,7 @@ StreamWriter &GetWriter() { return sw; }
 
 void StreamWriter::AddToStream(char *Buff, int len)
 {
-	OutBuff = (char *)realloc(OutBuff, BuffSize + len);
+	OutBuff = (char *)realloc(OutBuff, BuffSize + len + 1);
 	memcpy(&OutBuff[BuffSize], Buff, len);
 	BuffSize += len;
 }
@@ -26,6 +26,14 @@ void StreamWriter::Flush()
 {
 	if (OutBuff == NULL)
 		return;
+	OutBuff[BuffSize] = 0;
+	//wipe file content if this is the first write
+	if (FlushesMade == 0 && (OutType & SWOT_CONSOLE_FLAG))
+	{
+		FILE *f = fopen(OutputFileName, "at");
+		if (f)
+			fclose(f);
+	}
 	if (OutType & SWOT_CONSOLE_FLAG)
 	{
 		printf("%s", OutBuff);
@@ -43,7 +51,7 @@ void StreamWriter::Flush()
 	free(OutBuff);
 	OutBuff = NULL;
 	BuffSize = 0;
-	KillStructsAdded = 0;
+	FlushesMade++;
 }
 
 void StreamWriter::SetOutputType(StreamWriterOutputTypes FlagVal, int EnableOutput)
@@ -73,6 +81,12 @@ void StreamWriter::AddJsonKill(const unsigned char *Killer, const unsigned char 
 		sprintf(&GUID2AsHexStr[i], "%02x", Killed[i]);
 	GUID2AsHexStr[16 * 2] = 0;
 	sprintf(Buff, "\"KillStruct\": { \"Killer\" : \"%s\", \"Killed\" : \"%s\", \"Knocked\" : %d, \"Gun\" : %d }\n", GUID1AsHexStr, GUID2AsHexStr, knocked, gun);
-	AddToStream(Buff,strlen(Buff) + 1);
-	KillStructsAdded++;
+	AddToStream(Buff,strlen(Buff));
+}
+
+void StreamWriter::AddJsonMatchStats(float accuracy, unsigned int assists, unsigned int eliminations, unsigned int weapon_damage, unsigned int other_damage, unsigned int revives, unsigned int damage_taken, unsigned int damage_structures, unsigned int materials_gathered, unsigned int materials_used, unsigned int total_traveled)
+{
+	char Buff[16000];
+	sprintf(Buff, "\"MatchStats\": { \"Accuracy\" : \"%f\", \"Assists\" : \"%d\", \"Eliminations\" : %d, \"WeaponDamage\" : %d, \"OtherDamage\" : %d, \"Revives\" : %d, \"DamageTaken\" : %d, \"DamageStructures\" : %d, \"MaterialsGathered\" : %d, \"MaterialsUsed\" : %d, \"TotalTraveled\" : %d }\n", accuracy, assists, eliminations, weapon_damage, other_damage, revives, damage_taken, damage_structures, materials_gathered, materials_used, total_traveled);
+	AddToStream(Buff, strlen(Buff));
 }

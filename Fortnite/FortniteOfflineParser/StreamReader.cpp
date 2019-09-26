@@ -74,30 +74,38 @@ float StreamParser::ReadFloat()
 
 unsigned char *StreamParser::ReadString(int SizePresent)
 {
+	unsigned char *ret;
 	if (SizePresent == 1)
 	{
 		int StringLength = ReadInt32();
 		assert(StringLength > 0); // if this is negative, it could be a wide string
 		assert(Data[BytesRead + StringLength - 1] == 0);
+		ret = &Data[BytesRead];
+		BytesRead += StringLength;
+	}
+	else
+	{
+		ret = &Data[BytesRead];
+		while (BytesRead < BytesInData && Data[BytesRead] != 0)
+			BytesRead++;
+		BytesRead++;// also read the terminator
 	}
 
-	unsigned char *ret = &Data[BytesRead];
-	while (BytesRead < BytesInData && Data[BytesRead] != 0)
-		BytesRead++;
-	BytesRead++;// also read the terminator
 	return ret;
 }
 
 unsigned char *StreamParser::ReadWideString()
 {
 	int StringLength = ReadInt32();
+	unsigned char *ret = &Data[BytesRead];
+
+#ifdef _DEBUG
 	assert(StringLength < 0);
 	assert(Data[BytesRead - StringLength * 2] == 0);
+#endif
 
-	unsigned char *ret = &Data[BytesRead];
-	while (BytesRead < BytesInData && *(unsigned short*)&Data[BytesRead] != 0)
-		BytesRead += 2;
-	BytesRead += 2; // also read the terminator
+	BytesRead -= StringLength * 2;
+
 	return ret;
 }
 
@@ -167,4 +175,19 @@ void StreamParser::SkipToChunkEnd(int ChunkStart, int ChunkSize)
 int StreamParser::GetByteAt(int Offset)
 {
 	return Data[Offset];
+}
+
+int StreamParser::GetMaxByteIndex()
+{
+	return BytesInData;
+}
+
+void StreamParser::JumpTo(int NewIndex)
+{
+	BytesRead = NewIndex;
+}
+
+int StreamParser::GetBytesRemain()
+{
+	return BytesInData - BytesRead;
 }
