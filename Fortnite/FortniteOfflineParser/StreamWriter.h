@@ -24,6 +24,11 @@ public:
 	void SetOutputFileName(const char *NewFileName);
 	void AddJsonKill(const unsigned char *Killer, const unsigned char *Killed, int knocked, int gun);
 	void AddJsonMatchStats(float accuracy, unsigned int assists, unsigned int eliminations, unsigned int weapon_damage, unsigned int other_damage, unsigned int revives, unsigned int damage_taken, unsigned int damage_structures, unsigned int materials_gathered, unsigned int materials_used, unsigned int total_traveled);
+	char *GetStringBuffer() 
+	{ 
+		OutBuff[BuffSize] = 0;
+		return OutBuff; 
+	}
 private:
 	StreamWriterOutputTypes OutType;
 	char *OutBuff;

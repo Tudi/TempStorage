@@ -51,7 +51,7 @@ char *GetLastModifiedFileName(const char *Directory)
 	return _strdup(SearchFilter);
 }
 
-void ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
+char *ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
 {
 	const char *JSonFileName = "FortniteLogParsed.json";
 	char *FileName = GetLastModifiedFileName(Directory);
@@ -60,7 +60,7 @@ void ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
 	if (FileName == NULL)
 	{
 		printf("No replay files were found in the replay directory\n");
-		return;
+		return NULL;
 	}
 
 	// Our parser that needs to support resumed parsing
@@ -70,12 +70,14 @@ void ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
 	if (ReplayFile == NULL)
 	{
 		printf("Could not open input file\n");
-		return;
+		return NULL;
 	}
 
 	GetWriter().SetOutputFileName(JSonFileName);
+#ifdef _DEBUG
 	GetWriter().SetOutputType(SWOT_CONSOLE_FLAG, 1);
 	GetWriter().SetOutputType(SWOT_FILE_FLAG, 1);
+#endif
 
 	int VerboseParsing = 0;
 	int MetaParsed = 0;
@@ -131,7 +133,7 @@ void ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
 			else if (chunk.chunk_type == FN_CHUNK_EVENT)
 			{
 				int EventParseError = ForniteEventParser::ParseEventRewind(&sp, chunk.chunk_size, FilterByGUIDHex, VerboseParsing);
-				GetWriter().Flush();
+//				GetWriter().Flush();
 			}
 			else
 			{
@@ -165,9 +167,10 @@ void ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
 		else
 			ReadTimeoutStart = 0; // reset read timeout, maybe nothing happened intgame for a few seconds
 	}
-	GetWriter().Flush();
+//	GetWriter().Flush();
 	fclose(ReplayFile);
 	free(FileName);
+	return GetWriter().GetStringBuffer();
 }
 
 int ParseLogFromConsoleParams(int argc, char **argv)
@@ -257,7 +260,9 @@ int ParseLogFromConsoleParams(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	//if you wish to see all guids ( for testing ), you can set the value to NULL : ParseLastLogFile(NULL)
-	ParseLastLogFile((const unsigned char*)"24987a8324f4498093928b902519c594","C:\\Users\\A687258\\AppData\\Local\\FortniteGame\\Saved\\Demos\\");
+	char *JsonContent = ParseLastLogFile((const unsigned char*)"24987a8324f4498093928b902519c594","C:\\Users\\A687258\\AppData\\Local\\FortniteGame\\Saved\\Demos\\");
+	if(JsonContent != NULL)
+		printf("%s", JsonContent);
 
 	return 0;
 }
