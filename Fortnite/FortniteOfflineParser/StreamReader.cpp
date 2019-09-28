@@ -9,6 +9,22 @@ StreamParser::StreamParser()
 	Data = NULL;
 }
 
+StreamParser::~StreamParser()
+{
+	Destroy();
+}
+
+void StreamParser::Destroy()
+{
+	if (Data)
+	{
+		free(Data);
+		Data = NULL;
+	}
+	BytesInData = 0;
+	BytesRead = 0;
+}
+
 void StreamParser::AddInput(unsigned char *NewData, int Size)
 {
 	if (Data == NULL)

@@ -170,6 +170,7 @@ char *ParseLastLogFile(const unsigned char *FilterByGUID, const char *Directory)
 //	GetWriter().Flush();
 	fclose(ReplayFile);
 	free(FileName);
+	sp.Destroy();
 	return GetWriter().GetStringBuffer();
 }
 

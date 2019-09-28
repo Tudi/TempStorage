@@ -4,6 +4,7 @@ class StreamParser
 {
 public:
 	StreamParser();
+	~StreamParser();
 	void AddInput(unsigned char *NewData, int Size);
 	unsigned __int64 ReadUInt64();
 	unsigned int ReadUInt32();
@@ -25,6 +26,7 @@ public:
 	int GetByteAt(int Offset);
 	int GetBytesRemain();
 	unsigned char *GetByteArray() { return (unsigned char *)&Data[BytesRead]; }
+	void Destroy();
 private:
 	int				BytesRead; // index in our data stream
 	int				BytesInData;
