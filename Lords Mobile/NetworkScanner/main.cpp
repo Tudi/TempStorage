@@ -34,7 +34,7 @@ void OnlineScanParsing()
 	StartListenConsole();
 
 	// listen to network interface, assemble packets, queue them to the process queue
-	StartCapturePackets(3);
+	StartCapturePackets(1);
 }
 
 void main()

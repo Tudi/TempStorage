@@ -2,4 +2,4 @@
 
 int		StartCapturePackets(int AutoPickAdapter = -1);
 void	StopCapturePackets();
-void	SendPacket(unsigned char *Data, int Len);
+void	SendPacket(unsigned char *Data, int Len, int PayloadSize);

@@ -188,6 +188,10 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 }
 
 #define PROTOCOL_TCPIP	6
+
+static unsigned int ClientBytesSent = 0;
+static unsigned int ServerBytesSent = 0;
+
 // Callback function invoked by libpcap for every incoming packet 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
 {
@@ -226,9 +230,23 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 			unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
 			int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 			int BytesToDump = header->len - TotalHeaderSize;
-			if (BytesToDump > 0)
+            ClientBytesSent = htonl(tcph->sequence) + BytesToDump;
+            if (BytesToDump > 0)
 			{
 				OnLordsClientPacketReceived(pkt_data, header->len, DataStart, BytesToDump);
+//#define _DUMPPACKET_TO_FILE
+#ifdef _DUMPPACKET_TO_FILE
+                static FILE *FCONTENT = NULL;
+                if (FCONTENT == NULL)
+                    errno_t er = fopen_s(&FCONTENT, "client_to_server", "ab");
+                // might need to reassamble segmented packets later. TCP is a bytestream. The beggining of the packet should be a number indicating how much we need to read until the next packet
+                if (FCONTENT)
+                {
+                    //                fwrite(&BytesToDump, 1, 4, FCONTENT); //already present in the packet as the first 2 bytes
+                    fwrite(DataStart, 1, BytesToDump, FCONTENT);
+                    fflush(FCONTENT);
+                }
+#endif
 			}
 
 		}
@@ -243,7 +261,8 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 			unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
 			int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 			int BytesToDump = header->len - TotalHeaderSize;
-			if (BytesToDump > 0)
+            ServerBytesSent = htonl(tcph->sequence) + BytesToDump;
+            if (BytesToDump > 0)
 			{
 				DumpContent(DataStart, BytesToDump);
 				Wait1FullPacketThenParse(DataStart, BytesToDump);
@@ -308,7 +327,7 @@ int StartCapturePackets(int AutoPickAdapter)
 
 	// open the adapter
 	adapterHandle = pcap_open_live(adapter->name, // name of the adapter
-		BUFSIZ,         // portion of the packet to capture
+		6000,         // portion of the packet to capture
 		// 65536 guarantees that the whole 
 		// packet will be captured
 		PCAP_OPENFLAG_PROMISCUOUS, // promiscuous mode
@@ -356,8 +375,81 @@ void StopCapturePackets()
 	adapterHandle = NULL;
 }
 
-void SendPacket(unsigned char *Data, int Len)
+unsigned short ComputeChecksum(unsigned char *data, int plen)
 {
+    unsigned long sum = 0;
+
+    for (int len = 0; len < plen; len+=2)
+        sum += ((unsigned short)data[len] << 8) + data[len + 1];
+
+    if (plen & 1)    
+        sum += ((unsigned long)data[plen - 1]) << 8;
+
+    while (sum >> 16)
+        sum = (sum & 0xFFFF) + (sum >> 16);
+
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum = (~sum & 0xFFFF);
+    return (unsigned short)sum;
+}
+
+
+unsigned short ComputeChecksum2(unsigned char *data, int plen)
+{
+    unsigned long sum = 0;
+
+    unsigned short *temp = (unsigned short *)data;
+    for (int len = 0; len < plen / 2; len++)
+        sum += temp[len];
+
+    if (plen & 1)
+        sum += (unsigned long)data[plen - 1];
+
+    while (sum >> 16)
+        sum = (sum & 0xFFFF) + (sum >> 16);
+
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum = (~sum & 0xFFFF);
+    return (unsigned short)sum;
+}
+
+
+//ip.dst == 192.243.40.53 || ip.src == 192.243.40.53
+void SendPacket(unsigned char *Data, int Len, int PayloadSize)
+{
+    if (ClientBytesSent == 0 || ServerBytesSent == 0)
+        return;
+    ip_hdr *ih = (ip_hdr *)(Data + 14); //length of ethernet header
+
+    //check if i can generate correct checksum
+ /*   {
+        unsigned short oldIPChecksum = ih->ip_checksum;
+        ih->ip_checksum = 0;
+        unsigned short myIPChecksum = ComputeChecksum(Data + 14, ih->ip_header_len * 4);
+        unsigned short myIPChecksum2 = htons(myIPChecksum);
+        ih->ip_checksum = oldIPChecksum;
+    }*/
+
+    tcp_header *tcph = (tcp_header *)((u_char*)Data + 14 + ih->ip_header_len * 4);
+    tcph->sequence = htonl(ClientBytesSent);
+    tcph->acknowledge = htonl(ServerBytesSent);
+    ClientBytesSent += PayloadSize;
+
+    typedef struct PseudoHeader{
+        unsigned long int source_ip;
+        unsigned long int dest_ip;
+        unsigned char reserved;
+        unsigned char protocol;
+        unsigned short int tcp_length;
+    }PseudoHeader;
+    PseudoHeader psh;
+
+    tcph->checksum = 0;
+//    tcph->checksum = htons(ComputeChecksum(Data, Len));
+    tcph->checksum = htons(ComputeChecksum((unsigned char *)tcph, &Data[Len] - (unsigned char*)tcph));
+//    tcph->checksum = ComputeChecksum2(Data, Len);
+
 	if (pcap_sendpacket(adapterHandle, Data, Len) != 0)
 	{
 		printf("CapturePackets.cpp : Error sending the packet: %s\n", pcap_geterr(adapterHandle));

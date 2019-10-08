@@ -53,7 +53,7 @@ unsigned int WaitExternalParserTimeoutStamp = 0;
 unsigned int *IngameMapUpdateStamp = NULL;
 void InitIngameMap()
 {
-	int SafeMemorySize = sizeof(unsigned int) * (MaxGameX + 50) * (MinGameY + 50);
+	int SafeMemorySize = sizeof(unsigned int) * (MaxGameX + 50) * (MaxGameY + 50);
 	IngameMapUpdateStamp = (unsigned int *)malloc(SafeMemorySize);
 	memset(IngameMapUpdateStamp, 0, SafeMemorySize);
 }
@@ -81,9 +81,15 @@ void HandleCastleClickPacket(const unsigned char *pkt_data, int len, const unsig
 	ClickPlayerPacketRetSample = (u_char*)malloc(len);
 	ClickPlayerPacketSize = len;
 	memcpy(ClickPlayerPacketRetSample, pkt_data, len);
-	ClickPlayerPacketCatched = true;
 	ClickPlayerPacketHeaderSize = GameData - pkt_data;
 }
+
+static unsigned char *ScanWorldPacketSample = NULL;
+static unsigned short ScanWorldPacketSampleSize = 0;
+static unsigned short ScanWorldPacketSampleDataStart = 0;
+static unsigned char *ScanWorldPacketsLoaded = NULL;
+static unsigned int ScanWorldPacketsLoadedCount = 0;
+static unsigned int ScanWorldPacketsLoadedSent = 0;
 
 void OnLordsClientPacketReceived(const unsigned char *pkt_data, int len, const unsigned char *GameData, int GameLen)
 {
@@ -91,11 +97,24 @@ void OnLordsClientPacketReceived(const unsigned char *pkt_data, int len, const u
 	//also check packet opcode
 	if (GameLen == 11 && (GameData[0] == 0x00 || GameData[1] == 0x0B) && (GameData[0] != 0x9A || GameData[1] != 0x08))
 		HandleCastleClickPacket(pkt_data, len, GameData, GameLen);
-		return;
+
+    //is this a scroll screen packet ? try to remember it. Size includes the 2 bytes to store size
+    if (GameLen == 49 && GameData[2] == 0x99 && GameData[3] == 0x08 && ScanWorldPacketSampleSize == 0)
+    {
+        printf("Found a packet we could replicate to scan the world\n");
+        ScanWorldPacketSampleSize = len;
+        ScanWorldPacketSample = (unsigned char *)malloc(len);
+        memcpy(ScanWorldPacketSample, pkt_data, len);
+        ScanWorldPacketSampleDataStart = ( GameData - pkt_data ) + 2;
+        ClickPlayerPacketCatched = true;
+    }
+    return;
 }
 
 void ConstructClickPlayerPacket()
 {
+    if (ClickPlayerPacketRetSample == NULL)
+        return;
 	int x, y;
 	GetLeastUpdatedLocation(&x, &y);
 	unsigned int GUID = GenerateIngameGUID(x,y);
@@ -103,11 +122,29 @@ void ConstructClickPlayerPacket()
 	printf("Constructing castle click packet for location : %d %d\n", x, y);
 }
 
+void ConstructScanPacket()
+{
+    if (ScanWorldPacketSample == NULL)
+        return;
+    memcpy(&ScanWorldPacketSample[ScanWorldPacketSampleDataStart], &ScanWorldPacketsLoaded[47 * ScanWorldPacketsLoadedSent], 47);
+    ScanWorldPacketsLoadedSent++;
+    ScanWorldPacketsLoadedSent = ScanWorldPacketsLoadedSent % ScanWorldPacketsLoadedCount;
+
+    printf("Constructing a scan map packet : %d\n", ScanWorldPacketsLoadedSent);
+}
+
 void SendClickPlayerPacket()
 {
 	if (ClickPlayerPacketCatched == false)
 		return;
-	SendPacket(ClickPlayerPacketRetSample, ClickPlayerPacketSize);
+	SendPacket(ClickPlayerPacketRetSample, ClickPlayerPacketSize, 11);
+}
+
+void SendScanPacket()
+{
+    if (ScanWorldPacketSample == NULL)
+        return;
+    SendPacket(ScanWorldPacketSample, ScanWorldPacketSampleSize, 49);
 }
 
 //this is already done in ParsePackets.cpp
@@ -162,8 +199,10 @@ DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
 		}
 		if (ScanStatus == SS_ReceivedClickPlayerPacket || ScanStatus == SS_StartNewScanCycle)
 		{
-			ConstructClickPlayerPacket();
-			SendClickPlayerPacket();
+//			ConstructClickPlayerPacket();
+            ConstructScanPacket();
+//			SendClickPlayerPacket();
+            SendScanPacket();
 //			printf("Will try to scan ingame area at %d:%d\n", ScanX, ScanY);
 			ScanStatus = SS_ClickPlayerPacketSent;
 			WaitServerReplyTimout = GetTickCount() + 2000;
@@ -205,11 +244,43 @@ DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
 	return 0;
 }
 
+void LoadScanPacketsFromFile()
+{
+    FILE *f;
+    errno_t openerr = fopen_s(&f, "client_to_server", "rb");
+    if (f == NULL)
+    {
+        printf("Could not open client_to_server file to read scan packets");
+        return;
+    }
+    //read file content
+    unsigned short ByteCount;
+    unsigned char PacketBytes[65535 + 1000]; // no way to read more than this
+    size_t BytesRead = fread(&ByteCount, 1, 2, f);
+    while (BytesRead > 0)
+    {
+        BytesRead = fread(PacketBytes, 1, ByteCount - sizeof(ByteCount), f);
+        //is this a packet we are looking for ?
+        if (ByteCount == 49 && PacketBytes[0] == 0x99 || PacketBytes[1] == 0x08)
+        {
+            printf("Found a fetch data client packet\n");
+            PrintDataHexFormat(PacketBytes, ByteCount - 2, 0, ByteCount - 2);
+            ScanWorldPacketsLoaded = (unsigned char*)realloc(ScanWorldPacketsLoaded, (ScanWorldPacketsLoadedCount + 1) * 47 + 10);
+            memcpy(&ScanWorldPacketsLoaded[ScanWorldPacketsLoadedCount * 47], PacketBytes, 47);
+            ScanWorldPacketsLoadedCount++;
+        }
+        BytesRead = fread(&ByteCount, 1, 2, f);
+    }
+    fclose(f);
+}
+
 void	LordsMobileControlStartup()
 {
 	//1 processing thread is enough
 	if (ScanGameProcessThreadHandle != 0)
 		return;
+
+    LoadScanPacketsFromFile();
 
 	//create the processing thread 
 	DWORD   PacketProcessThreadId;
