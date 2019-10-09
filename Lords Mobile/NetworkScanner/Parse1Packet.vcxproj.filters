@@ -36,6 +36,9 @@
     <ClCompile Include="ConsoleListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PrepareSendPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ParsePackets.h">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ConsoleListener.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PrepareSendPacket.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

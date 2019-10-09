@@ -6,6 +6,7 @@
 #include "Tools.h"
 #include "ParsePackets.h"
 #include "CapturePackets.h"
+#include "PrepareSendPacket.h"
 
 int		KeepGameScanThreadsRunning = 1;
 int		ThreadParamScanGameData = 0;
@@ -19,9 +20,6 @@ void InvertGameScanDirection()
 }
 
 bool ClickPlayerPacketCatched = false;
-u_char *ClickPlayerPacketRetSample = NULL;
-int ClickPlayerPacketSize = 0;
-int ClickPlayerPacketHeaderSize = 0;
 bool ObjectListPacketReceived = false;
 
 #define MinGameX	5
@@ -69,8 +67,13 @@ void GetLeastUpdatedLocation(int *OutX, int * OutY)
 				MinStamp = IngameMapUpdateStamp[y * MaxGameY + x];
 }
 
+u_char *ClickPlayerPacketRetSample = NULL;
+int ClickPlayerPacketSize = 0;
+int ClickPlayerPacketHeaderSize = 0;
 void HandleCastleClickPacket(const unsigned char *pkt_data, int len, const unsigned char *GameData, int GameLen)
 {
+	if (ClickPlayerPacketRetSample != NULL)
+		return;
 	printf("Received castle click packet\n");
 	//is this a guid data ?
 	int x, y;
@@ -86,28 +89,35 @@ void HandleCastleClickPacket(const unsigned char *pkt_data, int len, const unsig
 
 static unsigned char *ScanWorldPacketSample = NULL;
 static unsigned short ScanWorldPacketSampleSize = 0;
-static unsigned short ScanWorldPacketSampleDataStart = 0;
+//static unsigned short ScanWorldPacketSampleDataStart = 0;
 static unsigned char *ScanWorldPacketsLoaded = NULL;
 static unsigned int ScanWorldPacketsLoadedCount = 0;
 static unsigned int ScanWorldPacketsLoadedSent = 0;
+void HandleLoadMapSpawnsPacket(const unsigned char *pkt_data, int len, const unsigned char *GameData, int GameLen)
+{
+	if (ScanWorldPacketSampleSize != 0)
+		return;
+	printf("Found a packet we could replicate to scan the world\n");
+	ScanWorldPacketSampleSize = len;
+	ScanWorldPacketSample = (unsigned char *)malloc(len);
+	memcpy(ScanWorldPacketSample, pkt_data, len);
+//	ScanWorldPacketSampleDataStart = (GameData - pkt_data) + 2;
+	ClickPlayerPacketCatched = true;
+}
 
+#define SCAN_WORLD_PACKET_SIZE 49
+#define SCAN_WORLD_PACKET_NO_SIZE_SIZE 47
 void OnLordsClientPacketReceived(const unsigned char *pkt_data, int len, const unsigned char *GameData, int GameLen)
 {
 	//first 2 bytes are packet len. Unless these confirm the size, the packet did not arrive completely
 	//also check packet opcode
-	if (GameLen == 11 && (GameData[0] == 0x00 || GameData[1] == 0x0B) && (GameData[0] != 0x9A || GameData[1] != 0x08))
+	if (GameLen == 11 && GameData[0] == 0x00 && GameData[1] == 11 && GameData[2] == 0x9A && GameData[3] == 0x08)
 		HandleCastleClickPacket(pkt_data, len, GameData, GameLen);
 
     //is this a scroll screen packet ? try to remember it. Size includes the 2 bytes to store size
-    if (GameLen == 49 && GameData[2] == 0x99 && GameData[3] == 0x08 && ScanWorldPacketSampleSize == 0)
-    {
-        printf("Found a packet we could replicate to scan the world\n");
-        ScanWorldPacketSampleSize = len;
-        ScanWorldPacketSample = (unsigned char *)malloc(len);
-        memcpy(ScanWorldPacketSample, pkt_data, len);
-        ScanWorldPacketSampleDataStart = ( GameData - pkt_data ) + 2;
-        ClickPlayerPacketCatched = true;
-    }
+    if (GameLen == 49 && GameData[0] == 0x00 && GameData[1] == 49 && GameData[2] == 0x99 && GameData[3] == 0x08)
+		HandleLoadMapSpawnsPacket(pkt_data, len, GameData, GameLen);
+
     return;
 }
 
@@ -126,7 +136,7 @@ void ConstructScanPacket()
 {
     if (ScanWorldPacketSample == NULL)
         return;
-    memcpy(&ScanWorldPacketSample[ScanWorldPacketSampleDataStart], &ScanWorldPacketsLoaded[47 * ScanWorldPacketsLoadedSent], 47);
+    memcpy(&ScanWorldPacketSample[ScanWorldPacketSampleSize - SCAN_WORLD_PACKET_NO_SIZE_SIZE], &ScanWorldPacketsLoaded[SCAN_WORLD_PACKET_NO_SIZE_SIZE * ScanWorldPacketsLoadedSent], SCAN_WORLD_PACKET_NO_SIZE_SIZE);
     ScanWorldPacketsLoadedSent++;
     ScanWorldPacketsLoadedSent = ScanWorldPacketsLoadedSent % ScanWorldPacketsLoadedCount;
 
@@ -137,14 +147,14 @@ void SendClickPlayerPacket()
 {
 	if (ClickPlayerPacketCatched == false)
 		return;
-	SendPacket(ClickPlayerPacketRetSample, ClickPlayerPacketSize, 11);
+	PrepareAndSendPacket(ClickPlayerPacketRetSample, ClickPlayerPacketSize, 11);
 }
 
 void SendScanPacket()
 {
     if (ScanWorldPacketSample == NULL)
         return;
-    SendPacket(ScanWorldPacketSample, ScanWorldPacketSampleSize, 49);
+	PrepareAndSendPacket(ScanWorldPacketSample, ScanWorldPacketSampleSize, SCAN_WORLD_PACKET_SIZE);
 }
 
 //this is already done in ParsePackets.cpp
@@ -265,8 +275,8 @@ void LoadScanPacketsFromFile()
         {
             printf("Found a fetch data client packet\n");
             PrintDataHexFormat(PacketBytes, ByteCount - 2, 0, ByteCount - 2);
-            ScanWorldPacketsLoaded = (unsigned char*)realloc(ScanWorldPacketsLoaded, (ScanWorldPacketsLoadedCount + 1) * 47 + 10);
-            memcpy(&ScanWorldPacketsLoaded[ScanWorldPacketsLoadedCount * 47], PacketBytes, 47);
+            ScanWorldPacketsLoaded = (unsigned char*)realloc(ScanWorldPacketsLoaded, (ScanWorldPacketsLoadedCount + 1) * SCAN_WORLD_PACKET_NO_SIZE_SIZE + 10);
+            memcpy(&ScanWorldPacketsLoaded[ScanWorldPacketsLoadedCount * SCAN_WORLD_PACKET_NO_SIZE_SIZE], PacketBytes, SCAN_WORLD_PACKET_NO_SIZE_SIZE);
             ScanWorldPacketsLoadedCount++;
         }
         BytesRead = fread(&ByteCount, 1, 2, f);

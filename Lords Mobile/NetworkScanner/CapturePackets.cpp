@@ -3,92 +3,6 @@
 #include "ParsePackets.h"
 #include "LordsMobileControl.h"
 
-/* 4 bytes IP address */
-typedef struct ip_address{
-	u_char byte1;
-	u_char byte2;
-	u_char byte3;
-	u_char byte4;
-}ip_address;
-
-/* IPv4 header */
-typedef struct ip_header{
-	u_char  ver_ihl;        // Version (4 bits) + Internet header length (4 bits)
-	u_char  tos;            // Type of service 
-	u_short tlen;           // Total length 
-	u_short identification; // Identification
-	u_short flags_fo;       // Flags (3 bits) + Fragment offset (13 bits)
-	u_char  ttl;            // Time to live
-	u_char  proto;          // Protocol
-	u_short crc;            // Header checksum
-	ip_address  saddr;      // Source address
-	ip_address  daddr;      // Destination address
-	u_int   op_pad;         // Option + Padding
-}ip_header;
-
-/* UDP header*/
-typedef struct udp_header{
-	u_short sport;          // Source port
-	u_short dport;          // Destination port
-	u_short len;            // Datagram length
-	u_short crc;            // Checksum
-}udp_header;
-
-typedef struct ip_hdr
-{
-	unsigned char ip_header_len : 4; // 4-bit header length (in 32-bit words) normally=5 (Means 20 Bytes may be 24 also)
-	unsigned char ip_version : 4; // 4-bit IPv4 version
-	unsigned char ip_tos; // IP type of service
-	unsigned short ip_total_length; // Total length
-	unsigned short ip_id; // Unique identifier
-
-	unsigned char ip_frag_offset : 5; // Fragment offset field
-
-	unsigned char ip_more_fragment : 1;
-	unsigned char ip_dont_fragment : 1;
-	unsigned char ip_reserved_zero : 1;
-
-	unsigned char ip_frag_offset1; //fragment offset
-
-	unsigned char ip_ttl; // Time to live
-	unsigned char ip_protocol; // Protocol(TCP,UDP etc)
-	unsigned short ip_checksum; // IP checksum
-	unsigned int ip_srcaddr; // Source address
-	unsigned int ip_destaddr; // Source address
-} IPV4_HDR;
-
-// TCP header
-typedef struct tcp_header
-{
-	unsigned short source_port; // source port
-	unsigned short dest_port; // destination port
-	unsigned int sequence; // sequence number - 32 bits
-	unsigned int acknowledge; // acknowledgement number - 32 bits
-
-	unsigned char ns : 1; //Nonce Sum Flag Added in RFC 3540.
-	unsigned char reserved_part1 : 3; //according to rfc
-	unsigned char data_offset : 4; /*The number of 32-bit words in the TCP header.
-								   This indicates where the data begins.
-								   The length of the TCP header is always a multiple
-								   of 32 bits.*/
-
-	unsigned char fin : 1; //Finish Flag
-	unsigned char syn : 1; //Synchronise Flag
-	unsigned char rst : 1; //Reset Flag
-	unsigned char psh : 1; //Push Flag
-	unsigned char ack : 1; //Acknowledgement Flag
-	unsigned char urg : 1; //Urgent Flag
-
-	unsigned char ecn : 1; //ECN-Echo Flag
-	unsigned char cwr : 1; //Congestion Window Reduced Flag
-
-	////////////////////////////////
-
-	unsigned short window; // window
-	unsigned short checksum; // checksum
-	unsigned short urgent_pointer; // urgent pointer
-} TCP_HDR;
-
 FILE *FCONTENT = NULL;
 void DumpContent(unsigned char *data, unsigned int size)
 {
@@ -189,8 +103,9 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 
 #define PROTOCOL_TCPIP	6
 
-static unsigned int ClientBytesSent = 0;
-static unsigned int ServerBytesSent = 0;
+unsigned int ServerIP[4] = { 192, 243, 0, 0 };
+unsigned int ClientBytesSent = 0;
+unsigned int ServerBytesSent = 0;
 
 // Callback function invoked by libpcap for every incoming packet 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
@@ -207,14 +122,6 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	// retireve the position of the udp header 
 	ip_len = ih->ip_header_len * 4;
 
-	unsigned int ServerIP[4] = { 192, 243, 0, 0 };
-	FILE *f;
-	errno_t opener = fopen_s(&f, "ServerIP.txt", "rt");
-	if (f)
-	{
-		fscanf_s(f, "%d %d %d %d", &ServerIP[0], &ServerIP[1], &ServerIP[2], &ServerIP[3]);
-		fclose(f);
-	}
 	//capturing all TCP packets from IP
 	if (ih->ip_protocol == PROTOCOL_TCPIP)
 	{
@@ -363,6 +270,15 @@ int StartCapturePackets(int AutoPickAdapter)
 
 	printf("Done creating background thread to monitor network trafic\n");
 
+
+	FILE *f;
+	errno_t opener = fopen_s(&f, "ServerIP.txt", "rt");
+	if (f)
+	{
+		fscanf_s(f, "%d %d %d %d", &ServerIP[0], &ServerIP[1], &ServerIP[2], &ServerIP[3]);
+		fclose(f);
+	}
+
 	return 0;
 }
 
@@ -375,81 +291,9 @@ void StopCapturePackets()
 	adapterHandle = NULL;
 }
 
-unsigned short ComputeChecksum(unsigned char *data, int plen)
-{
-    unsigned long sum = 0;
-
-    for (int len = 0; len < plen; len+=2)
-        sum += ((unsigned short)data[len] << 8) + data[len + 1];
-
-    if (plen & 1)    
-        sum += ((unsigned long)data[plen - 1]) << 8;
-
-    while (sum >> 16)
-        sum = (sum & 0xFFFF) + (sum >> 16);
-
-    sum = (sum >> 16) + (sum & 0xFFFF);
-    sum = (sum >> 16) + (sum & 0xFFFF);
-    sum = (~sum & 0xFFFF);
-    return (unsigned short)sum;
-}
-
-
-unsigned short ComputeChecksum2(unsigned char *data, int plen)
-{
-    unsigned long sum = 0;
-
-    unsigned short *temp = (unsigned short *)data;
-    for (int len = 0; len < plen / 2; len++)
-        sum += temp[len];
-
-    if (plen & 1)
-        sum += (unsigned long)data[plen - 1];
-
-    while (sum >> 16)
-        sum = (sum & 0xFFFF) + (sum >> 16);
-
-    sum = (sum >> 16) + (sum & 0xFFFF);
-    sum = (~sum & 0xFFFF);
-    return (unsigned short)sum;
-}
-
-
 //ip.dst == 192.243.40.53 || ip.src == 192.243.40.53
-void SendPacket(unsigned char *Data, int Len, int PayloadSize)
+void SendPacket(unsigned char *Data, int Len)
 {
-    if (ClientBytesSent == 0 || ServerBytesSent == 0)
-        return;
-    ip_hdr *ih = (ip_hdr *)(Data + 14); //length of ethernet header
-
-    //check if i can generate correct checksum
- /*   {
-        unsigned short oldIPChecksum = ih->ip_checksum;
-        ih->ip_checksum = 0;
-        unsigned short myIPChecksum = ComputeChecksum(Data + 14, ih->ip_header_len * 4);
-        unsigned short myIPChecksum2 = htons(myIPChecksum);
-        ih->ip_checksum = oldIPChecksum;
-    }*/
-
-    tcp_header *tcph = (tcp_header *)((u_char*)Data + 14 + ih->ip_header_len * 4);
-    tcph->sequence = htonl(ClientBytesSent);
-    tcph->acknowledge = htonl(ServerBytesSent);
-    ClientBytesSent += PayloadSize;
-
-    typedef struct PseudoHeader{
-        unsigned long int source_ip;
-        unsigned long int dest_ip;
-        unsigned char reserved;
-        unsigned char protocol;
-        unsigned short int tcp_length;
-    }PseudoHeader;
-    PseudoHeader psh;
-
-    tcph->checksum = 0;
-//    tcph->checksum = htons(ComputeChecksum(Data, Len));
-    tcph->checksum = htons(ComputeChecksum((unsigned char *)tcph, &Data[Len] - (unsigned char*)tcph));
-//    tcph->checksum = ComputeChecksum2(Data, Len);
-
 	if (pcap_sendpacket(adapterHandle, Data, Len) != 0)
 	{
 		printf("CapturePackets.cpp : Error sending the packet: %s\n", pcap_geterr(adapterHandle));
