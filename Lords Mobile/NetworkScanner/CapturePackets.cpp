@@ -292,6 +292,7 @@ void StopCapturePackets()
 }
 
 //ip.dst == 192.243.40.53 || ip.src == 192.243.40.53
+//ip.dst == 192.243.44.239 || ip.src == 192.243.44.239
 void SendPacket(unsigned char *Data, int Len)
 {
 	if (pcap_sendpacket(adapterHandle, Data, Len) != 0)

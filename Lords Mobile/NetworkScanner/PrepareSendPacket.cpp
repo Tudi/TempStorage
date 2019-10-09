@@ -122,6 +122,7 @@ void PrepareAndSendPacket(unsigned char *Data, int Len, int PayloadSize)
 	tcph->sequence = htonl(ClientBytesSent);
 	tcph->acknowledge = htonl(ServerBytesSent);
 	ClientBytesSent += PayloadSize;
+    tcph->checksum = 0;
 
 #if 0
 	//check if i can generate correct checksum
@@ -135,7 +136,6 @@ void PrepareAndSendPacket(unsigned char *Data, int Len, int PayloadSize)
 
 	PseudoHeader psh;
 
-	tcph->checksum = 0;
 	//    tcph->checksum = htons(ComputeChecksum(Data, Len));
 	tcph->checksum = htons(ComputeChecksum((unsigned char *)tcph, &Data[Len] - (unsigned char*)tcph));
 	//    tcph->checksum = ComputeChecksum2(Data, Len);

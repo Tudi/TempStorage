@@ -110,12 +110,13 @@ void HandleLoadMapSpawnsPacket(const unsigned char *pkt_data, int len, const uns
 void OnLordsClientPacketReceived(const unsigned char *pkt_data, int len, const unsigned char *GameData, int GameLen)
 {
 	//first 2 bytes are packet len. Unless these confirm the size, the packet did not arrive completely
-	//also check packet opcode
-	if (GameLen == 11 && GameData[0] == 0x00 && GameData[1] == 11 && GameData[2] == 0x9A && GameData[3] == 0x08)
+	//0b 00 9a 08 50 00 00 00 67 02 f2
+    //0b 00 9a 08 51 00 00 00 77 02 12
+    if (GameLen == 11 && GameData[0] == 11 && GameData[1] == 0x00 && GameData[2] == 0x9A && GameData[3] == 0x08)
 		HandleCastleClickPacket(pkt_data, len, GameData, GameLen);
 
     //is this a scroll screen packet ? try to remember it. Size includes the 2 bytes to store size
-    if (GameLen == 49 && GameData[0] == 0x00 && GameData[1] == 49 && GameData[2] == 0x99 && GameData[3] == 0x08)
+    if (GameLen == 49 && GameData[0] == 49 && GameData[1] == 0x00 && GameData[2] == 0x99 && GameData[3] == 0x08)
 		HandleLoadMapSpawnsPacket(pkt_data, len, GameData, GameLen);
 
     return;
@@ -215,7 +216,7 @@ DWORD WINAPI BackgroundProcessScanGame(LPVOID lpParam)
             SendScanPacket();
 //			printf("Will try to scan ingame area at %d:%d\n", ScanX, ScanY);
 			ScanStatus = SS_ClickPlayerPacketSent;
-			WaitServerReplyTimout = GetTickCount() + 2000;
+			WaitServerReplyTimout = GetTickCount() + 10000;
 		}
 		if (ScanStatus == SS_ClickPlayerPacketSent && (ObjectListPacketReceived == true || WaitServerReplyTimout < GetTickCount()))
 		{
