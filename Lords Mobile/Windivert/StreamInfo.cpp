@@ -75,14 +75,14 @@ void ShowPacketInfo(WINDIVERT_ADDRESS addr, unsigned char *packet, unsigned int 
 	//print the content of the packet
 	{
 		SetConsoleTextAttribute(console, FOREGROUND_GREEN | FOREGROUND_BLUE);
-		for (int i = 0; i < packet_len; i++)
+		for (unsigned int i = 0; i < packet_len; i++)
 		{
 			if (i % 20 == 0)
 				printf("\n\t");
 			printf("%.2X", (UINT8)packet[i]);
 		}
 		SetConsoleTextAttribute(console, FOREGROUND_RED | FOREGROUND_BLUE);
-		for (int i = 0; i < packet_len; i++)
+		for (unsigned int i = 0; i < packet_len; i++)
 		{
 			if (i % 40 == 0)
 				printf("\n\t");

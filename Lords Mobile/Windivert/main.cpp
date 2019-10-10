@@ -28,11 +28,13 @@ int __cdecl main(int argc, char **argv)
 	const char *err_str;
 //	char Filter[255] = "outbound and tcp.PayloadLength > 0";
 //	char Filter[255] = "inbound and tcp.PayloadLength > 0";
-	char Filter[255] = "tcp.PayloadLength > 0";
+//	char Filter[255] = "ip and tcp and tcp.PayloadLength > 0";
+	char Filter[255] = "outbound and ip and tcp and tcp.PayloadLength > 0";
 	unsigned int ServerIP[4] = { 192, 243, 0, 0 };
 
 	// Divert traffic matching the filter:
-	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority,	WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_DROP);
+//	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_DROP);
+	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF);
 	if (handle == INVALID_HANDLE_VALUE)
 	{
 		if (GetLastError() == ERROR_INVALID_PARAMETER && !WinDivertHelperCheckFilter(Filter, WINDIVERT_LAYER_NETWORK, &err_str, NULL))
@@ -57,7 +59,7 @@ int __cdecl main(int argc, char **argv)
 	}
 
 	InitContentGenerator();
-	InitShowPacketInfo(1);
+	InitShowPacketInfo(0);
 
 	FILE *f;
 	errno_t opener = fopen_s(&f, "ServerIP.txt", "rt");
@@ -77,48 +79,47 @@ int __cdecl main(int argc, char **argv)
 			continue;
 		}
 
-		//in case we wish to see the content on console or maybe file
-		ShowPacketInfo(addr,packet,packet_len);
-
 		//check what we received
 		PWINDIVERT_IPV6HDR ipv6_header;
 		PWINDIVERT_ICMPHDR icmp_header;
 		PWINDIVERT_ICMPV6HDR icmpv6_header;
 		PWINDIVERT_UDPHDR udp_header;
 		WinDivertHelperParsePacket(packet, packet_len, &ip_header,	&ipv6_header, &icmp_header, &icmpv6_header, &tcp_header, &udp_header, NULL, NULL);
-		if (ip_header == NULL && ipv6_header == NULL)
+		if (ip_header != NULL && tcp_header != NULL)
 		{
-			fprintf(stderr, "warning: junk packet\n");
-		}
-
-		//we only care about our packets
-//		if (ip_header == NULL || tcp_header == NULL)
-//			continue;
-
-		//filter out IP that we do not wish to see
-		//we only care about outgoing packets
-		if (addr.Direction == WINDIVERT_DIRECTION_OUTBOUND)
-		{
-			if ((ServerIP[0] == 0 || ((unsigned char*)&ip_header->DstAddr)[0] == ServerIP[0])
-				&& (ServerIP[1] == 0 || ((unsigned char*)&ip_header->DstAddr)[1] == ServerIP[1])
-				&& (ServerIP[2] == 0 || ((unsigned char*)&ip_header->DstAddr)[2] == ServerIP[2])
-				&& (ServerIP[3] == 0 || ((unsigned char*)&ip_header->DstAddr)[3] == ServerIP[3]))
+			//filter out IP that we do not wish to see
+			if (addr.Direction == WINDIVERT_DIRECTION_OUTBOUND)
 			{
-				unsigned int PayloadContentChanged = OnClientToServerPacket(packet, packet_len);
-				if (PayloadContentChanged == 1)
+				if ((ServerIP[0] == 0 || ((unsigned char*)&ip_header->DstAddr)[0] == ServerIP[0])
+					&& (ServerIP[1] == 0 || ((unsigned char*)&ip_header->DstAddr)[1] == ServerIP[1])
+					&& (ServerIP[2] == 0 || ((unsigned char*)&ip_header->DstAddr)[2] == ServerIP[2])
+					&& (ServerIP[3] == 0 || ((unsigned char*)&ip_header->DstAddr)[3] == ServerIP[3]))
 				{
-					WinDivertHelperCalcChecksums(packet, packet_len, &addr, 0);
+					//in case we wish to see the content on console or maybe file
+					ShowPacketInfo(addr, packet, packet_len);
+					unsigned char *Payload = ((unsigned char *)tcp_header) + tcp_header->HdrLength * 4;
+					unsigned int PayloadLength = packet_len - (unsigned int)(Payload - packet);
+					unsigned int PayloadContentChanged = OnClientToServerPacket(Payload, PayloadLength);
+					if (PayloadContentChanged == 1)
+					{
+						WinDivertHelperCalcChecksums(packet, packet_len, &addr, 0);
+					}
 				}
 			}
-		}
-		else
-		{
-			if ((ServerIP[0] == 0 || ((unsigned char*)&ip_header->SrcAddr)[0] == ServerIP[0])
-				&& (ServerIP[1] == 0 || ((unsigned char*)&ip_header->SrcAddr)[1] == ServerIP[1])
-				&& (ServerIP[2] == 0 || ((unsigned char*)&ip_header->SrcAddr)[2] == ServerIP[2])
-				&& (ServerIP[3] == 0 || ((unsigned char*)&ip_header->SrcAddr)[3] == ServerIP[3]))
+			else
 			{
-				OnServerToClientPacket(packet, packet_len);
+				if ((ServerIP[0] == 0 || ((unsigned char*)&ip_header->SrcAddr)[0] == ServerIP[0])
+					&& (ServerIP[1] == 0 || ((unsigned char*)&ip_header->SrcAddr)[1] == ServerIP[1])
+					&& (ServerIP[2] == 0 || ((unsigned char*)&ip_header->SrcAddr)[2] == ServerIP[2])
+					&& (ServerIP[3] == 0 || ((unsigned char*)&ip_header->SrcAddr)[3] == ServerIP[3]))
+				{
+					//in case we wish to see the content on console or maybe file
+					ShowPacketInfo(addr, packet, packet_len);
+
+					unsigned char *Payload = ((unsigned char *)tcp_header) + tcp_header->HdrLength * 4;
+					unsigned int PayloadLength = packet_len - (unsigned int)(Payload - packet);
+					OnServerToClientPacket(Payload, PayloadLength);
+				}
 			}
 		}
 
