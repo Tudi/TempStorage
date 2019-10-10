@@ -128,12 +128,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PacketContentGenerator.cpp" />
+    <ClCompile Include="ParseClientToServer.cpp" />
+    <ClCompile Include="ParseServerToClient.cpp" />
+    <ClCompile Include="StreamInfo.cpp" />
+    <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="WinDivert.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\windivert.h" />
+    <ClInclude Include="PacketContentGenerator.h" />
+    <ClInclude Include="ParseClientToServer.h" />
+    <ClInclude Include="ParseServerToClient.h" />
+    <ClInclude Include="StreamInfo.h" />
+    <ClInclude Include="Tools.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
