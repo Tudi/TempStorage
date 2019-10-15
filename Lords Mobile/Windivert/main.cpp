@@ -10,6 +10,7 @@
 #include "StreamInfo.h"
 #include "ParseClientToServer.h"
 #include "ParseServerToClient.h"
+#include "Tools.h"
 
 #define MAXBUF  0xFFFF
 
@@ -29,12 +30,15 @@ int __cdecl main(int argc, char **argv)
 //	char Filter[255] = "outbound and tcp.PayloadLength > 0";
 //	char Filter[255] = "inbound and tcp.PayloadLength > 0";
 //	char Filter[255] = "ip and tcp and tcp.PayloadLength > 0";
-	char Filter[255] = "outbound and ip and tcp and tcp.PayloadLength > 0";
+//	char Filter[255] = "outbound and !loopback and ip and tcp and tcp.PayloadLength > 0 and ip.DstAddr==192.243.44.239";
+//	char Filter[255] = "outbound and ip and tcp and tcp.PayloadLength > 0 and ip.DstAddr==192.243.44.239";
+	char Filter[255] = "outbound and !loopback and ip and tcp and tcp.PayloadLength > 0";
 	unsigned int ServerIP[4] = { 192, 243, 0, 0 };
 
 	// Divert traffic matching the filter:
-//	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_DROP);
-	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF);
+	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, 0);
+//	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF);
+//	handle = WinDivertOpen(Filter, WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_DROP);
 	if (handle == INVALID_HANDLE_VALUE)
 	{
 		if (GetLastError() == ERROR_INVALID_PARAMETER && !WinDivertHelperCheckFilter(Filter, WINDIVERT_LAYER_NETWORK, &err_str, NULL))
@@ -45,7 +49,7 @@ int __cdecl main(int argc, char **argv)
 		fprintf(stderr, "error: failed to open the WinDivert device (%d)\n", GetLastError());
 		exit(EXIT_FAILURE);
 	}
-
+/*
 	// Max-out the packet queue:
 	if (!WinDivertSetParam(handle, WINDIVERT_PARAM_QUEUE_LEN, 8192))
 	{
@@ -56,7 +60,7 @@ int __cdecl main(int argc, char **argv)
 	{
 		fprintf(stderr, "error: failed to set packet queue time (%d)\n", GetLastError());
 		exit(EXIT_FAILURE);
-	}
+	}*/
 
 	InitContentGenerator();
 	InitShowPacketInfo(0);
@@ -84,7 +88,9 @@ int __cdecl main(int argc, char **argv)
 		PWINDIVERT_ICMPHDR icmp_header;
 		PWINDIVERT_ICMPV6HDR icmpv6_header;
 		PWINDIVERT_UDPHDR udp_header;
-		WinDivertHelperParsePacket(packet, packet_len, &ip_header,	&ipv6_header, &icmp_header, &icmpv6_header, &tcp_header, &udp_header, NULL, NULL);
+		void *payload;
+		unsigned int payload_len;
+		WinDivertHelperParsePacket(packet, packet_len, &ip_header,	&ipv6_header, &icmp_header, &icmpv6_header, &tcp_header, &udp_header, &payload, &payload_len);
 		if (ip_header != NULL && tcp_header != NULL)
 		{
 			//filter out IP that we do not wish to see
@@ -123,12 +129,15 @@ int __cdecl main(int argc, char **argv)
 			}
 		}
 
+		PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
 		//send the packet
-		if (!WinDivertSend(handle, packet, sizeof(packet), &addr, &packet_len))
+		if (!WinDivertSend(handle, packet, packet_len, &addr, 0))
 		{
 			fprintf(stderr, "warning: failed to put packet back to the send stream (%d)\n", GetLastError());
 			continue;
 		}
+		else
+			printf("Reinserted packet : %d\n", packet_len);
 	}
 
 	//cleanup

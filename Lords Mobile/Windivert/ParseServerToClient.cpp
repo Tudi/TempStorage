@@ -26,7 +26,7 @@ int GetXYFromGUID(unsigned int GUID, int &x, int &y)
 		int ty = tguid->y0 | (tguid->y1 << 4) | (tguid->y2 << 8);
 		int tx = (ty & 1) | 2 * (tguid->x0 | (tguid->x1 << 4)); // every second row, x is impair
 		if (tx != x || ty != y)
-			printf("Debug generating this guid with new way");
+			printf("Debug generating this guid with new way\n");
 	}
 
 	//sanity checks
@@ -41,6 +41,10 @@ unsigned int GenerateIngameGUID(int x, int y)
 	if (x > 511 || y > 1024)
 		return 0;
 
+	//this will make the 512 with stretch to 1024 automatically so that the server thinks we are feeding him correct coordinates
+//	if (y & 2 == 1)
+		x = ( x << 1 ) | ( y & 1);
+
 	IngameGUIDStruct guid;
 	memset(&guid, 0, sizeof(guid));
 	guid.y0 = (y >> 0) & 0x0F; // 4 bits always
@@ -48,14 +52,13 @@ unsigned int GenerateIngameGUID(int x, int y)
 	guid.y2 = (y >> 8) & 0x0F; // 4 bits always
 	//skip 1 bit since it's already inside the Y
 	guid.x0 = (x >> 1) & 0x0F; // 4 bits always
-	guid.y1 = (x >> 5) & 0x0F; // 4 bits always
-	guid.y2 = (x >> 9) & 0x0F; // 4 bits always
+	guid.x1 = (x >> 5) & 0x0F; // 4 bits always
 
 	int tempx, tempy;
 	GetXYFromGUID(*(unsigned int*)&guid, tempx, tempy);
 	if (tempx != x || tempy != y)
 	{
-		printf("Debug generating this guid with new way");
+		printf("Debug generating this guid with new way\n");
 		return 0;
 	}
 	return *(unsigned int*)&guid;

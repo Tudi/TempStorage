@@ -2,7 +2,18 @@
 #include <stdio.h>
 #include "PacketContentGenerator.h"
 #include "ParseServerToClient.h"
+#include "Tools.h"
+#include <Windows.h>
 
+/*
+if client does not recive a reply from the server, he will send the same packet multiple times
+Got client click packet :
+0B 00 9A 08 50 00 00 00 00 00 11
+0B 00 9A 08 51 00 00 00 00 00 11 08 00 00 04 52 00 00 00
+Reinserted packet : 59
+0B 00 9A 08 50 00 00 00 00 00 11 0B 00 9A 08 51 00 00 00 00 00 11 08 00 00 04 52 00 00 00
+Reinserted packet : 70
+*/
 //0b 00 9a 08 5b 00 00 00 77 02 26
 //0b 00 9a 08 64 00 00 00 67 02 f2
 //0b 00 9a 08 68 00 00 00 77 02 03
@@ -11,6 +22,7 @@
 //0b 00 9a 08 79 00 00 00 57 02 e6
 //0b 00 9a 08 c8 00 00 00 ff 03 ff
 static int PacketSentCounter = 0x5B;
+static unsigned int LastEditStamp = 0;
 int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastleClickPacket = 0)
 {
 #define CastleClickPacketBytesSize 11
@@ -18,6 +30,15 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastle
 	static char PrevPacketSent[CastleClickPacketBytesSize];
 	if (memcmp(PrevPacketSent, packet, CastleClickPacketBytesSize) == 0)
 		return 0;
+
+/*	{
+		if (LastEditStamp > GetTickCount())
+			return 0;
+		LastEditStamp = GetTickCount() + 1000;
+	}/**/
+
+	printf("Got client click packet : \n");
+	PrintDataHexFormat(packet, len, 0, len);
 
 	int x, y;
 	if (GeteneratePosToScan(x, y) != 0)
@@ -44,8 +65,11 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastle
 		return 0;
 	*(unsigned int*)&packet[7] = GUID;
 
-	printf("Will try to scan map location %d %d\n", y, x);
 	memcpy(PrevPacketSent, packet, CastleClickPacketBytesSize);
+
+	printf("Will try to scan map location %d %d\n", y, x);
+//	PrintDataHexFormat(packet, len, 0, len);
+//	printf("\n");
 
 	return 0; // overrided content
 }
@@ -54,7 +78,8 @@ int OnClientToServerPacket(unsigned char *packet, unsigned int len)
 {
 	//castle click packet
 	//0b 00 9a 08 5b 00 00 00 77 02 26
-	if (len == 11 && packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
+//	if (len == 11 && packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
+	if (packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
 	{
 		int ret = OnPacketForClickCastle(packet, len, 1);
 		if (ret == 0)

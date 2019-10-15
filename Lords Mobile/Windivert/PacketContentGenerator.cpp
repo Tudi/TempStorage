@@ -21,6 +21,7 @@ int GeteneratePosToScan(int &px, int &py)
 	unsigned int TickNow = GetTickCount();
 	for (int y = ContinueScanY; y < MaxGameY; y++)
 		for (int x = ContinueScanX; x < MaxGameX; x++)
+		{
 			if (GameMap[y][x].StatusTimout < TickNow)
 			{
 				px = x;
@@ -30,6 +31,7 @@ int GeteneratePosToScan(int &px, int &py)
 				GameMap[y][x].StatusTimout = TickNow + TimoutScanMS;
 				return 0; // no issues
 			}
+		}
 
 	//after a rescan without timeouts, we should just start scanning what we can
 	if (ContinueScanY == 0 && ContinueScanX == 0)
