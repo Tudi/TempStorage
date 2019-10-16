@@ -29,7 +29,10 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastle
 	//if we receive the same packet we sent out, do not parse it again
 	static char PrevPacketSent[CastleClickPacketBytesSize];
 	if (memcmp(PrevPacketSent, packet, CastleClickPacketBytesSize) == 0)
+	{
+		printf("Packet got resent ?\n");
 		return 0;
+	}
 
 /*	{
 		if (LastEditStamp > GetTickCount())
@@ -74,6 +77,16 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastle
 	return 0; // overrided content
 }
 
+int OnClientLoadMapContentPacket(unsigned char *packet, unsigned int len)
+{
+	unsigned char *NewContent;
+	if (GenerateAreaToScan(&NewContent) != 0)
+		return 1; // could not generate the new packet for some reason
+	//override with new packet content
+	memcpy(packet + 2, NewContent, len - 2);
+	return 0;
+}
+
 int OnClientToServerPacket(unsigned char *packet, unsigned int len)
 {
 	//castle click packet
@@ -90,7 +103,7 @@ int OnClientToServerPacket(unsigned char *packet, unsigned int len)
 	//0c 00 32 0b 7c 9f d0 cc cc 8f e3 84
 	//0c 00 32 0b 70 1c 69 60 c2 0e f0 98
 	//0c 00 32 0b c5 72 33 a6 db b0 ab 86
-	if (len == 12 && packet[0] == 12 && packet[1] == 0 && packet[2] == 0x32 && packet[3] == 0x0B)
+/*	if (len == 12 && packet[0] == 12 && packet[1] == 0 && packet[2] == 0x32 && packet[3] == 0x0B)
 	{
 		int ret = OnPacketForClickCastle(packet, len);
 		if (ret == 0)
@@ -105,7 +118,15 @@ int OnClientToServerPacket(unsigned char *packet, unsigned int len)
 		int ret = OnPacketForClickCastle(packet, len);
 		if (ret == 0)
 			return 0;
+	}*/
+	//is this a scroll screen packet ? try to remember it. Size includes the 2 bytes to store size
+	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
+	{
+		int ret = OnClientLoadMapContentPacket(packet, len);
+		if (ret == 0)
+			return 0;
 	}
+
 	//we did not change the packet
 	return 1;
 }

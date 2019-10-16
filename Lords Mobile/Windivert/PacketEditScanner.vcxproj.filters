@@ -33,6 +33,9 @@
     <ClCompile Include="Tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Connections.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="WinDivert.lib">
@@ -56,6 +59,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Tools.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Connections.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
