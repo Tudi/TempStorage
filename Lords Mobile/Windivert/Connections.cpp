@@ -197,7 +197,7 @@ void InitConnections()
 	HANDLE	FilterIncommingConnectionsThreadHandle = 0;
 	HANDLE	FilterOutgoingConnectionsThreadHandle = 0;
 	DWORD   ThreadId;
-	FilterIncommingConnectionsThreadHandle = CreateThread(NULL, 0, InitFilterIncommingConnections_,	NULL, 0, &ThreadId);		
+	//FilterIncommingConnectionsThreadHandle = CreateThread(NULL, 0, InitFilterIncommingConnections_,	NULL, 0, &ThreadId);		
 	FilterOutgoingConnectionsThreadHandle = CreateThread(NULL, 0, InitFilterOutgoingConnections_, NULL, 0, &ThreadId);
 }
 

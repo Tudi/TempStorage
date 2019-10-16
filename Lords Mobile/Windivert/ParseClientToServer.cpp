@@ -21,20 +21,20 @@ Reinserted packet : 70
 //0b 00 9a 08 70 00 00 00 77 02 95
 //0b 00 9a 08 79 00 00 00 57 02 e6
 //0b 00 9a 08 c8 00 00 00 ff 03 ff
-static int PacketSentCounter = 0x5B;
+//static int PacketSentCounter = 0x5B;
 static unsigned int LastEditStamp = 0;
-int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastleClickPacket = 0)
+int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 {
 #define CastleClickPacketBytesSize 11
 	//if we receive the same packet we sent out, do not parse it again
-	static char PrevPacketSent[CastleClickPacketBytesSize];
+/*	static char PrevPacketSent[CastleClickPacketBytesSize];
 	if (memcmp(PrevPacketSent, packet, CastleClickPacketBytesSize) == 0)
 	{
 		printf("Packet got resent ?\n");
 		return 0;
-	}
+	}/**/
 
-/*	{
+	{
 		if (LastEditStamp > GetTickCount())
 			return 0;
 		LastEditStamp = GetTickCount() + 1000;
@@ -46,21 +46,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastle
 	int x, y;
 	if (GeteneratePosToScan(x, y) != 0)
 		return 1; // do not change the packet
-	if (IsCastleClickPacket == 0)
-	{
-		// set len to new size
-		packet[0] = 11;
-		//opcode
-		packet[2] = 0x9A;
-		packet[3] = 0x08;
-		//unk
-		packet[4] = PacketSentCounter; // query counter ? Seems to be a number that increases over time
-		PacketSentCounter++;
-	}
-	else
-	{
-		PacketSentCounter = packet[4] + 1;
-	}
+
 	// write coordinates
 	unsigned int GUID = GenerateIngameGUID(x, y);
 	//failed to generate GUID from x, y
@@ -68,7 +54,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len, int IsCastle
 		return 0;
 	*(unsigned int*)&packet[7] = GUID;
 
-	memcpy(PrevPacketSent, packet, CastleClickPacketBytesSize);
+//	memcpy(PrevPacketSent, packet, CastleClickPacketBytesSize);
 
 	printf("Will try to scan map location %d %d\n", y, x);
 //	PrintDataHexFormat(packet, len, 0, len);
@@ -87,14 +73,22 @@ int OnClientLoadMapContentPacket(unsigned char *packet, unsigned int len)
 	return 0;
 }
 
-int OnClientToServerPacket(unsigned char *packet, unsigned int len)
+
+int OnClientToServerSinglePacket(unsigned char *packet, unsigned int len)
 {
 	//castle click packet
 	//0b 00 9a 08 5b 00 00 00 77 02 26
-//	if (len == 11 && packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
-	if (packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
+	if (len == 11 && packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
+		//	if (packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
 	{
-		int ret = OnPacketForClickCastle(packet, len, 1);
+		int ret = OnPacketForClickCastle(packet, len);
+		if (ret == 0)
+			return 0;
+	}
+	//is this a scroll screen packet ? Size includes the 2 bytes to store size
+	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
+	{
+		int ret = OnClientLoadMapContentPacket(packet, len);
 		if (ret == 0)
 			return 0;
 	}
@@ -119,14 +113,28 @@ int OnClientToServerPacket(unsigned char *packet, unsigned int len)
 		if (ret == 0)
 			return 0;
 	}*/
-	//is this a scroll screen packet ? try to remember it. Size includes the 2 bytes to store size
-	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
-	{
-		int ret = OnClientLoadMapContentPacket(packet, len);
-		if (ret == 0)
-			return 0;
-	}
 
 	//we did not change the packet
 	return 1;
+}
+
+int OnClientToServerPacket(unsigned char *packet, unsigned int len)
+{
+	int SummaryReturn = 1;
+	//check if it is a multi packet packet
+	unsigned int BytesParsed = 0;
+	while (BytesParsed < len)
+	{
+		unsigned short SubPacketLen = *(unsigned short *)&packet[BytesParsed];
+		if (BytesParsed + SubPacketLen <= len)
+		{
+			int ret = OnClientToServerSinglePacket(&packet[BytesParsed], SubPacketLen);
+			if (ret == 0)
+				SummaryReturn = 0;
+		}
+		BytesParsed += SubPacketLen;
+		//if we edited even 1 packet, we should recalc checksum for the packet
+	}
+	//we did not change the packet
+	return SummaryReturn;
 }

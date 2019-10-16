@@ -64,13 +64,13 @@ unsigned int GenerateIngameGUID(int x, int y)
 	return *(unsigned int*)&guid;
 }
 
-void ParsePacketCastlePopup(unsigned char *packet, int size)
+int ParsePacketCastlePopup(unsigned char *packet, int size)
 {
 	//print info about it
 	CastlePopupInfo *CD = (CastlePopupInfo *)&packet[3];
 	int x, y;
 	if (GetXYFromGUID(CD->GUID, x, y) != 0)
-		return;
+		return PPHT_DID_NOT_TOUCH_IT;
 
 	OnCastlePopupPacketReceived(x, y);
 	//let's do some basic checkings if we are guessing this packet correctly
@@ -115,6 +115,7 @@ void ParsePacketCastlePopup(unsigned char *packet, int size)
 	else if (CD2->Kills > 0 && CD2->Might > 0) //can be resource click or monster click also
 		printf("Investigate why there is no create packet for castle at %d %d - %s\n", x, y, CD2->GuildFullName);
 	*/
+	return PPHT_DID_NOT_TOUCH_IT;
 }
 
 void ProcessPacket1(unsigned char *packet, int size)
@@ -130,6 +131,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 		return;
 	}
 
+#if 0
 	// visible object query rely. Castles, mines ... 
 	if (packet[0] == 0xAC && packet[1] == 0x08 && (packet[2] == 0x02 || packet[2] == 0x03 || packet[2] == 0x0F || packet[2] == 0x0D || packet[2] == 0x0E || packet[2] == 0x09 || packet[2] == 0x18 || packet[2] == 0x17 || packet[2] == 0x16))
 	{
@@ -200,7 +202,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 		//9E 18 CB C0 BC 58 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 		return;
 	}
-
+	// chat packets
 	if (packet[0] == 0xBB && packet[1] == 0x0B)
 	{
 		//BB 0B 00 00 01 00 99 95 BC 58 00 00 00 00 00 00 00 00 00 00 00 00 BD 08 00 00 00 00 00 00 01 65 00 00 4D 61 6E 74 69 63 30 72 33 00 00 00 00 01 00 00 00 00 00 00 00 00 
@@ -220,12 +222,20 @@ void ProcessPacket1(unsigned char *packet, int size)
 	PrintDataHexFormat(packet, size, 0, size);
 	printf("\n\n");
 #endif
+#endif
 }
 
 int OnServerToClientPacket(unsigned char *packet, unsigned int len)
 {
-	ProcessPacket1(&packet[2], len-2);
-	return 0;
+	unsigned int BytesParsed = 0;
+	while (BytesParsed < len)
+	{
+		unsigned short SubPacketLen = *(unsigned short *)&packet[BytesParsed];
+		if (BytesParsed + SubPacketLen <= len)
+			ProcessPacket1(&packet[BytesParsed + 2], SubPacketLen - 2);
+		BytesParsed += SubPacketLen;
+	}
+	return PPHT_DID_NOT_TOUCH_IT;
 }
 /*
 unsigned char *PacketCircularBuffer[MAX_PACKET_CIRCULAR_BUFFER];

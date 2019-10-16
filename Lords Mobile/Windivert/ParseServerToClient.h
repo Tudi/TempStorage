@@ -131,6 +131,12 @@ struct IngameGUIDStruct
 };
 #pragma pack(pop)
 
+enum ParserPacketHandleType
+{
+	PPHT_DID_NOT_TOUCH_IT = 0,
+	PPHT_EDITED = 1,
+	PPHT_SHOULD_DROP = 2,
+};
 int OnServerToClientPacket(unsigned char *packet, unsigned int len);
 int GetXYFromGUID(unsigned int GUID, int &x, int &y);
 unsigned int GenerateIngameGUID(int x, int y);
