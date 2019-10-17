@@ -84,18 +84,19 @@ DWORD WINAPI InitFilterIncommingConnections_(LPVOID lpParam)
 				ShowPacketInfo(addr, packet, packet_len);
 
 				OnServerToClientPacket((unsigned char *)payload, payload_len);
+//if(payload_len==62)
+//				PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
 			}
 		}
-
-		PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
 		//send the packet
 		if (!WinDivertSend(handle, packet, packet_len, &addr, 0))
 		{
 			fprintf(stderr, "warning: failed to put packet back to the send stream (%d)\n", GetLastError());
 			continue;
 		}
-		else
-			printf("Reinserted packet : %d\n", packet_len);
+		//only if we filter by IP also
+//		else
+//			printf("Reinserted packet : %d\n", packet_len);
 	}
 
 	//cleanup
@@ -159,19 +160,20 @@ DWORD WINAPI InitFilterOutgoingConnections_(LPVOID lpParam)
 				if (PayloadContentChanged == 1)
 				{
 					WinDivertHelperCalcChecksums(packet, packet_len, &addr, 0);
+					if (payload_len == 51)
+						PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
 				}
 			}
 		}
-
-		PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
 		//send the packet
 		if (!WinDivertSend(handle, packet, packet_len, &addr, 0))
 		{
 			fprintf(stderr, "warning: failed to put packet back to the send stream (%d)\n", GetLastError());
 			continue;
 		}
-		else
-			printf("Reinserted packet : %d\n", packet_len);
+		//only if we filter by IP also
+//		else
+//			printf("Reinserted packet : %d\n", packet_len);
 	}
 
 	//cleanup
@@ -197,7 +199,7 @@ void InitConnections()
 	HANDLE	FilterIncommingConnectionsThreadHandle = 0;
 	HANDLE	FilterOutgoingConnectionsThreadHandle = 0;
 	DWORD   ThreadId;
-	//FilterIncommingConnectionsThreadHandle = CreateThread(NULL, 0, InitFilterIncommingConnections_,	NULL, 0, &ThreadId);		
+	FilterIncommingConnectionsThreadHandle = CreateThread(NULL, 0, InitFilterIncommingConnections_,	NULL, 0, &ThreadId);		
 	FilterOutgoingConnectionsThreadHandle = CreateThread(NULL, 0, InitFilterOutgoingConnections_, NULL, 0, &ThreadId);
 }
 

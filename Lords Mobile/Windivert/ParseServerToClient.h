@@ -117,7 +117,6 @@ struct CastlePopupInfo
 	unsigned char	Unk[6];
 	__int64			Might;
 	__int64			Kills;
-	//12 more unk bytes
 };
 struct IngameGUIDStruct
 {

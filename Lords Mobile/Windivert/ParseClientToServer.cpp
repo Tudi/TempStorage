@@ -35,9 +35,12 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 	}/**/
 
 	{
-		if (LastEditStamp > GetTickCount())
+//		if (LastEditStamp > GetTickCount())
+		{
+			printf("allow server reply for castle click packet : \n");
 			return 0;
-		LastEditStamp = GetTickCount() + 1000;
+		}
+		LastEditStamp = GetTickCount() + 2000;
 	}/**/
 
 	printf("Got client click packet : \n");
@@ -46,6 +49,10 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 	int x, y;
 	if (GeteneratePosToScan(x, y) != 0)
 		return 1; // do not change the packet
+
+	unsigned int oldGUID = *(unsigned int*)&packet[7];
+	int ox, oy;
+	GetXYFromGUID(oldGUID, ox, oy);
 
 	// write coordinates
 	unsigned int GUID = GenerateIngameGUID(x, y);
@@ -56,7 +63,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 
 //	memcpy(PrevPacketSent, packet, CastleClickPacketBytesSize);
 
-	printf("Will try to scan map location %d %d\n", y, x);
+	printf("Will try to scan map location %d %d instead of %d %d\n", y, x, ox, oy);
 //	PrintDataHexFormat(packet, len, 0, len);
 //	printf("\n");
 
@@ -86,12 +93,12 @@ int OnClientToServerSinglePacket(unsigned char *packet, unsigned int len)
 			return 0;
 	}
 	//is this a scroll screen packet ? Size includes the 2 bytes to store size
-	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
+/*	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
 	{
 		int ret = OnClientLoadMapContentPacket(packet, len);
 		if (ret == 0)
 			return 0;
-	}
+	}*/
 	//is this "delete opened gifts" packet
 	//0c 00 32 0b 85 7d bd 80 35 12 75 7e
 	//0c 00 32 0b 7c 9f d0 cc cc 8f e3 84

@@ -136,7 +136,10 @@ void InitContentGenerator()
 	//if we catch a scan packet, we will try to override it
 	LoadScanPacketsFromFile();
 	//try to open file to load mapscan packets
-	Validxy[ValidxyCount++] = 1;	Validxy[ValidxyCount++] = 1; 
-	Validxy[ValidxyCount++] = 1;	Validxy[ValidxyCount++] = 2;
-	Validxy[ValidxyCount++] = 2;	Validxy[ValidxyCount++] = 3;
+	Validxy[ValidxyCount++] = 0;	Validxy[ValidxyCount++] = 2; 
+	Validxy[ValidxyCount++] = 1;	Validxy[ValidxyCount++] = 3;
+	Validxy[ValidxyCount++] = 2;	Validxy[ValidxyCount++] = 0;
+	Validxy[ValidxyCount++] = 2;	Validxy[ValidxyCount++] = 2;
+	Validxy[ValidxyCount++] = 3;	Validxy[ValidxyCount++] = 5;
+	Validxy[ValidxyCount++] = 5;	Validxy[ValidxyCount++] = 1;
 }

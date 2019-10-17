@@ -64,6 +64,16 @@ unsigned int GenerateIngameGUID(int x, int y)
 	return *(unsigned int*)&guid;
 }
 
+/*
+Got client click packet :
+0B 00 9A 08 0B 00 00 00 72 00 5A
+AC 08 0C 2F 7F 00 00 00 00 00 00 2F 00 72 00 5A 6D 69 73 66 69 74 6D 61 79 68 65 6D 37 31 31 00 00 00 00 00 02 01 01 00 00 00 00 00 F5 D1 00 00 00 00 00 00 21 00 00 00 00 00 00 00
+
+- no shield
+AC 08 0C 0E 30 00 00 00 00 00 00 2F 00 00 00 20 4D 61 6C 61 6E 67 20 76 61 6E 20 6A 61 76 61 00 00 00 00 00 07 05 01 00 00 00 00 00 D1 36 04 00 00 00 00 00 15 09 00 00 00 00 00 00
+- shield
+AC 08 0C 0E 30 00 00 00 00 00 00 2F 00 00 00 21 4C 68 52 20 41 63 41 64 65 6D 69 41 00 00 00 00 00 00 00 00 02 01 01 00 00 00 00 00 8F 37 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+*/
 int ParsePacketCastlePopup(unsigned char *packet, int size)
 {
 	//print info about it
