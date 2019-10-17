@@ -35,7 +35,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 	}/**/
 
 	{
-//		if (LastEditStamp > GetTickCount())
+		if (LastEditStamp > GetTickCount())
 		{
 			printf("allow server reply for castle click packet : \n");
 			return 0;

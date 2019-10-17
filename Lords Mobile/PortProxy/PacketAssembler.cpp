@@ -26,6 +26,7 @@ int PacketAssembler::AddBuffer(char *packet, int len)
 		memcpy(&tbuf[0], Buffers, BuffersLen);
 		memcpy(&tbuf[BuffersLen], packet, len);
 		free(Buffers);
+		Buffers = NULL;
 		BuffersLen = 0;
 	}
 	else
@@ -52,6 +53,8 @@ int PacketAssembler::AddBuffer(char *packet, int len)
 		Buffers = (char*)malloc(BuffersLen+10);
 		memcpy(Buffers, &tbuf[BytesParsed], BuffersLen);
 	}
+	if (tlen != len)
+		free(tbuf);
 	return 0;
 }
 
@@ -59,6 +62,7 @@ void PacketAssembler::StorePacket(char *buf, int len)
 {
 	BufSizeStore *bs = new BufSizeStore();
 	bs->buf = (char*)malloc(len);
+	bs->size = len;
 	memcpy(bs->buf, buf, len);
 	Packets.push_back(bs);
 }

@@ -308,7 +308,7 @@ static DWORD proxy(LPVOID arg)
 			warning("failed to accept socket (%d)", WSAGetLastError());
 			continue;
 		}
-
+		printf("Got a new socket connection to IP %d.%d.%d.%d\n", addr.sin_addr.S_un.S_un_b.s_b1, addr.sin_addr.S_un.S_un_b.s_b2, addr.sin_addr.S_un.S_un_b.s_b3, addr.sin_addr.S_un.S_un_b.s_b4);
 		// Spawn proxy connection handler thread.
 		config = (PPROXY_CONNECTION_CONFIG)	malloc(sizeof(PROXY_CONNECTION_CONFIG));
 		if (config == NULL)
@@ -438,7 +438,7 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 			char *tbuf = FragmentedPacketStore.FetchPacket(len);
 			while (tbuf != NULL)
 			{
-				if (config->inbound == FALSE)
+				if (inbound == FALSE)
 					OnClientToServerPacket((unsigned char*)tbuf, len);
 				else
 					OnServerToClientPacket((unsigned char*)tbuf, len);
@@ -449,8 +449,10 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 					shutdown(DestinationSocket, SD_BOTH);
 					return 0;
 				}
+				free(tbuf);
+				tbuf = FragmentedPacketStore.FetchPacket(len);
 			}
-		}
+		}/**/
 
 		// Dump stream information to the screen.
 		/*{
