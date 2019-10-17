@@ -157,12 +157,10 @@ DWORD WINAPI InitFilterOutgoingConnections_(LPVOID lpParam)
 				//in case we wish to see the content on console or maybe file
 				ShowPacketInfo(addr, packet, packet_len);
 				unsigned int PayloadContentChanged = OnClientToServerPacket((unsigned char *)payload, payload_len);
-				if (PayloadContentChanged == 1)
-				{
+//				if (PayloadContentChanged == 1)
 					WinDivertHelperCalcChecksums(packet, packet_len, &addr, 0);
-					if (payload_len == 51)
-						PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
-				}
+				if (payload_len == 51)
+					PrintDataHexFormat((unsigned char *)payload, payload_len, 0, payload_len);
 			}
 		}
 		//send the packet
