@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="Connections.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PacketAssembler.cpp" />
     <ClCompile Include="PacketContentGenerator.cpp" />
     <ClCompile Include="ParseClientToServer.cpp" />
     <ClCompile Include="ParseServerToClient.cpp" />
@@ -133,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connections.h" />
+    <ClInclude Include="PacketAssembler.h" />
     <ClInclude Include="PacketContentGenerator.h" />
     <ClInclude Include="ParseClientToServer.h" />
     <ClInclude Include="ParseServerToClient.h" />

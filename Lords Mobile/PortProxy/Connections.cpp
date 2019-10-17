@@ -10,6 +10,7 @@
 #include "ParseClientToServer.h"
 #include "ParseServerToClient.h"
 #include "Tools.h"
+#include "PacketAssembler.h"
 
 //https://reqrypt.org/windivert-doc-1.4.html
 //https://reqrypt.org/windivert-doc-1.4.html#filter_language
@@ -390,6 +391,17 @@ static DWORD proxy_connection_handler(LPVOID arg)
 	return 0;
 }
 
+int SendBufferOverNetwork(SOCKET DestinationSocket, char *buf, int len)
+{
+	for (int i = 0; i < len; )
+	{
+		int len2 = send(DestinationSocket, buf + i, len - i, 0);
+		if (len2 == SOCKET_ERROR)
+			return 1;
+		i += len2;
+	}
+	return 0;
+}
 /*
  * Handle the transfer of data from one socket to another.
  */
@@ -399,14 +411,13 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 	BOOL inbound = config->inbound;
 	SOCKET SourceSocket = config->s, DestinationSocket = config->t;
 	char buf[65535];
-	int len, len2, i;
-	int DirectionClientServer = 0;
 	free(config);
+	PacketAssembler FragmentedPacketStore;
 
 	while (TRUE)
 	{
 		// Read data from s.
-		len = recv(SourceSocket, buf, sizeof(buf), 0);
+		int len = recv(SourceSocket, buf, sizeof(buf), 0);
 		if (len == SOCKET_ERROR)
 		{
 			warning("failed to recv from socket (%d)", WSAGetLastError());
@@ -420,10 +431,26 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 			shutdown(DestinationSocket, SD_SEND);
 			return 0;
 		}
-		if (config->inbound == FALSE)
-			OnClientToServerPacket((unsigned char*)buf, len);
-		else
-			OnServerToClientPacket((unsigned char*)buf, len);
+
+		//assemble partial network packets into full game packets
+		if (FragmentedPacketStore.AddBuffer(buf, len) == 0)
+		{
+			char *tbuf = FragmentedPacketStore.FetchPacket(len);
+			while (tbuf != NULL)
+			{
+				if (config->inbound == FALSE)
+					OnClientToServerPacket((unsigned char*)tbuf, len);
+				else
+					OnServerToClientPacket((unsigned char*)tbuf, len);
+				if (len != 0 && SendBufferOverNetwork(DestinationSocket, tbuf, len) != 0)
+				{
+					warning("failed to send to socket (%d)", WSAGetLastError());
+					shutdown(SourceSocket, SD_BOTH);
+					shutdown(DestinationSocket, SD_BOTH);
+					return 0;
+				}
+			}
+		}
 
 		// Dump stream information to the screen.
 		/*{
@@ -439,18 +466,13 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 			ReleaseMutex(lock);
 		}/**/
 
-		// Send data to t.
-		for (i = 0; i < len; )
+		// Send data to DestinationSocket.
+		if(len != 0 && SendBufferOverNetwork(DestinationSocket,buf,len) != 0)
 		{
-			len2 = send(DestinationSocket, buf + i, len - i, 0);
-			if (len2 == SOCKET_ERROR)
-			{
-				warning("failed to send to socket (%d)", WSAGetLastError());
-				shutdown(SourceSocket, SD_BOTH);
-				shutdown(DestinationSocket, SD_BOTH);
-				return 0;
-			}
-			i += len2;
+			warning("failed to send to socket (%d)", WSAGetLastError());
+			shutdown(SourceSocket, SD_BOTH);
+			shutdown(DestinationSocket, SD_BOTH);
+			return 0;
 		}
 	}
 
