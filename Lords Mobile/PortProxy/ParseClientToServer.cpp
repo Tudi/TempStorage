@@ -34,7 +34,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 		return 0;
 	}/**/
 
-	{
+/*	{
 		if (LastEditStamp > GetTickCount())
 		{
 			printf("allow server reply for castle click packet : \n");
@@ -72,6 +72,22 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 
 int OnClientLoadMapContentPacket(unsigned char *packet, unsigned int len)
 {
+	//dump it into a file. we will process and analize it later
+#define _DUMPPACKET_TO_FILE
+#ifdef _DUMPPACKET_TO_FILE
+	static FILE *FCONTENT = NULL;
+	if (FCONTENT == NULL)
+		errno_t er = fopen_s(&FCONTENT, "client_to_server_out", "ab");
+	// might need to reassamble segmented packets later. TCP is a bytestream. The beggining of the packet should be a number indicating how much we need to read until the next packet
+	if (FCONTENT)
+	{
+		//                fwrite(&BytesToDump, 1, 4, FCONTENT); //already present in the packet as the first 2 bytes
+		fwrite(packet, 1, len, FCONTENT);
+		fflush(FCONTENT);
+	}
+#endif
+	return 1; // we are not ready to edit scan packets. Client will instant DC us
+
 	unsigned char *NewContent;
 	if (GenerateAreaToScan(&NewContent) != 0)
 		return 1; // could not generate the new packet for some reason
@@ -93,12 +109,12 @@ int OnClientToServerSinglePacket(unsigned char *packet, unsigned int len)
 			return 0;
 	}
 	//is this a scroll screen packet ? Size includes the 2 bytes to store size
-/*	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
+	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
 	{
 		int ret = OnClientLoadMapContentPacket(packet, len);
 		if (ret == 0)
 			return 0;
-	}*/
+	}/**/
 	//is this "delete opened gifts" packet
 	//0c 00 32 0b 85 7d bd 80 35 12 75 7e
 	//0c 00 32 0b 7c 9f d0 cc cc 8f e3 84

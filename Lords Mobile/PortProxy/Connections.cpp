@@ -476,6 +476,25 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 			shutdown(DestinationSocket, SD_BOTH);
 			return 0;
 		}
+
+		//do we have packets to be injected into the communication stream ?
+		if (inbound == FALSE)
+		{
+			char *tbuf = InjectQueue.FetchPacket(len);
+			while (tbuf != NULL)
+			{
+				if (len != 0 && SendBufferOverNetwork(DestinationSocket, tbuf, len) != 0)
+				{
+					warning("failed to send to socket (%d)", WSAGetLastError());
+					shutdown(SourceSocket, SD_BOTH);
+					shutdown(DestinationSocket, SD_BOTH);
+					return 0;
+				}
+				free(tbuf);
+				printf("Injected packet to server : %d\n", len);
+				tbuf = InjectQueue.FetchPacket(len);
+			}
+		}/**/
 	}
 
 	return 0;

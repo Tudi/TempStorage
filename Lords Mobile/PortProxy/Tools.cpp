@@ -129,7 +129,7 @@ void PrintDataHexFormat(unsigned char *packet, int size, int From, int To)
 	printf("\n");
 }
 
-void PrintFixedLenString(char *PreStr, char *str, int len, int WithNewLine)
+void PrintFixedLenString(const char *PreStr, char *str, int len, int WithNewLine)
 {
 	if (PreStr != NULL)
 		printf("%s", PreStr);
