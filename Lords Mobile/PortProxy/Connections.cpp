@@ -438,11 +438,14 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 			char *tbuf = FragmentedPacketStore.FetchPacket(len);
 			while (tbuf != NULL)
 			{
+				int PacketHandledStatus = PPHT_DID_NOT_TOUCH_IT;
 				if (inbound == FALSE)
-					OnClientToServerPacket((unsigned char*)tbuf, len);
+					PacketHandledStatus = OnClientToServerPacket((unsigned char*)tbuf, len);
 				else
-					OnServerToClientPacket((unsigned char*)tbuf, len);
-				if (len != 0 && SendBufferOverNetwork(DestinationSocket, tbuf, len) != 0)
+					PacketHandledStatus = OnServerToClientPacket((unsigned char*)tbuf, len);
+
+				//if we should still send it to the socket ...
+				if (len != 0 && PacketHandledStatus != PPHT_SHOULD_DROP && SendBufferOverNetwork(DestinationSocket, tbuf, len) != 0)
 				{
 					warning("failed to send to socket (%d)", WSAGetLastError());
 					shutdown(SourceSocket, SD_BOTH);
@@ -480,10 +483,11 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 		//do we have packets to be injected into the communication stream ?
 		if (inbound == FALSE)
 		{
-			char *tbuf = InjectQueue.FetchPacket(len);
+			int tlen;
+			char *tbuf = InjectQueue.FetchPacket(tlen);
 			while (tbuf != NULL)
 			{
-				if (len != 0 && SendBufferOverNetwork(DestinationSocket, tbuf, len) != 0)
+				if (tlen != 0 && SendBufferOverNetwork(DestinationSocket, tbuf, tlen) != 0)
 				{
 					warning("failed to send to socket (%d)", WSAGetLastError());
 					shutdown(SourceSocket, SD_BOTH);
@@ -491,8 +495,8 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 					return 0;
 				}
 				free(tbuf);
-				printf("Injected packet to server : %d\n", len);
-				tbuf = InjectQueue.FetchPacket(len);
+				printf("Injected packet to server : %d\n", tlen);
+				tbuf = InjectQueue.FetchPacket(tlen);
 			}
 		}/**/
 	}

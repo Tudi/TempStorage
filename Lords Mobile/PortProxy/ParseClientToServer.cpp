@@ -22,6 +22,7 @@ Reinserted packet : 70
 //0b 00 9a 08 79 00 00 00 57 02 e6
 //0b 00 9a 08 c8 00 00 00 ff 03 ff
 //static int PacketSentCounter = 0x5B;
+int CastleClickSerializer = 0;
 static unsigned int LastEditStamp = 0;
 int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 {
@@ -42,13 +43,15 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 		}
 		LastEditStamp = GetTickCount() + 2000;
 	}/**/
+return PPHT_DID_NOT_TOUCH_IT;
 
 	printf("Got client click packet : \n");
 	PrintDataHexFormat(packet, len, 0, len);
+	CastleClickSerializer = packet[4];
 
 	int x, y;
 	if (GeteneratePosToScan(x, y) != 0)
-		return 1; // do not change the packet
+		return PPHT_DID_NOT_TOUCH_IT; // do not change the packet
 
 	unsigned int oldGUID = *(unsigned int*)&packet[7];
 	int ox, oy;
@@ -58,7 +61,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 	unsigned int GUID = GenerateIngameGUID(x, y);
 	//failed to generate GUID from x, y
 	if (GUID == 0)
-		return 0;
+		return PPHT_DID_NOT_TOUCH_IT;
 	*(unsigned int*)&packet[7] = GUID;
 
 //	memcpy(PrevPacketSent, packet, CastleClickPacketBytesSize);
@@ -67,7 +70,7 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 //	PrintDataHexFormat(packet, len, 0, len);
 //	printf("\n");
 
-	return 0; // overrided content
+	return PPHT_EDITED; // overrided content
 }
 
 int OnClientLoadMapContentPacket(unsigned char *packet, unsigned int len)
@@ -93,27 +96,29 @@ int OnClientLoadMapContentPacket(unsigned char *packet, unsigned int len)
 		return 1; // could not generate the new packet for some reason
 	//override with new packet content
 	memcpy(packet + 2, NewContent, len - 2);
+//	memcpy(packet + 2+6, NewContent+6, len - 2-6); // 2 bytes opcode + 4 bytes packet serialization ?
 	return 0;
 }
 
 
 int OnClientToServerSinglePacket(unsigned char *packet, unsigned int len)
 {
+	int ret = PPHT_DID_NOT_TOUCH_IT;
 	//castle click packet
 	//0b 00 9a 08 5b 00 00 00 77 02 26
 	if (len == 11 && packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
 		//	if (packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
 	{
-		int ret = OnPacketForClickCastle(packet, len);
-		if (ret == 0)
-			return 0;
+		ret = OnPacketForClickCastle(packet, len);
+		if (ret != PPHT_DID_NOT_TOUCH_IT)
+			return ret;
 	}
 	//is this a scroll screen packet ? Size includes the 2 bytes to store size
 	if (len == 49 && packet[0] == 49 && packet[1] == 0x00 && packet[2] == 0x99 && packet[3] == 0x08)
 	{
-		int ret = OnClientLoadMapContentPacket(packet, len);
-		if (ret == 0)
-			return 0;
+		ret = OnClientLoadMapContentPacket(packet, len);
+		if (ret != PPHT_DID_NOT_TOUCH_IT)
+			return ret;
 	}/**/
 	//is this "delete opened gifts" packet
 	//0c 00 32 0b 85 7d bd 80 35 12 75 7e
@@ -138,7 +143,7 @@ int OnClientToServerSinglePacket(unsigned char *packet, unsigned int len)
 	}*/
 
 	//we did not change the packet
-	return 1;
+	return ret;
 }
 
 int OnClientToServerPacket(unsigned char *packet, unsigned int len)
@@ -152,8 +157,8 @@ int OnClientToServerPacket(unsigned char *packet, unsigned int len)
 		if (BytesParsed + SubPacketLen <= len)
 		{
 			int ret = OnClientToServerSinglePacket(&packet[BytesParsed], SubPacketLen);
-			if (ret == 0)
-				SummaryReturn = 0;
+			if (ret > SummaryReturn)
+				SummaryReturn = ret;
 		}
 		BytesParsed += SubPacketLen;
 		//if we edited even 1 packet, we should recalc checksum for the packet

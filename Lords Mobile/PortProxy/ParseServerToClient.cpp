@@ -347,25 +347,25 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 #endif
 }
 
-void ProcessPacket1(unsigned char *packet, int size)
+int ProcessPacket1(unsigned char *packet, int size)
 {
 	// some invalid id packet ?
 	if (size <= 17)
-		return;
+		return PPHT_DID_NOT_TOUCH_IT;
 
 	// castle popup packets
 	if (packet[0] == 0xAC && packet[1] == 0x08 && packet[2] == 0x0C)
 	{
 		ParsePacketCastlePopup(packet, size);
-		return;
+		return PPHT_DID_NOT_TOUCH_IT;
 	}
 
 	// visible object query rely. Castles, mines ... 
-	if (packet[0] == 0xAC && packet[1] == 0x08 && (packet[2] == 0x02 || packet[2] == 0x03 || packet[2] == 0x0F || packet[2] == 0x0D || packet[2] == 0x0E || packet[2] == 0x09 || packet[2] == 0x18 || packet[2] == 0x17 || packet[2] == 0x16))
+/*	if (packet[0] == 0xAC && packet[1] == 0x08 && (packet[2] == 0x02 || packet[2] == 0x03 || packet[2] == 0x0F || packet[2] == 0x0D || packet[2] == 0x0E || packet[2] == 0x09 || packet[2] == 0x18 || packet[2] == 0x17 || packet[2] == 0x16))
 	{
 		ParsePacketQueryTileObjectReply(packet, size);
-		return;
-	}
+		return PPHT_DID_NOT_TOUCH_IT;
+	}*/
 #if 0
 
 #ifdef _DEBUG
@@ -456,15 +456,20 @@ void ProcessPacket1(unsigned char *packet, int size)
 
 int OnServerToClientPacket(unsigned char *packet, unsigned int len)
 {
+	int ret = PPHT_DID_NOT_TOUCH_IT;
 	unsigned int BytesParsed = 0;
 	while (BytesParsed < len)
 	{
 		unsigned short SubPacketLen = *(unsigned short *)&packet[BytesParsed];
 		if (BytesParsed + SubPacketLen <= len)
-			ProcessPacket1(&packet[BytesParsed + 2], SubPacketLen - 2);
+		{
+			int status = ProcessPacket1(&packet[BytesParsed + 2], SubPacketLen - 2);
+			if (status > ret)
+				ret = status;
+		}
 		BytesParsed += SubPacketLen;
 	}
-	return PPHT_DID_NOT_TOUCH_IT;
+	return ret;
 }
 /*
 unsigned char *PacketCircularBuffer[MAX_PACKET_CIRCULAR_BUFFER];

@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include "PacketContentGenerator.h"
 #include "PacketAssembler.h"
+#include "ParseServerToClient.h"
+#include "ParseClientToServer.h"
 
 PacketAssembler InjectQueue;
 
@@ -70,15 +72,34 @@ DWORD WINAPI PeriodicInjectScan(LPVOID lpParam)
 			continue;
 		ScanMapCountGen = 0;
 
-		//create a packet with content loaded from file
-		char *Pkt = (char*)malloc(SCAN_WORLD_PACKET_NO_SIZE_SIZE + 2);
-		*(unsigned short*)&Pkt[0] = SCAN_WORLD_PACKET_NO_SIZE_SIZE + 2;
-		memcpy(&Pkt[2], &ScanWorldPacketsLoaded[SCAN_WORLD_PACKET_NO_SIZE_SIZE * ScanWorldPacketsLoadedSent], SCAN_WORLD_PACKET_NO_SIZE_SIZE);
-		//queue to the network stream
-		InjectQueue.AddBuffer(Pkt, SCAN_WORLD_PACKET_NO_SIZE_SIZE + 2);
-		//mark so that we scan more a bit later
-		ScanWorldPacketsLoadedSent++;
-		ScanWorldPacketsLoadedSent = ScanWorldPacketsLoadedSent % ScanWorldPacketsLoadedCount;
+/*		{
+			//create a packet with content loaded from file
+			char *Pkt = (char*)malloc(SCAN_WORLD_PACKET_NO_SIZE_SIZE + 2);
+			*(unsigned short*)&Pkt[0] = SCAN_WORLD_PACKET_NO_SIZE_SIZE + 2;
+			memcpy(&Pkt[2], &ScanWorldPacketsLoaded[SCAN_WORLD_PACKET_NO_SIZE_SIZE * ScanWorldPacketsLoadedSent], SCAN_WORLD_PACKET_NO_SIZE_SIZE);
+			//queue to the network stream
+			InjectQueue.AddBuffer(Pkt, SCAN_WORLD_PACKET_NO_SIZE_SIZE + 2);
+			//mark so that we scan more a bit later
+			ScanWorldPacketsLoadedSent++;
+			ScanWorldPacketsLoadedSent = ScanWorldPacketsLoadedSent % ScanWorldPacketsLoadedCount;
+		}/**/
+		if(CastleClickSerializer != 0)
+		{
+			unsigned char *Pkt = (unsigned char*)malloc(11);
+			*(unsigned short*)&Pkt[0] = 11;
+			//0b 00 9a 08 c8 00 00 00 ff 03 ff
+			Pkt[2] = 0x9a;
+			Pkt[3] = 0x08;
+			Pkt[4] = (++CastleClickSerializer);
+			Pkt[5] = 0;
+			Pkt[6] = 0;
+			int x, y;
+			GeteneratePosToScan(x, y);
+			unsigned int GUID = GenerateIngameGUID(x, y);
+			*(unsigned int*)&Pkt[7] = GUID;
+			//queue to the network stream
+			InjectQueue.AddBuffer((char*)Pkt, 11);
+		}
 	}
 }
 
