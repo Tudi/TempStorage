@@ -162,6 +162,8 @@
     <ClCompile Include="DivTest_LineDraw5.cpp" />
     <ClCompile Include="DivTest_LineDraw6.cpp" />
     <ClCompile Include="DivTest_LineDraw7.cpp" />
+    <ClCompile Include="DivTest_LineDraw8.cpp" />
+    <ClCompile Include="DivTest_LineDraw9.cpp" />
     <ClCompile Include="DivTest_Modulo.cpp" />
     <ClCompile Include="DivTest_Modulo2.cpp" />
     <ClCompile Include="DivTest_Modulo3.cpp" />

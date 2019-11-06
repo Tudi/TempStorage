@@ -138,6 +138,7 @@ namespace LineDraw6 {
 					PrintLN(TempRes2);
 					printf("\n");
 					GenNextCandidate = 1;
+					break;
 				}
 				else
 				{
@@ -178,7 +179,7 @@ void DivTestLineDraw6()
 
 	// LineDraw6::DivTest_LineDraw6(23, 41);
 	//	LineDraw6::DivTest_LineDraw6(349, 751); // N = 262099 SN = 511
-//	LineDraw6::DivTest_LineDraw6(6871, 7673); // N = 52721183 , SN = 7260
+	LineDraw6::DivTest_LineDraw6(6871, 7673); // N = 52721183 , SN = 7260
 //	LineDraw6::DivTest_LineDraw6(26729, 31793); // N = 849795097 , SN = 29151
 //	LineDraw6::DivTest_LineDraw6(784727, 918839); // N = 721037771953
 //	LineDraw6::DivTest_LineDraw6(6117633, 7219973);

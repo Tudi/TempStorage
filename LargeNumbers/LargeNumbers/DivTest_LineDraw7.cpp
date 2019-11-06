@@ -206,6 +206,7 @@ namespace LineDraw7 {
 					PrintLN(TempRes2);
 					printf("\n");
 					GenNextCandidate = 1;
+					break;
 				}
 				AtPos++;
 				ResetCandidateAtPos(vLN, ParamCount, AtPos, 1);

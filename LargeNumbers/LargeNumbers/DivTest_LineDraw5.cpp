@@ -134,6 +134,7 @@ namespace LineDraw5 {
 					PrintLN(TempRes2);
 					printf("\n");
 					GenNextCandidate = 1;
+					break;
 				}
 				else
 				{
@@ -175,8 +176,8 @@ void DivTestLineDraw5()
 	}/**/
 
 	//  LineDraw5::DivTest_LineDraw5(23, 41);
-		LineDraw5::DivTest_LineDraw5(349, 751); // N = 262099 SN = 511
-	//	LineDraw5::DivTest_LineDraw5(6871, 7673); // N = 52721183 , SN = 7260
+	//	LineDraw5::DivTest_LineDraw5(349, 751); // N = 262099 SN = 511
+		LineDraw5::DivTest_LineDraw5(6871, 7673); // N = 52721183 , SN = 7260
 	//	LineDraw5::DivTest_LineDraw5(26729, 31793); // N = 849795097 , SN = 29151
 	//	LineDraw5::DivTest_LineDraw5(784727, 918839); // N = 721037771953
 	//	LineDraw5::DivTest_LineDraw5(6117633, 7219973);

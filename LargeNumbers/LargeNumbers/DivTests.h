@@ -45,3 +45,5 @@ void DivTestLineDraw5();
 void DivTestLineDraw6();
 void DivTestLineDraw7();
 void DivTestInvMul1();
+void DivTestLineDraw8();
+void DivTestLineDraw9();
