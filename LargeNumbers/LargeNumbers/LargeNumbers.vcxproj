@@ -149,6 +149,7 @@
     <ClCompile Include="DivTest_ab.cpp" />
     <ClCompile Include="DivTest_ab2.cpp" />
     <ClCompile Include="DivTest_ab3.cpp" />
+    <ClCompile Include="DivTest_ab4.cpp" />
     <ClCompile Include="DivTest_abc.cpp" />
     <ClCompile Include="DivTest_abSQ.cpp" />
     <ClCompile Include="DivTest_abSQ2.cpp" />

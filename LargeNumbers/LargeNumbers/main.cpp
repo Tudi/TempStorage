@@ -38,7 +38,8 @@ void main()
 //	DivTestLineDraw7(); // very slow
 //	DivTestInvMul1(); // not finished
 //	DivTestLineDraw8(); // decent speed. nothing extra
-	DivTestLineDraw9(); // step by step increase
+//	DivTestLineDraw9(); // step by step increase
+	DivTestab4();
 
     printf("All done\n");
 }
