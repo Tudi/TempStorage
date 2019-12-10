@@ -1,0 +1,100 @@
+﻿<Window x:Class="CSVIngester.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CSVIngester"
+        mc:Ignorable="d"
+        Title="eBay Accounting" Height="400" Width="635"
+        Background="LightGray"
+        SizeChanged="Window_SizeChanged"
+        >
+    <StackPanel>
+    <StackPanel Orientation="Horizontal" Margin="5">
+        <StackPanel Background="White" Width="200" Height="250" VerticalAlignment="Top" Margin="5">
+            <GroupBox Margin="5">
+                <GroupBox.Header>
+                    File Type
+                </GroupBox.Header>
+                <StackPanel Margin="5">
+                    <RadioButton Name="FIG1" GroupName="FileImportGroup" Content="inventory.csv" IsChecked="True"/>
+                    <RadioButton Name="FIG2" GroupName="FileImportGroup" Content="vat.csv" />
+                    <RadioButton Name="FIG3" GroupName="FileImportGroup" Content="amazon-orders.csv" />
+                    <RadioButton Name="FIG4" GroupName="FileImportGroup" Content="amazon-refunds.csv"/>
+                    <RadioButton Name="FIG5" GroupName="FileImportGroup" Content="paypal.csv"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Margin="5">
+                <GroupBox.Header>
+                    File Location
+                </GroupBox.Header>
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBox Name="FileImportLocation" Text="-" TextAlignment="Center" Width="100" Margin="5"/>
+                    <Button Name="PopupFileSelect" Content="..." Width="20" Margin="5" Click="PopupFileSelect_Click"/>
+                </StackPanel>
+            </GroupBox>
+            <Button Name="FileImportProcess" Content="Import File" Margin="5,20" VerticalAlignment="Bottom" Click="FileImportProcess_Click"/>
+        </StackPanel>
+
+        <StackPanel Width="200" Height="255" VerticalAlignment="Top">
+            <StackPanel Margin="5" Background="White">
+                <GroupBox Margin="5">
+                    <GroupBox.Header>
+                        Database Type
+                    </GroupBox.Header>
+                    <StackPanel Margin="5">
+                        <RadioButton Name="DDG1" GroupName="DatabaseDeleteGroup" Content="INVENTORY" IsChecked="True"/>
+                        <RadioButton Name="DDG2" GroupName="DatabaseDeleteGroup" Content="AMAZON-ORDERS" />
+                        <RadioButton Name="DDG3" GroupName="DatabaseDeleteGroup" Content="AMAZON-REFUNDS" />
+                        <RadioButton Name="DDG4" GroupName="DatabaseDeleteGroup" Content="PAYPAL-SALES"/>
+                        <RadioButton Name="DDG5" GroupName="DatabaseDeleteGroup" Content="PAYPAL-REFUNDS"/>
+                    </StackPanel>
+                </GroupBox>
+                <Button Name="DeleteSelectedDatabase" Content="Delete Database" Margin="5,10,5,30" Click="DeleteSelectedDatabase_Click"/>
+            </StackPanel>
+
+            <StackPanel Margin="5,10" Background="White" Height="100">
+                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,16,5,5"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
+            <GroupBox Margin="5">
+                <GroupBox.Header>
+                    Raport Type
+                </GroupBox.Header>
+                <StackPanel Margin="5">
+                    <RadioButton Name="RTG1" GroupName="RaportTypeGroup" Content="INVENTORY" IsChecked="True"/>
+                    <RadioButton Name="RTG2" GroupName="RaportTypeGroup" Content="AMAZON-ORDERS" />
+                    <RadioButton Name="RTG3" GroupName="RaportTypeGroup" Content="AMAZON-REFUNDS" />
+                    <RadioButton Name="RTG4" GroupName="RaportTypeGroup" Content="PAYPAL-SALES"/>
+                    <RadioButton Name="RTG5" GroupName="RaportTypeGroup" Content="PAYPAL-REFUNDS"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Margin="5">
+                <GroupBox.Header>
+                    Raport Range
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+                    <Label>Start :</Label>
+                    <DatePicker Grid.Column="1" Name="ExportStartDate"/>
+                    <Label Grid.Row="1">End :</Label>
+                    <DatePicker Name="ExportEndDate"  Grid.Row="1" Grid.Column="1"/>
+                </Grid>
+            </GroupBox>
+            <Button Name="CreateRaportButton" Content="Create Raport" Margin="5" Click="CreateRaportButton_Click"/>
+        </StackPanel>
+    </StackPanel>
+        <StackPanel>
+            <TextBox Name="ConsoleTextbox" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap"></TextBox>
+        </StackPanel>
+    </StackPanel>
+</Window>
