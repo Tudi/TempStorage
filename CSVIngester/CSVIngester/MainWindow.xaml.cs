@@ -71,19 +71,40 @@ namespace CSVIngester
                 Task.Factory.StartNew(() => ReadCSVFile.ReadInvenotryCSVFile(ThreadParam));
             else if (FIG2.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadVATCSVFile(ThreadParam));
+            else if (FIG3.IsChecked == true)
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam));
         }
 
         private void DeleteSelectedDatabase_Click(object sender, RoutedEventArgs e)
         {
-            if (FIG1.IsChecked == true)
+            if (DDG1.IsChecked == true)
                 GlobalVariables.DBStorage.ClearInventory();
+            else if (DDG2.IsChecked == true)
+                GlobalVariables.DBStorage.ClearAmazonOrders();
+            else if (DDG3.IsChecked == true)
+                GlobalVariables.DBStorage.ClearAmazonRefunds();
         }
 
         private void CreateRaportButton_Click(object sender, RoutedEventArgs e)
         {
-            GlobalVariables.Logger.Log("Exporting 'inventory' table - started");
-            GlobalVariables.DBStorage.ExportInventoryTable();
-            GlobalVariables.Logger.Log("Exporting 'inventory' table - Finished");
+            if (RTG1.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'inventory' table - started");
+                GlobalVariables.DBStorage.ExportInventoryTable();
+                GlobalVariables.Logger.Log("Exporting 'inventory' table - Finished");
+            }
+            else if (RTG2.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - started");
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable();
+                GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - Finished");
+            }
+            else if (RTG3.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - started");
+                GlobalVariables.DBStorage.ExportInventoryTable();
+                GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - Finished");
+            }
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)

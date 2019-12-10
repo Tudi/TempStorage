@@ -90,7 +90,7 @@
                     <DatePicker Name="ExportEndDate"  Grid.Row="1" Grid.Column="1"/>
                 </Grid>
             </GroupBox>
-            <Button Name="CreateRaportButton" Content="Create Raport" Margin="5" Click="CreateRaportButton_Click"/>
+            <Button Name="CreateRaportButton" Content="Create Report" Margin="5" Click="CreateRaportButton_Click"/>
         </StackPanel>
     </StackPanel>
         <StackPanel>

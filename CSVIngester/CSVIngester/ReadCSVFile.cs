@@ -52,7 +52,7 @@ namespace CSVIngester
 
             GlobalVariables.Logger.Log("File import destination database is 'inventory'");
             WriteCSVFile ImportResultCSV = new WriteCSVFile();
-            ImportResultCSV.CreateInventoryRunFile();
+            ImportResultCSV.CreateInventoryRunFile("./reports/INVENTORY-RUN.csv");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvReader(reader))
             {
@@ -82,7 +82,7 @@ namespace CSVIngester
                         GlobalVariables.Logger.Log("at line " + RowsRead + " asin does not have a value");
 
                     //try to add the new row to the DB
-                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertInventory(Ebay_id, asin, "0");
+                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertInventory(Ebay_id, asin, "-1");
                     if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
                         RowsInserted++;
                     else if (ret == DBHandler.InvenotryInsertResultCodes.RowExistedButWasEmpty)
@@ -206,6 +206,92 @@ namespace CSVIngester
                 }
             }
 
+            GlobalVariables.ImportingToDBBlock = false;
+        }
+
+        public static void ReadAmazonOrdersCSVFile(string FileName)
+        {
+            if (GlobalVariables.ImportingToDBBlock == true)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing. Please wait until it finishes");
+                return;
+            }
+            GlobalVariables.ImportingToDBBlock = true;
+
+            WriteCSVFile ImportResultCSV = new WriteCSVFile();
+            ImportResultCSV.CreateAmazonOrdersFile("./reports/AMAZON-ORDERS-RUN.csv");
+            GlobalVariables.Logger.Log("File import destination database is 'AMAZON-ORDERS'");
+            using (var reader = new StreamReader(FileName))
+            using (var csv = new CsvReader(reader))
+            {
+                csv.Read();
+                csv.ReadHeader();
+                string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Date");
+                string IdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Id");
+                string TitleColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Title");
+                string PriceColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Price");
+                string VATColName = GetMatchingColumnName(csv.Context.HeaderRecord, "VAT");
+                string BuyerColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Buyer");
+                string AddressColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Address");
+                string ASINColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ASIN");
+                if (AddressColName.Length == 0 || ASINColName.Length == 0 || DateColName.Length == 0 || IdColName.Length == 0 || TitleColName.Length == 0 || PriceColName.Length == 0 || VATColName.Length == 0 || BuyerColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Not an AMAZON-ORDERS csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = false;
+                    return;
+                }
+                int RowsRead = 0;
+                int RowsInserted = 0;
+                int RowsUpdated = 0;
+                int RowsSkipped = 0;
+                while (csv.Read())
+                {
+                    string DateCol = csv.GetField<string>(DateColName);
+                    string IdCol = csv.GetField<string>(IdColName);
+                    string TitleCol = csv.GetField<string>(TitleColName);
+                    string PriceCol = csv.GetField<string>(PriceColName);
+                    string VATCol = csv.GetField<string>(VATColName);
+                    string BuyerCol = csv.GetField<string>(BuyerColName);
+                    string AddressCol = csv.GetField<string>(AddressColName);
+                    string ASINCol = csv.GetField<string>(ASINColName);
+
+                    //check if the read data is correct
+                    if (DateCol == null || DateCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
+                    if (IdCol == null || IdCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Id does not have a value");
+                    if (TitleCol == null || TitleCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
+                    if (PriceCol == null || PriceCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
+                    if (VATCol == null || VATCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " VAT does not have a value");
+                    if (BuyerCol == null || BuyerCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Buyer does not have a value");
+                    if (AddressCol == null || AddressCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Address does not have a value");
+                    if (ASINCol == null || ASINCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " ASIN does not have a value");
+
+                    float NET = float.Parse(PriceCol) - float.Parse(VATCol);
+                    float VAT_RATE = float.Parse(VATCol) * 100 / NET;
+                    //try to add the new row to the DB
+                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                    if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                    {
+                        RowsInserted++;
+                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, float.Parse(PriceCol), float.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                    }
+                    else
+                        RowsSkipped++;
+                    RowsRead++;
+                }
+                GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
+                GlobalVariables.Logger.Log("CSV file rows inserted : " + RowsInserted);
+                GlobalVariables.Logger.Log("CSV file rows updated : " + RowsUpdated);
+                GlobalVariables.Logger.Log("CSV file rows skipped : " + RowsSkipped);
+            }
+            GlobalVariables.Logger.Log("Finished importing file : " + FileName);
             GlobalVariables.ImportingToDBBlock = false;
         }
     }

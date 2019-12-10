@@ -28,12 +28,36 @@ namespace CSVIngester
                 vat = vat_p.ToString();
         }
     }
-    public class InventoryRunDescriptorMap : ClassMap<InventoryRunDescriptor>
+    public class AmazonOrdersRowDescriptor
     {
-        public InventoryRunDescriptorMap()
+        public string date { get; set; }
+        public string ORDER_ID { get; set; }
+        public string TITLE { get; set; }
+        public string GROSS { get; set; }
+        public string vat { get; set; }
+        public string NAME { get; set; }
+        public string ADDRESS { get; set; }
+        public string asin { get; set; }
+        public string NET { get; set; }
+        public string vat_rate { get; set; }
+        public AmazonOrdersRowDescriptor(string datep, string ORDER_IDp, string TITLEp, float GROSSp, float vatp, string BuyerNamep, string Buyeraddrp, string asinp, float NETp, float vat_ratep)
         {
-            Map(m => m.ebay_id).Index(0).Name("ebay_id");
-            Map(m => m.asin).Index(1).Name("asin");
+            date = datep;
+            ORDER_ID = ORDER_IDp;
+            TITLE = TITLEp;
+            GROSS = GROSSp.ToString();
+            vat = vatp.ToString();
+            NAME = BuyerNamep;
+            ADDRESS = Buyeraddrp;
+            asin = asinp;
+            if (NETp >= 0)
+                NET = NETp.ToString();
+            else
+                NET = "";
+            if (vat_ratep >= 0)
+                vat_rate = vat_ratep.ToString();
+            else
+                vat_rate = "";
         }
     }
     public class WriteCSVFile
@@ -82,6 +106,22 @@ namespace CSVIngester
         }
         ~WriteCSVFile()
         {
+        }
+        public void CreateAmazonOrdersFile(string FileName_p)
+        {
+            FileName = FileName_p;
+            //delete any previous file
+            File.Delete(FileName);
+            //create a new csv file
+            writer = new StreamWriter(FileName);
+            csv = new CsvWriter(writer);
+            csv.WriteHeader<AmazonOrdersRowDescriptor>();
+            csv.NextRecord();
+        }
+        public void AmazonOrdersExportFileAddRow(string datecol, string ORDER_ID, string TITLE, float GROSS, float vat, string BuyerName, string Buyeraddr, string asin, float NET, float vat_rate)
+        {
+            csv.WriteRecord<AmazonOrdersRowDescriptor>(new AmazonOrdersRowDescriptor(datecol, ORDER_ID, TITLE, GROSS, vat, BuyerName, Buyeraddr, asin, NET, vat_rate));
+            csv.NextRecord();
         }
     }
 }
