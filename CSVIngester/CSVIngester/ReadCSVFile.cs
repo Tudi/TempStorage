@@ -41,6 +41,14 @@ namespace CSVIngester
                         FoundCount++;
             return ExpectedColumnames.Length == FoundCount;
         }
+        public static string PadASINTo10Chars(string ASIN)
+        {
+            string ret = "";
+            int CharsToAdd = 10 - ASIN.Length;
+            for (int i = 0; i < CharsToAdd; i++)
+                ret = ret + '0';
+            return ret + ASIN;
+        }
         public static void ReadInvenotryCSVFile(string FileName)
         {
             if (GlobalVariables.ImportingToDBBlock.Length != 0)
@@ -84,10 +92,13 @@ namespace CSVIngester
                     string asin = csv.GetField<string>(AsinColName);
 
                     //check if the read data is correct
-                    if(Ebay_id == null || Ebay_id.Length == 0)
+                    if (Ebay_id == null || Ebay_id.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " ebay_id does not have a value");
                     if (asin == null || asin.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " asin does not have a value");
+
+                    //because some tools will eat up leading 0
+                    asin = PadASINTo10Chars(asin);
 
                     //try to add the new row to the DB
                     DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertInventory(Ebay_id, asin, "-1");
@@ -202,6 +213,9 @@ namespace CSVIngester
                         GlobalVariables.Logger.Log("at line " + RowsRead + " asin does not have a value");
                     if (vat == null || vat.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " vat does not have a value");
+
+                    //because some tools will eat up leading 0
+                    asin = PadASINTo10Chars(asin);
 
                     GlobalVariables.DBStorage.UpdateInventoryVatAsin(asin, vat);
 //if (RowsRead == 15) break;
@@ -388,11 +402,14 @@ namespace CSVIngester
                     if (ASINCol == null || ASINCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " ASIN does not have a value");
 
+                    //because some tools will eat up leading 0
+                    ASINCol = PadASINTo10Chars(ASINCol);
+
                     float NET = float.Parse(PriceCol) - float.Parse(VATCol);
-                    float VAT_RATE = float.Parse(VATCol) / NET * 100;
+                    float VAT_RATE = (int)(0.5 + float.Parse(VATCol) / NET * 100);
                     //check if inventory has missing values that we can update
                     if(UpdateInventory == true)
-                        GlobalVariables.DBStorage.UpdateAllMissingInventoryRows(ASINCol, VATCol);
+                        GlobalVariables.DBStorage.UpdateAllMissingInventoryRows(ASINCol, VAT_RATE.ToString());
                     //try to add the new row to the DB
                     DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
                     if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
@@ -411,6 +428,202 @@ namespace CSVIngester
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
             GlobalVariables.ImportingToDBBlock = "";
+            ImportResultCSV.Dispose();
+        }
+
+        public static void ReadPaypalSalesCSVFile(string FileName)
+        {
+            string TableName = "PAYPAL_SALES";
+            string CSVFileName = "PAYPAL-SALES-RUN";
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+            GlobalVariables.ImportingToDBBlock = TableName;
+
+            WriteCSVFile ImportResultCSV = new WriteCSVFile();
+            ImportResultCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + "-RUN.csv");
+            GlobalVariables.Logger.Log("File import destination database is '" + CSVFileName + "'");
+            using (var reader = new StreamReader(FileName))
+            using (var csv = new CsvReader(reader))
+            {
+                csv.Read();
+                csv.ReadHeader();
+                string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Date");
+                string NameColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Name");
+                string PriceColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Gross");
+                string PPFeeColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Fee");
+                string TransactionIDColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Transaction ID");
+                string TitleColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Item Title");
+                string ItemIdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Item ID");
+                string AddressColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Shipping Address");
+                string PhoneColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Contact Phone Number");
+                //not mandatory ?
+                string TypeColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Type");
+                string BalanceImpactColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Balance Impact");
+                if (DateColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Date' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (NameColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Name' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (PriceColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Gross' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (PPFeeColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Fee' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (TransactionIDColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Transaction ID' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (TitleColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Item Title' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (ItemIdColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Item ID' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (AddressColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Shipping Address' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (PhoneColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Contact Phone Number' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (TypeColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Type' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (BalanceImpactColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Balance Impact' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+
+                WriteCSVFile SalesMemoCSV = new WriteCSVFile();
+                SalesMemoCSV.CreateDynamicFile("./reports/report-sales-memo.csv");
+                WriteCSVFile WithDrawMemoCSV = new WriteCSVFile();
+                WithDrawMemoCSV.CreateDynamicFile("./reports/report-withdrawals-memo.csv");
+                WriteCSVFile WithDrawCSV = new WriteCSVFile();
+                WithDrawCSV.CreateDynamicFile("./reports/report-withdrawals.csv");
+                WriteCSVFile HoldsCSV = new WriteCSVFile();
+                HoldsCSV.CreateDynamicFile("./reports/report-hold.csv");
+                WriteCSVFile SalesCSV = new WriteCSVFile();
+                SalesCSV.CreateDynamicFile("./reports/report-paypal-sales.csv");
+                WriteCSVFile SalesRefundsCSV = new WriteCSVFile();
+                SalesRefundsCSV.CreateDynamicFile("./reports/report-paypal-refunds.csv");
+                WriteCSVFile RemainingtransactionCSV = new WriteCSVFile();
+                RemainingtransactionCSV.CreateDynamicFile("./reports/remaining-transactions.csv ");
+
+                int RowsRead = 0;
+                int RowsInserted = 0;
+                int RowsUpdated = 0;
+                int RowsSkipped = 0;
+                while (csv.Read())
+                {
+                    string DateCol = csv.GetField<string>(DateColName);
+                    string NameCol = csv.GetField<string>(NameColName);
+                    string PriceCol = csv.GetField<string>(PriceColName);
+                    string PPFeeCol = csv.GetField<string>(PPFeeColName);
+                    string TransactionIDCol = csv.GetField<string>(TransactionIDColName);
+                    string TitleCol = csv.GetField<string>(TitleColName);
+                    string ItemIdCol = csv.GetField<string>(ItemIdColName);
+                    string AddressCol = csv.GetField<string>(AddressColName);
+                    string PhoneCol = csv.GetField<string>(PhoneColName);
+                    string TypeCol = csv.GetField<string>(TypeColName);
+                    string BalanceImpactCol = csv.GetField<string>(BalanceImpactColName);
+
+                    //check if the read data is correct
+                    if (DateCol == null || DateCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
+                    if (NameCol == null || NameCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Name does not have a value");
+                    if (PriceCol == null || PriceCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
+                    if (PPFeeCol == null || PPFeeCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Fee does not have a value");
+                    if (TransactionIDCol == null || TransactionIDCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Transaction ID does not have a value");
+                    if (TitleCol == null || TitleCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
+                    if (ItemIdCol == null || ItemIdCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Item Id does not have a value");
+                    if (AddressCol == null || AddressCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Shipping Address does not have a value");
+                    if (PhoneCol == null || AddressCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Contact Phone does not have a value");
+                    if (TypeCol == null || TypeCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Type does not have a value");
+                    if (BalanceImpactCol == null || BalanceImpactCol.Length == 0)
+                        GlobalVariables.Logger.Log("at line " + RowsRead + " Balance Impact does not have a value");
+
+                    SalesMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                    //try to add the new row to the DB
+//                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+/*                    if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                    {
+                        RowsInserted++;
+//                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, float.Parse(PriceCol), float.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                    }
+                    else
+                        RowsSkipped++;*/
+                    RowsRead++;
+                }
+                GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
+                GlobalVariables.Logger.Log("CSV file rows inserted : " + RowsInserted);
+                GlobalVariables.Logger.Log("CSV file rows updated : " + RowsUpdated);
+                GlobalVariables.Logger.Log("CSV file rows skipped : " + RowsSkipped);
+                SalesMemoCSV.Dispose();
+                WithDrawMemoCSV.Dispose();
+                WithDrawCSV.Dispose();
+                HoldsCSV.Dispose();
+                SalesCSV.Dispose();
+                SalesRefundsCSV.Dispose();
+                RemainingtransactionCSV.Dispose();
+            }
+            GlobalVariables.Logger.Log("Finished importing file : " + FileName);
+            GlobalVariables.ImportingToDBBlock = "";
+            ImportResultCSV.Dispose();
         }
     }
 }

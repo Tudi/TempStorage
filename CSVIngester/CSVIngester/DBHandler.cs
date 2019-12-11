@@ -74,7 +74,7 @@ namespace CSVIngester
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_ORDERS (ORDER_ID)";
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_ORDERS (ORDER_ID_hash)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
@@ -97,11 +97,49 @@ namespace CSVIngester
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_REFUNDS (ORDER_ID)";
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_REFUNDS (ORDER_ID_hash)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
                     sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_REFUNDS (asin_hash)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            using (TransactionScope tran = new TransactionScope())
+            {
+                SQLiteCommand command = m_dbConnection.CreateCommand();
+                command.CommandText = "SELECT name FROM sqlite_master WHERE name='PAYPAL_SALES'";
+                var name = command.ExecuteScalar();
+
+                if (!(name != null && name.ToString() == "PAYPAL_SALES"))
+                {
+
+                    string sql = "create table PAYPAL_SALES (date varchar(20),BuyerName varchar(20),GROSS float,PayPalFee float,TransactionID varchar(200),Title varchar(200), ItemId varchar(200), BuyerAddr varchar(200), Phone varchar(200), vat float, net float, vat_rate float, TransactionID_hash int4)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON PAYPAL_SALES (TransactionID_hash)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            using (TransactionScope tran = new TransactionScope())
+            {
+                SQLiteCommand command = m_dbConnection.CreateCommand();
+                command.CommandText = "SELECT name FROM sqlite_master WHERE name='PAYPAL_REFUNDS'";
+                var name = command.ExecuteScalar();
+
+                if (!(name != null && name.ToString() == "PAYPAL_SALES"))
+                {
+
+                    string sql = "create table PAYPAL_REFUNDS (date varchar(20),BuyerName varchar(20),GROSS float,PayPalFee float,TransactionID varchar(200),Title varchar(200), ItemId varchar(200), ReferenceID varchar(200), vat float, net float, vat_rate float, TransactionID_hash int4, ReferenceID_hash int4)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON PAYPAL_REFUNDS (TransactionID_hash)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
@@ -384,6 +422,16 @@ namespace CSVIngester
                 ExportInventoryCSV.AmazonOrdersExportFileAddRow(datecol, ORDER_ID, TITLE, GROSS, vat, BuyerName, Buyeraddr, asin, NET, vat_rate);
             }
             ExportInventoryCSV.Dispose();
+        }
+        public void ClearPaypalSales()
+        {
+            ClearTable("PAYPAL_SALES");
+            GlobalVariables.Logger.Log("Content of the PAYPAL-SALES table has been cleared");
+        }
+        public void ClearPaypalRefunds()
+        {
+            ClearTable("PAYPAL_REFUNDS");
+            GlobalVariables.Logger.Log("Content of the PAYPAL-REFUNDS table has been cleared");
         }
     }
 }

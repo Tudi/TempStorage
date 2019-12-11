@@ -61,7 +61,7 @@
         <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
             <GroupBox Margin="5">
                 <GroupBox.Header>
-                    Raport Type
+                    Report Type
                 </GroupBox.Header>
                 <StackPanel Margin="5">
                     <RadioButton Name="RTG1" GroupName="RaportTypeGroup" Content="INVENTORY" IsChecked="True"/>
@@ -73,7 +73,7 @@
             </GroupBox>
             <GroupBox Margin="5">
                 <GroupBox.Header>
-                    Raport Range
+                    Report Range
                 </GroupBox.Header>
                 <Grid>
                     <Grid.ColumnDefinitions>

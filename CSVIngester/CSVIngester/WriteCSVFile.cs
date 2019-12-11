@@ -123,5 +123,25 @@ namespace CSVIngester
             csv.WriteRecord<AmazonOrdersRowDescriptor>(new AmazonOrdersRowDescriptor(datecol, ORDER_ID, TITLE, GROSS, vat, BuyerName, Buyeraddr, asin, NET, vat_rate));
             csv.NextRecord();
         }
+        public void CreateDynamicFile(string FileName_p)
+        {
+            System.IO.Directory.CreateDirectory("./reports");
+            FileName = FileName_p;
+            //delete any previous file
+            File.Delete(FileName);
+            //create a new csv file
+            writer = new StreamWriter(FileName);
+            csv = new CsvWriter(writer);
+        }
+        public void WriteDynamicFileHeader(dynamic RowData)
+        {
+            csv.WriteHeader<dynamic>();
+            csv.NextRecord();
+        }
+        public void WriteDynamicFileRow(dynamic RowData)
+        {
+            csv.WriteRecord<dynamic>(RowData);
+            csv.NextRecord();
+        }
     }
 }

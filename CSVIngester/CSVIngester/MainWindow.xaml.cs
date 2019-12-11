@@ -75,8 +75,8 @@ namespace CSVIngester
                 Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam,"Amazon_Orders", "Amazon-Orders", true));
             else if (FIG4.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam, "Amazon_Refunds", "Amazon-Refunds", false));
-            else if (FIG2.IsChecked == true)
-                Task.Factory.StartNew(() => ReadCSVFile.ReadPaypalCSVFile(ThreadParam));
+            else if (FIG5.IsChecked == true)
+                Task.Factory.StartNew(() => ReadCSVFile.ReadPaypalSalesCSVFile(ThreadParam));
         }
 
         private void DeleteSelectedDatabase_Click(object sender, RoutedEventArgs e)
@@ -88,6 +88,10 @@ namespace CSVIngester
                 TableName = "Amazon-Orders";
             else if (DDG3.IsChecked == true)
                 TableName = "Amazon-Refunds";
+            else if (DDG4.IsChecked == true)
+                TableName = "Paypal-Sales";
+            else if (DDG5.IsChecked == true)
+                TableName = "Paypal-Refunds";
 
             MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure you wish to empty "+ TableName +" Database ? ", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
@@ -98,6 +102,10 @@ namespace CSVIngester
                     GlobalVariables.DBStorage.ClearAmazonOrders();
                 else if (DDG3.IsChecked == true)
                     GlobalVariables.DBStorage.ClearAmazonRefunds();
+                else if (DDG4.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearPaypalSales();
+                else if (DDG5.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearPaypalRefunds();
             }
         }
 
