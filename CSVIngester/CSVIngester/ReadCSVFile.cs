@@ -43,12 +43,12 @@ namespace CSVIngester
         }
         public static void ReadInvenotryCSVFile(string FileName)
         {
-            if (GlobalVariables.ImportingToDBBlock == true)
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
             {
-                GlobalVariables.Logger.Log("Another thread is already importing. Please wait until it finishes");
+                GlobalVariables.Logger.Log("Another thread is already importing in table "+ GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
                 return;
             }
-            GlobalVariables.ImportingToDBBlock = true;
+            GlobalVariables.ImportingToDBBlock = "Inventory";
 
             GlobalVariables.Logger.Log("File import destination database is 'inventory'");
             WriteCSVFile ImportResultCSV = new WriteCSVFile();
@@ -59,11 +59,19 @@ namespace CSVIngester
                 csv.Read();
                 csv.ReadHeader();
                 string EbayIdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ebay_id");
-                string AsinColName = GetMatchingColumnName(csv.Context.HeaderRecord, "asin");
-                if(EbayIdColName.Length == 0 || AsinColName.Length == 0)
+                if (EbayIdColName.Length == 0)
                 {
-                    GlobalVariables.Logger.Log("Not an Inventory csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = false;
+                    GlobalVariables.Logger.Log("Mandatory column 'ebay_id' not detected. Not an Inventory csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                string AsinColName = GetMatchingColumnName(csv.Context.HeaderRecord, "asin");
+                if (AsinColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'asin' not detected.Not an Inventory csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
                     return;
                 }
                 int RowsRead = 0;
@@ -102,11 +110,18 @@ namespace CSVIngester
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
             ImportResultCSV.Dispose();
-            GlobalVariables.ImportingToDBBlock = false;
+            GlobalVariables.ImportingToDBBlock = "";
         }
 
         public static void ReadEbayVATCSVFile(string FileName)
         {
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+            GlobalVariables.ImportingToDBBlock = "EbayVat";
+
             GlobalVariables.Logger.Log("Ebay VAT File import destination database is 'inventory'");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvHelper.CsvReader(reader))
@@ -114,11 +129,17 @@ namespace CSVIngester
                 csv.Read();
                 csv.ReadHeader();
                 string EbayIdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ebay_id");
-                string VatColName = GetMatchingColumnName(csv.Context.HeaderRecord, "vat_rate");
-                if (EbayIdColName.Length == 0 || VatColName.Length == 0)
+                if (EbayIdColName.Length == 0)
                 {
-                    GlobalVariables.Logger.Log("Not an VAT csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = false;
+                    GlobalVariables.Logger.Log("Mandatory column 'ebay_id' not detected.Not an VAT csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    return;
+                }
+                string VatColName = GetMatchingColumnName(csv.Context.HeaderRecord, "vat_rate");
+                if (VatColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'vat_rate' not detected.Not an VAT csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
                     return;
                 }
                 int RowsRead = 0;
@@ -139,10 +160,17 @@ namespace CSVIngester
                 }
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
+            GlobalVariables.ImportingToDBBlock = "";
         }
 
         public static void ReadAsinVATCSVFile(string FileName)
         {
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+            GlobalVariables.ImportingToDBBlock = "AsinVat";
             GlobalVariables.Logger.Log("Asin VAT File import destination database is 'inventory'");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvHelper.CsvReader(reader))
@@ -150,11 +178,17 @@ namespace CSVIngester
                 csv.Read();
                 csv.ReadHeader();
                 string AsinColName = GetMatchingColumnName(csv.Context.HeaderRecord, "asin");
-                string VatColName = GetMatchingColumnName(csv.Context.HeaderRecord, "vat_rate");
-                if (AsinColName.Length == 0 || VatColName.Length == 0)
+                if (AsinColName.Length == 0)
                 {
-                    GlobalVariables.Logger.Log("Not an VAT csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = false;
+                    GlobalVariables.Logger.Log("Mandatory column 'asin' not detected.Not an VAT csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    return;
+                }
+                string VatColName = GetMatchingColumnName(csv.Context.HeaderRecord, "vat_rate");
+                if (VatColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'vat_rate' not detected.Not an VAT csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
                     return;
                 }
                 int RowsRead = 0;
@@ -175,17 +209,11 @@ namespace CSVIngester
                 }
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
+            GlobalVariables.ImportingToDBBlock = "";
         }
 
         public static void ReadVATCSVFile(string FileName)
         {
-            if (GlobalVariables.ImportingToDBBlock == true)
-            {
-                GlobalVariables.Logger.Log("Another thread is already importing. Please wait until it finishes");
-                return;
-            }
-            GlobalVariables.ImportingToDBBlock = true;
-
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvHelper.CsvReader(reader))
             {
@@ -200,27 +228,40 @@ namespace CSVIngester
                     ReadAsinVATCSVFile(FileName);
                 else
                 {
-                    GlobalVariables.Logger.Log("Not a VAT csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = false;
+                    string EbayIdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ebay_id");
+                    string AsinColName = GetMatchingColumnName(csv.Context.HeaderRecord, "asin");
+                    string VatColName = GetMatchingColumnName(csv.Context.HeaderRecord, "vat_rate");
+                    string Msg = "";
+                    if (EbayIdColName.Length == 0 && AsinColName.Length == 0)
+                        Msg += "ebay_id or asin";
+                    else if (EbayIdColName.Length == 0)
+                        Msg += "ebay_id";
+                    else if (AsinColName.Length == 0)
+                        Msg += "asin";
+                    if (VatColName.Length == 0)
+                    {
+                        if (Msg.Length != 0)
+                            Msg += " and ";
+                        Msg += "asin";
+                    }
+                    GlobalVariables.Logger.Log("Mandatory column names 'ebay_id'+'vat_rate' or 'asin'+'vat_rate'. Missing " + Msg + ". Not a VAT csv file : " + FileName);
                     return;
                 }
             }
-
-            GlobalVariables.ImportingToDBBlock = false;
         }
 
-        public static void ReadAmazonOrdersCSVFile(string FileName)
+        public static void ReadAmazonOrdersCSVFile(string FileName, string TableName, string CSVFileName, bool UpdateInventory)
         {
-            if (GlobalVariables.ImportingToDBBlock == true)
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
             {
-                GlobalVariables.Logger.Log("Another thread is already importing. Please wait until it finishes");
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
                 return;
             }
-            GlobalVariables.ImportingToDBBlock = true;
+            GlobalVariables.ImportingToDBBlock = TableName;
 
             WriteCSVFile ImportResultCSV = new WriteCSVFile();
-            ImportResultCSV.CreateAmazonOrdersFile("./reports/AMAZON-ORDERS-RUN.csv");
-            GlobalVariables.Logger.Log("File import destination database is 'AMAZON-ORDERS'");
+            ImportResultCSV.CreateAmazonOrdersFile("./reports/"+ CSVFileName+"-RUN.csv");
+            GlobalVariables.Logger.Log("File import destination database is '" + CSVFileName + "'");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvReader(reader))
             {
@@ -234,12 +275,86 @@ namespace CSVIngester
                 string BuyerColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Buyer");
                 string AddressColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Address");
                 string ASINColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ASIN");
-                if (AddressColName.Length == 0 || ASINColName.Length == 0 || DateColName.Length == 0 || IdColName.Length == 0 || TitleColName.Length == 0 || PriceColName.Length == 0 || VATColName.Length == 0 || BuyerColName.Length == 0)
+
+                if (TableName.ToLower() == "Amazon_refunds".ToLower())
                 {
-                    GlobalVariables.Logger.Log("Not an AMAZON-ORDERS csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = false;
+                    if (PriceColName.Length == 0)
+                        PriceColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Refunded Amount");
+                    if (VATColName.Length == 0)
+                        VATColName = GetMatchingColumnName(csv.Context.HeaderRecord, "VAT Amount");
+                    if (PriceColName.Length == 0)
+                    {
+                        GlobalVariables.Logger.Log("Mandatory column 'Refunded Amount' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                        GlobalVariables.ImportingToDBBlock = "";
+                        ImportResultCSV.Dispose();
+                        return;
+                    }
+                    if (VATColName.Length == 0)
+                    {
+                        GlobalVariables.Logger.Log("Mandatory column 'VAT Amount' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                        GlobalVariables.ImportingToDBBlock = "";
+                        ImportResultCSV.Dispose();
+                        return;
+                    }
+                }
+
+                if (DateColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Date' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
                     return;
                 }
+                if (IdColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Id' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (TitleColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Title' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (PriceColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Price' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (VATColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'VAT' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (BuyerColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Buyer' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (AddressColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Address' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+                if (ASINColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'ASIN' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    GlobalVariables.ImportingToDBBlock = "";
+                    ImportResultCSV.Dispose();
+                    return;
+                }
+
                 int RowsRead = 0;
                 int RowsInserted = 0;
                 int RowsUpdated = 0;
@@ -274,9 +389,12 @@ namespace CSVIngester
                         GlobalVariables.Logger.Log("at line " + RowsRead + " ASIN does not have a value");
 
                     float NET = float.Parse(PriceCol) - float.Parse(VATCol);
-                    float VAT_RATE = float.Parse(VATCol) * 100 / NET;
+                    float VAT_RATE = float.Parse(VATCol) / NET * 100;
+                    //check if inventory has missing values that we can update
+                    if(UpdateInventory == true)
+                        GlobalVariables.DBStorage.UpdateAllMissingInventoryRows(ASINCol, VATCol);
                     //try to add the new row to the DB
-                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
                     if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
                     {
                         RowsInserted++;
@@ -292,7 +410,7 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("CSV file rows skipped : " + RowsSkipped);
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
-            GlobalVariables.ImportingToDBBlock = false;
+            GlobalVariables.ImportingToDBBlock = "";
         }
     }
 }

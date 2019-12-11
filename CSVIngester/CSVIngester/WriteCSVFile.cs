@@ -65,11 +65,10 @@ namespace CSVIngester
         StreamWriter writer;
         CsvWriter csv;
         string FileName;
-        public void CreateInventoryRunFile(string FileName_p = "")
+        public void CreateInventoryRunFile(string FileName_p)
         {
-            FileName = "INVENTORY-RUN.csv";
-            if (FileName_p.Length != 0)
-                FileName = FileName_p;
+            System.IO.Directory.CreateDirectory("./reports");
+            FileName = FileName_p;
             //delete any previous file
             File.Delete(FileName);
             //create a new csv file
@@ -109,6 +108,7 @@ namespace CSVIngester
         }
         public void CreateAmazonOrdersFile(string FileName_p)
         {
+            System.IO.Directory.CreateDirectory("./reports");
             FileName = FileName_p;
             //delete any previous file
             File.Delete(FileName);

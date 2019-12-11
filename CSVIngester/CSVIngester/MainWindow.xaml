@@ -40,7 +40,7 @@
             <StackPanel Margin="5" Background="White">
                 <GroupBox Margin="5">
                     <GroupBox.Header>
-                        Database Type
+                        Table Type
                     </GroupBox.Header>
                     <StackPanel Margin="5">
                         <RadioButton Name="DDG1" GroupName="DatabaseDeleteGroup" Content="INVENTORY" IsChecked="True"/>
@@ -50,7 +50,7 @@
                         <RadioButton Name="DDG5" GroupName="DatabaseDeleteGroup" Content="PAYPAL-REFUNDS"/>
                     </StackPanel>
                 </GroupBox>
-                <Button Name="DeleteSelectedDatabase" Content="Delete Database" Margin="5,10,5,30" Click="DeleteSelectedDatabase_Click"/>
+                <Button Name="DeleteSelectedDatabase" Content="Delete Table" Margin="5,10,5,30" Click="DeleteSelectedDatabase_Click"/>
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">

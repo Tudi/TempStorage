@@ -21,7 +21,7 @@ namespace CSVIngester
     public class GlobalVariables
     {
         public static DBHandler DBStorage = null;
-        public static bool ImportingToDBBlock = false;
+        public static string ImportingToDBBlock = "";
         public static MessageLogger Logger = null;
     }
     /// <summary>
@@ -72,17 +72,33 @@ namespace CSVIngester
             else if (FIG2.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadVATCSVFile(ThreadParam));
             else if (FIG3.IsChecked == true)
-                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam));
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam,"Amazon_Orders", "Amazon-Orders", true));
+            else if (FIG4.IsChecked == true)
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam, "Amazon_Refunds", "Amazon-Refunds", false));
+            else if (FIG2.IsChecked == true)
+                Task.Factory.StartNew(() => ReadCSVFile.ReadPaypalCSVFile(ThreadParam));
         }
 
         private void DeleteSelectedDatabase_Click(object sender, RoutedEventArgs e)
         {
+            string TableName = "";
             if (DDG1.IsChecked == true)
-                GlobalVariables.DBStorage.ClearInventory();
+                TableName = "Inventory";
             else if (DDG2.IsChecked == true)
-                GlobalVariables.DBStorage.ClearAmazonOrders();
+                TableName = "Amazon-Orders";
             else if (DDG3.IsChecked == true)
-                GlobalVariables.DBStorage.ClearAmazonRefunds();
+                TableName = "Amazon-Refunds";
+
+            MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure you wish to empty "+ TableName +" Database ? ", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
+            if (messageBoxResult == MessageBoxResult.Yes)
+            {
+                if (DDG1.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearInventory();
+                else if (DDG2.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearAmazonOrders();
+                else if (DDG3.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearAmazonRefunds();
+            }
         }
 
         private void CreateRaportButton_Click(object sender, RoutedEventArgs e)
@@ -96,13 +112,13 @@ namespace CSVIngester
             else if (RTG2.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - started");
-                GlobalVariables.DBStorage.ExportAmazonOrdersTable();
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Orders", "Amazon-Orders");
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - Finished");
             }
             else if (RTG3.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - started");
-                GlobalVariables.DBStorage.ExportInventoryTable();
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Refunds", "Amazon-Refunds");
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - Finished");
             }
         }

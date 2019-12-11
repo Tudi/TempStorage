@@ -51,7 +51,7 @@ namespace CSVIngester
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
-                    sql = "CREATE UNIQUE INDEX IF NOT EXISTS UniqueItemId ON InventoryCSV (ebay_id_Hash)";
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueItemId ON InventoryCSV (ebay_id_Hash)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
@@ -74,11 +74,34 @@ namespace CSVIngester
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
-                    sql = "CREATE UNIQUE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_ORDERS (ORDER_ID)";
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_ORDERS (ORDER_ID)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
                     sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_ORDERS (asin_hash)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            using (TransactionScope tran = new TransactionScope())
+            {
+                SQLiteCommand command = m_dbConnection.CreateCommand();
+                command.CommandText = "SELECT name FROM sqlite_master WHERE name='AMAZON_REFUNDS'";
+                var name = command.ExecuteScalar();
+
+                if (!(name != null && name.ToString() == "AMAZON_REFUNDS"))
+                {
+
+                    string sql = "create table AMAZON_REFUNDS (date varchar(20),ORDER_ID varchar(20),TITLE varchar(200),GROSS float,vat float,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20), NET float, vat_rate float, asin_hash int4, ORDER_ID_hash int4)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_REFUNDS (ORDER_ID)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_REFUNDS (asin_hash)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
@@ -111,9 +134,6 @@ namespace CSVIngester
         }
         public InvenotryInsertResultCodes InsertInventory(string ebay_id, string asin, string vat)
         {
-            if (ebay_id == null || ebay_id.Length == 0 || asin == null || asin.Length == 0)
-                return InvenotryInsertResultCodes.RowInvalidValues;
-
             InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             int ebayhash = ebay_id.GetHashCode();
 
@@ -131,10 +151,11 @@ namespace CSVIngester
                 string asin_str = "";
                 if (!rdr.IsDBNull(1))
                     asin_str = rdr.GetString(1);
-                if (asin_str == null || asin_str.Length == 0)
+                float oldVAT = rdr.GetFloat(2);
+                if (asin_str.Length == 0)
                 {
                     //value exists, but it still needs import
-                    ReplaceInventoryRow(ebay_id, asin, vat);
+                    ReplaceInventoryRow(ebay_id, asin, oldVAT.ToString());
                     ReturnCode = InvenotryInsertResultCodes.RowExistedButWasEmpty;
                 }
                 else
@@ -183,12 +204,32 @@ namespace CSVIngester
 
             //check if ts record already exists
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "REPLACE into InventoryCSV(ebay_id_Hash,vat,ebay_id_str)values(@ebayhash,@vat,@ebay_id)";
+            cmd.CommandText = "SELECT 1 FROM InventoryCSV where ebay_id_Hash=@ebayhash and ebay_id_str=@ebay_id";
             cmd.Parameters.AddWithValue("@ebayhash", ebayhash);
-            cmd.Parameters.AddWithValue("@vat", float.Parse(vat));
             cmd.Parameters.AddWithValue("@ebay_id", ebay_id);
             cmd.Prepare();
-            cmd.ExecuteNonQuery();
+
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            if (rdr.Read() && rdr.HasRows == true)
+            {
+                var cmd2 = new SQLiteCommand(m_dbConnection);
+                cmd2.CommandText = "UPDATE InventoryCSV set vat=@vat where ebay_id_Hash=@ebayhash and ebay_id_str=@ebay_id";
+                cmd2.Parameters.AddWithValue("@ebayhash", ebayhash);
+                cmd2.Parameters.AddWithValue("@vat", float.Parse(vat));
+                cmd2.Parameters.AddWithValue("@ebay_id", ebay_id);
+                cmd2.Prepare();
+                cmd2.ExecuteNonQuery();
+            }
+            else
+            {
+                var cmd2 = new SQLiteCommand(m_dbConnection);
+                cmd2.CommandText = "INSERT into InventoryCSV(ebay_id_Hash,vat,ebay_id_str)values(@ebayhash,@vat,@ebay_id)";
+                cmd2.Parameters.AddWithValue("@ebayhash", ebayhash);
+                cmd2.Parameters.AddWithValue("@vat", float.Parse(vat));
+                cmd2.Parameters.AddWithValue("@ebay_id", ebay_id);
+                cmd2.Prepare();
+                cmd2.ExecuteNonQuery();
+            }
         }
 
         public void UpdateInventoryVatAsin(string asin, string vat)
@@ -200,9 +241,9 @@ namespace CSVIngester
 
             //check if ts record already exists
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "REPLACE into InventoryCSV(asin_hash,vat,asin_str)values(@asin_hash,@vat,@asin_str)";
-            cmd.Parameters.AddWithValue("@asin_hash", asinHash);
+            cmd.CommandText = "update InventoryCSV set vat=@vat where asin_hash=@asin_hash and asin_str=@asin_str";
             cmd.Parameters.AddWithValue("@vat", float.Parse(vat));
+            cmd.Parameters.AddWithValue("@asin_hash", asinHash);
             cmd.Parameters.AddWithValue("@asin_str", asin);
             cmd.Prepare();
             cmd.ExecuteNonQuery();
@@ -210,7 +251,6 @@ namespace CSVIngester
 
         public void ExportInventoryTable()
         {
-            System.IO.Directory.CreateDirectory("./reports");
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
             ExportInventoryCSV.CreateInventoryRunFile("./reports/INVENTORY.csv");
             var cmd = new SQLiteCommand(m_dbConnection);
@@ -232,13 +272,13 @@ namespace CSVIngester
             ExportInventoryCSV.Dispose();
         }
 
-        private void InsertAmazonRow(string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, float NET, float VAT_RATE)
+        private void InsertAmazonRow(string TableName, string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, float NET, float VAT_RATE)
         {
             int IdColhash = IdCol.GetHashCode();
             int asinhash = ASINCol.GetHashCode();
 
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "REPLACE INTO AMAZON_ORDERS(date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate,asin_hash,ORDER_ID_hash) " +
+            cmd.CommandText = "REPLACE INTO "+ TableName +"(date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate,asin_hash,ORDER_ID_hash) " +
                 "VALUES(@date,@ORDER_ID,@TITLE,@GROSS,@vat,@BuyerName,@Buyeraddr,@asin,@NET,@vat_rate,@asin_hash,@ORDER_ID_hash)";
 
             cmd.Parameters.AddWithValue("@date", DateCol);
@@ -273,15 +313,16 @@ namespace CSVIngester
 
             cmd.ExecuteNonQuery();
         }
-        public InvenotryInsertResultCodes InsertAmazonOrder(string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, float NET, float VAT_RATE)
+        public InvenotryInsertResultCodes InsertAmazonOrder(string TableName, string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, float NET, float VAT_RATE)
         {
             InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             int ORDER_ID_hashhash = IdCol.GetHashCode();
 
             //check if ts record already exists
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "SELECT ORDER_ID_hash FROM AMAZON_ORDERS where ORDER_ID_hash=@ORDER_ID_hash";
+            cmd.CommandText = "SELECT 1 FROM "+ TableName + " where ORDER_ID_hash=@ORDER_ID_hash and order_id=@order_id";
             cmd.Parameters.AddWithValue("@ORDER_ID_hash", ORDER_ID_hashhash);
+            cmd.Parameters.AddWithValue("@order_id", IdCol);
             cmd.Prepare();
 
             SQLiteDataReader rdr = cmd.ExecuteReader();
@@ -291,8 +332,7 @@ namespace CSVIngester
             }
             else
             {
-                InsertAmazonRow(DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
-                UpdateAllMissingInventoryRows(ASINCol, VATCol);
+                InsertAmazonRow(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
                 ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             }
 
@@ -308,13 +348,12 @@ namespace CSVIngester
             ClearTable("AMAZON_REFUNDS");
             GlobalVariables.Logger.Log("Content of the AMAZON-REFUNDS table has been cleared");
         }
-        public void ExportAmazonOrdersTable()
+        public void ExportAmazonOrdersTable(string TableName, string CSVFileName)
         {
-            System.IO.Directory.CreateDirectory("./reports");
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
-            ExportInventoryCSV.CreateAmazonOrdersFile("./reports/AMAZON-ORDERS.csv");
+            ExportInventoryCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + ".csv");
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "SELECT date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate FROM AMAZON_ORDERS";
+            cmd.CommandText = "SELECT date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate FROM "+ TableName;
             cmd.Prepare();
 
             SQLiteDataReader rdr = cmd.ExecuteReader();

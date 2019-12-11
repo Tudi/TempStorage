@@ -20,7 +20,7 @@ namespace CSVIngester
                 MessageBox.Show(Msg);
             if(LogToConsole)
             {
-                string TimeMsg = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + "]";
+                string TimeMsg = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + "]  ";
                 Msg = TimeMsg + Msg + "\n";
 
                 this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
