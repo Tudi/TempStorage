@@ -133,11 +133,6 @@ namespace CSVIngester
             writer = new StreamWriter(FileName);
             csv = new CsvWriter(writer);
         }
-        public void WriteDynamicFileHeader(dynamic RowData)
-        {
-            csv.WriteHeader<dynamic>();
-            csv.NextRecord();
-        }
         public void WriteDynamicFileRow(dynamic RowData)
         {
             csv.WriteRecord<dynamic>(RowData);

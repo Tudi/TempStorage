@@ -271,10 +271,7 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
                 return;
             }
-            GlobalVariables.ImportingToDBBlock = TableName;
 
-            WriteCSVFile ImportResultCSV = new WriteCSVFile();
-            ImportResultCSV.CreateAmazonOrdersFile("./reports/"+ CSVFileName+"-RUN.csv");
             GlobalVariables.Logger.Log("File import destination database is '" + CSVFileName + "'");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvReader(reader))
@@ -299,15 +296,11 @@ namespace CSVIngester
                     if (PriceColName.Length == 0)
                     {
                         GlobalVariables.Logger.Log("Mandatory column 'Refunded Amount' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                        GlobalVariables.ImportingToDBBlock = "";
-                        ImportResultCSV.Dispose();
                         return;
                     }
                     if (VATColName.Length == 0)
                     {
                         GlobalVariables.Logger.Log("Mandatory column 'VAT Amount' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                        GlobalVariables.ImportingToDBBlock = "";
-                        ImportResultCSV.Dispose();
                         return;
                     }
                 }
@@ -315,63 +308,51 @@ namespace CSVIngester
                 if (DateColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Date' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (IdColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Id' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (TitleColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Title' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (PriceColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Price' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (VATColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'VAT' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (BuyerColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Buyer' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (AddressColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Address' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (ASINColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'ASIN' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
 
+                GlobalVariables.ImportingToDBBlock = TableName;
+
+                WriteCSVFile ImportResultCSV = new WriteCSVFile();
+                ImportResultCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + "-RUN.csv");
+
                 int RowsRead = 0;
                 int RowsInserted = 0;
-                int RowsUpdated = 0;
                 int RowsSkipped = 0;
                 while (csv.Read())
                 {
@@ -423,12 +404,11 @@ namespace CSVIngester
                 }
                 GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
                 GlobalVariables.Logger.Log("CSV file rows inserted : " + RowsInserted);
-                GlobalVariables.Logger.Log("CSV file rows updated : " + RowsUpdated);
                 GlobalVariables.Logger.Log("CSV file rows skipped : " + RowsSkipped);
+                ImportResultCSV.Dispose();
+                GlobalVariables.ImportingToDBBlock = "";
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
-            GlobalVariables.ImportingToDBBlock = "";
-            ImportResultCSV.Dispose();
         }
 
         public static void ReadPaypalSalesCSVFile(string FileName)
@@ -440,10 +420,7 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
                 return;
             }
-            GlobalVariables.ImportingToDBBlock = TableName;
 
-            WriteCSVFile ImportResultCSV = new WriteCSVFile();
-            ImportResultCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + "-RUN.csv");
             GlobalVariables.Logger.Log("File import destination database is '" + CSVFileName + "'");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvReader(reader))
@@ -462,83 +439,78 @@ namespace CSVIngester
                 //not mandatory ?
                 string TypeColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Type");
                 string BalanceImpactColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Balance Impact");
+                string CurrencyColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Currency");
+                string ReferenceIDColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Reference Txn ID");
                 if (DateColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Date' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (NameColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Name' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (PriceColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Gross' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (PPFeeColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Fee' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (TransactionIDColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Transaction ID' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (TitleColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Item Title' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (ItemIdColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Item ID' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (AddressColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Shipping Address' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (PhoneColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Contact Phone Number' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (TypeColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Type' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
                 if (BalanceImpactColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Balance Impact' not detected.Not an " + CSVFileName + " csv file : " + FileName);
-                    GlobalVariables.ImportingToDBBlock = "";
-                    ImportResultCSV.Dispose();
                     return;
                 }
+                if (CurrencyColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Currency' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    return;
+                }
+                if (ReferenceIDColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Reference Txn ID' not detected.Not an " + CSVFileName + " csv file : " + FileName);
+                    return;
+                }
+                
+                GlobalVariables.ImportingToDBBlock = TableName;
+
+//                WriteCSVFile ImportResultCSV = new WriteCSVFile();
+//                ImportResultCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + "-RUN.csv");
 
                 WriteCSVFile SalesMemoCSV = new WriteCSVFile();
                 SalesMemoCSV.CreateDynamicFile("./reports/report-sales-memo.csv");
@@ -547,7 +519,7 @@ namespace CSVIngester
                 WriteCSVFile WithDrawCSV = new WriteCSVFile();
                 WithDrawCSV.CreateDynamicFile("./reports/report-withdrawals.csv");
                 WriteCSVFile HoldsCSV = new WriteCSVFile();
-                HoldsCSV.CreateDynamicFile("./reports/report-hold.csv");
+                HoldsCSV.CreateDynamicFile("./reports/report-holds.csv");
                 WriteCSVFile SalesCSV = new WriteCSVFile();
                 SalesCSV.CreateDynamicFile("./reports/report-paypal-sales.csv");
                 WriteCSVFile SalesRefundsCSV = new WriteCSVFile();
@@ -557,8 +529,9 @@ namespace CSVIngester
 
                 int RowsRead = 0;
                 int RowsInserted = 0;
-                int RowsUpdated = 0;
                 int RowsSkipped = 0;
+                int RowsRefundInserted = 0;
+                int RowsRefundSkipped = 0;
                 while (csv.Read())
                 {
                     string DateCol = csv.GetField<string>(DateColName);
@@ -572,6 +545,8 @@ namespace CSVIngester
                     string PhoneCol = csv.GetField<string>(PhoneColName);
                     string TypeCol = csv.GetField<string>(TypeColName);
                     string BalanceImpactCol = csv.GetField<string>(BalanceImpactColName);
+                    string CurrencyCol = csv.GetField<string>(CurrencyColName);
+                    string ReferenceIDCol = csv.GetField<string>(ReferenceIDColName);
 
                     //check if the read data is correct
                     if (DateCol == null || DateCol.Length == 0)
@@ -597,22 +572,42 @@ namespace CSVIngester
                     if (BalanceImpactCol == null || BalanceImpactCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Balance Impact does not have a value");
 
-                    SalesMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                    //try to add the new row to the DB
-//                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
-/*                    if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                    if (TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Memo".ToLower())
+                        SalesMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                    else if (TypeCol.ToLower() == "General Withdrawal".ToLower() && BalanceImpactCol.ToLower() == "Memo".ToLower())
+                        WithDrawMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                    else if (TypeCol.ToLower() == "General Withdrawal".ToLower() && BalanceImpactCol.ToLower() == "Debit".ToLower())
+                        WithDrawCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                    else if (NameCol.ToLower() == "PayPal".ToLower() && (TypeCol.ToLower() == "Hold on Available Balance".ToLower() || TypeCol.ToLower() == "Reversal of General Account Hold".ToLower()))
+                        HoldsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                    else if (float.Parse(PriceCol) > 0 && TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Credit".ToLower())
                     {
-                        RowsInserted++;
-//                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, float.Parse(PriceCol), float.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                        SalesCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                        DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdCol, AddressCol, PhoneCol);
+                        if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                            RowsInserted++;
+                        else
+                            RowsSkipped++;
+                    }
+                    else if (float.Parse(PriceCol) < 0 && (TypeCol.ToLower() == "Payment Refund".ToLower() || TypeCol.ToLower() == "Payment Reversal".ToLower()) && BalanceImpactCol.ToLower() == "Debit".ToLower() && CurrencyCol.ToLower() == "GBP".ToLower())
+                    {
+                        SalesRefundsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                        DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRefundRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdCol, ReferenceIDCol);
+                        if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                            RowsRefundInserted++;
+                        else
+                            RowsRefundSkipped++;
                     }
                     else
-                        RowsSkipped++;*/
+                        RemainingtransactionCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+
                     RowsRead++;
                 }
                 GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
-                GlobalVariables.Logger.Log("CSV file rows inserted : " + RowsInserted);
-                GlobalVariables.Logger.Log("CSV file rows updated : " + RowsUpdated);
-                GlobalVariables.Logger.Log("CSV file rows skipped : " + RowsSkipped);
+                GlobalVariables.Logger.Log("paypal sales rows inserted : " + RowsInserted);
+                GlobalVariables.Logger.Log("paypal sales rows skipped : " + RowsSkipped);
+                GlobalVariables.Logger.Log("paypal refund rows inserted : " + RowsRefundInserted);
+                GlobalVariables.Logger.Log("paypal refund rows skipped : " + RowsRefundSkipped);
                 SalesMemoCSV.Dispose();
                 WithDrawMemoCSV.Dispose();
                 WithDrawCSV.Dispose();
@@ -620,10 +615,10 @@ namespace CSVIngester
                 SalesCSV.Dispose();
                 SalesRefundsCSV.Dispose();
                 RemainingtransactionCSV.Dispose();
+//                ImportResultCSV.Dispose();
+                GlobalVariables.ImportingToDBBlock = "";
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
-            GlobalVariables.ImportingToDBBlock = "";
-            ImportResultCSV.Dispose();
         }
     }
 }

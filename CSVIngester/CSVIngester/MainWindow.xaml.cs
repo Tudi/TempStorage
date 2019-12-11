@@ -120,14 +120,26 @@ namespace CSVIngester
             else if (RTG2.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - started");
-                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Orders", "Amazon-Orders");
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Orders", "Amazon-Orders", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - Finished");
             }
             else if (RTG3.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - started");
-                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Refunds", "Amazon-Refunds");
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Refunds", "Amazon-Refunds", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - Finished");
+            }
+            else if (RTG4.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL-SALES' table - started");
+                GlobalVariables.DBStorage.ExportPaypalSales("PAYPAL_SALES", "PAYPAL-SALES", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL-SALES' table - Finished");
+            }
+            else if (RTG5.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL-REFUNDS' table - started");
+                GlobalVariables.DBStorage.ExportPaypalSales("PAYPAL_REFUNDS", "PAYPAL-REFUNDS", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL-REFUNDS' table - Finished");
             }
         }
 
