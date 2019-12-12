@@ -54,7 +54,7 @@
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,16,5,5"/>
+                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,16,5,5" Click="UpdateVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 

@@ -8,6 +8,63 @@ using System.Transactions;
 
 namespace CSVIngester
 {
+    public static class DateParser
+    {
+        public static long DateTimeToMinutes(DateTime dt)
+        {
+            return (long)(dt - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+        }
+        public static long GetUnixStamp(string DateStr)
+        {
+            long ret = DateTimeToMinutes(new DateTime(2001, 1, 2));
+            long retInitial = ret;
+            if (DateStr.Length <= 8)
+            {
+                GlobalVariables.Logger.Log("Date string is too short to know format : " + DateStr);
+                return ret;
+            }
+            //this is because parse date is super slow and fails a lot. Our format is pretty fixed in most cases
+            if (DateStr.Length == 10)
+            {
+                string[] parts = DateStr.Split('/');
+                if (parts.Length == 3)
+                {
+                    //maybe day/month/year
+                    int day;
+                    int month;
+                    int year;
+                    {
+                        int.TryParse(parts[0], out day);
+                        int.TryParse(parts[1], out month);
+                        int.TryParse(parts[2], out year);
+//                        day = int.Parse(parts[0]);
+//                        month = int.Parse(parts[1]);
+//                        year = int.Parse(parts[2]);
+//                      long refret = (long)(DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+                        if (day <= 31 && month <= 12 && year >= 1970 && year < 5000)
+                            ret = DateTimeToMinutes(new DateTime(year, month, day));
+                        //swap day and year
+                        else if (year <= 31 && month <= 12 && day >= 1970 && day < 5000)
+                            ret = DateTimeToMinutes(new DateTime(day, month, year));
+                    }
+                }
+            }
+            if (ret == retInitial)
+            {
+                try
+                {
+                    ret = (long)(DateTime.Parse(DateStr) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+                }
+                catch
+                {
+                }
+            }
+            if(ret == retInitial)
+                GlobalVariables.Logger.Log("Date string unknown format : " + DateStr);
+
+            return ret;
+        }
+    }
     public class DBHandler
     {
         public SQLiteConnection m_dbConnection = null;
@@ -47,7 +104,7 @@ namespace CSVIngester
                 if (!(name != null && name.ToString() == "InventoryCSV"))
                 {
 
-                    string sql = "create table InventoryCSV (ebay_id_Hash INT4,asin_hash INT4,vat FLOAT DEFAULT -1, ebay_id_str varchar(20),asin_str varchar(20))";
+                    string sql = "create table InventoryCSV (ebay_id_Hash INT4,asin_hash INT4,vat FLOAT DEFAULT "+GlobalVariables.NULLValue+", ebay_id_str varchar(20),asin_str varchar(20))";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
 
@@ -314,7 +371,7 @@ namespace CSVIngester
         {
             int IdColhash = IdCol.GetHashCode();
             int asinhash = ASINCol.GetHashCode();
-            long TStamp = (long)(DateTime.Parse(DateCol) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+            long TStamp = DateParser.GetUnixStamp(DateCol);
 
             var cmd = new SQLiteCommand(m_dbConnection);
             cmd.CommandText = "REPLACE INTO "+ TableName + "(date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate,asin_hash,ORDER_ID_hash,TStamp) " +
@@ -344,7 +401,7 @@ namespace CSVIngester
             float VAT = float.Parse(VATCol);
 
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "update InventoryCSV set vat=@VAT where asin_hash=@asin_hash and vat<0 and asin_str=@asin";
+            cmd.CommandText = "update InventoryCSV set vat=@VAT where asin_hash=@asin_hash and vat="+ GlobalVariables.NULLValue+" and asin_str=@asin";
 
             cmd.Parameters.AddWithValue("@VAT", VAT);
             cmd.Parameters.AddWithValue("@asin_hash", asinhash);
@@ -390,8 +447,8 @@ namespace CSVIngester
         }
         public void ExportAmazonOrdersTable(string TableName, string CSVFileName, DateTime StartDate, DateTime EndDate)
         {
-            long TStart = (long)(StartDate - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
-            long TEnd = (long)(EndDate - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+            long TStart = DateParser.DateTimeToMinutes(StartDate);
+            long TEnd = DateParser.DateTimeToMinutes(EndDate);
 
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
             ExportInventoryCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + ".csv");
@@ -445,7 +502,6 @@ namespace CSVIngester
         {
             InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             int IdColhash = TransactionIDCol.GetHashCode();
-            long TStamp = (long)(DateTime.Parse(DateCol) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
 
             string TableName = "PAYPAL_SALES";
 
@@ -463,6 +519,7 @@ namespace CSVIngester
             }
             else
             {
+                long TStamp = DateParser.GetUnixStamp(DateCol);
                 var cmd = new SQLiteCommand(m_dbConnection);
                 cmd.CommandText = "REPLACE INTO " + TableName + "(date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate,TransactionID_hash,TStamp) " +
                     "VALUES(@DateCol,@NameCol,@PriceCol,@PPFeeCol,@TransactionIDCol,@TitleCol,@ItemIdCol,@AddressCol,@PhoneCol,@vat,@net,@vat_rate,@TransactionID_hash,@TStamp)";
@@ -476,9 +533,9 @@ namespace CSVIngester
                 cmd.Parameters.AddWithValue("@ItemIdCol", ItemIdCol);
                 cmd.Parameters.AddWithValue("@AddressCol", AddressCol);
                 cmd.Parameters.AddWithValue("@PhoneCol", PhoneCol);
-                cmd.Parameters.AddWithValue("@vat", -1);
-                cmd.Parameters.AddWithValue("@net", -1);
-                cmd.Parameters.AddWithValue("@vat_rate", -1);
+                cmd.Parameters.AddWithValue("@vat", GlobalVariables.NULLValue);
+                cmd.Parameters.AddWithValue("@net", GlobalVariables.NULLValue);
+                cmd.Parameters.AddWithValue("@vat_rate", GlobalVariables.NULLValue);
                 cmd.Parameters.AddWithValue("@TransactionID_hash", IdColhash);
                 cmd.Parameters.AddWithValue("@TStamp", TStamp);
                 cmd.Prepare();
@@ -495,7 +552,6 @@ namespace CSVIngester
         {
             InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             int IdColhash = TransactionIDCol.GetHashCode();
-            long TStamp = (long)(DateTime.Parse(DateCol) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
 
             string TableName = "PAYPAL_REFUNDS";
 
@@ -513,6 +569,7 @@ namespace CSVIngester
             }
             else
             {
+                long TStamp = DateParser.GetUnixStamp(DateCol);
                 var cmd = new SQLiteCommand(m_dbConnection);
                 cmd.CommandText = "REPLACE INTO " + TableName + "(date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,ReferenceID,vat,net,vat_rate,TransactionID_hash,TStamp) " +
                     "VALUES(@DateCol,@NameCol,@PriceCol,@PPFeeCol,@TransactionIDCol,@TitleCol,@ItemIdCol,@ReferenceID,@vat,@net,@vat_rate,@TransactionID_hash,@TStamp)";
@@ -525,9 +582,9 @@ namespace CSVIngester
                 cmd.Parameters.AddWithValue("@TitleCol", TitleCol);
                 cmd.Parameters.AddWithValue("@ItemIdCol", ItemIdCol);
                 cmd.Parameters.AddWithValue("@ReferenceID", ReferenceIDCol);
-                cmd.Parameters.AddWithValue("@vat", -1);
-                cmd.Parameters.AddWithValue("@net", -1);
-                cmd.Parameters.AddWithValue("@vat_rate", -1);
+                cmd.Parameters.AddWithValue("@vat", GlobalVariables.NULLValue);
+                cmd.Parameters.AddWithValue("@net", GlobalVariables.NULLValue);
+                cmd.Parameters.AddWithValue("@vat_rate", GlobalVariables.NULLValue);
                 cmd.Parameters.AddWithValue("@TransactionID_hash", IdColhash);
                 cmd.Parameters.AddWithValue("@TStamp", TStamp);
                 cmd.Prepare();
@@ -541,14 +598,14 @@ namespace CSVIngester
         }
         public void ExportPaypalSales(string TableName, string CSVFileName, DateTime StartDate, DateTime EndDate)
         {
-            long TStart = (long)(StartDate - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
-            long TEnd = (long)(EndDate - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+            long TStart = DateParser.DateTimeToMinutes(StartDate);
+            long TEnd = DateParser.DateTimeToMinutes(EndDate);
 
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
             ExportInventoryCSV.CreateDynamicFile("./reports/" + CSVFileName + ".csv");
             var cmd = new SQLiteCommand(m_dbConnection);
             if (TableName == "PAYPAL_SALES")
-                cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd";
+                cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate,tstamp FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd";
             else
                 cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,ReferenceID,1,vat,net,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd";
             cmd.Parameters.AddWithValue("@TStart", TStart);
@@ -568,12 +625,12 @@ namespace CSVIngester
                 else
                     record.Date = "";
                 float Gross = rdr.GetFloat(2);
-                if (Gross >= 0)
+                if (Gross != (float)GlobalVariables.NULLValue)
                     record.Gross = Gross.ToString();
                 else
                     record.Gross = "";
                 float Fee = rdr.GetFloat(3);
-                if (Fee >= 0)
+                if (Fee != (float)GlobalVariables.NULLValue)
                     record.Paypal_Fee = Fee.ToString();
                 else
                     record.Paypal_Fee = "";
@@ -608,24 +665,180 @@ namespace CSVIngester
                         record.Reference_Id = "";
                 }
                 float vat = rdr.GetFloat(9);
-                if (vat >= 0)
+                if (vat != (float)GlobalVariables.NULLValue)
                     record.Vat = vat.ToString();
                 else
                     record.Vat = "";
                 float NET = rdr.GetFloat(10);
-                if (NET >= 0)
+                if (NET != (float)GlobalVariables.NULLValue)
                     record.NET = NET.ToString();
                 else
                     record.NET = "";
                 float vat_rate = rdr.GetFloat(11);
-                if (vat_rate >= 0)
+                if (vat_rate != (float)GlobalVariables.NULLValue)
                     record.vat_rate = vat_rate.ToString();
                 else
                     record.vat_rate = "";
 
+//                long unixTimeStamp = rdr.GetInt64(12);
+//                System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+//                dtDateTime = dtDateTime.AddMinutes(unixTimeStamp).ToLocalTime();
+//                record.tstamp = dtDateTime.ToString();/**/
+
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
             ExportInventoryCSV.Dispose();
+        }
+        public void UpdateVAT()
+        {
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+            GlobalVariables.Logger.Log("Update VAT - started");
+            GlobalVariables.ImportingToDBBlock = "UpdateVat";
+            WriteCSVFile ExportSalesCSV = new WriteCSVFile();
+            ExportSalesCSV.CreateDynamicFile("./reports/no-vat-paypal-sales.csv");
+            WriteCSVFile ExportRefundsCSV = new WriteCSVFile();
+            ExportRefundsCSV.CreateDynamicFile("./reports/no-vat-paypal-refunds.csv");
+            for (int i=0;i<2;i++)
+            {
+                var cmd = new SQLiteCommand(m_dbConnection);
+                if (i==0)
+                    cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate FROM PAYPAL_SALES";
+                else
+                    cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,ReferenceID,1,vat,net,vat_rate FROM PAYPAL_REFUNDS";
+                cmd.Prepare();
+
+                dynamic record = new System.Dynamic.ExpandoObject();
+                SQLiteDataReader rdr = cmd.ExecuteReader();
+                while (rdr.Read() && rdr.HasRows == true)
+                {
+                    //for refunds table, we do not process rows that already have a value
+                    float vat_rate = rdr.GetFloat(11);
+                    if (i == 1 && vat_rate >= 0)
+                        continue;
+
+                    //get the itemID
+                    string EbayId = "";
+                    if (!rdr.IsDBNull(6))
+                        EbayId = rdr.GetString(6);
+
+                    //check if inventory has this value
+                    int ebayhash = EbayId.GetHashCode();
+                    var cmd1 = new SQLiteCommand(m_dbConnection);
+                    cmd1.CommandText = "SELECT vat FROM InventoryCSV where ebay_id_Hash=@ebay_id_Hash and ebay_id_str=@ebay_id_str limit 1";
+                    cmd1.Parameters.AddWithValue("@ebay_id_Hash", ebayhash);
+                    cmd1.Parameters.AddWithValue("@ebay_id_str", EbayId);
+                    cmd1.Prepare();
+                    SQLiteDataReader rdr2 = cmd1.ExecuteReader();
+                    float InventoryVAT = GlobalVariables.NULLValue;
+                    if(rdr2.Read() && rdr2.HasRows == true)
+                        InventoryVAT = rdr2.GetFloat(0);
+
+                    if (InventoryVAT == GlobalVariables.NULLValue)
+                    {
+                        if (!rdr.IsDBNull(0))
+                            record.Date = rdr.GetString(0);
+                        else
+                            record.Date = "";
+                        if (!rdr.IsDBNull(1))
+                            record.Name = rdr.GetString(1);
+                        else
+                            record.Date = "";
+                        float Gross = rdr.GetFloat(2);
+                        if (Gross != (float)GlobalVariables.NULLValue)
+                            record.Gross = Gross.ToString();
+                        else
+                            record.Gross = "";
+                        float Fee = rdr.GetFloat(3);
+                        if (Fee != (float)GlobalVariables.NULLValue)
+                            record.Paypal_Fee = Fee.ToString();
+                        else
+                            record.Paypal_Fee = "";
+                        if (!rdr.IsDBNull(4))
+                            record.Transaction_ID = rdr.GetString(4);
+                        else
+                            record.Transaction_ID = "";
+                        if (!rdr.IsDBNull(5))
+                            record.Title = rdr.GetString(5);
+                        else
+                            record.Title = "";
+                        if (!rdr.IsDBNull(6))
+                            record.Item_Id = rdr.GetString(6);
+                        else
+                            record.Item_Id = "";
+                        if (i == 0)
+                        {
+                            if (!rdr.IsDBNull(7))
+                                record.Address = rdr.GetString(7);
+                            else
+                                record.Address = "";
+                            if (!rdr.IsDBNull(8))
+                                record.Phone = rdr.GetString(8);
+                            else
+                                record.Phone = "";
+                        }
+                        else
+                        {
+                            if (!rdr.IsDBNull(7))
+                                record.Reference_Id = rdr.GetString(7);
+                            else
+                                record.Reference_Id = "";
+                        }
+                        float vat = rdr.GetFloat(9);
+                        if (vat != (float)GlobalVariables.NULLValue)
+                            record.Vat = vat.ToString();
+                        else
+                            record.Vat = "";
+                        float NET = rdr.GetFloat(10);
+                        if (NET != (float)GlobalVariables.NULLValue)
+                            record.NET = NET.ToString();
+                        else
+                            record.NET = "";
+//                        float vat_rate = rdr.GetFloat(11);
+                        if (vat_rate != (float)GlobalVariables.NULLValue)
+                            record.vat_rate = vat_rate.ToString();
+                        else
+                            record.vat_rate = "";
+                        //write it to the csv
+                        if(i==0)
+                            ExportSalesCSV.WriteDynamicFileRow(record);
+                        else
+                            ExportRefundsCSV.WriteDynamicFileRow(record);
+                    }
+                    //we can update vat if we got here
+                    else
+                    {
+                        string Transaction_ID = "";
+                        if (!rdr.IsDBNull(4))
+                            Transaction_ID = rdr.GetString(4);
+
+                        int Transaction_ID_Hash = Transaction_ID.GetHashCode();
+                        float Gross = rdr.GetFloat(2);
+                        float NET = Gross / (1 + InventoryVAT / 100);
+                        float vat = Gross - NET;
+
+                        var cmd2 = new SQLiteCommand(m_dbConnection);
+                        if (i==0)
+                            cmd2.CommandText = "UPDATE PAYPAL_SALES set vat_rate=@vat_rate,net=@net,vat=@vat where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol";
+                        else
+                            cmd2.CommandText = "UPDATE PAYPAL_REFUNDS set vat_rate=@vat_rate,net=@net,vat=@vat where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol";
+                        cmd2.Parameters.AddWithValue("@vat_rate", InventoryVAT);
+                        cmd2.Parameters.AddWithValue("@net", NET);
+                        cmd2.Parameters.AddWithValue("@vat", vat);
+                        cmd2.Parameters.AddWithValue("@IdColhash", Transaction_ID_Hash);
+                        cmd2.Parameters.AddWithValue("@TransactionIDCol", Transaction_ID);
+                        cmd2.Prepare();
+                        cmd2.ExecuteNonQuery();
+                    }
+                }
+            }
+            GlobalVariables.ImportingToDBBlock ="";
+            ExportSalesCSV.Dispose();
+            ExportRefundsCSV.Dispose();
+            GlobalVariables.Logger.Log("Update VAT - Finished");
         }
     }
 }

@@ -23,6 +23,7 @@ namespace CSVIngester
         public static DBHandler DBStorage = null;
         public static string ImportingToDBBlock = "";
         public static MessageLogger Logger = null;
+        public static int NULLValue = -9999999; // has to fit into a float without truncations
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -111,6 +112,12 @@ namespace CSVIngester
 
         private void CreateRaportButton_Click(object sender, RoutedEventArgs e)
         {
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+
             if (RTG1.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'inventory' table - started");
@@ -147,6 +154,11 @@ namespace CSVIngester
         {
             ConsoleTextbox.Width = this.Width - 25;
             ConsoleTextbox.Height = this.Height - 315;
+        }
+
+        private void UpdateVatButton_Click(object sender, RoutedEventArgs e)
+        {
+            Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateVAT());
         }
     }
 }

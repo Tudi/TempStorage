@@ -22,7 +22,7 @@ namespace CSVIngester
         {
             ebay_id = ebay_id_p;
             asin = asin_p;
-            if (vat_p < 0)
+            if (vat_p == GlobalVariables.NULLValue)
                 vat = "";
             else
                 vat = vat_p.ToString();
