@@ -53,7 +53,7 @@ namespace CSVIngester
             {
                 try
                 {
-                    ret = (long)(DateTime.Parse(DateStr) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMinutes;
+                    ret = DateTimeToMinutes(DateTime.Parse(DateStr));
                 }
                 catch
                 {
@@ -453,7 +453,7 @@ namespace CSVIngester
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
             ExportInventoryCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + ".csv");
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "SELECT date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate FROM "+ TableName + " where TStamp >= @TStart and TStamp <= @TEnd";
+            cmd.CommandText = "SELECT date,ORDER_ID,TITLE,GROSS,vat,BuyerName,Buyeraddr,asin,NET,vat_rate FROM "+ TableName + " where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
             cmd.Parameters.AddWithValue("@TStart", TStart);
             cmd.Parameters.AddWithValue("@TEnd", TEnd);
             cmd.Prepare();
@@ -605,9 +605,9 @@ namespace CSVIngester
             ExportInventoryCSV.CreateDynamicFile("./reports/" + CSVFileName + ".csv");
             var cmd = new SQLiteCommand(m_dbConnection);
             if (TableName == "PAYPAL_SALES")
-                cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate,tstamp FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd";
+                cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate,tstamp FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
             else
-                cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,ReferenceID,1,vat,net,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd";
+                cmd.CommandText = "SELECT date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,ReferenceID,1,vat,net,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
             cmd.Parameters.AddWithValue("@TStart", TStart);
             cmd.Parameters.AddWithValue("@TEnd", TEnd);
             cmd.Prepare();
@@ -689,6 +689,31 @@ namespace CSVIngester
             }
             ExportInventoryCSV.Dispose();
         }
+
+        public float FloatSubstract(float a, float b, int Precision)
+        {
+            //because 6.71 and not 6.709999
+            string astr = a.ToString();
+            string bstr = b.ToString();
+            string []aparts = astr.Split('.');
+            string []bparts = bstr.Split('.');
+            long A = long.Parse(aparts[0]);
+            long B = long.Parse(bparts[0]);
+            for(int i=0;i<Precision;i++)
+            {
+                A = A * 10;
+                if (aparts.Length > 1 && aparts[1].Length > i)
+                    A = A + aparts[1][i] - '0';
+                B = B * 10;
+                if (bparts.Length > 1 && bparts[1].Length > i)
+                    B = B + bparts[1][i] - '0';
+            }
+            float res = (float)(A - B);
+            for (int i = 0; i < Precision; i++)
+                res = res / 10;
+            return (float)res;
+        }
+
         public void UpdateVAT()
         {
             if (GlobalVariables.ImportingToDBBlock.Length != 0)
@@ -818,7 +843,9 @@ namespace CSVIngester
                         int Transaction_ID_Hash = Transaction_ID.GetHashCode();
                         float Gross = rdr.GetFloat(2);
                         float NET = Gross / (1 + InventoryVAT / 100);
-                        float vat = Gross - NET;
+                        int IntNet = (int)(NET * 100);
+                        NET = (float)IntNet / (float)100; // 2 digit precision
+                        float vat = FloatSubstract(Gross, NET, 3);
 
                         var cmd2 = new SQLiteCommand(m_dbConnection);
                         if (i==0)

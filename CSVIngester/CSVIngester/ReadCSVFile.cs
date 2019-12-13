@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace CSVIngester
 {
@@ -575,36 +576,43 @@ namespace CSVIngester
                     if (BalanceImpactCol == null || BalanceImpactCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Balance Impact does not have a value");*/
 
-                    if (TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Memo".ToLower())
-                        SalesMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                    else if (TypeCol.ToLower() == "General Withdrawal".ToLower() && BalanceImpactCol.ToLower() == "Memo".ToLower())
-                        WithDrawMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                    else if (TypeCol.ToLower() == "General Withdrawal".ToLower() && BalanceImpactCol.ToLower() == "Debit".ToLower())
-                        WithDrawCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                    else if (NameCol.ToLower() == "PayPal".ToLower() && (TypeCol.ToLower() == "Hold on Available Balance".ToLower() || TypeCol.ToLower() == "Reversal of General Account Hold".ToLower()))
-                        HoldsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                    else if (float.Parse(PriceCol) > 0 && TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Credit".ToLower())
+                    string []MultiIDs = ItemIdCol.Split(',');
+                    var ItemIdColOne = MultiIDs[0];
+//                    if(ItemIdColOne.Length != 12)
+//                        GlobalVariables.Logger.Log("at line " + RowsRead + " ItemId does not have a value");
+//                    foreach (var ItemIdColOne in MultiIDs)
                     {
-                        SalesCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                        DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdCol, AddressCol, PhoneCol);
-                        if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
-                            RowsInserted++;
+                        if (TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Memo".ToLower())
+                            SalesMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                        else if (TypeCol.ToLower() == "General Withdrawal".ToLower() && BalanceImpactCol.ToLower() == "Memo".ToLower())
+                            WithDrawMemoCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                        else if (TypeCol.ToLower() == "General Withdrawal".ToLower() && BalanceImpactCol.ToLower() == "Debit".ToLower())
+                            WithDrawCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                        else if (NameCol.ToLower() == "PayPal".ToLower() && (TypeCol.ToLower() == "Hold on Available Balance".ToLower() || TypeCol.ToLower() == "Reversal of General Account Hold".ToLower()))
+                            HoldsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                        else if (float.Parse(PriceCol) > 0 && TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Credit".ToLower())
+                        {
+                            SalesCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                            DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdColOne, AddressCol, PhoneCol);
+                            if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                                RowsInserted++;
+                            else
+                                RowsSkipped++;
+                        }
+                        else if (float.Parse(PriceCol) < 0 && (TypeCol.ToLower() == "Payment Refund".ToLower() || TypeCol.ToLower() == "Payment Reversal".ToLower()) && BalanceImpactCol.ToLower() == "Debit".ToLower() && CurrencyCol.ToLower() == "GBP".ToLower())
+                        {
+                            SalesRefundsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                            DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRefundRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdColOne, ReferenceIDCol);
+                            if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                                RowsRefundInserted++;
+                            else
+                                RowsRefundSkipped++;
+                        }
                         else
-                            RowsSkipped++;
-                    }
-                    else if (float.Parse(PriceCol) < 0 && (TypeCol.ToLower() == "Payment Refund".ToLower() || TypeCol.ToLower() == "Payment Reversal".ToLower()) && BalanceImpactCol.ToLower() == "Debit".ToLower() && CurrencyCol.ToLower() == "GBP".ToLower())
-                    {
-                        SalesRefundsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                        DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRefundRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdCol, ReferenceIDCol);
-                        if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
-                            RowsRefundInserted++;
-                        else
-                            RowsRefundSkipped++;
-                    }
-                    else
-                        RemainingtransactionCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
+                            RemainingtransactionCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
 
-                    RowsRead++;
+                        RowsRead++;
+                    }
                 }
                 GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
                 GlobalVariables.Logger.Log("paypal sales rows inserted : " + RowsInserted);

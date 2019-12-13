@@ -61,7 +61,7 @@
         <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
             <GroupBox Margin="5">
                 <GroupBox.Header>
-                    Report Type
+                    Table Type
                 </GroupBox.Header>
                 <StackPanel Margin="5">
                     <RadioButton Name="RTG1" GroupName="RaportTypeGroup" Content="INVENTORY" IsChecked="True"/>
@@ -73,7 +73,7 @@
             </GroupBox>
             <GroupBox Margin="5">
                 <GroupBox.Header>
-                    Report Range
+                    Table Range
                 </GroupBox.Header>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -90,7 +90,7 @@
                     <DatePicker Name="ExportEndDate"  Grid.Row="1" Grid.Column="1"/>
                 </Grid>
             </GroupBox>
-            <Button Name="CreateRaportButton" Content="Create Report" Margin="5" Click="CreateRaportButton_Click"/>
+            <Button Name="CreateRaportButton" Content="Export Table" Margin="5" Click="CreateRaportButton_Click"/>
         </StackPanel>
     </StackPanel>
         <StackPanel>

@@ -24,6 +24,7 @@ namespace CSVIngester
         public static string ImportingToDBBlock = "";
         public static MessageLogger Logger = null;
         public static int NULLValue = -9999999; // has to fit into a float without truncations
+        public static Window MyMainWindow = null;
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -36,8 +37,51 @@ namespace CSVIngester
             GlobalVariables.Logger = new MessageLogger();
             GlobalVariables.DBStorage = new DBHandler();
             GlobalVariables.Logger.Log("Application started..");
+            GlobalVariables.MyMainWindow = this;
             ExportStartDate.SelectedDate = new DateTime(2001, 1, 1);
             ExportEndDate.SelectedDate = DateTime.Now;
+            DBBusyMonitorThreadStart();
+        }
+
+        ~MainWindow()
+        {
+            GlobalVariables.MyMainWindow = null;
+        }
+        private void DBBusyMonitorThreadStart()
+        {
+            var thread = new Thread(new ThreadStart(DBBusyMonitorThread));
+//            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+
+        private void DBBusyMonitorThread()
+        {
+            int PrevValue = 1;
+//            Cursor PrevCursor = null;
+            while (GlobalVariables.MyMainWindow != null && Application.Current != null && Application.Current.Dispatcher != null)
+            {
+                if (GlobalVariables.ImportingToDBBlock != "" && PrevValue != 0)
+                {
+                    //Mouse.OverrideCursor = Cursors.Wait;
+                    //GlobalVariables.MyMainWindow.Cursor = Cursors.Wait;
+//                    PrevCursor = GlobalVariables.MyMainWindow.Cursor;
+//                    Application.Current.Dispatcher.Invoke(new Action(() => this.Cursor = Cursors.Wait));
+                    Application.Current.Dispatcher.Invoke(new Action(() => Mouse.OverrideCursor = Cursors.Wait));
+                    Application.Current.Dispatcher.Invoke(new Action(() => ConsoleTextbox.Background = Brushes.LightBlue));
+                    PrevValue = 0;
+                }
+                else if (GlobalVariables.ImportingToDBBlock == "" && PrevValue != 1)
+                {
+                    //Mouse.OverrideCursor = Cursors.None;
+                    //GlobalVariables.MyMainWindow.Cursor = null;
+//                    Application.Current.Dispatcher.Invoke(new Action(() => this.Cursor = PrevCursor));
+                    Application.Current.Dispatcher.Invoke(new Action(() => Mouse.OverrideCursor = null));
+                    Application.Current.Dispatcher.Invoke(new Action(() => ConsoleTextbox.Background = Brushes.White));
+                    PrevValue = 1;
+                }
+                else
+                    Thread.Sleep(1);
+            }
         }
 
         private void PopupFileSelect_Click(object sender,RoutedEventArgs e)
@@ -55,10 +99,6 @@ namespace CSVIngester
 
         private void FileImportProcess_Click(object sender, RoutedEventArgs e)
         {
-//FileImportLocation.Text="D:\\MyStuff\\TempStorage\\CSVIngester\\FilesFromContrator\\test files\\inventory.csv";
-//FileImportLocation.Text= "D:\\MyStuff\\TempStorage\\CSVIngester\\FilesFromContrator\\test files\\EBAY VAT.csv";
-//FileImportLocation.Text= "D:\\MyStuff\\TempStorage\\CSVIngester\\FilesFromContrator\\test files\\ASIN VAT.csv";
-
             if (File.Exists(FileImportLocation.Text) == false)
             {
                 GlobalVariables.Logger.Log("Could not open file to import");
@@ -73,9 +113,9 @@ namespace CSVIngester
             else if (FIG2.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadVATCSVFile(ThreadParam));
             else if (FIG3.IsChecked == true)
-                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam,"Amazon_Orders", "Amazon-Orders", true));
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam,"Amazon_Orders", "AMAZON-ORDERS", true));
             else if (FIG4.IsChecked == true)
-                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam, "Amazon_Refunds", "Amazon-Refunds", false));
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam, "Amazon_Refunds", "AMAZON-REFUNDS", false));
             else if (FIG5.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadPaypalSalesCSVFile(ThreadParam));
         }
@@ -97,6 +137,7 @@ namespace CSVIngester
             MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure you wish to empty "+ TableName +" Database ? ", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
             {
+                Mouse.OverrideCursor = Cursors.Wait;
                 if (DDG1.IsChecked == true)
                     GlobalVariables.DBStorage.ClearInventory();
                 else if (DDG2.IsChecked == true)
@@ -107,6 +148,7 @@ namespace CSVIngester
                     GlobalVariables.DBStorage.ClearPaypalSales();
                 else if (DDG5.IsChecked == true)
                     GlobalVariables.DBStorage.ClearPaypalRefunds();
+                Mouse.OverrideCursor = Cursors.None;
             }
         }
 
@@ -127,13 +169,13 @@ namespace CSVIngester
             else if (RTG2.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - started");
-                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Orders", "Amazon-Orders", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Orders", "AMAZON-ORDERS", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-ORDERS' table - Finished");
             }
             else if (RTG3.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - started");
-                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Refunds", "Amazon-Refunds", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportAmazonOrdersTable("Amazon_Refunds", "AMAZON-REFUNDS", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'AMAZON-REFUNDS' table - Finished");
             }
             else if (RTG4.IsChecked == true)
