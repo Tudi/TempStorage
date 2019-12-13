@@ -483,6 +483,10 @@ namespace CSVIngester
                     asin = rdr.GetString(7);
                 float NET = rdr.GetFloat(8);
                 float vat_rate = rdr.GetFloat(9);
+
+                int IntNet = (int)(NET * 100);
+                NET = (float)IntNet / (float)100; // 2 digit precision
+
                 ExportInventoryCSV.AmazonOrdersExportFileAddRow(datecol, ORDER_ID, TITLE, GROSS, vat, BuyerName, Buyeraddr, asin, NET, vat_rate);
             }
             ExportInventoryCSV.Dispose();
@@ -623,7 +627,7 @@ namespace CSVIngester
                 if (!rdr.IsDBNull(1))
                     record.Name = rdr.GetString(1);
                 else
-                    record.Date = "";
+                    record.Name = "";
                 float Gross = rdr.GetFloat(2);
                 if (Gross != (float)GlobalVariables.NULLValue)
                     record.Gross = Gross.ToString();
@@ -699,14 +703,20 @@ namespace CSVIngester
             string []bparts = bstr.Split('.');
             long A = long.Parse(aparts[0]);
             long B = long.Parse(bparts[0]);
-            for(int i=0;i<Precision;i++)
+            long SignA = 1;
+            long SignB = 1;
+            if (A < 0)
+                SignA = -1;
+            if (B < 0)
+                SignB = -1;
+            for (int i=0;i<Precision;i++)
             {
                 A = A * 10;
                 if (aparts.Length > 1 && aparts[1].Length > i)
-                    A = A + aparts[1][i] - '0';
+                    A = A + SignA * (aparts[1][i] - '0');
                 B = B * 10;
                 if (bparts.Length > 1 && bparts[1].Length > i)
-                    B = B + bparts[1][i] - '0';
+                    B = B + SignB * (bparts[1][i] - '0');
             }
             float res = (float)(A - B);
             for (int i = 0; i < Precision; i++)
@@ -771,7 +781,7 @@ namespace CSVIngester
                         if (!rdr.IsDBNull(1))
                             record.Name = rdr.GetString(1);
                         else
-                            record.Date = "";
+                            record.Name = "";
                         float Gross = rdr.GetFloat(2);
                         if (Gross != (float)GlobalVariables.NULLValue)
                             record.Gross = Gross.ToString();
@@ -846,6 +856,8 @@ namespace CSVIngester
                         int IntNet = (int)(NET * 100);
                         NET = (float)IntNet / (float)100; // 2 digit precision
                         float vat = FloatSubstract(Gross, NET, 3);
+//                        float vat = Gross - NET;
+//                        vat = System.Math.Ceiling(vat * 1000) / 1000;
 
                         var cmd2 = new SQLiteCommand(m_dbConnection);
                         if (i==0)
@@ -866,6 +878,124 @@ namespace CSVIngester
             ExportSalesCSV.Dispose();
             ExportRefundsCSV.Dispose();
             GlobalVariables.Logger.Log("Update VAT - Finished");
+        }
+
+        public void ExportAccountingSalesReport(string TableName, string CSVFileName, DateTime StartDate, DateTime EndDate)
+        {
+            long TStart = DateParser.DateTimeToMinutes(StartDate);
+            long TEnd = DateParser.DateTimeToMinutes(EndDate);
+
+            WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
+            ExportInventoryCSV.CreateDynamicFile("./reports/" + CSVFileName + ".csv");
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT date,TransactionID,ItemId,GROSS,VAT,NET,PayPalFee,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
+            cmd.Parameters.AddWithValue("@TStart", TStart);
+            cmd.Parameters.AddWithValue("@TEnd", TEnd);
+            cmd.Prepare();
+
+            dynamic record = new System.Dynamic.ExpandoObject();
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            while (rdr.Read() && rdr.HasRows == true)
+            {
+                if (!rdr.IsDBNull(0))
+                    record.DATE = rdr.GetString(0);
+                else
+                    record.DATE = "";
+                if (!rdr.IsDBNull(1))
+                    record.Type = rdr.GetString(1);
+                else
+                    record.Type = "";
+                if (!rdr.IsDBNull(2))
+                    record.DETAILS = rdr.GetString(2);
+                else
+                    record.DETAILS = "";
+                record.CURRENCY = "GBP";
+                float Gross = rdr.GetFloat(3);
+                if (Gross != (float)GlobalVariables.NULLValue)
+                    record.GROSS = Gross.ToString();
+                else
+                    record.GROSS = "";
+                float vat = rdr.GetFloat(4);
+                if (vat != (float)GlobalVariables.NULLValue)
+                    record.VAT = vat.ToString();
+                else
+                    record.Vat = "";
+                float NET = rdr.GetFloat(5);
+                if (NET != (float)GlobalVariables.NULLValue)
+                    record.NET = NET.ToString();
+                else
+                    record.NET = "";
+                float Fee = rdr.GetFloat(6);
+                if (Fee != (float)GlobalVariables.NULLValue)
+                    record.FEES = Fee.ToString();
+                else
+                    record.FEES = "";
+                float vat_rate = rdr.GetFloat(7);
+                if (vat_rate != (float)GlobalVariables.NULLValue)
+                    record.VAT_RATE = vat_rate.ToString();
+                else
+                    record.VAT_RATE = "";
+
+                ExportInventoryCSV.WriteDynamicFileRow(record);
+            }
+            ExportInventoryCSV.Dispose();
+        }
+
+        public void ExportAmazonAccountingSalesReport(string TableName, string CSVFileName, DateTime StartDate, DateTime EndDate)
+        {
+            long TStart = DateParser.DateTimeToMinutes(StartDate);
+            long TEnd = DateParser.DateTimeToMinutes(EndDate);
+
+            WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
+            ExportInventoryCSV.CreateDynamicFile("./reports/" + CSVFileName + ".csv");
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT date,ORDER_ID,ASIN,GROSS,VAT,NET,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
+            cmd.Parameters.AddWithValue("@TStart", TStart);
+            cmd.Parameters.AddWithValue("@TEnd", TEnd);
+            cmd.Prepare();
+
+            dynamic record = new System.Dynamic.ExpandoObject();
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            while (rdr.Read() && rdr.HasRows == true)
+            {
+                if (!rdr.IsDBNull(0))
+                    record.DATE = rdr.GetString(0);
+                else
+                    record.DATE = "";
+                if (!rdr.IsDBNull(1))
+                    record.Type = rdr.GetString(1);
+                else
+                    record.Type = "";
+                if (!rdr.IsDBNull(2))
+                    record.DETAILS = rdr.GetString(2);
+                else
+                    record.DETAILS = "";
+                record.CURRENCY = "GBP";
+                float Gross = rdr.GetFloat(3);
+                if (Gross != (float)GlobalVariables.NULLValue)
+                    record.GROSS = (Gross*(-1)).ToString();
+                else
+                    record.GROSS = "";
+                float vat = rdr.GetFloat(4);
+                if (vat != (float)GlobalVariables.NULLValue)
+                    record.VAT = (vat*(-1)).ToString();
+                else
+                    record.Vat = "";
+                float NET = rdr.GetFloat(5);
+                if (NET != (float)GlobalVariables.NULLValue)
+                    record.NET = (NET*(-1)).ToString();
+                else
+                    record.NET = "";
+                record.FEES = 0;
+                float vat_rate = rdr.GetFloat(6);
+                if (vat_rate != (float)GlobalVariables.NULLValue)
+                    record.VAT_RATE = vat_rate.ToString();
+                else
+                    record.VAT_RATE = "";
+
+                ExportInventoryCSV.WriteDynamicFileRow(record);
+            }
+            ExportInventoryCSV.Dispose();
         }
     }
 }

@@ -40,6 +40,8 @@ namespace CSVIngester
             GlobalVariables.MyMainWindow = this;
             ExportStartDate.SelectedDate = new DateTime(2001, 1, 1);
             ExportEndDate.SelectedDate = DateTime.Now;
+            AExportStartDate.SelectedDate = new DateTime(2001, 1, 1);
+            AExportEndDate.SelectedDate = DateTime.Now;
             DBBusyMonitorThreadStart();
         }
 
@@ -137,7 +139,6 @@ namespace CSVIngester
             MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure you wish to empty "+ TableName +" Database ? ", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
             {
-                Mouse.OverrideCursor = Cursors.Wait;
                 if (DDG1.IsChecked == true)
                     GlobalVariables.DBStorage.ClearInventory();
                 else if (DDG2.IsChecked == true)
@@ -148,7 +149,6 @@ namespace CSVIngester
                     GlobalVariables.DBStorage.ClearPaypalSales();
                 else if (DDG5.IsChecked == true)
                     GlobalVariables.DBStorage.ClearPaypalRefunds();
-                Mouse.OverrideCursor = Cursors.None;
             }
         }
 
@@ -201,6 +201,40 @@ namespace CSVIngester
         private void UpdateVatButton_Click(object sender, RoutedEventArgs e)
         {
             Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateVAT());
+        }
+
+        private void CreateAccountingRaportButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+
+            if (ARTG1.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'SALES' report - started");
+                GlobalVariables.DBStorage.ExportAccountingSalesReport("PAYPAL_SALES", "SALES", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'SALES' report - Finished");
+            }
+            else if (ARTG2.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'SALES RETURNS' report - started");
+                GlobalVariables.DBStorage.ExportAccountingSalesReport("PAYPAL_REFUNDS", "SALES RETURNS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'SALES RETURNS' report - Finished");
+            }
+            else if (ARTG3.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'PURCHASES' report - started");
+                GlobalVariables.DBStorage.ExportAmazonAccountingSalesReport("Amazon_Orders", "PURCHASES", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'PURCHASES' report - Finished");
+            }
+            else if (ARTG4.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'PURCHASES RETURNS' report - started");
+                GlobalVariables.DBStorage.ExportAmazonAccountingSalesReport("Amazon_Refunds", "PURCHASES RETURNS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'PURCHASES RETURNS' report - Finished");
+            }
         }
     }
 }
