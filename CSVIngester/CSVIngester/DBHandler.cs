@@ -966,6 +966,9 @@ namespace CSVIngester
             cmd.Parameters.AddWithValue("@TEnd", TEnd);
             cmd.Prepare();
 
+            double Multiplier = 1;
+            if (TableName == "Amazon_Orders")
+                Multiplier = -1;
             dynamic record = new System.Dynamic.ExpandoObject();
             SQLiteDataReader rdr = cmd.ExecuteReader();
             while (rdr.Read() && rdr.HasRows == true)
@@ -985,17 +988,17 @@ namespace CSVIngester
                 record.CURRENCY = "GBP";
                 double Gross = rdr.GetDouble(3);
                 if (Gross != (double)GlobalVariables.NULLValue)
-                    record.GROSS = Math.Round((Gross*(-1)),2).ToString();
+                    record.GROSS = Math.Round((Gross* Multiplier),2).ToString();
                 else
                     record.GROSS = "";
                 double vat = rdr.GetDouble(4);
                 if (vat != (double)GlobalVariables.NULLValue)
-                    record.VAT = Math.Round((vat*(-1)),2).ToString();
+                    record.VAT = Math.Round((vat* Multiplier),2).ToString();
                 else
                     record.Vat = "";
                 double NET = rdr.GetDouble(5);
                 if (NET != (double)GlobalVariables.NULLValue)
-                    record.NET = Math.Round((NET*(-1)),2).ToString();
+                    record.NET = Math.Round((NET* Multiplier),2).ToString();
                 else
                     record.NET = "";
                 record.FEES = 0;
