@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -51,6 +52,54 @@ namespace CSVIngester
                 ret = ret + '0';
             return ret + ASIN;
         }
+        public static string FormatDate(string DateCol)
+        {
+            string ret = DateCol;
+            ret = ret.Replace('/', '-');
+            ret = ret.Replace(',', '-');
+            ret = ret.Replace('.', '-');
+            if (ret.Length == 8)
+            {
+                string[] parts = ret.Split('-');
+                if (parts.Length == 3)
+                {
+                    int year;
+                    int.TryParse(parts[2], out year);
+                    if (year < 16)
+                        GlobalVariables.Logger.Log("Expected year is to be larger than 2016. Found " + year);
+                    if (year < 1000)
+                    {
+                        year += 2000;
+                        ret = parts[0] + "-" + parts[1] + "-" + year.ToString();
+                    }
+                }
+            }
+            try
+            {
+                return DateTime.ParseExact(ret, "d-M-yyyy", CultureInfo.InvariantCulture).ToString("dd-MM-yy");
+            }
+            catch { }
+            try
+            {
+                return DateTime.ParseExact(ret, "dd-MM-yyyy", CultureInfo.InvariantCulture).ToString("dd-MM-yy");
+            }
+            catch { }
+            try
+            {
+                return DateTime.ParseExact(ret, "dd-MMM-yyyy", CultureInfo.InvariantCulture).ToString("dd-MM-yy");
+            }
+            catch { }
+            try
+            {
+                return DateTime.Parse(ret).ToString("dd-MM-yy");
+            }
+            catch { }
+
+            GlobalVariables.Logger.Log("Date format not recognized : " + ret);
+
+            return ret;
+        }
+
         public static void ReadInvenotryCSVFile(string FileName)
         {
             if (GlobalVariables.ImportingToDBBlock.Length != 0)
@@ -286,6 +335,9 @@ namespace CSVIngester
                 string BuyerColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Buyer");
                 string AddressColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Address");
                 string ASINColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ASIN");
+                string ToColName = GetMatchingColumnName(csv.Context.HeaderRecord, "To");
+                string SellerColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Seller");
+                string SellerVATColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Vat Number");
 
                 if (TableName.ToLower() == "Amazon_refunds".ToLower())
                 {
@@ -366,6 +418,22 @@ namespace CSVIngester
                     string AddressCol = csv.GetField<string>(AddressColName);
                     string ASINCol = csv.GetField<string>(ASINColName);
 
+                    string SACCOUNT = "";
+                    string SELLER = "";
+                    string SELLER_VAT = "";
+                    if(ToColName != null && ToColName.Length != 0)
+                        SACCOUNT = csv.GetField<string>(ToColName);
+                    if (SellerColName != null && SellerColName.Length != 0)
+                        SELLER = csv.GetField<string>(SellerColName);
+                    if (SellerVATColName != null && SellerVATColName.Length != 0)
+                        SELLER_VAT = csv.GetField<string>(SellerVATColName);
+
+                    //empty row. Why ?
+                    if(DateCol.Length == 0 && IdCol.Length == 0 && TitleCol.Length == 0 && PriceCol.Length == 0 && VATCol.Length == 0 && BuyerCol.Length == 0 && AddressCol.Length == 0 && ASINCol.Length == 0 )
+                    {
+                        if (SACCOUNT.Length == 0 && SELLER.Length == 0 && SELLER_VAT.Length == 0)
+                            continue;
+                    }
                     //check if the read data is correct
                     if (DateCol == null || DateCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
@@ -374,9 +442,15 @@ namespace CSVIngester
                     if (TitleCol == null || TitleCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
                     if (PriceCol == null || PriceCol.Length == 0)
+                    { 
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
+                        PriceCol = "0";
+                    }
                     if (VATCol == null || VATCol.Length == 0)
+                    {
                         GlobalVariables.Logger.Log("at line " + RowsRead + " VAT does not have a value");
+                        VATCol = "0";
+                    }
                     if (BuyerCol == null || BuyerCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Buyer does not have a value");
                     if (AddressCol == null || AddressCol.Length == 0)
@@ -384,20 +458,27 @@ namespace CSVIngester
                     if (ASINCol == null || ASINCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " ASIN does not have a value");
 
+                    DateCol = FormatDate(DateCol);
+
                     //because some tools will eat up leading 0
                     ASINCol = PadASINTo10Chars(ASINCol);
 
-                    float NET = float.Parse(PriceCol) - float.Parse(VATCol);
-                    float VAT_RATE = (int)(0.5 + float.Parse(VATCol) / NET * 100);
+                    double NET = double.Parse(PriceCol) - double.Parse(VATCol);
+                    double VAT_RATE = 0;
+                    if(NET != 0)
+                        VAT_RATE = (int)(0.5 + double.Parse(VATCol) / NET * 100);
+                    //!!!!this is a hardcoded request. Maybe should not use rounding ?
+                    if (VAT_RATE == 21)
+                        VAT_RATE = 20;
                     //check if inventory has missing values that we can update
-                    if(UpdateInventory == true)
+                    if (UpdateInventory == true)
                         GlobalVariables.DBStorage.UpdateAllMissingInventoryRows(ASINCol, VAT_RATE.ToString());
                     //try to add the new row to the DB
-                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE, SACCOUNT, SELLER, SELLER_VAT);
                     if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
                     {
                         RowsInserted++;
-//                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, float.Parse(PriceCol), float.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+//                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, double.Parse(PriceCol), double.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
                     }
                     else
                         RowsSkipped++;
@@ -576,6 +657,8 @@ namespace CSVIngester
                     if (BalanceImpactCol == null || BalanceImpactCol.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " Balance Impact does not have a value");*/
 
+                    DateCol = FormatDate(DateCol);
+
                     string []MultiIDs = ItemIdCol.Split(',');
                     var ItemIdColOne = MultiIDs[0];
 //                    if(ItemIdColOne.Length != 12)
@@ -590,7 +673,7 @@ namespace CSVIngester
                             WithDrawCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
                         else if (NameCol.ToLower() == "PayPal".ToLower() && (TypeCol.ToLower() == "Hold on Available Balance".ToLower() || TypeCol.ToLower() == "Reversal of General Account Hold".ToLower()))
                             HoldsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
-                        else if (float.Parse(PriceCol) > 0 && TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Credit".ToLower())
+                        else if (double.Parse(PriceCol) > 0 && TypeCol.ToLower() == "eBay Auction Payment".ToLower() && BalanceImpactCol.ToLower() == "Credit".ToLower())
                         {
                             SalesCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
                             DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdColOne, AddressCol, PhoneCol);
@@ -599,7 +682,7 @@ namespace CSVIngester
                             else
                                 RowsSkipped++;
                         }
-                        else if (float.Parse(PriceCol) < 0 && (TypeCol.ToLower() == "Payment Refund".ToLower() || TypeCol.ToLower() == "Payment Reversal".ToLower()) && BalanceImpactCol.ToLower() == "Debit".ToLower() && CurrencyCol.ToLower() == "GBP".ToLower())
+                        else if (double.Parse(PriceCol) < 0 && (TypeCol.ToLower() == "Payment Refund".ToLower() || TypeCol.ToLower() == "Payment Reversal".ToLower()) && BalanceImpactCol.ToLower() == "Debit".ToLower() && CurrencyCol.ToLower() == "GBP".ToLower())
                         {
                             SalesRefundsCSV.WriteDynamicFileRow(csv.GetRecord<dynamic>());
                             DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertPaypalRefundRow(DateCol, NameCol, PriceCol, PPFeeCol, TransactionIDCol, TitleCol, ItemIdColOne, ReferenceIDCol);
