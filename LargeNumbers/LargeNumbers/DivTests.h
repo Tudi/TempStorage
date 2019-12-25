@@ -48,3 +48,4 @@ void DivTestInvMul1();
 void DivTestLineDraw8();
 void DivTestLineDraw9();
 void DivTestab4();
+void DivTestab5();

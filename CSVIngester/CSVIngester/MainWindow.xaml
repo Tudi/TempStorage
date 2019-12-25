@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CSVIngester"
         mc:Ignorable="d"
-        Title="eBay Accounting" Height="400" Width="635"
+        Title="eBay Accounting" Height="400" Width="855"
         Background="LightGray"
         SizeChanged="Window_SizeChanged"
         >
@@ -54,14 +54,14 @@
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,16,5,5"/>
+                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,16,5,5" Click="UpdateVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 
         <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
             <GroupBox Margin="5">
                 <GroupBox.Header>
-                    Report Type
+                    Table Type
                 </GroupBox.Header>
                 <StackPanel Margin="5">
                     <RadioButton Name="RTG1" GroupName="RaportTypeGroup" Content="INVENTORY" IsChecked="True"/>
@@ -73,7 +73,7 @@
             </GroupBox>
             <GroupBox Margin="5">
                 <GroupBox.Header>
-                    Report Range
+                    Table Range
                 </GroupBox.Header>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -90,11 +90,46 @@
                     <DatePicker Name="ExportEndDate"  Grid.Row="1" Grid.Column="1"/>
                 </Grid>
             </GroupBox>
-            <Button Name="CreateRaportButton" Content="Create Report" Margin="5" Click="CreateRaportButton_Click"/>
+            <Button Name="CreateRaportButton" Content="Export Table" Margin="5" Click="CreateRaportButton_Click"/>
         </StackPanel>
-    </StackPanel>
+
+            <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
+                <GroupBox Margin="5">
+                    <GroupBox.Header>
+                        Accounting Report
+                    </GroupBox.Header>
+                    <StackPanel Margin="5,5,5,20">
+                        <RadioButton Name="ARTG1" GroupName="RaportTypeGroup" Content="SALES" IsChecked="True"/>
+                        <RadioButton Name="ARTG2" GroupName="RaportTypeGroup" Content="SALES RETURNS" />
+                        <RadioButton Name="ARTG3" GroupName="RaportTypeGroup" Content="PURCHASES" />
+                        <RadioButton Name="ARTG4" GroupName="RaportTypeGroup" Content="PURCHASES RETURNS"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Margin="5">
+                    <GroupBox.Header>
+                        Report Range
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*" />
+                            <RowDefinition Height="1*" />
+                        </Grid.RowDefinitions>
+                        <Label>Start :</Label>
+                        <DatePicker Grid.Column="1" Name="AExportStartDate"/>
+                        <Label Grid.Row="1">End :</Label>
+                        <DatePicker Name="AExportEndDate"  Grid.Row="1" Grid.Column="1"/>
+                    </Grid>
+                </GroupBox>
+                <Button Name="CreateAccountingRaportButton" Content="Create Report" Margin="5" Click="CreateAccountingRaportButton_Click"/>
+            </StackPanel>
+        </StackPanel>
         <StackPanel>
             <TextBox Name="ConsoleTextbox" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap"></TextBox>
         </StackPanel>
+
     </StackPanel>
 </Window>
