@@ -202,6 +202,31 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	// retireve the position of the udp header 
 	ip_len = ih->ip_header_len * 4;
 
+    //dump all incomming packet
+    if (ih->ip_protocol == PROTOCOL_TCPIP
+        && (((unsigned char*)&ih->ip_destaddr)[0] == 192 && ((unsigned char*)&ih->ip_destaddr)[1] == 243)
+        )
+    {
+        tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + 14 + ip_len);
+        int tcp_len = tcph->data_offset * 4;
+        unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
+        int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
+        int BytesToDump = header->len - TotalHeaderSize;
+        if (BytesToDump > 0)
+        {
+            static FILE *FCONTENT = NULL;
+            if (FCONTENT == NULL)
+                errno_t er = fopen_s(&FCONTENT, "client_to_server", "ab");
+            // might need to reassamble segmented packets later. TCP is a bytestream. The beggining of the packet should be a number indicating how much we need to read until the next packet
+            if (FCONTENT)
+            {
+//                fwrite(&BytesToDump, 1, 4, FCONTENT); //already present in the packet as the first 2 bytes
+                fwrite(DataStart, 1, BytesToDump, FCONTENT);
+                fflush(FCONTENT);
+            }
+        }
+    }
+
 	//capturing all TCP packets from IP
 	if (ih->ip_protocol == PROTOCOL_TCPIP
 //		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 && ((unsigned char*)&ih->ip_srcaddr)[2] == 47 && ((unsigned char*)&ih->ip_srcaddr)[3] == 118)

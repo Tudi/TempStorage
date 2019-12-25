@@ -230,8 +230,8 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 			NameEnd = NameStart + sizeof(BuildingObjectDesciption);
 
 #ifdef _DEBUG
-			PrintDataHexFormat(packet, size, PrevNameStart, NameStart);
-			PrintDataHexFormat(packet, size, NameStart, NameEnd);
+//			PrintDataHexFormat(packet, size, PrevNameStart, NameStart);
+//			PrintDataHexFormat(packet, size, NameStart, NameEnd);
 #endif
 
 			GenericMapObject *PD = (GenericMapObject *)&packet[NameStart];
@@ -242,35 +242,16 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 				StructsFound++;
 				printf("%d)x, y = %d %d\n", StructsFound, x, y);
 				printf("Type:%d\n", PD->ObjectType);
-				if (PD->ObjectType == OBJECT_TYPE_PLAYER || (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE))
-				{
-					PrintFixedLenString("name : [", PD->B.Guild, sizeof(PD->B.Guild), 0);
-					PrintFixedLenString("]", PD->B.Name, sizeof(PD->B.Name), 1);
-					printf("building Level:%d\n", PD->B.CastleLevel);
-				}
-				if (PD->ObjectType == OBJECT_TYPE_MONSTER)
-				{
-					printf("Type : %d\n", PD->M.Type);
-					printf("Health : %f\n", PD->M.HealthPCT);
-					printf("Time remain : %u\n", PD->M.Time);
-					printf("Monster Level : %d\n", PD->M.Level);
-				}
-				//				printf("found it in players.txt:%d\n", SearchNameInFile(PD->B.Name));
 				if (PD->ObjectType == OBJECT_TYPE_PLAYER)
 				{
 					OnCastleCreatePacketReceived(x, y, PD->B.PEx.StatusFlags);
+					PrintFixedLenString("name : [", PD->B.Guild, sizeof(PD->B.Guild), 0);
+					PrintFixedLenString("]", PD->B.Name, sizeof(PD->B.Name), 1);
+					printf("building Level:%d\n", PD->B.CastleLevel);
 					printf("statusFlags:%02X\n", PD->B.PEx.StatusFlags);
 					printf("Title:%d\n", PD->B.PEx.Title);
 					printf("Guild Realm:%d\n", PD->B.PEx.RealmGuild);
 					printf("Extended ID:%d\n", PD->B.PEx.ExtendedTypeId);
-					//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
-					//						printf("unk2 is not 0\n");
-				}
-				else if (PD->ObjectType >= OBJECT_TYPE_RESOURCE_FOOD && PD->ObjectType <= OBJECT_TYPE_GEM_RESOURCE)
-				{
-					printf("ResourceMax:%d\n", PD->B.MEx.ResourceMax);
-					printf("Mined percent:%.2f\n", PD->B.MEx.MinedPercent);
-					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->B.MEx.SomeTimestamp, (int)((PD->B.MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60)) / 60));
 					//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
 					//						printf("unk2 is not 0\n");
 				}
@@ -361,11 +342,11 @@ int ProcessPacket1(unsigned char *packet, int size)
 	}
 
 	// visible object query rely. Castles, mines ... 
-/*	if (packet[0] == 0xAC && packet[1] == 0x08 && (packet[2] == 0x02 || packet[2] == 0x03 || packet[2] == 0x0F || packet[2] == 0x0D || packet[2] == 0x0E || packet[2] == 0x09 || packet[2] == 0x18 || packet[2] == 0x17 || packet[2] == 0x16))
+	if (packet[0] == 0xAC && packet[1] == 0x08 && (packet[2] == 0x02 || packet[2] == 0x03 || packet[2] == 0x0F || packet[2] == 0x0D || packet[2] == 0x0E || packet[2] == 0x09 || packet[2] == 0x18 || packet[2] == 0x17 || packet[2] == 0x16))
 	{
 		ParsePacketQueryTileObjectReply(packet, size);
 		return PPHT_DID_NOT_TOUCH_IT;
-	}*/
+	}/**/
 #if 0
 
 #ifdef _DEBUG
@@ -452,6 +433,7 @@ int ProcessPacket1(unsigned char *packet, int size)
 	printf("\n\n");
 #endif
 #endif
+	return PPHT_DID_NOT_TOUCH_IT;
 }
 
 int OnServerToClientPacket(unsigned char *packet, unsigned int len)

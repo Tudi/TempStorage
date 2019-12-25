@@ -43,10 +43,12 @@ int OnPacketForClickCastle(unsigned char *packet, unsigned int len)
 		}
 		LastEditStamp = GetTickCount() + 2000;
 	}/**/
-return PPHT_DID_NOT_TOUCH_IT;
+//return PPHT_DID_NOT_TOUCH_IT;
 
+#ifdef _DEBUG
 	printf("Got client click packet : \n");
 	PrintDataHexFormat(packet, len, 0, len);
+#endif
 	CastleClickSerializer = packet[4];
 
 	int x, y;
