@@ -26,7 +26,7 @@ namespace ReadFortrade1
             SellPrice = SellPriceSum / ValuesAdded;
             BuyPrice = BuyPriceSum / ValuesAdded;
         }
-        public void AddValue(double pSellPrice, double pBuyPrice, double pSellSentiment, double pBuySentiment)
+        public void AddValue(double pSellPrice, double pBuyPrice, double pSellSentiment, double pBuySentiment, bool SkipAdd = false)
         {
             ValuesAdded++;
             SellPriceSum += pSellPrice;
@@ -42,7 +42,9 @@ namespace ReadFortrade1
             SellSentiment = pSellSentiment;
             BuySentiment = pBuySentiment;
             //need to reorganize this. Just testing for now
-            Globals.Persistency.AddInstrumentValue(Name, pSellPrice, pBuyPrice, pSellSentiment);
+            if(SkipAdd == false)
+                Globals.Persistency.AddInstrumentValue(Name, pSellPrice, pBuyPrice, pSellSentiment);
+            Update();
         }
         public string Name;
         public double SellPrice;
@@ -61,13 +63,23 @@ namespace ReadFortrade1
     }
     public class ValueHistory
     {
+        public void LoadFromPersistency()
+        {
+            //try to restore previous values to our list. This is required to not send out alerts unless there is a real value change even after restart
+            Globals.Persistency.LoadLastSamplesFromAllTables();
+            FinishedLoading = true;
+        }
+
+        bool FinishedLoading = false;
+        List<StockDataHistory> DataHistory = new List<StockDataHistory>();
         public void AddRecord(string Name, double SellPrice, double BuyPrice, double SellSentiment, double BuySentiment)
         {
             bool ValueUpdated = false;
-            foreach (var itr in Globals.DataHistory)
+            foreach (var itr in DataHistory)
                 if (itr.Name == Name)
                 {
-                    itr.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
+                    if(Math.Round(itr.SellPrice,7) != SellPrice && Math.Round(itr.BuyPrice,7) != BuyPrice)
+                        itr.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
                     ValueUpdated = true;
                     break;
                 }
@@ -75,8 +87,8 @@ namespace ReadFortrade1
             {
                 StockDataHistory h = new StockDataHistory();
                 h.Name = Name;
-                h.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
-                Globals.DataHistory.Add(h);
+                h.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment, FinishedLoading == false);
+                DataHistory.Add(h);
             }
             /*           StockDataSample sample = new StockDataSample();
                        sample.Name = Name;

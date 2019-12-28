@@ -32,17 +32,21 @@ namespace ReadFortrade1
 
         public static void ParseFavoritesSection(string FavoritesSection)
         {
-            string ToSearch = "CFD on the daily spot price of";
+            string ToSearch = "CFD on the ";
             string[] Sections = FavoritesSection.Split(new[] { ToSearch }, StringSplitOptions.None);
             for (int i = 1; i < Sections.Length; i++)
             {
+                if (Sections[i].IndexOf("instrumentRow inactiveInstrument favorite") <= 0)
+                    continue;
                 //get name
                 string Name;
-                int NameStart = 0;
-                for (; NameStart < Sections[i].Length; NameStart++)
-                    if (Sections[i][NameStart] == '.' || Sections[i][NameStart + 1] == '<')
+                ToSearch = "price of ";
+                int NameStart = Sections[i].IndexOf(ToSearch) + ToSearch.Length;
+                int NameEnd = NameStart;
+                for (; NameEnd < Sections[i].Length; NameEnd++)
+                    if (Sections[i][NameEnd] == '.' || Sections[i][NameEnd + 1] == '<')
                         break;
-                Name = Sections[i].Substring(1, NameStart - 1);
+                Name = Sections[i].Substring(NameStart, NameEnd - NameStart);
 
                 //get Sell price
                 ToSearch = "id=\"SellRate";
@@ -71,7 +75,7 @@ namespace ReadFortrade1
                     int BuySentimentStart = Sections[i].IndexOf(ToSearch, SellSentimentEnd);
                     if (BuySentimentStart >= 0)
                     {
-                        SellSentimentStart += ToSearch.Length;
+                        BuySentimentStart += ToSearch.Length;
                         int BuySentimentEnd = Sections[i].IndexOf('%', BuySentimentStart);
                         double.TryParse(Sections[i].Substring(BuySentimentStart, BuySentimentEnd - BuySentimentStart), out BuySentiment);
                     }
@@ -88,7 +92,7 @@ namespace ReadFortrade1
                 double BuyPrice = 0;
                 double.TryParse(Sections[i].Substring(BuyDivStart, BuyDivEnd - BuyDivStart), out BuyPrice);
 
-                if (SellPrice != 0 && SellSentiment != 0 && BuySentiment != 0 && BuyPrice != 0)
+                if (SellPrice != 0 && BuyPrice != 0)
                     Globals.vHistory.AddRecord(Name, SellPrice, BuyPrice, SellSentiment, BuySentiment);
             }
         }

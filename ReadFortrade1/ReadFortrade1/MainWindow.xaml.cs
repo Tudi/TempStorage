@@ -19,20 +19,23 @@ namespace ReadFortrade1
 {
     public class Globals
     {
-        public static List<StockDataHistory> DataHistory = new List<StockDataHistory>();
-        public static ValueHistory vHistory = new ValueHistory();
-        public static TimeoutWatchDog WatchDog =  new TimeoutWatchDog();
-        public static DBHandler Persistency = new DBHandler();
+        public static DBHandler Persistency = null;
+        public static ValueHistory vHistory = null;
+        public static TimeoutWatchDog WatchDog = null;
+        public static long doubleScaler = 100000;
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-
         public MainWindow()
         {
             InitializeComponent();
+            Globals.Persistency = new DBHandler();
+            Globals.vHistory = new ValueHistory();
+            Globals.WatchDog = new TimeoutWatchDog();
+            Globals.vHistory.LoadFromPersistency();
             Task.Factory.StartNew(() => Globals.WatchDog.StartPageTimoutWatchdog());
 //            SendNotification.SendMessage("Test meail to sms");
         }
