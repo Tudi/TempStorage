@@ -13,17 +13,24 @@ namespace ReadFortrade1
             //search for the favorites section
             //<div class="instrumentsTable" id="instrumentsTable" style="height: 256px; z-index: 2;">
             int StartOfDiv = docBody.IndexOf("<div class=\"instrumentsTable\" id=\"instrumentsTable\"");
+            if (StartOfDiv < 0)
+                return;
             int OpenDivCount = 1;
             int ClosedDivCount = 0;
             string FavoritesSection = "";
             for (int i = StartOfDiv + 1; i < docBody.Length - 4; i++)
             {
-                if (docBody[i] == '<' && docBody[i + 1] == 'd' && docBody[i + 2] == 'i' && docBody[i + 3] == 'v')
+//                if (docBody[i] == '<' && docBody[i + 1] == 'd' && docBody[i + 2] == 'i' && docBody[i + 3] == 'v')
+                  if(docBody.IndexOf("<div", i, 4) == i)
                     OpenDivCount++;
-                if (docBody[i] == '<' && docBody[i + 1] == '/' && docBody[i + 2] == 'd' && docBody[i + 3] == 'i' && docBody[i + 4] == 'v')
+//                if (docBody[i] == '<' && docBody[i + 1] == '/' && docBody[i + 2] == 'd' && docBody[i + 3] == 'i' && docBody[i + 4] == 'v')
+                if (docBody.IndexOf("</div", i, 5) == i)
                     ClosedDivCount++;
                 if (OpenDivCount == ClosedDivCount)
+                {
                     FavoritesSection = docBody.Substring(StartOfDiv, i - StartOfDiv);
+                    break;
+                }
             }
             //find the closing </div>
             if (FavoritesSection != "")
@@ -36,8 +43,8 @@ namespace ReadFortrade1
             string[] Sections = FavoritesSection.Split(new[] { ToSearch }, StringSplitOptions.None);
             for (int i = 1; i < Sections.Length; i++)
             {
-                if (Sections[i].IndexOf("instrumentRow inactiveInstrument favorite") <= 0)
-                    continue;
+                if (Sections[i].IndexOf("hotInstruments") > 0)
+                    break;
                 //get name
                 string Name;
                 ToSearch = "price of ";

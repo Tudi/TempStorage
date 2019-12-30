@@ -41,10 +41,12 @@ namespace ReadFortrade1
                 BuyPriceMax = pBuyPrice;
             SellSentiment = pSellSentiment;
             BuySentiment = pBuySentiment;
+            PrevSellPrice = pSellPrice;
+            PrevBuyPrice = pBuyPrice;
             //need to reorganize this. Just testing for now
-            if(SkipAdd == false)
+            if (SkipAdd == false)
                 Globals.Persistency.AddInstrumentValue(Name, pSellPrice, pBuyPrice, pSellSentiment);
-            Update();
+//            Update();
         }
         public string Name;
         public double SellPrice;
@@ -60,6 +62,8 @@ namespace ReadFortrade1
         double BuyPriceMax;
         public DateTime RecordedFirst;
         public DateTime RecordedLast;
+        public double PrevSellPrice;
+        public double PrevBuyPrice;
     }
     public class ValueHistory
     {
@@ -72,13 +76,26 @@ namespace ReadFortrade1
 
         bool FinishedLoading = false;
         List<StockDataHistory> DataHistory = new List<StockDataHistory>();
+        public StockDataHistory GetInstrumentStore(string Name)
+        {
+            foreach (var itr in DataHistory)
+                if (itr.Name == Name)
+                    return itr;
+            return null;
+        }
         public void AddRecord(string Name, double SellPrice, double BuyPrice, double SellSentiment, double BuySentiment)
         {
             bool ValueUpdated = false;
             foreach (var itr in DataHistory)
                 if (itr.Name == Name)
                 {
-                    if(Math.Round(itr.SellPrice,7) != SellPrice && Math.Round(itr.BuyPrice,7) != BuyPrice)
+                    double SellPriceDifference = Math.Abs( itr.PrevSellPrice - SellPrice );
+                    double BuyPriceDifference = Math.Abs(itr.PrevBuyPrice - BuyPrice);
+                    double SellPriceChangePCT = Math.Abs(itr.PrevSellPrice / SellPrice);
+                    double BuyPriceChangePCT = Math.Abs(itr.PrevBuyPrice / BuyPrice);
+//                    if ((SellPriceChangePCT < (1-Globals.IgnorePriceChangePCT) || SellPriceChangePCT > (1 + Globals.IgnorePriceChangePCT))
+//                        || (BuyPriceChangePCT < (1 - Globals.IgnorePriceChangePCT) || BuyPriceChangePCT > (1 + Globals.IgnorePriceChangePCT)))
+                    if(itr.PrevSellPrice != SellPrice || itr.PrevBuyPrice != BuyPrice)
                         itr.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
                     ValueUpdated = true;
                     break;
@@ -90,12 +107,6 @@ namespace ReadFortrade1
                 h.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment, FinishedLoading == false);
                 DataHistory.Add(h);
             }
-            /*           StockDataSample sample = new StockDataSample();
-                       sample.Name = Name;
-                       sample.SellPrice = SellPrice;
-                       sample.BuyPrice = BuyPrice;
-                       sample.SellSentiment = SellSentiment;
-                       sample.BuySentiment = BuySentiment;*/
         }
     }
 }

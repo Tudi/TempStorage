@@ -21,8 +21,10 @@ namespace ReadFortrade1
     {
         public static DBHandler Persistency = null;
         public static ValueHistory vHistory = null;
-        public static TimeoutWatchDog WatchDog = null;
+        public static TimeoutWatchDog TimeoutMonitor = null;
+        public static NotificationWatchdog PriceChangeMonitor = null;
         public static long doubleScaler = 100000;
+        public static double IgnorePriceChangePCT = 0.0001; // if Old/New is smaller than this ratio, ignore recording it to the DB
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -34,10 +36,12 @@ namespace ReadFortrade1
             InitializeComponent();
             Globals.Persistency = new DBHandler();
             Globals.vHistory = new ValueHistory();
-            Globals.WatchDog = new TimeoutWatchDog();
+            Globals.TimeoutMonitor = new TimeoutWatchDog();
             Globals.vHistory.LoadFromPersistency();
-            Task.Factory.StartNew(() => Globals.WatchDog.StartPageTimoutWatchdog());
-//            SendNotification.SendMessage("Test meail to sms");
+            Globals.PriceChangeMonitor = new NotificationWatchdog();
+            Task.Factory.StartNew(() => Globals.TimeoutMonitor.StartPageTimoutWatchdog());
+            Task.Factory.StartNew(() => Globals.PriceChangeMonitor.StartPriceChangeWatchdog());
+            //            SendNotification.SendMessage("Test meail to sms");
         }
     }
 }

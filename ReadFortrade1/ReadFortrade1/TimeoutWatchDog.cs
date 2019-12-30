@@ -20,6 +20,7 @@ namespace ReadFortrade1
         public void StartPageTimoutWatchdog()
         {
             DateTime LastDifferentStamp = DateTime.Now;
+            DateTime AntiBrowserFreez = DateTime.Now;
             SHDocVw.ShellWindows shellWindows = new SHDocVw.ShellWindows();
             foreach (SHDocVw.WebBrowser ie in shellWindows)
             {
@@ -45,15 +46,17 @@ namespace ReadFortrade1
                         Thread.Sleep(500);
                         continue;
                     }
-                    if (PrevBody != docBody && PrevBody.Length == 0)
+                    if (PrevBody.Equals(docBody)==false || PrevBody.Length == 0)
                     {
                         PrevBody = docBody;
                         LastDifferentStamp = DateTime.Now;
                         PageParser.ParseBody(docBody);
                     }
-                    if (DateTime.Now.Subtract(LastDifferentStamp).Seconds >= 20)
+                    if (DateTime.Now.Subtract(LastDifferentStamp).Seconds >= 20 || DateTime.Now.Subtract(AntiBrowserFreez).Seconds >= 1 * 60 * 60)
                     {
                         LastDifferentStamp = DateTime.Now;
+                        AntiBrowserFreez = DateTime.Now;
+//                        ie.Navigate("https://ready.fortrade.com/#?detach#home");
                         TryRefreshWindow();
                     }
                 }
