@@ -46,6 +46,8 @@ namespace CSVIngester
         }
         public static string PadASINTo10Chars(string ASIN)
         {
+            if (ASIN.Length == 0)
+                return "";
             string ret = "";
             int CharsToAdd = 10 - ASIN.Length;
             for (int i = 0; i < CharsToAdd; i++)
@@ -126,6 +128,7 @@ namespace CSVIngester
                     GlobalVariables.Logger.Log("Mandatory column 'asin' not detected.Not an Inventory csv file : " + FileName);
                     return;
                 }
+                int ReportErrorOnce = 10;
                 int RowsRead = 0;
                 int RowsInserted = 0;
                 int RowsUpdated = 0;
@@ -140,10 +143,17 @@ namespace CSVIngester
                     string asin = csv.GetField<string>(AsinColName);
 
                     //check if the read data is correct
-                    if (Ebay_id == null || Ebay_id.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " ebay_id does not have a value");
-                    if (asin == null || asin.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " asin does not have a value");
+                    if (ReportErrorOnce > 0)
+                    {
+                        if (Ebay_id == null || Ebay_id.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " ebay_id does not have a value");
+                        if (asin == null || asin.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " asin does not have a value");
+                        if( (Ebay_id == null || Ebay_id.Length == 0) || (asin == null || asin.Length == 0))
+                            ReportErrorOnce--;
+                        if(ReportErrorOnce == 0)
+                            GlobalVariables.Logger.Log("Additional warnings will not be shown to not freez the application");
+                    }
 
                     //because some tools will eat up leading 0
                     asin = PadASINTo10Chars(asin);
@@ -200,6 +210,7 @@ namespace CSVIngester
                     return;
                 }
                 int RowsRead = 0;
+                int ReportErrorOnce = 10;
                 GlobalVariables.ImportingToDBBlock = "EbayVat";
                 SQLiteTransaction transaction = GlobalVariables.DBStorage.m_dbConnection.BeginTransaction();
                 while (csv.Read())
@@ -208,10 +219,17 @@ namespace CSVIngester
                     string vat = csv.GetField<string>(VatColName);
 
                     //check if the read data is correct
-                    if (Ebay_id == null || Ebay_id.Length == 0)
+                    if (ReportErrorOnce > 0)
+                    {
+                        if (Ebay_id == null || Ebay_id.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " ebay_id does not have a value");
-                    if (vat == null || vat.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " vat does not have a value");
+                        if (vat == null || vat.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " vat does not have a value");
+                        if ((Ebay_id == null || Ebay_id.Length == 0) || (vat == null || vat.Length == 0))
+                            ReportErrorOnce--;
+                        if (ReportErrorOnce == 0)
+                            GlobalVariables.Logger.Log("Additional warnings will not be shown to not freez the application");
+                    }
 
                     GlobalVariables.DBStorage.UpdateInventoryVatEbay(Ebay_id, vat);
 //if (RowsRead == 15) break;
@@ -248,6 +266,7 @@ namespace CSVIngester
                     GlobalVariables.Logger.Log("Mandatory column 'vat_rate' not detected.Not an VAT csv file : " + FileName);
                     return;
                 }
+                int ReportErrorOnce = 10;
                 int RowsRead = 0;
                 GlobalVariables.ImportingToDBBlock = "AsinVat";
                 SQLiteTransaction transaction = GlobalVariables.DBStorage.m_dbConnection.BeginTransaction();
@@ -257,13 +276,20 @@ namespace CSVIngester
                     string vat = csv.GetField<string>(VatColName);
 
                     //check if the read data is correct
-                    if (asin == null || asin.Length == 0)
+                    if (ReportErrorOnce > 0)
+                    {
+                        if (asin == null || asin.Length == 0)
                         GlobalVariables.Logger.Log("at line " + RowsRead + " asin does not have a value");
-                    if (vat == null || vat.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " vat does not have a value");
+                        if (vat == null || vat.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " vat does not have a value");
+                        if ((asin == null || asin.Length == 0) || (vat == null || vat.Length == 0))
+                            ReportErrorOnce--;
+                        if (ReportErrorOnce == 0)
+                            GlobalVariables.Logger.Log("Additional warnings will not be shown to not freez the application");
+                    }
 
-                    //because some tools will eat up leading 0
-                    asin = PadASINTo10Chars(asin);
+                //because some tools will eat up leading 0
+                asin = PadASINTo10Chars(asin);
 
                     GlobalVariables.DBStorage.UpdateInventoryVatAsin(asin, vat);
 //if (RowsRead == 15) break;
@@ -322,8 +348,13 @@ namespace CSVIngester
             }
 
             GlobalVariables.Logger.Log("File import destination database is '" + CSVFileName + "'");
+            CsvHelper.Configuration.Configuration cfg = new CsvHelper.Configuration.Configuration
+            {
+                HasHeaderRecord = true,
+                MissingFieldFound = null
+            };
             using (var reader = new StreamReader(FileName))
-            using (var csv = new CsvReader(reader))
+            using (var csv = new CsvReader(reader, cfg))
             {
                 csv.Read();
                 csv.ReadHeader();
@@ -403,6 +434,7 @@ namespace CSVIngester
 //                WriteCSVFile ImportResultCSV = new WriteCSVFile();
 //                ImportResultCSV.CreateAmazonOrdersFile("./reports/" + CSVFileName + "-RUN.csv");
 
+                int ReportErrorOnce = 10;
                 int RowsRead = 0;
                 int RowsInserted = 0;
                 int RowsSkipped = 0;
@@ -435,28 +467,49 @@ namespace CSVIngester
                             continue;
                     }
                     //check if the read data is correct
-                    if (DateCol == null || DateCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
-                    if (IdCol == null || IdCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Id does not have a value");
-                    if (TitleCol == null || TitleCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
-                    if (PriceCol == null || PriceCol.Length == 0)
-                    { 
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
-                        PriceCol = "0";
-                    }
-                    if (VATCol == null || VATCol.Length == 0)
+                    if (ReportErrorOnce > 0)
                     {
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " VAT does not have a value");
-                        VATCol = "0";
+                        if (DateCol == null || DateCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
+                        if (IdCol == null || IdCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Id does not have a value");
+                        if (TitleCol == null || TitleCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
+                        if (PriceCol == null || PriceCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
+                        if (VATCol == null || VATCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " VAT does not have a value");
+                        if (BuyerCol == null || BuyerCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Buyer does not have a value");
+                        if (AddressCol == null || AddressCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Address does not have a value");
+                        if (ASINCol == null || ASINCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " ASIN does not have a value");
+                        if((IdCol == null || IdCol.Length == 0)||(TitleCol == null || TitleCol.Length == 0)||(PriceCol == null || PriceCol.Length == 0)||(VATCol == null || VATCol.Length == 0)||(BuyerCol == null || BuyerCol.Length == 0)||(DateCol == null || DateCol.Length == 0)|| (ASINCol == null || ASINCol.Length == 0)|| (AddressCol == null || AddressCol.Length == 0))
+                            ReportErrorOnce--;
+                        if (ReportErrorOnce == 0)
+                            GlobalVariables.Logger.Log("Additional warnings will not be shown to not freez the application");
                     }
-                    if (BuyerCol == null || BuyerCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Buyer does not have a value");
-                    if (AddressCol == null || AddressCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Address does not have a value");
-                    if (ASINCol == null || ASINCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " ASIN does not have a value");
+                    if (PriceCol == null || PriceCol.Length == 0)
+                        PriceCol = "0";
+                    if (VATCol == null || VATCol.Length == 0)
+                        VATCol = "0";
+                    try
+                    {
+                        double.Parse(PriceCol);
+                        double.Parse(VATCol);
+                    }
+                    catch
+                    {
+                        if (ReportErrorOnce > 0)
+                        {
+                            GlobalVariables.Logger.Log("Vat "+ VATCol + " or price "+ PriceCol + " is not numeric. Can not import row");
+                            ReportErrorOnce--;
+                            if (ReportErrorOnce == 0)
+                                GlobalVariables.Logger.Log("Additional warnings will not be shown to not freez the application");
+                        }
+                        continue;
+                    }
 
                     DateCol = FormatDate(DateCol);
 
@@ -612,6 +665,7 @@ namespace CSVIngester
 
                 SQLiteTransaction transaction = GlobalVariables.DBStorage.m_dbConnection.BeginTransaction();
 
+                int ReportErrorOnce = 10;
                 int RowsRead = 0;
                 int RowsInserted = 0;
                 int RowsSkipped = 0;
@@ -634,28 +688,35 @@ namespace CSVIngester
                     string ReferenceIDCol = csv.GetField<string>(ReferenceIDColName);
 
                     //check if the read data is correct
-/*                    if (DateCol == null || DateCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
-                    if (NameCol == null || NameCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Name does not have a value");
-                    if (PriceCol == null || PriceCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
-                    if (PPFeeCol == null || PPFeeCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Fee does not have a value");
-                    if (TransactionIDCol == null || TransactionIDCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Transaction ID does not have a value");
-                    if (TitleCol == null || TitleCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
-                    if (ItemIdCol == null || ItemIdCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Item Id does not have a value");
-                    if (AddressCol == null || AddressCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Shipping Address does not have a value");
-                    if (PhoneCol == null || AddressCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Contact Phone does not have a value");
-                    if (TypeCol == null || TypeCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Type does not have a value");
-                    if (BalanceImpactCol == null || BalanceImpactCol.Length == 0)
-                        GlobalVariables.Logger.Log("at line " + RowsRead + " Balance Impact does not have a value");*/
+                    if (ReportErrorOnce > 0)
+                    {
+                        if (DateCol == null || DateCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Date does not have a value");
+                        if (NameCol == null || NameCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Name does not have a value");
+                        if (PriceCol == null || PriceCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Price does not have a value");
+                        if (PPFeeCol == null || PPFeeCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Fee does not have a value");
+                        if (TransactionIDCol == null || TransactionIDCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Transaction ID does not have a value");
+                        if (TitleCol == null || TitleCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Title does not have a value");
+                        if (ItemIdCol == null || ItemIdCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Item Id does not have a value");
+                        if (AddressCol == null || AddressCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Shipping Address does not have a value");
+                        if (PhoneCol == null || AddressCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Contact Phone does not have a value");
+                        if (TypeCol == null || TypeCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Type does not have a value");
+                        if (BalanceImpactCol == null || BalanceImpactCol.Length == 0)
+                            GlobalVariables.Logger.Log("at line " + RowsRead + " Balance Impact does not have a value");
+                        if ((DateCol == null || DateCol.Length == 0)||(NameCol == null || NameCol.Length == 0)||(PriceCol == null || PriceCol.Length == 0)||(PPFeeCol == null || PPFeeCol.Length == 0)||(TransactionIDCol == null || TransactionIDCol.Length == 0)||(TitleCol == null || TitleCol.Length == 0)||(ItemIdCol == null || ItemIdCol.Length == 0)||(AddressCol == null || AddressCol.Length == 0)||(PhoneCol == null || AddressCol.Length == 0)||(TypeCol == null || TypeCol.Length == 0)||(BalanceImpactCol == null || BalanceImpactCol.Length == 0))
+                            ReportErrorOnce--;
+                        if (ReportErrorOnce == 0)
+                            GlobalVariables.Logger.Log("Additional warnings will not be shown to not freez the application");
+                    }
 
                     DateCol = FormatDate(DateCol);
 
