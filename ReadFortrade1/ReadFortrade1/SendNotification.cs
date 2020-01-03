@@ -27,6 +27,7 @@ namespace ReadFortrade1
         public double BoughtAtPrice;
         public double BoughtAmount;
         public double ProfitExceeded;
+        public double PriceChangeAmount; //if price changed by more than the spread, could be significant
         DateTime LastNotificationStamp;
     }
     public class SendNotification

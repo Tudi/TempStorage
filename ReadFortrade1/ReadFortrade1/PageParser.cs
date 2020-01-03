@@ -39,7 +39,7 @@ namespace ReadFortrade1
 
         public static void ParseFavoritesSection(string FavoritesSection)
         {
-            string ToSearch = "CFD on the ";
+            string ToSearch = "class=\"favoriteIcon\"";
             string[] Sections = FavoritesSection.Split(new[] { ToSearch }, StringSplitOptions.None);
             for (int i = 1; i < Sections.Length; i++)
             {
@@ -47,11 +47,11 @@ namespace ReadFortrade1
                     break;
                 //get name
                 string Name;
-                ToSearch = "price of ";
+                ToSearch = "\"></span></div><div>";
                 int NameStart = Sections[i].IndexOf(ToSearch) + ToSearch.Length;
                 int NameEnd = NameStart;
                 for (; NameEnd < Sections[i].Length; NameEnd++)
-                    if (Sections[i][NameEnd] == '.' || Sections[i][NameEnd + 1] == '<')
+                    if (Sections[i][NameEnd] == '<')
                         break;
                 Name = Sections[i].Substring(NameStart, NameEnd - NameStart);
 

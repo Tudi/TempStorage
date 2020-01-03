@@ -57,11 +57,26 @@ namespace ReadFortrade1
             return (long)(DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
         }
 
-        private string CreateTableForInstrument(string Instrument)
+        public static long GetUnixStampStartDay(long SubstractMonths = 0, long SubstractWeeks = 0, long SubstractDays = 0, long SubstractHours = 0, long SubstractMinutes = 0, long SubstractSeconds = 0)
+        {
+            DateTime Now = DateTime.Now;
+            DateTime StartNow = new DateTime(Now.Year, Now.Month, Now.Day, 0, 0, 0);
+            TimeSpan Diff = (StartNow - new DateTime(1970, 1, 1, 0, 0, 0));
+            long ret = (long)Diff.TotalSeconds;
+            ret += SubstractSeconds;
+            ret += SubstractMinutes * 60;
+            ret += SubstractHours * 60 * 60;
+            ret += SubstractDays * 24 * 60 * 60;
+            ret += SubstractWeeks * 7 * 24 * 60 * 60;
+            ret += SubstractMonths * 4 * 7 * 24 * 60 * 60;
+            return ret;
+        }
+
+        private string CreateTablesForInstrument(string Instrument)
         {
 //            string TableName = "T"+Instrument.GetHashCode().ToString();
 //            TableName = TableName.Replace('-', '_');
-            string TableName = "T_" + Instrument;
+            string TableName = Instrument;
             TableName = TableName.Replace("-", "_");
             TableName = TableName.Replace("(", "_");
             TableName = TableName.Replace(")", "_");
@@ -69,6 +84,7 @@ namespace ReadFortrade1
             TableName = TableName.Replace("/", "_");
             TableName = TableName.Replace(".", "_");
             TableName = TableName.Replace(",", "_");
+
             var cmd2 = new SQLiteCommand(m_dbConnection);
             cmd2.CommandText = "INSERT into TableNames(InstrumentName,TableName)values(@InstrumentName,@TableName)";
             cmd2.Parameters.AddWithValue("@InstrumentName", Instrument);
@@ -76,14 +92,17 @@ namespace ReadFortrade1
             cmd2.Prepare();
             cmd2.ExecuteNonQuery();
 
-            string sql = "create table " + TableName + " (Stamp int,Sell double,Buy double,SellSentiment double)";
-            var command = new SQLiteCommand(sql, m_dbConnection);
-            command.ExecuteNonQuery();
+            cmd2 = new SQLiteCommand("create table " + TableName + "_price (Stamp int,Sell float)", m_dbConnection);
+            cmd2.ExecuteNonQuery();
+            cmd2 = new SQLiteCommand("create table " + TableName + "_spread (Stamp int,Spread float)", m_dbConnection);
+            cmd2.ExecuteNonQuery();
+            cmd2 = new SQLiteCommand("create table " + TableName + "_sentiment (Stamp int,Sentiment float)", m_dbConnection);
+            cmd2.ExecuteNonQuery();
 
             return TableName;
         }
 
-        private string GetTableNameForInstrument(string Instrument)
+        public string GetTableNameForInstrument(string Instrument)
         {
             string ReturnValue = "";
             var cmd = new SQLiteCommand(m_dbConnection);
@@ -95,22 +114,42 @@ namespace ReadFortrade1
             if (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
                 ReturnValue = rdr.GetString(0);
             else
-                ReturnValue = CreateTableForInstrument(Instrument);
+                ReturnValue = CreateTablesForInstrument(Instrument);
             return ReturnValue;
         }
 
-        public void AddInstrumentValue(string Instrument, double pSellPrice, double pBuyPrice, double pSellSentiment)
+        public void AddSpreadValue(string Instrument, double pSpread, string pTableName)
         {
-            string TableName = GetTableNameForInstrument(Instrument);
+            string TableName = pTableName;
+            if(TableName == null)
+                TableName = GetTableNameForInstrument(Instrument);
             long Stamp = GetUnixStamp();
             var cmd2 = new SQLiteCommand(m_dbConnection);
-            cmd2.CommandText = "INSERT into @TableName (Stamp,Sell,Buy,SellSentiment)values(@Stamp,@Sell,@Buy,@SellSentiment)";
-            cmd2.CommandText = "INSERT into "+ TableName + " (Stamp,Sell,Buy,SellSentiment)values("+ Stamp.ToString() + ","+ pSellPrice.ToString() + ","+ pBuyPrice.ToString() + ","+ pSellSentiment.ToString() + ")";
-            cmd2.Parameters.AddWithValue("@TableName", TableName);
-            cmd2.Parameters.AddWithValue("@Stamp", Stamp);
-            cmd2.Parameters.AddWithValue("@Sell", pSellPrice);
-            cmd2.Parameters.AddWithValue("@Buy", pBuyPrice);
-            cmd2.Parameters.AddWithValue("@SellSentiment", pSellSentiment);
+            cmd2.CommandText = "INSERT into "+ TableName + "_spread (Stamp,Spread)values(" + Stamp.ToString() + ","+ pSpread.ToString() + ")";
+            cmd2.Prepare();
+            cmd2.ExecuteNonQuery();
+        }
+
+        public void AddInstrumentValue(string Instrument, double pSellPrice, string pTableName)
+        {
+            string TableName = pTableName;
+            if (TableName == null)
+                TableName = GetTableNameForInstrument(Instrument);
+            long Stamp = GetUnixStamp();
+            var cmd2 = new SQLiteCommand(m_dbConnection);
+            cmd2.CommandText = "INSERT into " + TableName + "_price (Stamp,Sell)values(" + Stamp.ToString() + "," + pSellPrice.ToString() + ")";
+            cmd2.Prepare();
+            cmd2.ExecuteNonQuery();
+        }
+
+        public void AddSentimentValue(string Instrument, double pSellSentiment, string pTableName)
+        {
+            string TableName = pTableName;
+            if (TableName == null)
+                TableName = GetTableNameForInstrument(Instrument);
+            long Stamp = GetUnixStamp();
+            var cmd2 = new SQLiteCommand(m_dbConnection);
+            cmd2.CommandText = "INSERT into " + TableName + "_sentiment (Stamp,Sentiment)values(" + Stamp.ToString() + "," + pSellSentiment.ToString() + ")";
             cmd2.Prepare();
             cmd2.ExecuteNonQuery();
         }
@@ -125,17 +164,75 @@ namespace ReadFortrade1
             {
                 string TableName = rdr.GetString(0);
                 string Instrument = rdr.GetString(1);
-                var cmd2 = new SQLiteCommand(m_dbConnection);
-                cmd2.CommandText = "SELECT Sell,Buy,SellSentiment FROM "+ TableName + " order by stamp desc limit 0,1";
-                SQLiteDataReader rdr2 = cmd2.ExecuteReader();
-                if (rdr2.Read() && rdr2.HasRows == true)
+                double sell = 0, spread = 0, buy, sentiment = 0;
+                using (var cmd2 = new SQLiteCommand(m_dbConnection))
                 {
-                    double sell = rdr2.GetDouble(0);
-                    double buy = rdr2.GetDouble(1);
-                    double sellsentiment = rdr2.GetDouble(2);
-                    Globals.vHistory.AddRecord(Instrument, sell, buy, sellsentiment, 100 - sellsentiment);
+                    cmd2.CommandText = "SELECT Sell FROM " + TableName + "_price order by stamp desc limit 0,1";
+                    SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                    if (rdr2.Read() && rdr2.HasRows == true)
+                        sell = rdr2.GetFloat(0);
+                }
+                using (var cmd2 = new SQLiteCommand(m_dbConnection))
+                {
+                    cmd2.CommandText = "SELECT Spread FROM " + TableName + "_spread order by stamp desc limit 0,1";
+                    SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                    if (rdr2.Read() && rdr2.HasRows == true)
+                        spread = rdr2.GetFloat(0);
+                }
+                using (var cmd2 = new SQLiteCommand(m_dbConnection))
+                {
+                    cmd2.CommandText = "SELECT Sentiment FROM " + TableName + "_sentiment order by stamp desc limit 0,1";
+                    SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                    if (rdr2.Read() && rdr2.HasRows == true)
+                        sentiment = rdr2.GetFloat(0);
+                }
+                buy = sell + spread;
+                Globals.vHistory.AddRecord(Instrument, sell, buy, sentiment, 100 - sentiment);
+            }
+        }
+
+        public List<InstrumentValuePair> GetInstrumentValues(string Instrument, long StartStamp, long EndStamp)
+        {
+            string TableName = GetTableNameForInstrument(Instrument);
+            List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
+            using (var cmd2 = new SQLiteCommand(m_dbConnection))
+            {
+                cmd2.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price where stamp>="+ StartStamp.ToString() + " and stamp<="+ EndStamp.ToString();
+                SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                while (rdr2.Read() && rdr2.HasRows == true)
+                {
+                    long stamp = rdr2.GetInt64(0);
+                    double sell = rdr2.GetFloat(1);
+                    ret.Add(new InstrumentValuePair(stamp, sell));
                 }
             }
+            return ret;
+        }
+
+        public double GetInstrumentSpread(string Instrument, long StartStamp, long EndStamp)
+        {
+            string TableName = GetTableNameForInstrument(Instrument);
+            List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
+            using (var cmd2 = new SQLiteCommand(m_dbConnection))
+            {
+                cmd2.CommandText = "SELECT avg(Spread) FROM " + TableName + "_spread where stamp>=" + StartStamp.ToString() + " and stamp<=" + EndStamp.ToString();
+                SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                if (rdr2.Read() && rdr2.HasRows == true && !rdr2.IsDBNull(0))
+                    return rdr2.GetFloat(0);
+            }
+            return 0;
+        }
+
+        public List<string> GetAllInstrumentNames()
+        {
+            List<string> ret = new List<string>();
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT InstrumentName FROM TableNames";
+            cmd.Prepare();
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
+                ret.Add(rdr.GetString(0));
+            return ret;
         }
     }
 }

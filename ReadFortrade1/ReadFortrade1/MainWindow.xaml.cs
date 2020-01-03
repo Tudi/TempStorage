@@ -15,6 +15,31 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+/*
+ * main goal is to guess which way the graph will go today
+ * - inspect today market activity
+ * - inspect past market activity
+ * - inspect location of the price ( is it high or is it low ? )
+ * 
+ * todo :
+ * - extract visible names of instruments and use it for tables
+ * - does sentiment count anywhere ? Is it worth storing ? Maybe store it in a separate table as it barelly changes ?
+ * - statistics should be available for hour/day/week/month/year
+ * - check which instrument has the highest probability of inversion in one day
+ * - be able to calculate previous day pivot point
+ * - check / confirm if day starts bearish or bulish for an instrument
+ * - check confirm if there is a trend going on for a specific instrument
+ * - check the probablity of trend flip based on daily / weekly / monthly pivots.
+ * - propose budget for a specific instrument based on pivot location and trend chances
+ * - create statistics of how many trades swings are done per period. This should also take into count the size of the swings. Are there big traders or small traders in the market ?
+ * - create statistics for most stable instruments. Should not stay low or high for too much amount of time below or above pivot. How fast will our bad trade vome back to a zero ?
+ * - create statistics. Is it trending ? Is it daily fluctuating ?
+ * 
+ * Self notes :
+ * - never ever be greedy. Invest only a portion of balance in a specific type of stock trend
+ * - try to make short term deals. Money gets blocked on wrong decisions and maybe never recover
+ * - trading is sentiment based. What other traders are doing and hardly about what in reality happens
+ */
 namespace ReadFortrade1
 {
     public class Globals
@@ -39,6 +64,10 @@ namespace ReadFortrade1
             Globals.TimeoutMonitor = new TimeoutWatchDog();
             Globals.vHistory.LoadFromPersistency();
             Globals.PriceChangeMonitor = new NotificationWatchdog();
+
+            ValueStatistics.CalcInversionEachInstrument(2,0.0001);
+
+            //starting background threads for value fetching and processing
             Task.Factory.StartNew(() => Globals.TimeoutMonitor.StartPageTimoutWatchdog());
             Task.Factory.StartNew(() => Globals.PriceChangeMonitor.StartPriceChangeWatchdog());
             //            SendNotification.SendMessage("Test meail to sms");

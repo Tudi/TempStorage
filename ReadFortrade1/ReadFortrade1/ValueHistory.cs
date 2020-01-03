@@ -18,6 +18,10 @@ namespace ReadFortrade1
             SellPriceMax = -1;
             BuyPriceMin = 999999999;
             BuyPriceMax = -1;
+            TableName = null;
+            PrevSellPrice = 0;
+            PrevBuyPrice = 0;
+            PrevBuySentiment = 0; 
         }
         public void Update()
         {
@@ -28,6 +32,8 @@ namespace ReadFortrade1
         }
         public void AddValue(double pSellPrice, double pBuyPrice, double pSellSentiment, double pBuySentiment, bool SkipAdd = false)
         {
+            if (Name != null && TableName == null)
+                TableName = Globals.Persistency.GetTableNameForInstrument(Name);
             ValuesAdded++;
             SellPriceSum += pSellPrice;
             BuyPriceSum += pBuyPrice;
@@ -39,13 +45,22 @@ namespace ReadFortrade1
                 BuyPriceMin = pBuyPrice;
             if (pBuyPrice > BuyPriceMax)
                 BuyPriceMax = pBuyPrice;
+            //need to reorganize this. Just testing for now
+            if (SkipAdd == false)
+            {
+                if((PrevSellPrice != pSellPrice) || PrevBuyPrice != pBuyPrice)
+                    Globals.Persistency.AddInstrumentValue(Name, pSellPrice, TableName);
+                if (PrevSpread != Math.Round(pBuyPrice - pSellPrice,7))
+                    Globals.Persistency.AddSpreadValue(Name, pBuyPrice - pSellPrice, TableName);
+                if (PrevBuySentiment != pBuySentiment)
+                    Globals.Persistency.AddSentimentValue(Name, pBuySentiment, TableName);
+            }
             SellSentiment = pSellSentiment;
             BuySentiment = pBuySentiment;
             PrevSellPrice = pSellPrice;
             PrevBuyPrice = pBuyPrice;
-            //need to reorganize this. Just testing for now
-            if (SkipAdd == false)
-                Globals.Persistency.AddInstrumentValue(Name, pSellPrice, pBuyPrice, pSellSentiment);
+            PrevBuySentiment = pBuySentiment;
+            PrevSpread = Math.Round(pBuyPrice - pSellPrice,7);
 //            Update();
         }
         public string Name;
@@ -64,6 +79,9 @@ namespace ReadFortrade1
         public DateTime RecordedLast;
         public double PrevSellPrice;
         public double PrevBuyPrice;
+        public double PrevBuySentiment;
+        public double PrevSpread;
+        string TableName;
     }
     public class ValueHistory
     {
@@ -95,7 +113,7 @@ namespace ReadFortrade1
                     double BuyPriceChangePCT = Math.Abs(itr.PrevBuyPrice / BuyPrice);
 //                    if ((SellPriceChangePCT < (1-Globals.IgnorePriceChangePCT) || SellPriceChangePCT > (1 + Globals.IgnorePriceChangePCT))
 //                        || (BuyPriceChangePCT < (1 - Globals.IgnorePriceChangePCT) || BuyPriceChangePCT > (1 + Globals.IgnorePriceChangePCT)))
-                    if(itr.PrevSellPrice != SellPrice || itr.PrevBuyPrice != BuyPrice)
+     //               if(itr.PrevSellPrice != SellPrice || itr.PrevBuyPrice != BuyPrice)
                         itr.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
                     ValueUpdated = true;
                     break;
