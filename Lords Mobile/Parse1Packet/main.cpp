@@ -22,7 +22,7 @@ void OfflineParsing()
 void OnlineScanParsing()
 {
 	//move the screen, close popups
-	LordsMobileControlStartup();
+//	LordsMobileControlStartup();
 
 	HttpSendStartup();
 	//	HTTPPostData(67, 1, 2, "Tudi", "wib", "sea wolves", 3, 4, 5, 6, 7, 8, 9);
@@ -34,7 +34,7 @@ void OnlineScanParsing()
 	StartListenConsole();
 
 	// listen to network interface, assemble packets, queue them to the process queue
-	StartCapturePackets(3);
+	StartCapturePackets(1);
 }
 
 void main()
@@ -51,7 +51,7 @@ void main()
 	StopCapturePackets();
 	StopThreadedPacketParser();
 	HttpSendShutdown();
-	LordsMobileControlShutdown();
+//	LordsMobileControlShutdown();
 	StopListenConsole();
 	printf("Properly shut everything down. Exiting\n");
 }

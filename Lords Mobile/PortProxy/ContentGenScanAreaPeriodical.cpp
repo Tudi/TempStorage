@@ -83,7 +83,7 @@ DWORD WINAPI PeriodicInjectScan(LPVOID lpParam)
 			ScanWorldPacketsLoadedSent++;
 			ScanWorldPacketsLoadedSent = ScanWorldPacketsLoadedSent % ScanWorldPacketsLoadedCount;
 		}/**/
-		if(CastleClickSerializer != 0)
+/*		if(CastleClickSerializer != 0)
 		{
 			unsigned char *Pkt = (unsigned char*)malloc(11);
 			*(unsigned short*)&Pkt[0] = 11;
@@ -99,7 +99,7 @@ DWORD WINAPI PeriodicInjectScan(LPVOID lpParam)
 			*(unsigned int*)&Pkt[7] = GUID;
 			//queue to the network stream
 			InjectQueue.AddBuffer((char*)Pkt, 11);
-		}
+		}*/
 	}
 }
 

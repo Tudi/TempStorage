@@ -443,7 +443,56 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 					PacketHandledStatus = OnClientToServerPacket((unsigned char*)tbuf, len);
 				else
 					PacketHandledStatus = OnServerToClientPacket((unsigned char*)tbuf, len);
-
+#if 0
+if (inbound == FALSE)
+{
+	unsigned char *packet = (unsigned char *)tbuf;
+	if (len == 11 && packet[0] == 11 && packet[1] == 0 && packet[2] == 0x9A && packet[3] == 0x08)
+	{
+		//try to duplicate this packet
+		CastleClickSerializer = packet[4];
+		//construct a new packet
+		unsigned char *Pkt = (unsigned char*)malloc(11);
+		memset(Pkt, 0, 11);
+		*(unsigned short*)&Pkt[0] = 11;
+		//0b 00 9a 08 c8 00 00 00 ff 03 ff
+		Pkt[2] = 0x9a;
+		Pkt[3] = 0x08;
+		Pkt[4] = (CastleClickSerializer);
+		Pkt[5] = 0;
+		Pkt[6] = 0;
+		int x, y;
+		GeteneratePosToScan(x, y);
+		unsigned int GUID = GenerateIngameGUID(x, y);
+		*(unsigned int*)&Pkt[7] = GUID;
+		SendBufferOverNetwork(DestinationSocket, (char*)Pkt, 11);
+		Sleep(50);
+		memset(Pkt, 0, 11);
+		*(unsigned short*)&Pkt[0] = 11;
+		//0b 00 9a 08 c8 00 00 00 ff 03 ff
+		Pkt[2] = 0x9a;
+		Pkt[3] = 0x08;
+		CastleClickSerializer++;
+		Pkt[4] = CastleClickSerializer;
+		Pkt[5] = 0;
+		Pkt[6] = 0;
+		GeteneratePosToScan(x, y);
+		GUID = GenerateIngameGUID(x, y);
+		*(unsigned int*)&Pkt[7] = GUID;
+		SendBufferOverNetwork(DestinationSocket, (char*)Pkt, 11);/**/
+		//merge the 2 packets
+/*		{
+			unsigned char *Pkt2 = (unsigned char*)malloc(11 * 2);
+			memcpy(&Pkt2[0], packet, 11);
+			memcpy(&Pkt2[11], Pkt, 11);
+			tbuf = (char*)Pkt2;
+			len = 22;
+		}*/
+		tbuf = (char*)Pkt;
+		len = 0;
+	}
+}
+#endif
 				//if we should still send it to the socket ...
 				if (len != 0 && PacketHandledStatus != PPHT_SHOULD_DROP && SendBufferOverNetwork(DestinationSocket, tbuf, len) != 0)
 				{
@@ -487,6 +536,7 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 			char *tbuf = InjectQueue.FetchPacket(tlen);
 			while (tbuf != NULL)
 			{
+				Sleep(50);
 				if (tlen != 0 && SendBufferOverNetwork(DestinationSocket, tbuf, tlen) != 0)
 				{
 					warning("failed to send to socket (%d)", WSAGetLastError());

@@ -17,8 +17,9 @@ int GenerateAreaToScan(unsigned char **PacketContent);
 void OnCastlePopupPacketReceived(int x, int y);
 void OnCastleCreatePacketReceived(int x, int y, int flags);
 
-void InitHardcodedGen();
-void InitPeriodicGen();
+void InitHardcodedGen(); // scan only a few hardcoded locations
+void InitPeriodicGen(); // periodically scan all positions
+void InitSpawnedGen(); // only scan castle positions spwaned
 void InitScanPeriodicGen();
 
 extern int ScanMapCountGen;

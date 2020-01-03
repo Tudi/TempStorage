@@ -2,8 +2,15 @@
 #include "LordsMobileControl.h"
 #include "HTTPSendData.h"
 
-#pragma comment(lib,"ImageSearch/ImageSearchDLL_x64.lib")
+/*
+#ifdef WIN32
+    #pragma comment(lib,"ImageSearch/ImageSearchDLL_x86.lib")
+#else
+    #pragma comment(lib,"ImageSearch/ImageSearchDLL_x64.lib")
+#endif
+ */
 
+#if 0
 extern void RunLordsMobileTestsNoOCR();
 extern void ToggleFastScan(int YStepFast, int YStepSlow);
 extern void ScanKingdomArea2(int Kingdom, int StartX, int StartY, int EndX, int EndY);
@@ -75,3 +82,4 @@ void	LordsMobileControlShutdown()
 	CloseHandle(ScanGameProcessThreadHandle);
 	ScanGameProcessThreadHandle = 0;
 }
+#endif
