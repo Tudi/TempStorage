@@ -11,6 +11,8 @@ namespace ReadFortrade1
         public static void ParseBody(string docBody)
         {
             //search for the favorites section
+            if (docBody.IndexOf("interrupted") >= 0 || docBody.IndexOf("Reconnecting") >= 0 || docBody.IndexOf("please wait") >= 0)
+                return;
             //<div class="instrumentsTable" id="instrumentsTable" style="height: 256px; z-index: 2;">
             int StartOfDiv = docBody.IndexOf("<div class=\"instrumentsTable\" id=\"instrumentsTable\"");
             if (StartOfDiv < 0)

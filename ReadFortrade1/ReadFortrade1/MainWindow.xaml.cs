@@ -23,8 +23,12 @@ using System.Windows.Shapes;
  * - we need to detect trends as soon as possible and ride a trend. It's only worth to ride a trend as long as we have enough swings of value
  * 
  * todo :
- * - extract visible names of instruments and use it for tables
- * - does sentiment count anywhere ? Is it worth storing ? Maybe store it in a separate table as it barelly changes ?
+ * - make statistics of daily change PCT
+ * - make statistics of trend(minute/30min/60min) period lengths
+ * - make statistics of what it means to have a large jump in value
+ * - statistics of : transaction (number of T, size of T, Volatility) at specific hour of the day
+ * - make statistics of rate of change. How many times, how many small changes occure. Lots of people trading it ? Sentimental trading
+ * - implement block based data store : if value is on 4 bytes, and we store 60 values in 1 minute
  * - statistics should be available for hour/day/week/month/year
  * - check which instrument has the highest probability of inversion in one day
  * - be able to calculate previous day pivot point
@@ -39,6 +43,8 @@ using System.Windows.Shapes;
  * - generate 3 / 4 bar patterns based on past days / weeks. The older the pattern, the less influential
  * 
  * Self notes :
+ * - heating oil-natural gas-coal are quite linked. If one increases the other one falls
+ * - ! Avoid validating your decision before inspection ! Try to take decisions based on news and numbers. First seach news, check numbers. If all match, take actions. You need to make good deals and not feel sentimental
  * - never ever be greedy. Invest only a portion of balance in a specific type of stock trend
  * - try to make short term deals. Money gets blocked on wrong decisions and maybe never recover
  * - trading is sentiment based. What other traders are doing and hardly about what in reality happens
