@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using mshtml;
 
 namespace ReadFortrade1
 {
@@ -19,48 +18,19 @@ namespace ReadFortrade1
         private static extern bool SetForegroundWindow(IntPtr hWnd);
         public void StartPageTimoutWatchdog()
         {
-            DateTime LastDifferentStamp = DateTime.Now;
-            DateTime AntiBrowserFreez = DateTime.Now;
-            SHDocVw.ShellWindows shellWindows = new SHDocVw.ShellWindows();
-            foreach (SHDocVw.WebBrowser ie in shellWindows)
+            DateTime AntiContinuesRefresh = DateTime.Now;
+            while (Globals.AppIsRunning == true)
             {
-                HTMLDocument doc = ie.Document as mshtml.HTMLDocument;
-                if (doc == null)
-                    continue;
-                string PrevBody = "";
-                while (1 == 1)
+                if (DateTime.Now.Subtract(Globals.LastFavoriteSectionParseStamp).Seconds >= Globals.IETimeoutSeconds 
+                    && DateTime.Now.Subtract(AntiContinuesRefresh).Seconds >= Globals.IETimeoutSeconds)
                 {
-                    HTMLDocument doc2 = null;
-                    string docBody = null;
-                    try
-                    {
-                        doc2 = ie.Document as mshtml.HTMLDocument;
-                        if (doc2 == null || doc2.body == null || doc2.body.outerHTML == null)
-                            continue;
-                        docBody = doc2.body.outerHTML;
-                        if (docBody == null)
-                            continue;
-                    }
-                    catch
-                    {
-                        Thread.Sleep(500);
-                        continue;
-                    }
-                    if (PrevBody.Equals(docBody)==false || PrevBody.Length == 0)
-                    {
-                        PrevBody = docBody;
-                        LastDifferentStamp = DateTime.Now;
-                        PageParser.ParseBody(docBody);
-                    }
-                    if (DateTime.Now.Subtract(LastDifferentStamp).Seconds >= 15 || DateTime.Now.Subtract(AntiBrowserFreez).Seconds >= 15 * 60)
-                    {
-                        LastDifferentStamp = DateTime.Now;
-                        AntiBrowserFreez = DateTime.Now;
 //                        ie.Navigate("https://ready.fortrade.com/#?detach#home");
-                        TryRefreshWindow();
-                    }
+                    TryRefreshWindow();
+                    AntiContinuesRefresh = DateTime.Now;
+                    Thread.Sleep(Globals.ThreadCycleSleep);
                 }
-
+                else
+                    Thread.Sleep(Globals.ThreadCycleSleep);
             }
         }
         public void TryRefreshWindow()
@@ -68,7 +38,7 @@ namespace ReadFortrade1
             IntPtr zero = IntPtr.Zero;
             for (int i = 0; (i < 60) && (zero == IntPtr.Zero); i++)
             {
-                Thread.Sleep(500);
+                Thread.Sleep(Globals.ThreadCycleSleep);
                 zero = FindWindow("IEFrame", null);
             }
             if (zero != IntPtr.Zero)

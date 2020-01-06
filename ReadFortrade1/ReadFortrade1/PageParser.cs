@@ -100,7 +100,10 @@ namespace ReadFortrade1
                 double.TryParse(Sections[i].Substring(BuyDivStart, BuyDivEnd - BuyDivStart), out BuyPrice);
 
                 if (SellPrice != 0 && BuyPrice != 0)
+                {
                     Globals.vHistory.AddRecord(Name, SellPrice, BuyPrice, SellSentiment, BuySentiment);
+                    Globals.LastFavoriteSectionParseStamp = DateTime.Now;
+                }
             }
         }
     }
