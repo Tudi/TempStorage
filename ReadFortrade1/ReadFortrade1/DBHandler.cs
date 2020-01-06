@@ -15,15 +15,10 @@ namespace ReadFortrade1
 
         public DBHandler()
         {
-            m_dbConnection = new SQLiteConnection("Data Source=Fortrade.db;New=False;Version=3;journal_mode=WAL;synchronous=NORMAL");
+            m_dbConnection = new SQLiteConnection("Data Source=Fortrade.db;New=False;Version=3");
             m_dbConnection.Open();
             SQLiteCommand command;
             object name;
-            {
-                command = m_dbConnection.CreateCommand();
-                command.CommandText = "PRAGMA cache_size=100000";
-                command.ExecuteScalar();
-            }
             {
                 command = m_dbConnection.CreateCommand();
                 command.CommandText = "PRAGMA synchronous=OFF";

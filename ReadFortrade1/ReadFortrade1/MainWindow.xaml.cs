@@ -20,6 +20,7 @@ using System.Windows.Shapes;
  * - inspect today market activity
  * - inspect past market activity
  * - inspect location of the price ( is it high or is it low ? )
+ * - we need to detect trends as soon as possible and ride a trend. It's only worth to ride a trend as long as we have enough swings of value
  * 
  * todo :
  * - extract visible names of instruments and use it for tables
@@ -34,11 +35,14 @@ using System.Windows.Shapes;
  * - create statistics of how many trades swings are done per period. This should also take into count the size of the swings. Are there big traders or small traders in the market ?
  * - create statistics for most stable instruments. Should not stay low or high for too much amount of time below or above pivot. How fast will our bad trade vome back to a zero ?
  * - create statistics. Is it trending ? Is it daily fluctuating ?
+ * - make some statistics to try to guess what actions could create a specific trend
+ * - generate 3 / 4 bar patterns based on past days / weeks. The older the pattern, the less influential
  * 
  * Self notes :
  * - never ever be greedy. Invest only a portion of balance in a specific type of stock trend
  * - try to make short term deals. Money gets blocked on wrong decisions and maybe never recover
  * - trading is sentiment based. What other traders are doing and hardly about what in reality happens
+ * - no fixed strategy will work forever. there are many bots out there that will adapt to your actions and take counter actions
  */
 namespace ReadFortrade1
 {
@@ -65,7 +69,7 @@ namespace ReadFortrade1
             Globals.vHistory.LoadFromPersistency();
             Globals.PriceChangeMonitor = new NotificationWatchdog();
 
-            ValueStatistics.CalcInversionEachInstrument(2,0.0001);
+//            ValueStatistics.CalcInversionEachInstrument(2,0.0001);
 
             //starting background threads for value fetching and processing
             Task.Factory.StartNew(() => Globals.TimeoutMonitor.StartPageTimoutWatchdog());

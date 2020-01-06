@@ -52,7 +52,7 @@ namespace ReadFortrade1
                         LastDifferentStamp = DateTime.Now;
                         PageParser.ParseBody(docBody);
                     }
-                    if (DateTime.Now.Subtract(LastDifferentStamp).Seconds >= 20 || DateTime.Now.Subtract(AntiBrowserFreez).Seconds >= 1 * 60 * 60)
+                    if (DateTime.Now.Subtract(LastDifferentStamp).Seconds >= 15 || DateTime.Now.Subtract(AntiBrowserFreez).Seconds >= 15 * 60)
                     {
                         LastDifferentStamp = DateTime.Now;
                         AntiBrowserFreez = DateTime.Now;
