@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 /*
  * main goal is to guess which way the graph will go today
@@ -74,20 +75,59 @@ namespace ReadFortrade1
         public MainWindow()
         {
             InitializeComponent();
+            Log("Starting subsystem initializations");
             Globals.Persistency = new DBHandler();
             Globals.vHistory = new ValueHistory();
-            Globals.PageParserMonitor = new PageParserWatchDog();
-            Globals.TimeoutMonitor = new TimeoutWatchDog();
             Globals.vHistory.LoadFromPersistency();
-            Globals.PriceChangeMonitor = new NotificationWatchdog();
+            Log("Done subsystem initializations");
 
-            //            ValueStatistics.CalcInversionEachInstrument(2,0.0001);
-
-            //starting background threads for value fetching and processing
-            Task.Factory.StartNew(() => Globals.PageParserMonitor.StartPageParserWatchdog());
-            Task.Factory.StartNew(() => Globals.TimeoutMonitor.StartPageTimoutWatchdog());
-            Task.Factory.StartNew(() => Globals.PriceChangeMonitor.StartPriceChangeWatchdog());
+            int ExecuteFunction = 2;
+            if (ExecuteFunction == 1)
+            {
+                ValueStatistics.CalcInversionEachInstrument(10, 10 + 2, 0.0001, 2);
+            }
+            else if (ExecuteFunction == 2)
+            {
+                Task.Factory.StartNew(() => ImportExtenalDB());
+            }
+            else if (ExecuteFunction == 3)
+            {
+                Globals.PageParserMonitor = new PageParserWatchDog();
+                Globals.TimeoutMonitor = new TimeoutWatchDog();
+                Globals.PriceChangeMonitor = new NotificationWatchdog();
+                //starting background threads for value fetching and processing
+                Task.Factory.StartNew(() => Globals.PageParserMonitor.StartPageParserWatchdog());
+                Task.Factory.StartNew(() => Globals.TimeoutMonitor.StartPageTimoutWatchdog());
+                Task.Factory.StartNew(() => Globals.PriceChangeMonitor.StartPriceChangeWatchdog());
+            }
             //            SendNotification.SendMessage("Test meail to sms");
+        }
+        private void ImportExtenalDB()
+        {
+            Log("Starting importing Database");
+            Globals.Persistency.ImportFromDB("Fortrade_live.db");
+            Log("Done importing Database");
+        }
+        public void Log(string Msg)
+        {
+            string TimeMsg = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "]  ";
+            Msg = TimeMsg + Msg + "\n";
+
+            Console.WriteLine(Msg);
+
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+            {
+                if (App.Current == null)
+                    return;
+
+                MainWindow MainObject = (MainWindow)App.Current.MainWindow;
+
+                if (MainObject == null)
+                    return;
+
+                (App.Current.MainWindow as MainWindow).ConsoleTextbox.Text += Msg;
+                (App.Current.MainWindow as MainWindow).ConsoleTextbox.ScrollToEnd();
+            }));
         }
     }
 }

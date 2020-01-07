@@ -21,7 +21,7 @@ namespace ReadFortrade1
         /*
          * DaysInPast = 0 means current day
          */
-        public static void GetInstrumentDailyInversionCount(string InstrumentName, int DaysInPast, int DaysLong, double ProfitExpected)
+        public static void GetInstrumentDailyInversionCount(string InstrumentName, int DaysInPast, int DaysLong, double ExpectedProfitFlat, double ExpectedProfitPCTSpread)
         {
             //get all values 
             long StartStamp = DBHandler.GetUnixStampStartDay(0, 0, -DaysInPast);
@@ -34,6 +34,7 @@ namespace ReadFortrade1
             int TimesWeCouldBuy = 0;
             double PrevBuyAtValue = 0;
             double PrevSellAtValue = 0;
+            double ExpectedProfitFlatSpread = SpreadAvg * ExpectedProfitPCTSpread / 100;
             foreach (InstrumentValuePair itr in values)
             {
                 double CurSellValue = itr.SellValue;
@@ -43,12 +44,12 @@ namespace ReadFortrade1
                 if (PrevBuyAtValue == 0)
                     PrevBuyAtValue = CurBuyValue + SpreadAvg;
 
-                if (CurSellValue + ProfitExpected < PrevSellAtValue)
+                if (CurSellValue + ExpectedProfitFlat < PrevSellAtValue || CurSellValue + ExpectedProfitFlatSpread < PrevSellAtValue)
                 {
                     PrevSellAtValue = CurSellValue - SpreadAvg;
                     TimesWeCouldSell++;
                 }
-                if (CurBuyValue - ProfitExpected > PrevBuyAtValue)
+                if (CurBuyValue - ExpectedProfitFlat > PrevBuyAtValue || CurBuyValue - ExpectedProfitFlatSpread > PrevBuyAtValue)
                 {
                     PrevBuyAtValue = CurBuyValue + SpreadAvg;
                     TimesWeCouldBuy++;
@@ -57,11 +58,11 @@ namespace ReadFortrade1
             Console.WriteLine("Could flip " + InstrumentName + " sell = " + TimesWeCouldSell.ToString() + " buy = " + TimesWeCouldBuy.ToString() + " times ");
         }
 
-        public static void CalcInversionEachInstrument(int SinceDaysInPast,double ExpectedProfit)
+        public static void CalcInversionEachInstrument(int SinceDaysInPast,int NumberOfDays, double ExpectedProfitFlat, double ExpectedProfitPCTSpread)
         {
             List<string> InstrumentsWithValues = Globals.Persistency.GetAllInstrumentNames();
             foreach (string itr in InstrumentsWithValues)
-                GetInstrumentDailyInversionCount(itr, SinceDaysInPast, 3, 0.01);
+                GetInstrumentDailyInversionCount(itr, SinceDaysInPast, NumberOfDays, ExpectedProfitFlat, ExpectedProfitPCTSpread);
         }
 
             /*        public List<InstrumentValuePair> ExpandToPrecision(List<InstrumentValuePair> db, int PrecisionSeconds)

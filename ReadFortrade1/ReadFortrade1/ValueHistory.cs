@@ -30,8 +30,9 @@ namespace ReadFortrade1
             SellPrice = SellPriceSum / ValuesAdded;
             BuyPrice = BuyPriceSum / ValuesAdded;
         }
-        public void AddValue(double pSellPrice, double pBuyPrice, double pSellSentiment, double pBuySentiment, bool SkipAdd = false)
+        public bool AddValue(double pSellPrice, double pBuyPrice, double pSellSentiment, double pBuySentiment, bool SkipAdd = false)
         {
+            bool ret = false;
             if (Name != null && TableName == null)
                 TableName = Globals.Persistency.GetTableNameForInstrument(Name);
             ValuesAdded++;
@@ -48,8 +49,11 @@ namespace ReadFortrade1
             //need to reorganize this. Just testing for now
             if (SkipAdd == false)
             {
-                if((PrevSellPrice != pSellPrice) || PrevBuyPrice != pBuyPrice)
+                if ((PrevSellPrice != pSellPrice) || PrevBuyPrice != pBuyPrice)
+                {
                     Globals.Persistency.AddInstrumentValue(Name, pSellPrice, TableName);
+                    ret = true;
+                }
                 if (PrevSpread != Math.Round(pBuyPrice - pSellPrice,7))
                     Globals.Persistency.AddSpreadValue(Name, pBuyPrice - pSellPrice, TableName);
                 if (PrevBuySentiment != pBuySentiment)
@@ -61,7 +65,8 @@ namespace ReadFortrade1
             PrevBuyPrice = pBuyPrice;
             PrevBuySentiment = pBuySentiment;
             PrevSpread = Math.Round(pBuyPrice - pSellPrice,7);
-//            Update();
+            //            Update();
+            return ret;
         }
         public string Name;
         public double SellPrice;
@@ -101,8 +106,9 @@ namespace ReadFortrade1
                     return itr;
             return null;
         }
-        public void AddRecord(string Name, double SellPrice, double BuyPrice, double SellSentiment, double BuySentiment)
+        public bool AddRecord(string Name, double SellPrice, double BuyPrice, double SellSentiment, double BuySentiment)
         {
+            bool ret = false;
             bool ValueUpdated = false;
             foreach (var itr in DataHistory)
                 if (itr.Name == Name)
@@ -114,7 +120,7 @@ namespace ReadFortrade1
 //                    if ((SellPriceChangePCT < (1-Globals.IgnorePriceChangePCT) || SellPriceChangePCT > (1 + Globals.IgnorePriceChangePCT))
 //                        || (BuyPriceChangePCT < (1 - Globals.IgnorePriceChangePCT) || BuyPriceChangePCT > (1 + Globals.IgnorePriceChangePCT)))
      //               if(itr.PrevSellPrice != SellPrice || itr.PrevBuyPrice != BuyPrice)
-                        itr.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
+                        ret = itr.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment);
                     ValueUpdated = true;
                     break;
                 }
@@ -124,7 +130,9 @@ namespace ReadFortrade1
                 h.Name = Name;
                 h.AddValue(SellPrice, BuyPrice, SellSentiment, BuySentiment, FinishedLoading == false);
                 DataHistory.Add(h);
+                ret = true;
             }
+            return ret;
         }
     }
 }

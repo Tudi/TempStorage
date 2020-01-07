@@ -103,8 +103,8 @@ namespace ReadFortrade1
 
                 if (SellPrice != 0 && BuyPrice != 0)
                 {
-                    Globals.vHistory.AddRecord(Name, SellPrice, BuyPrice, SellSentiment, BuySentiment);
-                    Globals.LastFavoriteSectionParseStamp = DateTime.Now;
+                    if( Globals.vHistory.AddRecord(Name, SellPrice, BuyPrice, SellSentiment, BuySentiment) == true )
+                        Globals.LastFavoriteSectionParseStamp = DateTime.Now;
                 }
             }
         }

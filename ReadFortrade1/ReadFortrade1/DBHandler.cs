@@ -45,6 +45,8 @@ namespace ReadFortrade1
                 command = new SQLiteCommand(sql, m_dbConnection);
                 command.ExecuteNonQuery();
             }
+
+            AddIndexToTables();
         }
 
         public static long GetUnixStamp()
@@ -67,6 +69,25 @@ namespace ReadFortrade1
             return ret;
         }
 
+        private void AddIndexToTables()
+        {
+            using (var cmd = new SQLiteCommand(m_dbConnection))
+            {
+                cmd.CommandText = "SELECT TableName FROM TableNames";
+                cmd.Prepare();
+                SQLiteDataReader rdr = cmd.ExecuteReader();
+                while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
+                {
+                    string TableName = rdr.GetString(0);
+                    //check if the new DB contains this table, and has values
+                    using (var cmd2 = new SQLiteCommand(m_dbConnection))
+                    {
+                        cmd2.CommandText = "CREATE INDEX IF NOT EXISTS "+ TableName + "_ind ON "+ TableName+"_price (stamp)";
+                        cmd2.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
         private string CreateTablesForInstrument(string Instrument)
         {
 //            string TableName = "T"+Instrument.GetHashCode().ToString();
@@ -93,6 +114,12 @@ namespace ReadFortrade1
             cmd2.ExecuteNonQuery();
             cmd2 = new SQLiteCommand("create table " + TableName + "_sentiment (Stamp int,Sentiment float)", m_dbConnection);
             cmd2.ExecuteNonQuery();
+
+            using (var cmd3 = new SQLiteCommand(m_dbConnection))
+            {
+                cmd3.CommandText = "CREATE INDEX IF NOT EXISTS " + TableName + "_ind ON " + TableName + "_price (stamp)";
+                cmd3.ExecuteNonQuery();
+            }
 
             return TableName;
         }
@@ -228,6 +255,57 @@ namespace ReadFortrade1
             while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
                 ret.Add(rdr.GetString(0));
             return ret;
+        }
+
+        public void ImportFromDB(string FileName)
+        {
+            SQLiteConnection m_dbConnection2 = null;
+            using (m_dbConnection2 = new SQLiteConnection("Data Source=" + FileName + ";New=False;Version=3"))
+            {
+                m_dbConnection2.Open();
+                //get a list of tables we can import from the external DB
+                using (var cmd = new SQLiteCommand(m_dbConnection))
+                {
+                    cmd.CommandText = "SELECT TableName FROM TableNames";
+                    cmd.Prepare();
+                    SQLiteDataReader rdr = cmd.ExecuteReader();
+                    while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
+                    {
+                        string TableName = rdr.GetString(0);
+                        //check if the new DB contains this table, and has values
+                        using (var cmd2 = new SQLiteCommand(m_dbConnection2))
+                        {
+                            cmd2.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price";
+                            SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                            while (rdr2.Read() && rdr2.HasRows == true && !rdr2.IsDBNull(0))
+                            {
+                                long stamp = rdr2.GetInt64(0);
+                                double sell = rdr2.GetFloat(1);
+                                //does the current db already have this value
+                                bool AlreadyExists = false;
+                                using (var cmd3 = new SQLiteCommand(m_dbConnection))
+                                {
+                                    //                            cmd3.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price where stamp=" + stamp.ToString() + " and sell=" + sell.ToString();
+                                    cmd3.CommandText = "SELECT stamp FROM " + TableName + "_price where stamp=" + stamp.ToString() + " limit 1";
+                                    SQLiteDataReader rdr3 = cmd3.ExecuteReader();
+                                    while (rdr3.Read() && rdr3.HasRows == true && !rdr3.IsDBNull(0))
+                                        AlreadyExists = true;
+                                }
+                                //if it is a new value, insert it
+                                if (AlreadyExists == false)
+                                {
+                                    using (var cmd3 = new SQLiteCommand(m_dbConnection))
+                                    {
+                                        cmd3.CommandText = "INSERT into " + TableName + "_price (Stamp,Sell)values(" + stamp.ToString() + "," + sell.ToString() + ")";
+                                        cmd3.Prepare();
+                                        cmd3.ExecuteNonQuery();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
