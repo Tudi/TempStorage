@@ -21,8 +21,10 @@ namespace ReadFortrade1
             DateTime AntiContinuesRefresh = DateTime.Now;
             while (Globals.AppIsRunning == true)
             {
-                if (DateTime.Now.Subtract(Globals.LastFavoriteSectionParseStamp).Seconds >= Globals.IETimeoutSeconds 
-                    && DateTime.Now.Subtract(AntiContinuesRefresh).Seconds >= Globals.IETimeoutSeconds)
+                TimeSpan TimeSinceValidContentSeen = DateTime.Now.Subtract(Globals.LastFavoriteSectionParseStamp);
+                TimeSpan TimeSinceLastRefresh = DateTime.Now.Subtract(AntiContinuesRefresh);
+                if (TimeSinceValidContentSeen.Seconds >= Globals.IETimeoutSeconds 
+                    && TimeSinceLastRefresh.Seconds >= Globals.IETimeoutSeconds)
                 {
 //                        ie.Navigate("https://ready.fortrade.com/#?detach#home");
                     TryRefreshWindow();

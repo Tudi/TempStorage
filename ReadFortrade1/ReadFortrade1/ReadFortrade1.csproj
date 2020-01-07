@@ -136,6 +136,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DBHandler.cs" />
+    <Compile Include="MessageLogger.cs" />
     <Compile Include="PageParser.cs" />
     <Compile Include="PageParserWatchDog.cs" />
     <Compile Include="SendNotification.cs" />

@@ -54,6 +54,11 @@ namespace ReadFortrade1
             return (long)(DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
         }
 
+        public static long GetUnixStamp(DateTime time)
+        {
+            return (long)(time - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
+        }
+
         public static long GetUnixStampStartDay(long SubstractMonths = 0, long SubstractWeeks = 0, long SubstractDays = 0, long SubstractHours = 0, long SubstractMinutes = 0, long SubstractSeconds = 0)
         {
             DateTime Now = DateTime.Now;
@@ -245,6 +250,19 @@ namespace ReadFortrade1
             return 0;
         }
 
+        public double GetInstrumentAveragePricePeriod(string Instrument, long StartStamp, long EndStamp)
+        {
+            string TableName = GetTableNameForInstrument(Instrument);
+            List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
+            using (var cmd2 = new SQLiteCommand(m_dbConnection))
+            {
+                cmd2.CommandText = "SELECT avg(sell) FROM " + TableName + "_price where stamp>=" + StartStamp.ToString() + " and stamp<=" + EndStamp.ToString();
+                SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                if (rdr2.Read() && rdr2.HasRows == true && !rdr2.IsDBNull(0))
+                    return rdr2.GetFloat(0);
+            }
+            return 0;
+        }
         public List<string> GetAllInstrumentNames()
         {
             List<string> ret = new List<string>();

@@ -55,6 +55,7 @@ namespace ReadFortrade1
 {
     public class Globals
     {
+        public static MessageLogger Logger = null;
         public static DBHandler Persistency = null;
         public static ValueHistory vHistory = null;
         public static PageParserWatchDog PageParserMonitor = null;
@@ -75,21 +76,16 @@ namespace ReadFortrade1
         public MainWindow()
         {
             InitializeComponent();
-            Log("Starting subsystem initializations");
+            Globals.Logger = new MessageLogger();
             Globals.Persistency = new DBHandler();
             Globals.vHistory = new ValueHistory();
             Globals.vHistory.LoadFromPersistency();
-            Log("Done subsystem initializations");
 
-            int ExecuteFunction = 2;
+            int ExecuteFunction = 1;
             if (ExecuteFunction == 1)
-            {
-                ValueStatistics.CalcInversionEachInstrument(10, 10 + 2, 0.0001, 2);
-            }
+                CalcFlipChance();
             else if (ExecuteFunction == 2)
-            {
                 Task.Factory.StartNew(() => ImportExtenalDB());
-            }
             else if (ExecuteFunction == 3)
             {
                 Globals.PageParserMonitor = new PageParserWatchDog();
@@ -102,32 +98,18 @@ namespace ReadFortrade1
             }
             //            SendNotification.SendMessage("Test meail to sms");
         }
+        private void CalcFlipChance()
+        {
+            ValueStatistics.CalcInversionEachInstrument(10, 10 + 2, 0.0001, 2);
+            ValueStatistics.CalcTransactionsEachInstrument();
+            ValueStatistics.GetTopXLastestTransactionsAllInstruments();
+            ValueStatistics.GetChangePCTAllInstruments();
+        }
         private void ImportExtenalDB()
         {
-            Log("Starting importing Database");
+            Globals.Logger.Log("Starting importing Database");
             Globals.Persistency.ImportFromDB("Fortrade_live.db");
-            Log("Done importing Database");
-        }
-        public void Log(string Msg)
-        {
-            string TimeMsg = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "]  ";
-            Msg = TimeMsg + Msg + "\n";
-
-            Console.WriteLine(Msg);
-
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
-            {
-                if (App.Current == null)
-                    return;
-
-                MainWindow MainObject = (MainWindow)App.Current.MainWindow;
-
-                if (MainObject == null)
-                    return;
-
-                (App.Current.MainWindow as MainWindow).ConsoleTextbox.Text += Msg;
-                (App.Current.MainWindow as MainWindow).ConsoleTextbox.ScrollToEnd();
-            }));
+            Globals.Logger.Log("Done importing Database");
         }
     }
 }
