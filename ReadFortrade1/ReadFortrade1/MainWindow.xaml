@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:ReadFortrade1"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <TextBox Name="ConsoleTextbox" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap"></TextBox>
-    </Grid>
+    <StackPanel>
+        <TextBox Name="ConsoleTextbox" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" Height="250"></TextBox>
+        <TextBox Name="TimeoutTextbox"></TextBox>
+    </StackPanel>
 </Window>

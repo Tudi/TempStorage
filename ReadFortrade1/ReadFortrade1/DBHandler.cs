@@ -76,6 +76,7 @@ namespace ReadFortrade1
 
         private void AddIndexToTables()
         {
+            List<string> ExecuteLater = new List<string>();
             using (var cmd = new SQLiteCommand(m_dbConnection))
             {
                 cmd.CommandText = "SELECT TableName FROM TableNames";
@@ -84,12 +85,21 @@ namespace ReadFortrade1
                 while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
                 {
                     string TableName = rdr.GetString(0);
-                    //check if the new DB contains this table, and has values
-                    using (var cmd2 = new SQLiteCommand(m_dbConnection))
-                    {
-                        cmd2.CommandText = "CREATE INDEX IF NOT EXISTS "+ TableName + "_ind ON "+ TableName+"_price (stamp)";
-                        cmd2.ExecuteNonQuery();
-                    }
+                    ExecuteLater.Add(TableName);
+                }
+            }
+            foreach(string TableName in ExecuteLater)
+            {
+ /*               using (var cmd2 = new SQLiteCommand(m_dbConnection))
+                {
+                    cmd2.CommandText = "DROP INDEX " + TableName + "_ind";
+                    cmd2.ExecuteNonQuery();
+                }/**/
+                //check if the new DB contains this table, and has values
+                using (var cmd2 = new SQLiteCommand(m_dbConnection))
+                {
+                    cmd2.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS " + TableName + "_ind ON " + TableName + "_price (stamp)";
+                    cmd2.ExecuteNonQuery();
                 }
             }
         }
@@ -122,7 +132,7 @@ namespace ReadFortrade1
 
             using (var cmd3 = new SQLiteCommand(m_dbConnection))
             {
-                cmd3.CommandText = "CREATE INDEX IF NOT EXISTS " + TableName + "_ind ON " + TableName + "_price (stamp)";
+                cmd3.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS " + TableName + "_ind ON " + TableName + "_price (stamp)";
                 cmd3.ExecuteNonQuery();
             }
 
@@ -250,7 +260,7 @@ namespace ReadFortrade1
             return 0;
         }
 
-        public double GetInstrumentAveragePricePeriod(string Instrument, long StartStamp, long EndStamp)
+/*        public double GetInstrumentAveragePricePeriod(string Instrument, long StartStamp, long EndStamp)
         {
             string TableName = GetTableNameForInstrument(Instrument);
             List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
@@ -262,7 +272,8 @@ namespace ReadFortrade1
                     return rdr2.GetFloat(0);
             }
             return 0;
-        }
+        }*/
+
         public List<string> GetAllInstrumentNames()
         {
             List<string> ret = new List<string>();
@@ -300,7 +311,7 @@ namespace ReadFortrade1
                                 long stamp = rdr2.GetInt64(0);
                                 double sell = rdr2.GetFloat(1);
                                 //does the current db already have this value
-                                bool AlreadyExists = false;
+                     /*           bool AlreadyExists = false;
                                 using (var cmd3 = new SQLiteCommand(m_dbConnection))
                                 {
                                     //                            cmd3.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price where stamp=" + stamp.ToString() + " and sell=" + sell.ToString();
@@ -310,13 +321,18 @@ namespace ReadFortrade1
                                         AlreadyExists = true;
                                 }
                                 //if it is a new value, insert it
-                                if (AlreadyExists == false)
+                                if (AlreadyExists == false)*/
                                 {
                                     using (var cmd3 = new SQLiteCommand(m_dbConnection))
                                     {
-                                        cmd3.CommandText = "INSERT into " + TableName + "_price (Stamp,Sell)values(" + stamp.ToString() + "," + sell.ToString() + ")";
-                                        cmd3.Prepare();
-                                        cmd3.ExecuteNonQuery();
+                                        cmd3.CommandText = "INSERT OR IGNORE into " + TableName + "_price (Stamp,Sell)values(" + stamp.ToString() + "," + sell.ToString() + ")";
+//                                        cmd3.Prepare();
+                                        try
+                                        {
+                                            cmd3.ExecuteNonQuery();
+                                        }
+                                        catch
+                                        { }
                                     }
                                 }
                             }

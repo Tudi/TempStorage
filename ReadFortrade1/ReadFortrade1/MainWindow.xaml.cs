@@ -82,8 +82,9 @@ namespace ReadFortrade1
             Globals.vHistory.LoadFromPersistency();
 
             int ExecuteFunction = 1;
+
             if (ExecuteFunction == 1)
-                CalcFlipChance();
+                ShowSomeStatistics();
             else if (ExecuteFunction == 2)
                 Task.Factory.StartNew(() => ImportExtenalDB());
             else if (ExecuteFunction == 3)
@@ -98,7 +99,7 @@ namespace ReadFortrade1
             }
             //            SendNotification.SendMessage("Test meail to sms");
         }
-        private void CalcFlipChance()
+        private void ShowSomeStatistics()
         {
             ValueStatistics.CalcInversionEachInstrument(10, 10 + 2, 0.0001, 2);
             ValueStatistics.CalcTransactionsEachInstrument();
@@ -107,8 +108,9 @@ namespace ReadFortrade1
         }
         private void ImportExtenalDB()
         {
-            Globals.Logger.Log("Starting importing Database");
-            Globals.Persistency.ImportFromDB("Fortrade_live.db");
+            Globals.Logger.Log("Started importing Database");
+//            Globals.Persistency.ImportFromDB("Fortrade_home.db");
+//            Globals.Persistency.ImportFromDB("Fortrade_live.db");
             Globals.Logger.Log("Done importing Database");
         }
     }

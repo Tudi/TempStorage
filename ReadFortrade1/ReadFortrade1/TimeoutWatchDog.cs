@@ -5,10 +5,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace ReadFortrade1
 {
-    public class TimeoutWatchDog
+    public class TimeoutWatchDog : Control
     {
         [DllImport("user32.dll")]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -33,6 +35,20 @@ namespace ReadFortrade1
                 }
                 else
                     Thread.Sleep(Globals.ThreadCycleSleep);
+
+                string Msg = TimeSinceValidContentSeen.Seconds.ToString() + "/" + TimeSinceLastRefresh.Seconds.ToString();
+                this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() =>
+                {
+                    if (App.Current == null)
+                        return;
+
+                    MainWindow MainObject = (MainWindow)App.Current.MainWindow;
+
+                    if (MainObject == null)
+                        return;
+
+                    (App.Current.MainWindow as MainWindow).TimeoutTextbox.Text = Msg;
+                }));
             }
         }
         public void TryRefreshWindow()

@@ -26,6 +26,19 @@ namespace ReadFortrade1
     }
     public class ValueStatistics
     {
+        public static double DynamicRound(double val, int digits = 4)
+        {
+            double tval = val - (long)val;
+            int LeftShifts = 0;
+            while(val<1)
+            {
+                val = val * 10;
+                LeftShifts++;
+            }
+            if (digits > LeftShifts)
+                LeftShifts = digits;
+            return Math.Round(val, LeftShifts);
+        }
         /*
          * DaysInPast = 0 means current day
          */
@@ -43,6 +56,8 @@ namespace ReadFortrade1
             double PrevBuyAtValue = 0;
             double PrevSellAtValue = 0;
             double ExpectedProfitFlatSpread = SpreadAvg * ExpectedProfitPCTSpread / 100;
+            double SumOfBuyValues = 0;
+            int NumberOfBuyValues = 0;
             foreach (InstrumentValuePair itr in values)
             {
                 double CurSellValue = itr.SellValue;
@@ -51,6 +66,9 @@ namespace ReadFortrade1
                     PrevSellAtValue = CurSellValue - SpreadAvg;
                 if (PrevBuyAtValue == 0)
                     PrevBuyAtValue = CurBuyValue + SpreadAvg;
+
+                SumOfBuyValues += CurBuyValue;
+                NumberOfBuyValues++;
 
                 if (CurSellValue + ExpectedProfitFlat < PrevSellAtValue || CurSellValue + ExpectedProfitFlatSpread < PrevSellAtValue)
                 {
@@ -63,7 +81,14 @@ namespace ReadFortrade1
                     TimesWeCouldBuy++;
                 }
             }
-            Globals.Logger.Log("Could flip " + InstrumentName + " sell = " + TimesWeCouldSell.ToString() + " buy = " + TimesWeCouldBuy.ToString() + " times ");
+//            Globals.Logger.Log("Could flip " + InstrumentName + " sell=" + TimesWeCouldSell.ToString() + " buy=" + TimesWeCouldBuy.ToString() + " times ");
+            int FlipCount = TimesWeCouldSell;
+            if (TimesWeCouldBuy < FlipCount)
+                FlipCount = TimesWeCouldBuy;
+            double Levarage = 10;
+            double AmountWeCouldBuy = 10000 * Levarage / (SumOfBuyValues / NumberOfBuyValues);
+            double AmountWeCouldGain = Math.Round(ExpectedProfitFlatSpread * FlipCount * AmountWeCouldBuy,1);
+            Globals.Logger.Log("Could flip " + InstrumentName + ":" + FlipCount.ToString() + " gain " + AmountWeCouldGain.ToString() + " $ ");
         }
 
         public static void CalcInversionEachInstrument(int SinceDaysInPast,int NumberOfDays, double ExpectedProfitFlat, double ExpectedProfitPCTSpread)
@@ -86,7 +111,7 @@ namespace ReadFortrade1
                 int TransactionsDoneInPeriod = values.Count;
                 ToPrint += TransactionsDoneInPeriod.ToString() + ",";
             }
-            Globals.Logger.Log("Transaction daily for " + InstrumentName + " : " + ToPrint);
+            Globals.Logger.Log("Transaction count for " + InstrumentName + " : " + ToPrint);
         }
 
         public static void CalcTransactionsEachInstrument()
@@ -120,20 +145,20 @@ namespace ReadFortrade1
             //sort list by transaction value
             values.Sort(delegate (InstrumentValuePair x, InstrumentValuePair y)
             {
-                if (x.SellValue < y.SellValue) return -1;
-                if (x.SellValue > y.SellValue) return 1;
+                if (y.SellValue < x.SellValue) return -1;
+                if (y.SellValue > x.SellValue) return 1;
                 return 0;
             });
             int PrintedValueCount = 0;
             string ToPrint = "";
             foreach(var itr in values)
             {
-                ToPrint += itr.SellValue.ToString() + ",";
+                ToPrint += DynamicRound(itr.SellValue,1).ToString() + ",";
                 PrintedValueCount++;
                 if (PrintedValueCount > 10)
                     break;
             }
-            Globals.Logger.Log("Top transactoins daily for " + InstrumentName + " : " + ToPrint);
+            Globals.Logger.Log("Top transactoins for " + InstrumentName + " : " + ToPrint);
         }
 
         public static void GetTopXLastestTransactionsAllInstruments()
@@ -147,25 +172,52 @@ namespace ReadFortrade1
         {
             long Now = DBHandler.GetUnixStamp();
             string ToPrint = "";
+            int ValuesAdded = 0;
             for (int i = 0; i < NumberOfPeriods; i++)
             {
                 long StartStamp1 = Now - i * PeriodShiftMinutes - 1 * PeriodInMinutes * TimeValues.MinuteToSecond;
                 long EndStamp1 = Now - i * PeriodShiftMinutes - 0 * PeriodInMinutes * TimeValues.MinuteToSecond;
-                double Average1 = Globals.Persistency.GetInstrumentAveragePricePeriod(InstrumentName, StartStamp1, EndStamp1);
+                double Average1 = GetInstrumentAveragePricePeriod(InstrumentName, StartStamp1, EndStamp1);
                 long StartStamp2 = Now - i * PeriodShiftMinutes - 2 * PeriodInMinutes * TimeValues.MinuteToSecond;
                 long EndStamp2 = Now - i * PeriodShiftMinutes - 1 * PeriodInMinutes * TimeValues.MinuteToSecond;
-                double Average2 = Globals.Persistency.GetInstrumentAveragePricePeriod(InstrumentName, StartStamp2, EndStamp2);
+                double Average2 = GetInstrumentAveragePricePeriod(InstrumentName, StartStamp2, EndStamp2);
                 double PCTChange = Math.Round(( Average1 - Average2 ) * 100 / Average2,2);
                 ToPrint += PCTChange.ToString() + ",";
+                if (!Double.IsNaN(PCTChange) && !Double.IsInfinity(PCTChange))
+                    ValuesAdded++;
             }
-            Globals.Logger.Log("Change PCT for " + InstrumentName + " : " + ToPrint);
+            if(ValuesAdded > 0)
+                Globals.Logger.Log("Change PCT for " + InstrumentName + " : " + ToPrint);
+        }
+
+        public static double GetInstrumentAveragePricePeriod(string InstrumentName, long StartStamp, long EndStamp)
+        {
+            List<InstrumentValuePair> values = Globals.Persistency.GetInstrumentValues(InstrumentName, StartStamp, EndStamp);
+            double ValueSum = 0;
+            double ValueCount = 0;
+            InstrumentValuePair Prev = null;
+            foreach (var itr in values)
+            {
+                if(Prev == null)
+                {
+                    Prev = itr;
+                    continue;
+                }
+                //calculate the average value between the 2 points
+                long TimeDiff = itr.Stamp - Prev.Stamp;
+                double ValueDiff = (itr.SellValue + Prev.SellValue) / 2;
+                //we estimate 1 value for every second
+                ValueSum += ValueDiff * TimeDiff;
+                ValueCount += TimeDiff;
+            }
+            return ValueCount / ValueSum;
         }
 
         public static void GetChangePCTAllInstruments()
         {
             List<string> InstrumentsWithValues = Globals.Persistency.GetAllInstrumentNames();
             foreach (string itr in InstrumentsWithValues)
-                GetChangePCT(itr, TimeValues.DayToMinute, TimeValues.HourToSecond, 10);
+                GetChangePCT(itr, TimeValues.DayToMinute, TimeValues.DayToSecond, 10);
         }
         /*        public List<InstrumentValuePair> ExpandToPrecision(List<InstrumentValuePair> db, int PrecisionSeconds)
                 {
