@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,6 +50,7 @@ namespace ReadFortrade1
             long EndStamp = DBHandler.GetUnixStampStartDay(0, 0, -DaysInPast + DaysLong);
             List<InstrumentValuePair> values = Globals.Persistency.GetInstrumentValues(InstrumentName, StartStamp, EndStamp);
             double SpreadAvg = Globals.Persistency.GetInstrumentSpread(InstrumentName, StartStamp, EndStamp);
+            SpreadAvg = SpreadAvg * 2; //seems like this is applied at buy and sell. The buy and sell spread might be different !
             //if sell value drops below spread + profit, we call it an inversion point
             //check each inversion point. We presume we buy/sell at first value
             int TimesWeCouldSell = 0;
@@ -204,13 +206,17 @@ namespace ReadFortrade1
                     continue;
                 }
                 //calculate the average value between the 2 points
+                Debug.Assert(Prev.Stamp< itr.Stamp); // values are in theory ordered by increasing timestamps
                 long TimeDiff = itr.Stamp - Prev.Stamp;
-                double ValueDiff = (itr.SellValue + Prev.SellValue) / 2;
+                double AvgValue = (itr.SellValue + Prev.SellValue) / 2;
+                Debug.Assert(AvgValue < itr.SellValue * 1.10); // no more than 10% change is expected ?
+                Debug.Assert(AvgValue > itr.SellValue * 0.90); // no more than 10% change is expected ?
                 //we estimate 1 value for every second
-                ValueSum += ValueDiff * TimeDiff;
+                ValueSum += AvgValue * TimeDiff;
                 ValueCount += TimeDiff;
+                Prev = itr;
             }
-            return ValueCount / ValueSum;
+            return ValueSum / ValueCount;
         }
 
         public static void GetChangePCTAllInstruments()
@@ -219,11 +225,25 @@ namespace ReadFortrade1
             foreach (string itr in InstrumentsWithValues)
                 GetChangePCT(itr, TimeValues.DayToMinute, TimeValues.DayToSecond, 10);
         }
-        /*        public List<InstrumentValuePair> ExpandToPrecision(List<InstrumentValuePair> db, int PrecisionSeconds)
-                {
-                    long SecondsInDay = 24 * 1 * 60 * 60;
-                    long TimeSlots = SecondsInDay/PrecisionSeconds;
-                    return db;
-                }*/
+
+        public static void CalcPivot(string InstrumentName, int PeriodInSeconds, int PeriodShiftSeconds, int NumberOfPeriods = 1)
+        {
+            int PrecisionRequired = Globals.Persistency.GetInstrumentPrecision(InstrumentName);
+            long Now = DBHandler.GetUnixStamp();
+            string ToPrint = "";
+            int ValuesAdded = 0;
+            for (int i = 0; i < NumberOfPeriods; i++)
+            {
+                long StartStamp1 = Now - i * PeriodShiftSeconds - 1 * PeriodInSeconds;
+                long EndStamp1 = Now - i * PeriodShiftSeconds - 0 * PeriodInSeconds;
+                double Average1 = GetInstrumentAveragePricePeriod(InstrumentName, StartStamp1, EndStamp1);
+                ToPrint += Math.Round(Average1, PrecisionRequired).ToString() + ",";
+                if (!Double.IsNaN(Average1) && !Double.IsInfinity(Average1))
+                    ValuesAdded++;
+            }
+            if (ValuesAdded > 0)
+                Globals.Logger.Log("Pivot for " + InstrumentName + " : " + ToPrint);
+        }
+
     }
 }

@@ -47,6 +47,7 @@ namespace ReadFortrade1
             }
 
             AddIndexToTables();
+            DeleteDuplicatePriceRows();
         }
 
         public static long GetUnixStamp()
@@ -234,7 +235,7 @@ namespace ReadFortrade1
             List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
             using (var cmd2 = new SQLiteCommand(m_dbConnection))
             {
-                cmd2.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price where stamp>="+ StartStamp.ToString() + " and stamp<="+ EndStamp.ToString();
+                cmd2.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price where stamp>="+ StartStamp.ToString() + " and stamp<="+ EndStamp.ToString() + " order by stamp asc";
                 SQLiteDataReader rdr2 = cmd2.ExecuteReader();
                 while (rdr2.Read() && rdr2.HasRows == true)
                 {
@@ -249,7 +250,6 @@ namespace ReadFortrade1
         public double GetInstrumentSpread(string Instrument, long StartStamp, long EndStamp)
         {
             string TableName = GetTableNameForInstrument(Instrument);
-            List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
             using (var cmd2 = new SQLiteCommand(m_dbConnection))
             {
                 cmd2.CommandText = "SELECT avg(Spread) FROM " + TableName + "_spread where stamp>=" + StartStamp.ToString() + " and stamp<=" + EndStamp.ToString();
@@ -259,20 +259,6 @@ namespace ReadFortrade1
             }
             return 0;
         }
-
-/*        public double GetInstrumentAveragePricePeriod(string Instrument, long StartStamp, long EndStamp)
-        {
-            string TableName = GetTableNameForInstrument(Instrument);
-            List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
-            using (var cmd2 = new SQLiteCommand(m_dbConnection))
-            {
-                cmd2.CommandText = "SELECT avg(sell) FROM " + TableName + "_price where stamp>=" + StartStamp.ToString() + " and stamp<=" + EndStamp.ToString();
-                SQLiteDataReader rdr2 = cmd2.ExecuteReader();
-                if (rdr2.Read() && rdr2.HasRows == true && !rdr2.IsDBNull(0))
-                    return rdr2.GetFloat(0);
-            }
-            return 0;
-        }*/
 
         public List<string> GetAllInstrumentNames()
         {
@@ -284,6 +270,70 @@ namespace ReadFortrade1
             while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
                 ret.Add(rdr.GetString(0));
             return ret;
+        }
+
+        public int GetInstrumentPrecision(string Instrument, string pTableName = null)
+        {
+            string TableName = pTableName;
+            if(TableName == null)
+                TableName = GetTableNameForInstrument(Instrument);
+            using (var cmd2 = new SQLiteCommand(m_dbConnection))
+            {
+                cmd2.CommandText = "SELECT Spread FROM " + TableName + "_spread where Spread>0 limit 1";
+                SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                if (rdr2.Read() && rdr2.HasRows == true && !rdr2.IsDBNull(0))
+                {
+                    double Spread = rdr2.GetFloat(0);
+                    int SubZeroCount = 1;
+                    while(Spread<1)
+                    {
+                        Spread = Spread * 10;
+                        SubZeroCount++;
+                    }
+                    return SubZeroCount;
+                }
+            }
+            return 1;
+        }
+
+        public void DeleteDuplicatePriceRows()
+        {
+            {
+                //get a list of tables we can import from the external DB
+                using (var cmd = new SQLiteCommand(m_dbConnection))
+                {
+                    cmd.CommandText = "SELECT TableName FROM TableNames";
+                    cmd.Prepare();
+                    SQLiteDataReader rdr = cmd.ExecuteReader();
+                    while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
+                    {
+                        string TableName = rdr.GetString(0);
+                        using (var cmd2 = new SQLiteCommand(m_dbConnection))
+                        {
+                            cmd2.CommandText = "SELECT stamp,Sell FROM " + TableName + "_price order by stamp";
+                            SQLiteDataReader rdr2 = cmd2.ExecuteReader();
+                            double PrevSell = 0;
+                            int Precision = GetInstrumentPrecision(null, TableName) + 2;
+                            while (rdr2.Read() && rdr2.HasRows == true && !rdr2.IsDBNull(0))
+                            {
+                                long stamp = rdr2.GetInt64(0);
+                                double sell = rdr2.GetFloat(1);
+                                //check if we can drop this row
+//                                if(Math.Abs(sell - PrevSell) < sell * 0.00001)
+                                if(Math.Round(sell, Precision) == Math.Round(PrevSell, Precision))
+                                {
+                                    using (var cmd3 = new SQLiteCommand(m_dbConnection))
+                                    {
+                                        cmd3.CommandText = "Delete from " + TableName + "_price where stamp=" + stamp.ToString();
+                                        cmd3.ExecuteNonQuery();
+                                    }
+                                }
+                                PrevSell = sell;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public void ImportFromDB(string FileName)

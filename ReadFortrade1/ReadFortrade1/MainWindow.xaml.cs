@@ -105,6 +105,11 @@ namespace ReadFortrade1
             ValueStatistics.CalcTransactionsEachInstrument();
             ValueStatistics.GetTopXLastestTransactionsAllInstruments();
             ValueStatistics.GetChangePCTAllInstruments();
+            Globals.Logger.Log("Daily Pivots:");
+            ValueStatistics.CalcPivot("Heating Oil (HO)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
+            ValueStatistics.CalcPivot("Gasoline (RB)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
+            ValueStatistics.CalcPivot("Crude Oil (CL)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
+            ValueStatistics.CalcPivot("Natural Gas (NG)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
         }
         private void ImportExtenalDB()
         {
