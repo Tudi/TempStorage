@@ -223,6 +223,8 @@ namespace CSVIngester
             RowExisted = 2,
             RowDidNotExistInsertedNew = 3,
             RowInvalidValues = 4,
+            RowDidNotExist = 5,
+            RowDeleted = 6,
         }
         public InvenotryInsertResultCodes InsertInventory(string ebay_id, string asin, string vat)
         {
@@ -429,6 +431,34 @@ namespace CSVIngester
                 ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             }
 
+            return ReturnCode;
+        }
+        public InvenotryInsertResultCodes DeleteAmazonOrder(string TableName, string IdCol)
+        {
+            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            int ORDER_ID_hashhash = IdCol.GetHashCode();
+
+            //check if ts record already exists
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT 1 FROM " + TableName + " where ORDER_ID_hash=@ORDER_ID_hash and order_id=@order_id";
+            cmd.Parameters.AddWithValue("@ORDER_ID_hash", ORDER_ID_hashhash);
+            cmd.Parameters.AddWithValue("@order_id", IdCol);
+            cmd.Prepare();
+
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            if (rdr.Read() && rdr.HasRows == true)
+            {
+                var cmd2 = new SQLiteCommand(m_dbConnection);
+                cmd2.CommandText = "delete from " + TableName + " where ORDER_ID=@ORDER_ID";
+                cmd2.Parameters.AddWithValue("@ORDER_ID", IdCol);
+                cmd2.Prepare();
+                cmd2.ExecuteNonQuery();
+                ReturnCode = InvenotryInsertResultCodes.RowDeleted;
+            }
+            else
+            {
+                ReturnCode = InvenotryInsertResultCodes.RowDidNotExist;
+            }
             return ReturnCode;
         }
         public void ClearAmazonOrders()

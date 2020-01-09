@@ -54,7 +54,8 @@
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,16,5,5" Click="UpdateVatButton_Click"/>
+                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,5,5,5" Click="UpdateVatButton_Click"/>
+                <Button Name="DeleteNonShippedButton" Content="Delete Non-Shipped" Margin="5,5,5,5" Click="DeleteNonShippedButton_Click"/>
             </StackPanel>
         </StackPanel>
 

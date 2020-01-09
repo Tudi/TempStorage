@@ -236,5 +236,18 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("Exporting 'PURCHASES RETURNS' report - Finished");
             }
         }
+
+        private void DeleteNonShippedButton_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            dlg.DefaultExt = ".csv";
+            dlg.Filter = "CSV Files (*.csv)|*.csv";
+            Nullable<bool> result = dlg.ShowDialog();
+            if (result == true)
+            {
+                string filename = dlg.FileName;
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonDeleteCSVFile(filename));
+            }
+        }
     }
 }

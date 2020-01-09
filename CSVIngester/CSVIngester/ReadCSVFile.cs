@@ -776,5 +776,82 @@ namespace CSVIngester
             }
             GlobalVariables.Logger.Log("Finished importing file : " + FileName);
         }
+
+        public static void ReadAmazonDeleteCSVFile(string FileName)
+        {
+            string TableName = "Amazon_Orders";
+            if (GlobalVariables.ImportingToDBBlock.Length != 0)
+            {
+                GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
+                return;
+            }
+
+            CsvHelper.Configuration.Configuration cfg = new CsvHelper.Configuration.Configuration
+            {
+                HasHeaderRecord = true,
+                MissingFieldFound = null
+            };
+
+            GlobalVariables.Logger.Log("File import destination database is '" + TableName);
+            using (var reader = new StreamReader(FileName))
+            using (var csv = new CsvReader(reader, cfg))
+            {
+                csv.Read();
+                csv.ReadHeader();
+                string IdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Id");
+                string DispatchedColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Dispatched");
+                if (IdColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Id' not detected.Not an " + TableName + " csv file : " + FileName);
+                    return;
+                }
+                if (DispatchedColName.Length == 0)
+                {
+                    GlobalVariables.Logger.Log("Mandatory column 'Dispatched' not detected.Not an " + TableName + " csv file : " + FileName);
+                    return;
+                }
+
+                GlobalVariables.ImportingToDBBlock = TableName;
+
+                SQLiteTransaction transaction = GlobalVariables.DBStorage.m_dbConnection.BeginTransaction();
+
+                int RowsRead = 0;
+                int RowsReadValid = 0;
+                int RowsInserted = 0;
+                int RowsSkipped = 0;
+                while (csv.Read())
+                {
+                    RowsRead++;
+                    string IdCol = csv.GetField<string>(IdColName);
+                    string DispatchedCol = csv.GetField<string>(DispatchedColName);
+
+                    if (IdCol == null || IdCol.Length == 0)
+                        continue;
+                    if (DispatchedCol == null || DispatchedCol.Length == 0)
+                        continue;
+                    //checking expected values
+                    if (DispatchedCol.ToLower() != "True".ToLower() && DispatchedCol.ToLower() != "False".ToLower())
+                        continue;
+                    //only process false rows ( i know we just checked, For the sake of code readability .. )
+                    if (DispatchedCol.ToLower() != "False".ToLower())
+                        continue;
+
+                    //try to add the new row to the DB
+                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.DeleteAmazonOrder(TableName, IdCol);
+                    if (ret == DBHandler.InvenotryInsertResultCodes.RowDeleted)
+                        RowsInserted++;
+                    else
+                        RowsSkipped++;
+                    RowsReadValid++;
+                }
+                GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
+                GlobalVariables.Logger.Log("CSV file rows FALSE : " + RowsReadValid);
+                GlobalVariables.Logger.Log("CSV file rows FALSE deleted : " + RowsInserted);
+                GlobalVariables.Logger.Log("CSV file rows FALSE skipped : " + RowsSkipped);
+                transaction.Commit();
+                GlobalVariables.ImportingToDBBlock = "";
+            }
+            GlobalVariables.Logger.Log("Finished importing file : " + FileName);
+        }
     }
 }
