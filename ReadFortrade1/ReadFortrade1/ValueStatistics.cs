@@ -23,10 +23,13 @@ namespace ReadFortrade1
         public static int MinuteToSecond = 60; // 60 seconds in 1 minute
         public static int HourToSecond = 60 * MinuteToSecond;
         public static int DayToSecond = 24 * HourToSecond;
+        public static int WeekToSecond = 7 * DayToSecond;
         public static int DayToMinute = 24 * 60;
     }
     public class ValueStatistics
     {
+        static string StrValueSeparator = " | ";
+
         public static double DynamicRound(double val, int digits = 4)
         {
             double tval = val - (long)val;
@@ -170,26 +173,29 @@ namespace ReadFortrade1
                 GetTopXLargestTransactions(itr, TimeValues.DayToMinute * 10);
         }
 
-        public static void GetChangePCT(string InstrumentName, int PeriodInMinutes, int PeriodShiftMinutes, int NumberOfPeriods = 1)
+        public static string GetChangePCT(string InstrumentName, int PeriodInSeconds, int PeriodShiftSeconds, int NumberOfPeriods = 1, bool Print = true)
         {
             long Now = DBHandler.GetUnixStamp();
             string ToPrint = "";
             int ValuesAdded = 0;
             for (int i = 0; i < NumberOfPeriods; i++)
             {
-                long StartStamp1 = Now - i * PeriodShiftMinutes - 1 * PeriodInMinutes * TimeValues.MinuteToSecond;
-                long EndStamp1 = Now - i * PeriodShiftMinutes - 0 * PeriodInMinutes * TimeValues.MinuteToSecond;
+                long StartStamp1 = Now - i * PeriodShiftSeconds - 1 * PeriodInSeconds;
+                long EndStamp1 = Now - i * PeriodShiftSeconds - 0 * PeriodInSeconds;
                 double Average1 = GetInstrumentAveragePricePeriod(InstrumentName, StartStamp1, EndStamp1);
-                long StartStamp2 = Now - i * PeriodShiftMinutes - 2 * PeriodInMinutes * TimeValues.MinuteToSecond;
-                long EndStamp2 = Now - i * PeriodShiftMinutes - 1 * PeriodInMinutes * TimeValues.MinuteToSecond;
+                long StartStamp2 = Now - i * PeriodShiftSeconds - 2 * PeriodInSeconds;
+                long EndStamp2 = Now - i * PeriodShiftSeconds - 1 * PeriodInSeconds;
                 double Average2 = GetInstrumentAveragePricePeriod(InstrumentName, StartStamp2, EndStamp2);
                 double PCTChange = Math.Round(( Average1 - Average2 ) * 100 / Average2,2);
-                ToPrint += PCTChange.ToString() + ",";
+                ToPrint += PCTChange.ToString() + StrValueSeparator;
                 if (!Double.IsNaN(PCTChange) && !Double.IsInfinity(PCTChange))
                     ValuesAdded++;
             }
-            if(ValuesAdded > 0)
+            if (ToPrint.Length > 0)
+                ToPrint = ToPrint.Substring(0, ToPrint.Length - StrValueSeparator.Length);
+            if (ValuesAdded > 0 && Print == true)
                 Globals.Logger.Log("Change PCT for " + InstrumentName + " : " + ToPrint);
+            return ToPrint;
         }
 
         public static double GetInstrumentAveragePricePeriod(string InstrumentName, long StartStamp, long EndStamp)
@@ -223,10 +229,10 @@ namespace ReadFortrade1
         {
             List<string> InstrumentsWithValues = Globals.Persistency.GetAllInstrumentNames();
             foreach (string itr in InstrumentsWithValues)
-                GetChangePCT(itr, TimeValues.DayToMinute, TimeValues.DayToSecond, 10);
+                GetChangePCT(itr, TimeValues.DayToSecond, TimeValues.DayToSecond, 10);
         }
 
-        public static void CalcPivot(string InstrumentName, int PeriodInSeconds, int PeriodShiftSeconds, int NumberOfPeriods = 1)
+        public static string CalcPivot(string InstrumentName, int PeriodInSeconds, int PeriodShiftSeconds, int NumberOfPeriods = 1, bool Print = true)
         {
             int PrecisionRequired = Globals.Persistency.GetInstrumentPrecision(InstrumentName);
             long Now = DBHandler.GetUnixStamp();
@@ -237,12 +243,15 @@ namespace ReadFortrade1
                 long StartStamp1 = Now - i * PeriodShiftSeconds - 1 * PeriodInSeconds;
                 long EndStamp1 = Now - i * PeriodShiftSeconds - 0 * PeriodInSeconds;
                 double Average1 = GetInstrumentAveragePricePeriod(InstrumentName, StartStamp1, EndStamp1);
-                ToPrint += Math.Round(Average1, PrecisionRequired).ToString() + ",";
+                ToPrint += Math.Round(Average1, PrecisionRequired).ToString() + StrValueSeparator;
                 if (!Double.IsNaN(Average1) && !Double.IsInfinity(Average1))
                     ValuesAdded++;
             }
-            if (ValuesAdded > 0)
+            if (ToPrint.Length > 0)
+                ToPrint = ToPrint.Substring(0, ToPrint.Length - StrValueSeparator.Length);
+            if (ValuesAdded > 0 && Print == true)
                 Globals.Logger.Log("Pivot for " + InstrumentName + " : " + ToPrint);
+            return ToPrint;
         }
 
     }

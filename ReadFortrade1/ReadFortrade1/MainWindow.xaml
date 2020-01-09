@@ -5,8 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ReadFortrade1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="1200">
     <StackPanel>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Instrument" Width="70"/>
+                <ComboBox Name="InstrumentSelect1" Width="100" SelectionChanged="ConsoleTextbox_SelectionChanged"/>
+                <Label Content="Daily change%" Width="90"/>
+                <TextBox Name="PrevDailyChangePCTRelative1" Width="300"/>
+                <Label Content="Weekly %" Width="70"/>
+                <TextBox Name="PrevWeekChangePCTRelative1" Width="50"/>
+                <Label Content="Daily Avg" Width="100"/>
+                <TextBox Name="PrevDailyAvg1" Width="300"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Hourly change%" Width="90"/>
+                <TextBox Name="PrevHourlyChangePCTRelative1" Width="600"/>
+            </StackPanel>        
+        </StackPanel>
         <TextBox Name="ConsoleTextbox" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" Height="250"></TextBox>
         <TextBox Name="TimeoutTextbox"></TextBox>
     </StackPanel>

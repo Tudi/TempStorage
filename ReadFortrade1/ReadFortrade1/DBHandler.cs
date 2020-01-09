@@ -351,6 +351,8 @@ namespace ReadFortrade1
                     while (rdr.Read() && rdr.HasRows == true && !rdr.IsDBNull(0))
                     {
                         string TableName = rdr.GetString(0);
+                        if (TableName.Length == 0)
+                            continue; // wtf bugs ?
                         //check if the new DB contains this table, and has values
                         using (var cmd2 = new SQLiteCommand(m_dbConnection2))
                         {

@@ -24,15 +24,8 @@ using System.Windows.Threading;
  * - we need to detect trends as soon as possible and ride a trend. It's only worth to ride a trend as long as we have enough swings of value
  * 
  * todo :
- * - make statistics of daily change PCT
  * - make statistics of trend(minute/30min/60min) period lengths
- * - make statistics of what it means to have a large jump in value
- * - statistics of : transaction (number of T, size of T, Volatility) at specific hour of the day
  * - make statistics of rate of change. How many times, how many small changes occure. Lots of people trading it ? Sentimental trading
- * - implement block based data store : if value is on 4 bytes, and we store 60 values in 1 minute
- * - statistics should be available for hour/day/week/month/year
- * - check which instrument has the highest probability of inversion in one day
- * - be able to calculate previous day pivot point
  * - check / confirm if day starts bearish or bulish for an instrument
  * - check confirm if there is a trend going on for a specific instrument
  * - check the probablity of trend flip based on daily / weekly / monthly pivots.
@@ -42,14 +35,27 @@ using System.Windows.Threading;
  * - create statistics. Is it trending ? Is it daily fluctuating ?
  * - make some statistics to try to guess what actions could create a specific trend
  * - generate 3 / 4 bar patterns based on past days / weeks. The older the pattern, the less influential
+ * - when was the last support line ? How much did it last ? How often can we see ups and downs ?
+ * - skip statistics for weekends. They might skew results
  * 
  * Self notes :
+ * - good site to read : https://www.dailyfx.com    https://www.fxstreet.com
  * - heating oil-natural gas-coal are quite linked. If one increases the other one falls
  * - ! Avoid validating your decision before inspection ! Try to take decisions based on news and numbers. First seach news, check numbers. If all match, take actions. You need to make good deals and not feel sentimental
  * - never ever be greedy. Invest only a portion of balance in a specific type of stock trend
  * - try to make short term deals. Money gets blocked on wrong decisions and maybe never recover
  * - trading is sentiment based. What other traders are doing and hardly about what in reality happens
  * - no fixed strategy will work forever. there are many bots out there that will adapt to your actions and take counter actions
+ * 
+ * possible indicators:
+ * - pct price change previous days last few days
+ * - pct price fluctuation min/max the same day for previous few days
+ * - is there some trend going on to justify the action ?
+ * - is there a larger counter trend to forbid the action ?
+ * - is there a recent support for the action we are trying to make ?
+ * - is the market more volatile ? length of line for current day and previous days = new market pivot
+ * - trend speed (time) to reach some strange value
+ * - cross check values. If crude oil price drops, it expected that both heating oil, brent oil, natural gas, gasoline to drop
  */
 namespace ReadFortrade1
 {
@@ -98,6 +104,7 @@ namespace ReadFortrade1
                 Task.Factory.StartNew(() => Globals.PriceChangeMonitor.StartPriceChangeWatchdog());
             }
             //            SendNotification.SendMessage("Test meail to sms");
+            FillInstrumentDropdown();
         }
         private void ShowSomeStatistics()
         {
@@ -114,9 +121,40 @@ namespace ReadFortrade1
         private void ImportExtenalDB()
         {
             Globals.Logger.Log("Started importing Database");
-//            Globals.Persistency.ImportFromDB("Fortrade_home.db");
-//            Globals.Persistency.ImportFromDB("Fortrade_live.db");
+            Globals.Persistency.ImportFromDB("Fortrade_home.db");
+            Globals.Persistency.ImportFromDB("Fortrade_live.db");
             Globals.Logger.Log("Done importing Database");
+        }
+
+        private void FillInstrumentDropdown()
+        {
+            if (Globals.Persistency == null)
+                return;
+            InstrumentSelect1.SelectedIndex = -1;
+            List<string> InstrumentsWithValues = Globals.Persistency.GetAllInstrumentNames();
+            foreach (string itr in InstrumentsWithValues)
+                if(itr.Length > 0)
+                    InstrumentSelect1.Items.Add(itr);
+            InstrumentSelect1.SelectedIndex = 0;
+        }
+
+        private void ConsoleTextbox_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            if (InstrumentSelect1.SelectedIndex == -1)
+                return;
+            string SelectedIstrument = InstrumentSelect1.SelectedItem.ToString();
+
+            string ChangesPCTAsString = ValueStatistics.GetChangePCT(SelectedIstrument, TimeValues.DayToSecond, TimeValues.DayToSecond, 6, false);
+            PrevDailyChangePCTRelative1.Text = ChangesPCTAsString;
+
+            ChangesPCTAsString = ValueStatistics.GetChangePCT(SelectedIstrument, TimeValues.WeekToSecond, TimeValues.WeekToSecond, 1, false);
+            PrevWeekChangePCTRelative1.Text = ChangesPCTAsString;
+
+            ChangesPCTAsString = ValueStatistics.GetChangePCT(SelectedIstrument, TimeValues.HourToSecond, TimeValues.HourToSecond, 24, false);
+            PrevHourlyChangePCTRelative1.Text = ChangesPCTAsString;
+
+            string PrevDailyAvgStr = ValueStatistics.CalcPivot(SelectedIstrument, TimeValues.DayToSecond, TimeValues.DayToSecond, 6, false);
+            PrevDailyAvg1.Text = PrevDailyAvgStr;
         }
     }
 }
