@@ -821,7 +821,6 @@ namespace CSVIngester
                 int RowsSkipped = 0;
                 while (csv.Read())
                 {
-                    RowsRead++;
                     string IdCol = csv.GetField<string>(IdColName);
                     string DispatchedCol = csv.GetField<string>(DispatchedColName);
 
@@ -832,6 +831,7 @@ namespace CSVIngester
                     //checking expected values
                     if (DispatchedCol.ToLower() != "True".ToLower() && DispatchedCol.ToLower() != "False".ToLower())
                         continue;
+                    RowsRead++;
                     //only process false rows ( i know we just checked, For the sake of code readability .. )
                     if (DispatchedCol.ToLower() != "False".ToLower())
                         continue;
