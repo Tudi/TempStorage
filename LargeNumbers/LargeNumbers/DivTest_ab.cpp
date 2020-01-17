@@ -95,9 +95,9 @@ SetLN( b1, iB );
 
 void DivTestab()
 {
-    int iA = 349;
-    int iB = 751;
-    int imul = 234;
+//    int iA = 349;
+//    int iB = 751;
+//    int imul = 234;
 //    DivTest3( iA, iB, imul ); // SN = 511
 
 //    DivTest3( 6871, 7673, 6034 ); // N = 52721183 , SN = 7260
