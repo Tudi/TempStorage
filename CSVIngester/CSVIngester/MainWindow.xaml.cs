@@ -135,6 +135,8 @@ namespace CSVIngester
                 TableName = "Paypal-Sales";
             else if (DDG5.IsChecked == true)
                 TableName = "Paypal-Refunds";
+            else if (DDG6.IsChecked == true)
+                TableName = "Amazon-Blocked";
 
             MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure you wish to empty "+ TableName +" Database ? ", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
@@ -149,6 +151,8 @@ namespace CSVIngester
                     GlobalVariables.DBStorage.ClearPaypalSales();
                 else if (DDG5.IsChecked == true)
                     GlobalVariables.DBStorage.ClearPaypalRefunds();
+                else if (DDG6.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearAmazonBlocked();
             }
         }
 
@@ -189,6 +193,12 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("Exporting 'PAYPAL-REFUNDS' table - started");
                 GlobalVariables.DBStorage.ExportPaypalSales("PAYPAL_REFUNDS", "PAYPAL-REFUNDS", ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'PAYPAL-REFUNDS' table - Finished");
+            }
+            else if (RTG6.IsChecked == true)
+            {
+                GlobalVariables.Logger.Log("Exporting 'AMAZON-BLOCKED' table - started");
+                GlobalVariables.DBStorage.ExportAmazonBlocked(ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'AMAZON-BLOCKED' table - Finished");
             }
         }
 

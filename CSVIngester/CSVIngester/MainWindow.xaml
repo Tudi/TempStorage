@@ -46,16 +46,17 @@
                         <RadioButton Name="DDG1" GroupName="DatabaseDeleteGroup" Content="INVENTORY" IsChecked="True"/>
                         <RadioButton Name="DDG2" GroupName="DatabaseDeleteGroup" Content="AMAZON-ORDERS" />
                         <RadioButton Name="DDG3" GroupName="DatabaseDeleteGroup" Content="AMAZON-REFUNDS" />
+                        <RadioButton Name="DDG6" GroupName="DatabaseDeleteGroup" Content="AMAZON-Blocked"/>
                         <RadioButton Name="DDG4" GroupName="DatabaseDeleteGroup" Content="PAYPAL-SALES"/>
                         <RadioButton Name="DDG5" GroupName="DatabaseDeleteGroup" Content="PAYPAL-REFUNDS"/>
                     </StackPanel>
                 </GroupBox>
-                <Button Name="DeleteSelectedDatabase" Content="Delete Table" Margin="5,10,5,30" Click="DeleteSelectedDatabase_Click"/>
+                <Button Name="DeleteSelectedDatabase" Content="Delete Table" Margin="5,10,5,20" Click="DeleteSelectedDatabase_Click"/>
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">
                 <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,5,5,5" Click="UpdateVatButton_Click"/>
-                <Button Name="DeleteNonShippedButton" Content="Delete Non-Shipped" Margin="5,5,5,5" Click="DeleteNonShippedButton_Click"/>
+                <Button Name="DeleteNonShippedButton" Content="Delete Blocked" Margin="5,5,5,5" Click="DeleteNonShippedButton_Click"/>
             </StackPanel>
         </StackPanel>
 
@@ -68,6 +69,7 @@
                     <RadioButton Name="RTG1" GroupName="RaportTypeGroup" Content="INVENTORY" IsChecked="True"/>
                     <RadioButton Name="RTG2" GroupName="RaportTypeGroup" Content="AMAZON-ORDERS" />
                     <RadioButton Name="RTG3" GroupName="RaportTypeGroup" Content="AMAZON-REFUNDS" />
+                    <RadioButton Name="RTG6" GroupName="RaportTypeGroup" Content="AMAZON-Blocked"/>
                     <RadioButton Name="RTG4" GroupName="RaportTypeGroup" Content="PAYPAL-SALES"/>
                     <RadioButton Name="RTG5" GroupName="RaportTypeGroup" Content="PAYPAL-REFUNDS"/>
                 </StackPanel>

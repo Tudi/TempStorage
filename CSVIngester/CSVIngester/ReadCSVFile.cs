@@ -526,12 +526,20 @@ namespace CSVIngester
                     //check if inventory has missing values that we can update
                     if (UpdateInventory == true)
                         GlobalVariables.DBStorage.UpdateAllMissingInventoryRows(ASINCol, VAT_RATE.ToString());
-                    //try to add the new row to the DB
-                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE, SACCOUNT, SELLER, SELLER_VAT);
-                    if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+
+                    //check if this row is blocked from import
+                    DBHandler.InvenotryInsertResultCodes RowImportIsBlocked = GlobalVariables.DBStorage.IsAmazonOrderBlocked(IdCol);
+                    if (RowImportIsBlocked == DBHandler.InvenotryInsertResultCodes.RowDidNotExist)
                     {
-                        RowsInserted++;
-//                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, double.Parse(PriceCol), double.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                        //try to add the new row to the DB
+                        DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.InsertAmazonOrder(TableName, DateCol, IdCol, TitleCol, PriceCol, VATCol, BuyerCol, AddressCol, ASINCol, NET, VAT_RATE, SACCOUNT, SELLER, SELLER_VAT);
+                        if (ret == DBHandler.InvenotryInsertResultCodes.RowDidNotExistInsertedNew)
+                        {
+                            RowsInserted++;
+                            //                        ImportResultCSV.AmazonOrdersExportFileAddRow(DateCol, IdCol, TitleCol, double.Parse(PriceCol), double.Parse(VATCol), BuyerCol, AddressCol, ASINCol, NET, VAT_RATE);
+                        }
+                        else
+                            RowsSkipped++;
                     }
                     else
                         RowsSkipped++;
@@ -800,6 +808,14 @@ namespace CSVIngester
                 csv.ReadHeader();
                 string IdColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Id");
                 string DispatchedColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Dispatched");
+                string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Date");
+                string TitleColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Title");
+                string PriceColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Price");
+                string VatColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Vat Amount");
+                string BuyerColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Buyer");
+                string AddressColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Address");
+                string ASINColName = GetMatchingColumnName(csv.Context.HeaderRecord, "ASIN");
+                string PaymentColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Payment Method");
                 if (IdColName.Length == 0)
                 {
                     GlobalVariables.Logger.Log("Mandatory column 'Id' not detected.Not an " + TableName + " csv file : " + FileName);
@@ -823,6 +839,14 @@ namespace CSVIngester
                 {
                     string IdCol = csv.GetField<string>(IdColName);
                     string DispatchedCol = csv.GetField<string>(DispatchedColName);
+                    string DateCol = csv.GetField<string>(DateColName);
+                    string TitleCol = csv.GetField<string>(TitleColName);
+                    string PriceCol = csv.GetField<string>(PriceColName);
+                    string VatCol = csv.GetField<string>(VatColName);
+                    string BuyerCol = csv.GetField<string>(BuyerColName);
+                    string AddressCol = csv.GetField<string>(AddressColName);
+                    string ASINCol = csv.GetField<string>(ASINColName);
+                    string PaymentCol = csv.GetField<string>(PaymentColName);
 
                     if (IdCol == null || IdCol.Length == 0)
                         continue;
@@ -832,16 +856,20 @@ namespace CSVIngester
                     if (DispatchedCol.ToLower() != "True".ToLower() && DispatchedCol.ToLower() != "False".ToLower())
                         continue;
                     RowsRead++;
+
                     //only process false rows ( i know we just checked, For the sake of code readability .. )
                     if (DispatchedCol.ToLower() != "False".ToLower())
                         continue;
 
+                    DBHandler.InvenotryInsertResultCodes ret1 = GlobalVariables.DBStorage.InsertAmazonBlocked("AMAZON_BLOCKED", IdCol, DispatchedCol, DateCol, TitleCol, PriceCol, VatCol, BuyerCol, AddressCol, ASINCol, PaymentCol);
+
                     //try to add the new row to the DB
-                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.DeleteAmazonOrder(TableName, IdCol);
+                    DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.DeleteAmazonOrder(IdCol);
                     if (ret == DBHandler.InvenotryInsertResultCodes.RowDeleted)
                         RowsInserted++;
                     else
                         RowsSkipped++;
+
                     RowsReadValid++;
                 }
                 GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);

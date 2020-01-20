@@ -164,6 +164,28 @@ namespace CSVIngester
             using (TransactionScope tran = new TransactionScope())
             {
                 SQLiteCommand command = m_dbConnection.CreateCommand();
+                command.CommandText = "SELECT name FROM sqlite_master WHERE name='AMAZON_BLOCKED'";
+                var name = command.ExecuteScalar();
+
+                if (!(name != null && name.ToString() == "AMAZON_BLOCKED"))
+                {
+                    string sql = "create table AMAZON_BLOCKED (date varchar(20),ORDER_ID varchar(20),DISPATCH varchar(20),TITLE varchar(200),PRICE double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20),PAYMENT varchar(200), asin_hash int4, ORDER_ID_hash int4,TStamp INT)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_BLOCKED (ORDER_ID_hash)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+
+                    sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_BLOCKED (asin_hash)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            using (TransactionScope tran = new TransactionScope())
+            {
+                SQLiteCommand command = m_dbConnection.CreateCommand();
                 command.CommandText = "SELECT name FROM sqlite_master WHERE name='PAYPAL_SALES'";
                 var name = command.ExecuteScalar();
 
@@ -433,23 +455,80 @@ namespace CSVIngester
 
             return ReturnCode;
         }
-        public InvenotryInsertResultCodes DeleteAmazonOrder(string TableName, string IdCol)
+
+        public InvenotryInsertResultCodes IsAmazonOrderBlocked(string IdCol)
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
             int ORDER_ID_hashhash = IdCol.GetHashCode();
 
             //check if ts record already exists
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "SELECT 1 FROM " + TableName + " where ORDER_ID_hash=@ORDER_ID_hash and order_id=@order_id";
+            cmd.CommandText = "SELECT 1 FROM AMAZON_BLOCKED where ORDER_ID_hash=@ORDER_ID_hash and order_id=@order_id";
             cmd.Parameters.AddWithValue("@ORDER_ID_hash", ORDER_ID_hashhash);
             cmd.Parameters.AddWithValue("@order_id", IdCol);
             cmd.Prepare();
 
             SQLiteDataReader rdr = cmd.ExecuteReader();
             if (rdr.Read() && rdr.HasRows == true)
+                return InvenotryInsertResultCodes.RowExisted;
+            return InvenotryInsertResultCodes.RowDidNotExist;
+        }
+
+        public InvenotryInsertResultCodes InsertAmazonBlocked(string TableName, string IdCol, string DispatchedCol, string DateCol, string TitleCol, string PriceCol, string VatCol, string BuyerCol, string AddressCol, string ASINCol, string PaymentCol)
+        {
+            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            //check if ts record already exists
+            InvenotryInsertResultCodes AmazonOrderBlockedRowStatus = IsAmazonOrderBlocked(IdCol);
+            if (AmazonOrderBlockedRowStatus == InvenotryInsertResultCodes.RowExisted)
+            {
+                return InvenotryInsertResultCodes.RowExisted;
+            }
+            else
+            {
+                int IdColhash = IdCol.GetHashCode();
+                int asinhash = ASINCol.GetHashCode();
+                long TStamp = DateParser.GetUnixStamp(DateCol);
+
+                var cmd2 = new SQLiteCommand(m_dbConnection);
+                cmd2.CommandText = "INSERT INTO " + TableName + "(date,ORDER_ID,DISPATCH,TITLE,PRICE,vat,BuyerName,Buyeraddr,asin,PAYMENT,asin_hash,ORDER_ID_hash,TStamp) " +
+                    "VALUES(@date,@ORDER_ID,@DISPATCH,@TITLE,@PRICE,@vat,@BuyerName,@Buyeraddr,@asin,@PAYMENT,@asin_hash,@ORDER_ID_hash,@TStamp)";
+
+                cmd2.Parameters.AddWithValue("@date", DateCol);
+                cmd2.Parameters.AddWithValue("@ORDER_ID", IdCol);
+                cmd2.Parameters.AddWithValue("@DISPATCH", DispatchedCol);
+                cmd2.Parameters.AddWithValue("@TITLE", TitleCol);
+                cmd2.Parameters.AddWithValue("@PRICE", PriceCol);
+                cmd2.Parameters.AddWithValue("@vat", double.Parse(VatCol));
+                cmd2.Parameters.AddWithValue("@BuyerName", BuyerCol);
+                cmd2.Parameters.AddWithValue("@Buyeraddr", AddressCol);
+                cmd2.Parameters.AddWithValue("@asin", ASINCol);
+                cmd2.Parameters.AddWithValue("@PAYMENT", PaymentCol);
+                cmd2.Parameters.AddWithValue("@asin_hash", asinhash);
+                cmd2.Parameters.AddWithValue("@ORDER_ID_hash", IdColhash);
+                cmd2.Parameters.AddWithValue("@TStamp", TStamp);
+                cmd2.Prepare();
+
+                cmd2.ExecuteNonQuery();
+
+                ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            }
+            return ReturnCode;
+        }
+
+        public void ClearAmazonBlocked()
+        {
+            ClearTable("AMAZON_BLOCKED");
+            GlobalVariables.Logger.Log("Content of the AMAZON-BLOCKED table has been cleared");
+        }
+
+        public InvenotryInsertResultCodes DeleteAmazonOrder(string IdCol)
+        {
+            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            //check if ts record already exists
+            InvenotryInsertResultCodes AmazonOrderBlockedRowStatus = IsAmazonOrderBlocked(IdCol);
+            if (AmazonOrderBlockedRowStatus == InvenotryInsertResultCodes.RowExisted)
             {
                 var cmd2 = new SQLiteCommand(m_dbConnection);
-                cmd2.CommandText = "delete from " + TableName + " where ORDER_ID=@ORDER_ID";
+                cmd2.CommandText = "delete from AMAZON_ORDERS where ORDER_ID=@ORDER_ID";
                 cmd2.Parameters.AddWithValue("@ORDER_ID", IdCol);
                 cmd2.Prepare();
                 cmd2.ExecuteNonQuery();
@@ -461,6 +540,7 @@ namespace CSVIngester
             }
             return ReturnCode;
         }
+
         public void ClearAmazonOrders()
         {
             ClearTable("AMAZON_ORDERS");
@@ -1037,6 +1117,71 @@ namespace CSVIngester
                     record.VAT_RATE = Math.Round(vat_rate, 2).ToString();
                 else
                     record.VAT_RATE = "";
+
+                ExportInventoryCSV.WriteDynamicFileRow(record);
+            }
+            ExportInventoryCSV.Dispose();
+        }
+
+        public void ExportAmazonBlocked(DateTime StartDate, DateTime EndDate)
+        {
+            long TStart = DateParser.DateTimeToMinutes(StartDate);
+            long TEnd = DateParser.DateTimeToMinutes(EndDate);
+
+            WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
+            ExportInventoryCSV.CreateDynamicFile("./reports/Amazon_Blocked.csv");
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT date,ORDER_ID,DISPATCH,TITLE,PRICE,vat,BuyerName,Buyeraddr,asin,PAYMENT FROM AMAZON_BLOCKED where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
+            cmd.Parameters.AddWithValue("@TStart", TStart);
+            cmd.Parameters.AddWithValue("@TEnd", TEnd);
+            cmd.Prepare();
+
+            dynamic record = new System.Dynamic.ExpandoObject();
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            while (rdr.Read() && rdr.HasRows == true)
+            {
+                if (!rdr.IsDBNull(0))
+                    record.DATE = rdr.GetString(0);
+                else
+                    record.DATE = "";
+                if (!rdr.IsDBNull(1))
+                    record.Id = rdr.GetString(1);
+                else
+                    record.Id = "";
+                if (!rdr.IsDBNull(2))
+                    record.DISPATCH = rdr.GetString(2);
+                else
+                    record.DISPATCH = "";
+                if (!rdr.IsDBNull(3))
+                    record.TITLE = rdr.GetString(3);
+                else
+                    record.TITLE = "";
+                double Price = rdr.GetDouble(4);
+                if (Price != (double)GlobalVariables.NULLValue)
+                    record.Price = Math.Round((Price), 2).ToString();
+                else
+                    record.Price = "";
+                double vat = rdr.GetDouble(5);
+                if (vat != (double)GlobalVariables.NULLValue)
+                    record.VAT = Math.Round(vat, 2).ToString();
+                else
+                    record.Vat = "";
+                if (!rdr.IsDBNull(6))
+                    record.Buyer = rdr.GetString(6);
+                else
+                    record.Buyer = "";
+                if (!rdr.IsDBNull(7))
+                    record.Address = rdr.GetString(7);
+                else
+                    record.Address = "";
+                if (!rdr.IsDBNull(8))
+                    record.ASIN = rdr.GetString(8);
+                else
+                    record.ASIN = "";
+                if (!rdr.IsDBNull(9))
+                    record.PaymentMethod = rdr.GetString(9);
+                else
+                    record.PaymentMethod = "";
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
