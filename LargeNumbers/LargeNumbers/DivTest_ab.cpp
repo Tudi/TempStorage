@@ -58,18 +58,18 @@ SetLN( b1, iB );
         int Match = CheckCandidateMatch3( &tN, &a1, &b1, i, &TempRes );
         if( Match == 1 )
         {
-            printf("%d)possible candidate : \n\t a:", ++CandidatesFound );
-            PrintLN( a1 );
-            printf("\n\t b:");
-            PrintLN( b1 );
-            printf("\n\t tN:");
-            PrintLN( tN );
-            printf(" == ");
-            PrintLN( TempRes );
-            printf("\n");
             SolutionFound = CheckSolution( tN, TempRes ); 
             if( SolutionFound == 1 )
             {
+                printf("%d)possible candidate : \n\t a:", ++CandidatesFound);
+                PrintLN(a1);
+                printf("\n\t b:");
+                PrintLN(b1);
+                printf("\n\t tN:");
+                PrintLN(tN);
+                printf(" == ");
+                PrintLN(TempRes);
+                printf("\n");
                 SolutionsFound++;
                 printf( "%d)!!!!!!yolo\n",SolutionsFound);
             }

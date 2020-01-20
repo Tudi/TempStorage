@@ -286,7 +286,7 @@ void SubLN(LargeNumber *A, LargeNumber *B, LargeNumber *C)
 {
 	InitLN(C);
 	int MaxLen = MAX(A->Len, B->Len);
-	for (int i = 0; i < B->Len; i++)
+	for (int i = 0; i < MaxLen; i++)
 	{
 		C->Digits[i] += A->Digits[i] - B->Digits[i];
 		while (C->Digits[i] < 0)
@@ -297,5 +297,6 @@ void SubLN(LargeNumber *A, LargeNumber *B, LargeNumber *C)
 	}
 	C->Len = B->Len;
 	for (int i = C->Len; i < MAX_DIGIT_COUNT && C->Digits[i] != 0; i++)
-		C->Digits[i] = 0;
+//		C->Digits[i] = 0;
+		C->Len = i + 1;
 }

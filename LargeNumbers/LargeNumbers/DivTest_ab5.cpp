@@ -76,14 +76,15 @@ namespace gen_aabb5 {
 				return 2;
 		}
 
-/*		if (ProgramPhase == GuessAB && IsLarger(TempRes1, &tN))
+		if (ProgramPhase == GuessAB && IsLarger(TempRes1, &tN))
 		{
+/*
 #ifdef _DEBUG
 			NormalizeLN(TempRes1);
-			assert(IsLarger(TempRes1, &tN) == 0);
-#endif
+			assert(IsLarger(TempRes1, &tN) == 1);
+#endif*/
 			return 0;
-		}*/
+		}/**/
 
 		for (int i = 0; i <= pos; i++)
 			if (TempRes1->Digits[i] != tN.Digits[i])
@@ -95,13 +96,13 @@ namespace gen_aabb5 {
 	void InitForFixedTest(__int64 iA, __int64 iB)
 	{
 		ProgramPhase = GuessAB;
-		for (int i = 0; i < a.Len - 1; i++)
+		for (int i = 0; i < a.Len; i++)
 		{
 			aPrev.Digits[i] = 1;
-			bPrev.Digits[i] = 3;
+			bPrev.Digits[i] = 1;
 		}
-		aPrev.Len = a.Len - 1;
-		bPrev.Len = a.Len - 1;
+		aPrev.Len = a.Len;
+		bPrev.Len = a.Len;
 		LargeNumber ttn;
 		MulLN(aPrev, bPrev, ttn);
 		SubLN(&N, &ttn, &tN);
