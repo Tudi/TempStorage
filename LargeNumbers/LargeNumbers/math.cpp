@@ -300,3 +300,12 @@ void SubLN(LargeNumber *A, LargeNumber *B, LargeNumber *C)
 //		C->Digits[i] = 0;
 		C->Len = i + 1;
 }
+
+void ReCheckSize(LargeNumber *LN)
+{
+	LN->Len = MAX_DIGIT_COUNT-1;
+	while (LN->Digits[LN->Len] == 0 && LN->Len > 0)
+		LN->Len--;
+	if (LN->Len != MAX_DIGIT_COUNT - 1 && LN->Len != 0)
+		LN->Len++;
+}

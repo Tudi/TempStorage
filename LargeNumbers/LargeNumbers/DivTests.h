@@ -49,3 +49,4 @@ void DivTestLineDraw8();
 void DivTestLineDraw9();
 void DivTestab4();
 void DivTestab5();
+void DivTestaa_ab();

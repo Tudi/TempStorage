@@ -43,9 +43,10 @@ namespace SquareToBrick
 		SetLN(N, iN);
 		SetLN(SQN2, iSQN * 2);
 		SetLN(m, im);
-		int ia = (iB - iA) / 2;
-		int ib = (iA + iB) / 2 - iSQN;
-		printf("Expecting solution a = %d, b = %d. N = %lld, SQRT(N) = %lld. Bruteforce trycount %lld\n", ia, ib, iN, iSQN, iSQN / 2);
+		__int64 ia = (iB - iA) / 2;
+		__int64 ib = (iA + iB) / 2 - iSQN;
+		printf("A=%lld,B=%lld\n", iA, iB);
+		printf("Expecting solution a = %lld, b = %lld. N = %lld, SQRT(N) = %lld. Bruteforce trycount %lld\n", ia, ib, iN, iSQN, iSQN / 2);
 
 		LargeNumber a, b;
 
@@ -121,9 +122,9 @@ namespace SquareToBrick
 void DivTestaaToN()
 {
     // 108k
-	SquareToBrick::DivTest_aaToN( 349, 751 ); // N = 262099 SN = 511
+//	SquareToBrick::DivTest_aaToN( 349, 751 ); // N = 262099 SN = 511
     // 938k
-	SquareToBrick::DivTest_aaToN( 6871, 7673 ); // N = 52721183 , SN = 7260
+//	SquareToBrick::DivTest_aaToN( 6871, 7673 ); // N = 52721183 , SN = 7260
     // 9M tries
 	SquareToBrick::DivTest_aaToN( 26729, 31793 ); // N = 849795097 , SN = 29151
 	SquareToBrick::DivTest_aaToN(784727, 918839);

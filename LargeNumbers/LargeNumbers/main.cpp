@@ -5,7 +5,8 @@ void main()
 
 //    TestSetAddMull();
 //    DivTest99ab();
-    DivTestab();
+//    DivTestab();
+//	DivTestaa_ab();
 //    DivTest9911ab();
 //    DivTestabc();
 //    DivTest_SQNM();
@@ -18,7 +19,7 @@ void main()
 //	DivTest_xytn2();
 //	DivTestLineDraw(); // very fast
 //	DivTestLineDraw2();
-//	DivTestaaToN(); // maybe not finished
+	DivTestaaToN(); // maybe not finished
 //	DivTestLineDraw3(); // not finished
 //	DivTestxyUpdate();
 //	DivTestSQSQ();
@@ -40,7 +41,7 @@ void main()
 //	DivTestLineDraw8(); // decent speed. nothing extra
 //	DivTestLineDraw9(); // step by step increase
 //	DivTestab4();
-	DivTestab5();
+//	DivTestab5();
 
     printf("All done\n");
 }

@@ -7,9 +7,25 @@ int CheckCandidateMatch_aa_ab(LargeNumber *tN, LargeNumber **vLN, int Params, in
 	if (vLN[0]->Len > (tN->Len + 1) / 2 || vLN[1]->Len > (tN->Len + 1) / 2)
 		return 0;
 
-	LargeNumber aA;
-	AddLN(vLN[0], vLN[1], &aA);
-	MulLN(vLN[0], &aA, TempRes1);
+	LargeNumber AA,aA;
+	MulLN(vLN[0], vLN[0], &AA);
+	MulLN(vLN[0], vLN[1], &aA);
+	AddLN(&AA, &aA, TempRes1);
+
+	for (int i = 0; i <= pos; i++)
+		if (TempRes1->Digits[i] != tN->Digits[i])
+			return 0;
+
+	ReCheckSize(TempRes1);
+	if (IsLarger(TempRes1, tN))
+		return 0;
+
+	LargeNumber tB,tn;
+	AddLN(vLN[0], vLN[1], &tB);
+	MulLN(vLN[0], &tB, &tn);
+	for (int i = 0; i <= pos; i++)
+		if (tn.Digits[i] != tN->Digits[i])
+			return 0;/**/
 
 	return 1;
 }
@@ -19,14 +35,16 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	// N = A * B = A * A + A * a
 	// a = B - A		B = A + a		N = A * ( A + a )
 	LargeNumber tN;
-	unsigned int iN = (unsigned int)(iA * iB);
-	int isqn = isqrt(iN);
-	int ia = iB - iA;
+	__int64 iN = iA * iB;
+//	__int64 isqn = isqrt(iN);
+	__int64 ia = iB - iA;
 	LargeNumber A,a;
 
 	SetLN(tN, iN);
-	SetLN(A, iA);
-	SetLN(a, ia);
+//	SetLN(A, iA);
+//	SetLN(a, ia);
+
+	printf("Expected solution A=%lld,a=%lld\n", iA, ia);
 
 	//init the coefficients
 	LargeNumber EndSignal;
@@ -34,10 +52,10 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	LargeNumber *vLN[ParamCount];
 	vLN[0] = &A;
 	vLN[1] = &a;
-	vLN[4] = &EndSignal;
+	vLN[2] = &EndSignal;
 
 	for (int i = 0; i < ParamCount; i++)
-		SetLN(vLN[i], 1);
+		SetLN(vLN[i], (__int64)0);
 	InitLN(vLN[ParamCount - 1]);
 
 	//start generating combinations and check if it's a feasable candidate
@@ -47,19 +65,19 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	int CandidatesFound = 0;
 	int CrossChecks = 0;
 	int StepsTaken = 0;
-	char DEBUG_Combinations_generated[ParamCount][99 + 1];
-	memset(DEBUG_Combinations_generated, 0, sizeof(DEBUG_Combinations_generated));
+//	char DEBUG_Combinations_generated[ParamCount][99 + 1];
+//	memset(DEBUG_Combinations_generated, 0, sizeof(DEBUG_Combinations_generated));
 	do
 	{
 		LargeNumber TempRes;
 		int GenNextCandidate = 0;
 		StepsTaken++;
-		for (int i = 0; i < ParamCount; i++)
+/*		for (int i = 0; i < ParamCount; i++)
 		{
-			int Combo;
+			__int64 Combo;
 			ToIntLN(vLN[i], &Combo);
 			DEBUG_Combinations_generated[i][Combo % 100] = 1;
-		}
+		}*/
 
 		int Match = CheckCandidateMatch_aa_ab(&tN, vLN, ParamCount, AtPos, &TempRes);
 		if (Match == 1)
@@ -78,6 +96,7 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 				PrintLN(A);
 				printf("\t a:");
 				PrintLN(a);
+				printf("\n");
 				GenNextCandidate = 1;
 			}
 			else
@@ -100,21 +119,23 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	//    }while( SolutionsFound == 0 && vLN[ParamCount-1]->Digits[0] == 0 );
 
 	if (SolutionsFound == 0)
-		printf("\rNo Luck finding a solution\n");
+		printf("No Luck finding a solution\n");
 	else
-		printf("\rDone testing all possible solutions\n");
+		printf("Done testing all possible solutions\n");
 	printf("Steps taken %d\n\n", StepsTaken);
 
-	for (int i = 0; i < ParamCount - 1; i++)
+/*	for (int i = 0; i < ParamCount - 1; i++)
 		for (int j = 0; j < 100; j++)
 			if (DEBUG_Combinations_generated[i][j] != 1)
-				printf("missing combination i, j => %d %d \n", i, j);
+				printf("missing combination i, j => %d %d \n", i, j);*/
 }
 
 void DivTestaa_ab()
 {
-//    DivTest_RecDiv( 23, 41 ); // N = 943 , SN = 30
-//    DivTest_RecDiv( 349, 751 ); // N = 262099 , SN = 511
+//	DivTest_aa_ab(23, 41);
+//	DivTest_aa_ab(349, 751); // N = 262099 SN = 511
 //	DivTest_aa_ab(6871, 7673); // N = 52721183 , SN = 7260
-//    DivTest_RecDiv( 26729, 31793 ); // N = 849795097 , SN = 29151
+	DivTest_aa_ab(26729, 31793); // N = 849795097 , SN = 29151
+	DivTest_aa_ab(784727, 918839); // N = 721037771953
+//	DivTest_aa_ab(6117633, 7219973);
 }
