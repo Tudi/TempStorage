@@ -2,6 +2,9 @@
 
 //#define TRY_B_INSTEAD_A
 
+#define INDEX_A 0
+#define INDEX_a 1
+
 int CheckCandidateMatch_aa_ab(LargeNumber *tN, LargeNumber **vLN, int Params, int pos, LargeNumber *TempRes1)
 {
 	// N = A * B = A * ( A + a ) = A * A + A * a
@@ -9,16 +12,30 @@ int CheckCandidateMatch_aa_ab(LargeNumber *tN, LargeNumber **vLN, int Params, in
 
 	// if x + 10 = A and y + 10 = a
 	// N = (x+10)*(x+10)+(x+10)*(y+10) => N = x * x + 2 * 10 * x + 100 + x * y + 10 * x + 10 * y + 100 -> complexity increases a lot and limit drops 2xtestcount
-	if (vLN[0]->Len > (tN->Len + 1) / 2 || vLN[1]->Len > (tN->Len + 1) / 2)
+	if (vLN[INDEX_A]->Len > (tN->Len + 1) / 2 || vLN[INDEX_a]->Len > (tN->Len + 1) / 2)
+//	if (pos > (tN->Len + 1) / 2)
 		return 0;
 
-	//last digit needs to be pair
-	if (vLN[1]->Digits[0] % 2 != 0)
-		return 0;
+	//this versin for some reason is better than any other version. Just need to figure it out why
+	{
+		//last digit needs to be pair
+		if (vLN[INDEX_a]->Digits[0] % 2 != 0)
+			return 0;
+		LargeNumber AA, aA;
+		AddLN(vLN[INDEX_A], vLN[INDEX_a], &aA);
+		MulLN(vLN[INDEX_A], &aA, TempRes1);
+	}/**/
 
-	LargeNumber AA, aA;
-	AddLN(vLN[0], vLN[1], &aA);
-	MulLN(vLN[0], &aA, TempRes1);
+	/*
+	// this version is visibly worse than previous. I was expecting this one to be better actually
+	{
+		//N = A * (A + 2 * a)
+		LargeNumber AA, aA, two, twoa;
+		SetLN(&two, 2);
+		MulLN(vLN[INDEX_a], &two, &twoa);
+		AddLN(vLN[INDEX_A], &twoa, &aA);
+		MulLN(vLN[INDEX_A], &aA, TempRes1);
+	}/**/
 
 	for (int i = 0; i <= pos; i++)
 		if (TempRes1->Digits[i] != tN->Digits[i])
@@ -30,8 +47,8 @@ int CheckCandidateMatch_aa_ab(LargeNumber *tN, LargeNumber **vLN, int Params, in
 
 /*	{
 		LargeNumber tB, tn;
-		AddLN(vLN[0], vLN[1], &tB);
-		MulLN(vLN[0], &tB, &tn);
+		AddLN(vLN[INDEX_A], vLN[INDEX_a], &tB);
+		MulLN(vLN[INDEX_A], &tB, &tn);
 		for (int i = 0; i <= pos; i++)
 			if (tn.Digits[i] != tN->Digits[i])
 			{
@@ -49,13 +66,13 @@ int CheckCandidateMatch_Ba_BB(LargeNumber *tN, LargeNumber **vLN, int Params, in
 	// N = A * B
 	// A = B - a
 	// N = B * (B - a) => N + B * a = B * B
-	if (vLN[0]->Len > (tN->Len + 1) / 2 || vLN[1]->Len > (tN->Len + 1) / 2)
+	if (vLN[INDEX_A]->Len > (tN->Len + 1) / 2 || vLN[INDEX_a]->Len > (tN->Len + 1) / 2)
 		return 0;
 
 	LargeNumber Ba, NBa, BB;
-	MulLN(vLN[0], vLN[1], &Ba);
+	MulLN(vLN[INDEX_A], vLN[INDEX_a], &Ba);
 	AddLN(&Ba, tN, &NBa);
-	MulLN(vLN[0], vLN[0], &BB);
+	MulLN(vLN[INDEX_A], vLN[INDEX_A], &BB);
 
 	for (int i = 0; i <= pos; i++)
 		if (NBa.Digits[i] != BB.Digits[i])
@@ -101,8 +118,8 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	LargeNumber EndSignal;
 #define ParamCount 3
 	LargeNumber *vLN[ParamCount];
-	vLN[0] = &A;
-	vLN[1] = &a;
+	vLN[INDEX_A] = &A;
+	vLN[INDEX_a] = &a;
 	vLN[2] = &EndSignal;
 
 	for (int i = 0; i < ParamCount; i++)
@@ -191,6 +208,7 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 
 void DivTestaa_ab()
 {
+	printf("This only works if B<2A. Should add proper checks\n");
 //	DivTest_aa_ab(23, 41);
 //	DivTest_aa_ab(349, 751); // N = 262099 SN = 511
 //	DivTest_aa_ab(6871, 7673); // N = 52721183 , SN = 7260
