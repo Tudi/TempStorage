@@ -1,16 +1,24 @@
 #include "StdAfx.h"
 
+//#define TRY_B_INSTEAD_A
+
 int CheckCandidateMatch_aa_ab(LargeNumber *tN, LargeNumber **vLN, int Params, int pos, LargeNumber *TempRes1)
 {
-	// N = A * B = A * A + A * a
+	// N = A * B = A * ( A + a ) = A * A + A * a
 	// a = B - A		B = A + a		N = A * ( A + a )
+
+	// if x + 10 = A and y + 10 = a
+	// N = (x+10)*(x+10)+(x+10)*(y+10) => N = x * x + 2 * 10 * x + 100 + x * y + 10 * x + 10 * y + 100 -> complexity increases a lot and limit drops 2xtestcount
 	if (vLN[0]->Len > (tN->Len + 1) / 2 || vLN[1]->Len > (tN->Len + 1) / 2)
 		return 0;
 
-	LargeNumber AA,aA;
-	MulLN(vLN[0], vLN[0], &AA);
-	MulLN(vLN[0], vLN[1], &aA);
-	AddLN(&AA, &aA, TempRes1);
+	//last digit needs to be pair
+	if (vLN[1]->Digits[0] % 2 != 0)
+		return 0;
+
+	LargeNumber AA, aA;
+	AddLN(vLN[0], vLN[1], &aA);
+	MulLN(vLN[0], &aA, TempRes1);
 
 	for (int i = 0; i <= pos; i++)
 		if (TempRes1->Digits[i] != tN->Digits[i])
@@ -20,15 +28,57 @@ int CheckCandidateMatch_aa_ab(LargeNumber *tN, LargeNumber **vLN, int Params, in
 	if (IsLarger(TempRes1, tN))
 		return 0;
 
-	LargeNumber tB,tn;
-	AddLN(vLN[0], vLN[1], &tB);
-	MulLN(vLN[0], &tB, &tn);
-	for (int i = 0; i <= pos; i++)
-		if (tn.Digits[i] != tN->Digits[i])
-			return 0;/**/
+/*	{
+		LargeNumber tB, tn;
+		AddLN(vLN[0], vLN[1], &tB);
+		MulLN(vLN[0], &tB, &tn);
+		for (int i = 0; i <= pos; i++)
+			if (tn.Digits[i] != tN->Digits[i])
+			{
+				printf("rare event when second check triggered\n");
+				return 0;
+			}
+	}/**/
 
 	return 1;
 }
+
+#ifdef TRY_B_INSTEAD_A
+int CheckCandidateMatch_Ba_BB(LargeNumber *tN, LargeNumber **vLN, int Params, int pos, LargeNumber *TempRes1)
+{
+	// N = A * B
+	// A = B - a
+	// N = B * (B - a) => N + B * a = B * B
+	if (vLN[0]->Len > (tN->Len + 1) / 2 || vLN[1]->Len > (tN->Len + 1) / 2)
+		return 0;
+
+	LargeNumber Ba, NBa, BB;
+	MulLN(vLN[0], vLN[1], &Ba);
+	AddLN(&Ba, tN, &NBa);
+	MulLN(vLN[0], vLN[0], &BB);
+
+	for (int i = 0; i <= pos; i++)
+		if (NBa.Digits[i] != BB.Digits[i])
+			return 0;
+
+	//check if solution
+	{
+		if (NBa.Len == BB.Len)
+		{
+			int IsSolution = 2;
+			for (int i = pos+1; i < NBa.Len; i++)
+				if (NBa.Digits[i] != BB.Digits[i])
+				{
+					IsSolution = 0;
+					break;
+				}
+			if (IsSolution == 2)
+				return 2;
+		}
+	}
+	return 1;
+}
+#endif
 
 void DivTest_aa_ab(__int64 iA, __int64 iB)
 {
@@ -36,15 +86,16 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	// a = B - A		B = A + a		N = A * ( A + a )
 	LargeNumber tN;
 	__int64 iN = iA * iB;
-//	__int64 isqn = isqrt(iN);
 	__int64 ia = iB - iA;
 	LargeNumber A,a;
 
 	SetLN(tN, iN);
-//	SetLN(A, iA);
-//	SetLN(a, ia);
 
+#ifndef TRY_B_INSTEAD_A
 	printf("Expected solution A=%lld,a=%lld\n", iA, ia);
+#else
+	printf("Expected solution B=%lld,b=%lld\n", iB, ia);
+#endif
 
 	//init the coefficients
 	LargeNumber EndSignal;
@@ -63,8 +114,8 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 	int SolutionFound = 0;
 	int SolutionsFound = 0;
 	int CandidatesFound = 0;
-	int CrossChecks = 0;
-	int StepsTaken = 0;
+	__int64 StepsTaken = 0;
+//	int CrossChecks = 0;
 //	char DEBUG_Combinations_generated[ParamCount][99 + 1];
 //	memset(DEBUG_Combinations_generated, 0, sizeof(DEBUG_Combinations_generated));
 	do
@@ -79,8 +130,12 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 			DEBUG_Combinations_generated[i][Combo % 100] = 1;
 		}*/
 
+#ifndef TRY_B_INSTEAD_A
 		int Match = CheckCandidateMatch_aa_ab(&tN, vLN, ParamCount, AtPos, &TempRes);
-		if (Match == 1)
+#else
+		int Match = CheckCandidateMatch_Ba_BB(&tN, vLN, ParamCount, AtPos, &TempRes);
+#endif
+		if (Match != 0)
 		{
 			CandidatesFound++;
 			if (CandidatesFound % 100 == 0)
@@ -88,11 +143,15 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 				int chars[4] = { '\\','|','/','-' };
 				printf("\r%c", chars[(CandidatesFound / 100) % 4]);
 			}
+#ifndef TRY_B_INSTEAD_A
 			SolutionFound = CheckSolution(tN, TempRes);
-			if (SolutionFound == 1)
+#else
+			SolutionFound = Match == 2;
+#endif
+			if (SolutionFound != 0)
 			{
 				SolutionsFound++;
-				printf("\r%d / %d / %d)sol : \t A:", SolutionsFound, CandidatesFound, CrossChecks);
+				printf("\r%d / %d)sol : \t A:", SolutionsFound, CandidatesFound);
 				PrintLN(A);
 				printf("\t a:");
 				PrintLN(a);
@@ -122,7 +181,7 @@ void DivTest_aa_ab(__int64 iA, __int64 iB)
 		printf("No Luck finding a solution\n");
 	else
 		printf("Done testing all possible solutions\n");
-	printf("Steps taken %d\n\n", StepsTaken);
+	printf("Steps taken %lld\n\n", StepsTaken);
 
 /*	for (int i = 0; i < ParamCount - 1; i++)
 		for (int j = 0; j < 100; j++)
@@ -137,5 +196,35 @@ void DivTestaa_ab()
 //	DivTest_aa_ab(6871, 7673); // N = 52721183 , SN = 7260
 	DivTest_aa_ab(26729, 31793); // N = 849795097 , SN = 29151
 	DivTest_aa_ab(784727, 918839); // N = 721037771953
-//	DivTest_aa_ab(6117633, 7219973);
+	DivTest_aa_ab(6117633, 7219973);
+	DivTest_aa_ab(26729, 61781);
+	DivTest_aa_ab(11789, 61781);
 }
+
+/*
+Expected solution A=26729,a=5064. N = 849795097, SQRT(N) = 29151. Bruteforce trycount 14.575
+1 / 4.465)sol :   A:26729         a:05064
+/Done testing all possible solutions
+Steps taken 1120559
+
+Expected solution A=784727,a=134.112. N = 721037771953, SQRT(N) = 849139. Bruteforce trycount 424.569
+1 / 81.236)sol :          A:784727
+/Done testing all possible solutions
+Steps taken 32837440
+
+Expected solution A=6117633,a=110.2340. N = 44169145083909, SQRT(N) = 6645987. Bruteforce trycount 3.322.993
+1 / 268.056)sol :         A:6117633
+-Done testing all possible solutions
+Steps taken 421761963
+
+Expected solution A=26729,a=35052. N = 1651344349, SQRT(N) = 40636. Bruteforce trycount 20.318
+1 / 9.365)sol :   A:26729         a:35052
+2 / 9.801)sol :   A:26729         a:35052
+\Done testing all possible solutions
+Steps taken 1859972
+
+Expected solution A=11789,a=49992. N = 728336209, SQRT(N) = 26987. Bruteforce trycount 13.493
+1 / 8.069)sol :   A:11789         a:49992
+-Done testing all possible solutions
+Steps taken 1689573
+*/

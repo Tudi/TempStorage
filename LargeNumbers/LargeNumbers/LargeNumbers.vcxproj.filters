@@ -147,6 +147,9 @@
     <ClCompile Include="DivTest_aa+ab.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_ab6_recursive.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">

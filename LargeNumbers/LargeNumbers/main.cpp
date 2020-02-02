@@ -6,7 +6,7 @@ void main()
 //    TestSetAddMull();
 //    DivTest99ab();
 //    DivTestab();
-//	DivTestaa_ab();
+	DivTestaa_ab(); // in tests, might be better than simple brute force ?
 //    DivTest9911ab();
 //    DivTestabc();
 //    DivTest_SQNM();
@@ -19,7 +19,7 @@ void main()
 //	DivTest_xytn2();
 //	DivTestLineDraw(); // very fast
 //	DivTestLineDraw2();
-	DivTestaaToN(); // maybe not finished
+//	DivTestaaToN(); // 
 //	DivTestLineDraw3(); // not finished
 //	DivTestxyUpdate();
 //	DivTestSQSQ();
@@ -42,6 +42,7 @@ void main()
 //	DivTestLineDraw9(); // step by step increase
 //	DivTestab4();
 //	DivTestab5();
+//	DivTestab6();
 
     printf("All done\n");
 }
