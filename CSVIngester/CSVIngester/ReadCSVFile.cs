@@ -787,7 +787,7 @@ namespace CSVIngester
 
         public static void ReadAmazonDeleteCSVFile(string FileName)
         {
-            string TableName = "Amazon_Orders";
+            string TableName = "AMAZON_BLOCKED";
             if (GlobalVariables.ImportingToDBBlock.Length != 0)
             {
                 GlobalVariables.Logger.Log("Another thread is already importing in table " + GlobalVariables.ImportingToDBBlock + ". Please wait until it finishes");
@@ -859,11 +859,17 @@ namespace CSVIngester
 
                     //only process false rows ( i know we just checked, For the sake of code readability .. )
                     if (DispatchedCol.ToLower() != "False".ToLower())
+                    {
+//                        DBHandler.InvenotryInsertResultCodes ret2 = GlobalVariables.DBStorage.IsAmazonOrderBlocked(IdCol);
+//                        if(ret2 == DBHandler.InvenotryInsertResultCodes.RowExisted)
+                            GlobalVariables.DBStorage.DeleteAmazonOrderBlocked(IdCol);
                         continue;
-
-                    DBHandler.InvenotryInsertResultCodes ret1 = GlobalVariables.DBStorage.InsertAmazonBlocked("AMAZON_BLOCKED", IdCol, DispatchedCol, DateCol, TitleCol, PriceCol, VatCol, BuyerCol, AddressCol, ASINCol, PaymentCol);
+                    }
 
                     //try to add the new row to the DB
+                    DBHandler.InvenotryInsertResultCodes ret1 = GlobalVariables.DBStorage.InsertAmazonBlocked("AMAZON_BLOCKED", IdCol, DispatchedCol, DateCol, TitleCol, PriceCol, VatCol, BuyerCol, AddressCol, ASINCol, PaymentCol);
+
+                    //delete the order if already exists
                     DBHandler.InvenotryInsertResultCodes ret = GlobalVariables.DBStorage.DeleteAmazonOrder(IdCol);
                     if (ret == DBHandler.InvenotryInsertResultCodes.RowDeleted)
                         RowsInserted++;

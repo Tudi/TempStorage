@@ -120,6 +120,8 @@ namespace CSVIngester
                 Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonOrdersCSVFile(ThreadParam, "Amazon_Refunds", "AMAZON-REFUNDS", false));
             else if (FIG5.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadPaypalSalesCSVFile(ThreadParam));
+            else if(FIG6.IsChecked == true)
+                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonDeleteCSVFile(ThreadParam));
         }
 
         private void DeleteSelectedDatabase_Click(object sender, RoutedEventArgs e)
@@ -244,19 +246,6 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("Exporting 'PURCHASES RETURNS' report - started");
                 GlobalVariables.DBStorage.ExportAmazonAccountingSalesReport("Amazon_Refunds", "PURCHASES RETURNS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'PURCHASES RETURNS' report - Finished");
-            }
-        }
-
-        private void DeleteNonShippedButton_Click(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.DefaultExt = ".csv";
-            dlg.Filter = "CSV Files (*.csv)|*.csv";
-            Nullable<bool> result = dlg.ShowDialog();
-            if (result == true)
-            {
-                string filename = dlg.FileName;
-                Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonDeleteCSVFile(filename));
             }
         }
     }

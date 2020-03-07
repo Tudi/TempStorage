@@ -21,6 +21,7 @@
                     <RadioButton Name="FIG2" GroupName="FileImportGroup" Content="vat.csv" />
                     <RadioButton Name="FIG3" GroupName="FileImportGroup" Content="amazon-orders.csv" />
                     <RadioButton Name="FIG4" GroupName="FileImportGroup" Content="amazon-refunds.csv"/>
+                    <RadioButton Name="FIG6" GroupName="FileImportGroup" Content="amazon-blocked.csv"/>
                     <RadioButton Name="FIG5" GroupName="FileImportGroup" Content="paypal.csv"/>
                 </StackPanel>
             </GroupBox>
@@ -46,7 +47,7 @@
                         <RadioButton Name="DDG1" GroupName="DatabaseDeleteGroup" Content="INVENTORY" IsChecked="True"/>
                         <RadioButton Name="DDG2" GroupName="DatabaseDeleteGroup" Content="AMAZON-ORDERS" />
                         <RadioButton Name="DDG3" GroupName="DatabaseDeleteGroup" Content="AMAZON-REFUNDS" />
-                        <RadioButton Name="DDG6" GroupName="DatabaseDeleteGroup" Content="AMAZON-Blocked"/>
+                        <RadioButton Name="DDG6" GroupName="DatabaseDeleteGroup" Content="AMAZON-BLOCKED"/>
                         <RadioButton Name="DDG4" GroupName="DatabaseDeleteGroup" Content="PAYPAL-SALES"/>
                         <RadioButton Name="DDG5" GroupName="DatabaseDeleteGroup" Content="PAYPAL-REFUNDS"/>
                     </StackPanel>
@@ -55,8 +56,7 @@
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,5,5,5" Click="UpdateVatButton_Click"/>
-                <Button Name="DeleteNonShippedButton" Content="Delete Blocked" Margin="5,5,5,5" Click="DeleteNonShippedButton_Click"/>
+                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,25,5,5" Click="UpdateVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 
@@ -69,7 +69,7 @@
                     <RadioButton Name="RTG1" GroupName="RaportTypeGroup" Content="INVENTORY" IsChecked="True"/>
                     <RadioButton Name="RTG2" GroupName="RaportTypeGroup" Content="AMAZON-ORDERS" />
                     <RadioButton Name="RTG3" GroupName="RaportTypeGroup" Content="AMAZON-REFUNDS" />
-                    <RadioButton Name="RTG6" GroupName="RaportTypeGroup" Content="AMAZON-Blocked"/>
+                    <RadioButton Name="RTG6" GroupName="RaportTypeGroup" Content="AMAZON-BLOCKED"/>
                     <RadioButton Name="RTG4" GroupName="RaportTypeGroup" Content="PAYPAL-SALES"/>
                     <RadioButton Name="RTG5" GroupName="RaportTypeGroup" Content="PAYPAL-REFUNDS"/>
                 </StackPanel>
@@ -127,7 +127,7 @@
                         <DatePicker Name="AExportEndDate"  Grid.Row="1" Grid.Column="1"/>
                     </Grid>
                 </GroupBox>
-                <Button Name="CreateAccountingRaportButton" Content="Create Report" Margin="5" Click="CreateAccountingRaportButton_Click"/>
+                <Button Name="CreateAccountingRaportButton" Content="Create Report" Margin="5,20" Click="CreateAccountingRaportButton_Click"/>
             </StackPanel>
         </StackPanel>
         <StackPanel>

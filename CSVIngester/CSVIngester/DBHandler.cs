@@ -473,6 +473,19 @@ namespace CSVIngester
             return InvenotryInsertResultCodes.RowDidNotExist;
         }
 
+        public void DeleteAmazonOrderBlocked(string IdCol)
+        {
+            int ORDER_ID_hashhash = IdCol.GetHashCode();
+
+            //check if ts record already exists
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "Delete FROM AMAZON_BLOCKED where ORDER_ID_hash=@ORDER_ID_hash and order_id=@order_id";
+            cmd.Parameters.AddWithValue("@ORDER_ID_hash", ORDER_ID_hashhash);
+            cmd.Parameters.AddWithValue("@order_id", IdCol);
+            cmd.Prepare();
+            cmd.ExecuteNonQuery();
+        }
+
         public InvenotryInsertResultCodes InsertAmazonBlocked(string TableName, string IdCol, string DispatchedCol, string DateCol, string TitleCol, string PriceCol, string VatCol, string BuyerCol, string AddressCol, string ASINCol, string PaymentCol)
         {
             InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
@@ -611,6 +624,23 @@ namespace CSVIngester
                     record.SELLER_VAT = rdr.GetString(12);
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
+            }
+            if (ExportInventoryCSV.RowsWritten() == 0)
+            {
+                record.date = "";
+                record.ORDER_ID = "";
+                record.TITLE = "";
+                record.GROSS = 0;
+                record.vat = 0;
+                record.Name = "";
+                record.ADDRESS = "";
+                record.asin = "";
+                record.NET = "";
+                record.vat_rate = "";
+                record.ACCOUNT = "";
+                record.SELLER = "";
+                record.SELLER_VAT = "";
+                ExportInventoryCSV.WriteDynamicFileHeader(record);
             }
             ExportInventoryCSV.Dispose();
         }
@@ -814,6 +844,29 @@ namespace CSVIngester
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
+            if (ExportInventoryCSV.RowsWritten() == 0)
+            {
+                record.Date = "";
+                record.Name = "";
+                record.Gross = "";
+                record.Paypal_Fee = "";
+                record.Transaction_ID = "";
+                record.Title = "";
+                record.Item_Id = "";
+                if (TableName == "PAYPAL_SALES")
+                {
+                    record.Address = "";
+                    record.Phone = "";
+                }
+                else
+                {
+                    record.Reference_Id = "";
+                }
+                record.Vat = "";
+                record.NET = "";
+                record.vat_rate = "";
+                ExportInventoryCSV.WriteDynamicFileHeader(record);
+            }
             ExportInventoryCSV.Dispose();
         }
 
@@ -997,6 +1050,39 @@ namespace CSVIngester
                 }
             }
             GlobalVariables.ImportingToDBBlock ="";
+            if (ExportSalesCSV.RowsWritten() == 0)
+            {
+                dynamic record = new System.Dynamic.ExpandoObject();
+                record.Date = "";
+                record.Name = "";
+                record.Gross = "";
+                record.Paypal_Fee = "";
+                record.Transaction_ID = "";
+                record.Title = "";
+                record.Item_Id = "";
+                record.Address = "";
+                record.Phone = "";
+                record.Vat = "";
+                record.NET = "";
+                record.vat_rate = "";
+                ExportSalesCSV.WriteDynamicFileHeader(record);
+            }
+            if (ExportRefundsCSV.RowsWritten() == 0)
+            {
+                dynamic record = new System.Dynamic.ExpandoObject();
+                record.Date = "";
+                record.Name = "";
+                record.Gross = "";
+                record.Paypal_Fee = "";
+                record.Transaction_ID = "";
+                record.Title = "";
+                record.Item_Id = "";
+                record.Reference_Id = "";
+                record.Vat = "";
+                record.NET = "";
+                record.vat_rate = "";
+                ExportRefundsCSV.WriteDynamicFileHeader(record);
+            }
             ExportSalesCSV.Dispose();
             ExportRefundsCSV.Dispose();
             GlobalVariables.Logger.Log("Update VAT - Finished");
@@ -1060,6 +1146,19 @@ namespace CSVIngester
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
+            if (ExportInventoryCSV.RowsWritten() == 0)
+            {
+                record.DATE = "";
+                record.Type = "";
+                record.DETAILS = "";
+                record.CURRENCY = "GBP";
+                record.GROSS = "";
+                record.Vat = "";
+                record.NET = "";
+                record.FEES = 0;
+                record.VAT_RATE = "";
+                ExportInventoryCSV.WriteDynamicFileHeader(record);
+            }
             ExportInventoryCSV.Dispose();
         }
 
@@ -1120,6 +1219,19 @@ namespace CSVIngester
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
+            if (ExportInventoryCSV.RowsWritten() == 0)
+            {
+                record.DATE = "";
+                record.Type = "";
+                record.DETAILS = "";
+                record.CURRENCY = "GBP";
+                record.GROSS = "";
+                record.Vat = "";
+                record.NET = "";
+                record.FEES = 0;
+                record.VAT_RATE = "";
+                ExportInventoryCSV.WriteDynamicFileHeader(record);
+            }
             ExportInventoryCSV.Dispose();
         }
 
@@ -1129,7 +1241,7 @@ namespace CSVIngester
             long TEnd = DateParser.DateTimeToMinutes(EndDate);
 
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
-            ExportInventoryCSV.CreateDynamicFile("./reports/Amazon_Blocked.csv");
+            ExportInventoryCSV.CreateDynamicFile("./reports/AMAZON_BLOCKED.csv");
             var cmd = new SQLiteCommand(m_dbConnection);
             cmd.CommandText = "SELECT date,ORDER_ID,DISPATCH,TITLE,PRICE,vat,BuyerName,Buyeraddr,asin,PAYMENT FROM AMAZON_BLOCKED where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
             cmd.Parameters.AddWithValue("@TStart", TStart);
@@ -1184,6 +1296,20 @@ namespace CSVIngester
                     record.PaymentMethod = "";
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
+            }
+            if(ExportInventoryCSV.RowsWritten() == 0)
+            {
+                record.DATE = "";
+                record.Id = "";
+                record.DISPATCH = "";
+                record.TITLE = "";
+                record.Price = "";
+                record.Vat = "";
+                record.Buyer = "";
+                record.Address = "";
+                record.ASIN = "";
+                record.PaymentMethod = "";
+                ExportInventoryCSV.WriteDynamicFileHeader(record);
             }
             ExportInventoryCSV.Dispose();
         }
