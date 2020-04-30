@@ -180,6 +180,7 @@
     <ClCompile Include="DivTest_SQNM.cpp" />
     <ClCompile Include="DivTest_SqSq.cpp" />
     <ClCompile Include="DivTest_SqSq2.cpp" />
+    <ClCompile Include="DivTest_SqSq3.cpp" />
     <ClCompile Include="DivTest_xytn.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />

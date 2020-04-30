@@ -6,7 +6,7 @@ void main()
 //    TestSetAddMull();
 //    DivTest99ab();
 //    DivTestab();
-	DivTestaa_ab(); // in tests, might be better than simple brute force ?
+//	DivTestaa_ab(); // in tests, might be better than simple brute force ?
 //    DivTest9911ab();
 //    DivTestabc();
 //    DivTest_SQNM();
@@ -43,6 +43,7 @@ void main()
 //	DivTestab4();
 //	DivTestab5();
 //	DivTestab6();
+    DivTestsqsq3();
 
     printf("All done\n");
 }

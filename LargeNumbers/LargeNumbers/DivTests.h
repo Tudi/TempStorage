@@ -51,3 +51,4 @@ void DivTestab4();
 void DivTestab5();
 void DivTestaa_ab();
 void DivTestab6();
+void DivTestsqsq3();
