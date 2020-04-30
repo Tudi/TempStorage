@@ -33,6 +33,7 @@ namespace CSVIngester
         StreamWriter writer;
         CsvWriter csv;
         string FileName;
+        int RowsAdded = 0;
         public void CreateInventoryRunFile(string FileName_p)
         {
             System.IO.Directory.CreateDirectory("./reports");
@@ -63,6 +64,7 @@ namespace CSVIngester
         {
             csv.WriteRecord<InventoryRunDescriptor>(new InventoryRunDescriptor(ebay_id, asin, vat));
             csv.NextRecord();
+            RowsAdded++;
         }
         public void Dispose()
         {
@@ -86,8 +88,19 @@ namespace CSVIngester
         }
         public void WriteDynamicFileRow(dynamic RowData)
         {
+            RowsAdded++;
             csv.WriteRecord<dynamic>(RowData);
             csv.NextRecord();
+        }
+        public void WriteDynamicFileHeader(dynamic RowData)
+        {
+            RowsAdded++;
+            csv.WriteDynamicHeader(RowData);
+            csv.NextRecord();
+        }
+        public int RowsWritten()
+        {
+            return RowsAdded;
         }
     }
 }
