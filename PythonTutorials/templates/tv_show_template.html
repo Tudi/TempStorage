@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TVShow selection main page</title>
+</head>
+<body>
+    my tv show name : {{ tv_show.name }}<br/>
+    {% for episode in tv_show.episodes %}
+        <li><a href="">{{ episode.name }}</a></li>
+    {% endfor %}
+</body>
+</html>

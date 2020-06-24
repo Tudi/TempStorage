@@ -1,0 +1,2 @@
+line2 will be found
+  line2 found it again

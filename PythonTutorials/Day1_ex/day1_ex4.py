@@ -1,0 +1,10 @@
+str = "abcdefghijklmn"
+print("Full string is", str)
+print("Third char is ", str[3])
+print("Second to last char is ", str[-2])
+print("First 5 chars are ", str[0:5])
+print("all but last 2 chars are : ", str[0:-2])
+print("all chars at even indices : ", str[::2])
+print("all chars at odd indices : ", str[1::2])
+print("all chars in reverse order : ", str[::-1])
+print("every second chars in reverse order : ", str[::-2])

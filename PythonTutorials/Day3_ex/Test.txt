@@ -1,0 +1,4 @@
+line 1
+line2 will be found
+line 3
+  line2 found it again
