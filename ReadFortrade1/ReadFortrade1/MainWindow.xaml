@@ -19,9 +19,19 @@
                 <TextBox Name="PrevDailyAvg1" Width="300"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label Content="Hourly change%" Width="90"/>
-                <TextBox Name="PrevHourlyChangePCTRelative1" Width="600"/>
-            </StackPanel>        
+                <Label Content="Hourly change%" Width="100"/>
+                <TextBox Name="PrevHourlyChangePCTRelative1" Width="400"/>
+                <Label Content="Daily MinMax/Avg%" Width="120"/>
+                <TextBox Name="PrevDailyMaxDeviations1" Width="400"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Sell above" Width="120"/>
+                <TextBox Name="RecommendedSellStart1" Width="50"/>
+                <Label Content="Yesterda Avg" Width="120"/>
+                <TextBox Name="YesterdayAvg1" Width="50"/>
+                <Label Content="Buy below" Width="120"/>
+                <TextBox Name="RecommendedBuyStart1" Width="50"/>
+            </StackPanel>
         </StackPanel>
         <TextBox Name="ConsoleTextbox" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Visible" TextWrapping="Wrap" Height="250"></TextBox>
         <TextBox Name="TimeoutTextbox"></TextBox>

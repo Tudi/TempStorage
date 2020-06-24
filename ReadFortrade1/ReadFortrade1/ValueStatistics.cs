@@ -254,5 +254,48 @@ namespace ReadFortrade1
             return ToPrint;
         }
 
+
+        private static List<InstrumentValuePair> ExpandValues(List<InstrumentValuePair> values)
+        {
+            List<InstrumentValuePair> ret = new List<InstrumentValuePair>();
+            InstrumentValuePair Prev = null;
+            foreach (var itr in values)
+            {
+                if (Prev == null)
+                {
+                    Prev = itr;
+                    continue;
+                }
+                //calculate the average value between the 2 points
+                Debug.Assert(Prev.Stamp < itr.Stamp); // values are in theory ordered by increasing timestamps
+                long TimeDiff = itr.Stamp - Prev.Stamp;
+                double DiffValue = Prev.SellValue - itr.SellValue;
+                double ValueIncrease = DiffValue / TimeDiff;
+                for (int i = 0; i < TimeDiff; i++)
+                    ret.Add(new InstrumentValuePair(Prev.Stamp + i, Prev.SellValue + i * ValueIncrease));
+                Prev = itr;
+            }
+            return ret;
+        }
+
+        public static double GetAvgMinMaxBelowAvg(string InstrumentName, int PeriodInSeconds, int BelowAvg = 1)
+        {
+            long Now = DBHandler.GetUnixStamp();
+            long StartStamp1 = Now - 1 * TimeValues.DayToSecond;
+            long EndStamp1 = Now - 0 * TimeValues.DayToSecond;
+            double Average1 = ValueStatistics.GetInstrumentAveragePricePeriod(InstrumentName, StartStamp1, EndStamp1);
+            List<InstrumentValuePair> values = Globals.Persistency.GetInstrumentValues(InstrumentName, StartStamp1, EndStamp1);
+            values = ExpandValues(values);
+            double SumOfValue = 0;
+            double ValueCount = 0;
+            foreach(var itr in values)
+                if((BelowAvg == 1 && itr.SellValue <= Average1)
+                    || (BelowAvg == 0 && itr.SellValue >= Average1))
+                {
+                    SumOfValue += itr.SellValue;
+                    ValueCount++;
+                }
+            return SumOfValue / ValueCount;
+        }
     }
 }

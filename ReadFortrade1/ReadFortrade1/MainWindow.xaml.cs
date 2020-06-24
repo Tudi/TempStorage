@@ -87,6 +87,7 @@ namespace ReadFortrade1
             Globals.vHistory = new ValueHistory();
             Globals.vHistory.LoadFromPersistency();
 
+            //change this for specific app behavior
             int ExecuteFunction = 1;
 
             if (ExecuteFunction == 1)
@@ -108,15 +109,16 @@ namespace ReadFortrade1
         }
         private void ShowSomeStatistics()
         {
+//            ValueStatistics.GetInstrumentDailyInversionCount("Palladium (PA)", 10, 12, 0.0001, 2);
             ValueStatistics.CalcInversionEachInstrument(10, 10 + 2, 0.0001, 2);
             ValueStatistics.CalcTransactionsEachInstrument();
             ValueStatistics.GetTopXLastestTransactionsAllInstruments();
             ValueStatistics.GetChangePCTAllInstruments();
-            Globals.Logger.Log("Daily Pivots:");
+/*            Globals.Logger.Log("Daily Pivots:");
             ValueStatistics.CalcPivot("Heating Oil (HO)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
             ValueStatistics.CalcPivot("Gasoline (RB)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
             ValueStatistics.CalcPivot("Crude Oil (CL)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
-            ValueStatistics.CalcPivot("Natural Gas (NG)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);
+            ValueStatistics.CalcPivot("Natural Gas (NG)", TimeValues.DayToSecond, TimeValues.DayToSecond, 7);*/
         }
         private void ImportExtenalDB()
         {
@@ -155,6 +157,10 @@ namespace ReadFortrade1
 
             string PrevDailyAvgStr = ValueStatistics.CalcPivot(SelectedIstrument, TimeValues.DayToSecond, TimeValues.DayToSecond, 6, false);
             PrevDailyAvg1.Text = PrevDailyAvgStr;
+
+            RecommendedSellStart1.Text = ValueStatistics.GetAvgMinMaxBelowAvg(SelectedIstrument, TimeValues.DayToSecond, 0).ToString();
+            YesterdayAvg1.Text = ValueStatistics.CalcPivot(SelectedIstrument, TimeValues.DayToSecond, TimeValues.DayToSecond, 1, false);
+            RecommendedBuyStart1.Text = ValueStatistics.GetAvgMinMaxBelowAvg(SelectedIstrument, TimeValues.DayToSecond, 1).ToString();
         }
     }
 }
