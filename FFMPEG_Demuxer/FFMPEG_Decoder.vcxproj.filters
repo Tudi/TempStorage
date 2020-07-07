@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveAudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\lib\avcodec.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\avdevice.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\avfilter.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\avformat.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\avutil.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libavcodec.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libavdevice.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libavfilter.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libavformat.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libavutil.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libpostproc.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libswresample.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\libswscale.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\postproc.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\swresample.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="..\lib\swscale.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lib\avcodec-58.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\avdevice-58.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\avfilter-7.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\avformat-58.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\avutil-56.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\postproc-55.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\swresample-3.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\lib\swscale-5.def">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SaveImage.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SaveAudio.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleListener.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
