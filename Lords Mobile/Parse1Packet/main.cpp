@@ -30,11 +30,17 @@ void OnlineScanParsing()
 	//parse network packets and intiate a http-post to insert them into the DB
 	CreateBackgroundPacketProcessThread();
 
+	//needs to be before we start listening to console
+	int PickedAdapter = PickAdapter(-1);
+
 	//listen to console to send commands to game control
 	StartListenConsole();
 
+//	Sleep(10000);
+//	QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, "test", NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0);
+
 	// listen to network interface, assemble packets, queue them to the process queue
-	StartCapturePackets(1);
+	StartCapturePackets(PickedAdapter);
 }
 
 void main()

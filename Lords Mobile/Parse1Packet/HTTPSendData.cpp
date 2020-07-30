@@ -90,19 +90,37 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 
 	// website url
 //	string urlhttp = "127.0.0.1 : 8081";
+	string gethttp2 = get_http;
 	string url = "127.0.0.1";
 	if (p_url != "")
 		url = p_url;
-	int URLPort = 8081;
+	int URLPort = 80;
 	if (p_port > 0)
 		URLPort = p_port;
-	string urlhttp = url + " : " + to_string(URLPort);
+	string urlhttp = url + ":" + to_string(URLPort);
 
 	get_http += " HTTP / 1.1\r\n";
-	get_http += "Host: " + urlhttp;
+	get_http += "Host: " + urlhttp + " \r\n";
+//	get_http += "Content-Type: text/html \r\n";
+//	get_http += "Content-Length: " + to_string((int)gethttp2.length()) + " \r\n";
 	//	get_http += " : " + URLPort;
-	get_http += " \r\n";
 	get_http += "Connection: close\r\n\r\n";
+//	get_http += gethttp2 + "\r\n";
+
+#if LIVING_IN_A_PERFECT_WORLD
+	get_http = gethttp2;
+	get_http += " HTTP / 1.1\r\n";
+	get_http += "Host: rum-lm.atwebpages.com\r\n";
+	get_http += "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n";
+	get_http += "Accept-Encoding: gzip, deflate\r\n";
+	get_http += "Accept-Language: en-US,en;q=0.5\r\n";
+	get_http += "Cache-Control: max-age=0\r\n";
+	get_http += "Connection: keep-alive\r\n";
+	get_http += "Cookie: __test=a9a734e4adfb6a692b27abfb47d0e7bd; PHPSESSID=02c1e5853824b12a391bc7ab274454e5\r\n";
+	get_http += "Referer: http://rum-lm.epizy.com/index.php\r\n";
+	get_http += "Upgrade-Insecure-Requests: 1\r\n";
+	get_http += "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0\r\n\r\n";
+#endif
 
 	Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	host = gethostbyname(url.c_str());
@@ -150,10 +168,10 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 
 int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
-	printf("Send http for player %s, vip %d\n", name, vip);
+	printf("\rSend http for player %s, vip %d", name, vip);
 
 	//HTTP GET
-	string get_http = "GET /ImportPlayerInfoFromNetwork3.php?";
+	string get_http = "GET /LM/UploadData.php?";
 	AppendURLQuery(get_http, "k", k, 1);
 	AppendURLQuery(get_http, "x", x);
 	AppendURLQuery(get_http, "y", y);

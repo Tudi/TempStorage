@@ -247,12 +247,13 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	}
 }
 
-pcap_t				* adapterHandle = NULL;
+
+pcap_t* adapterHandle = NULL;
 char                 errorBuffer[PCAP_ERRBUF_SIZE];
-int StartCapturePackets(int AutoPickAdapter)
+int PickAdapter(int AutoPickAdapter)
 {
-	pcap_if_t           * allAdapters;
-	pcap_if_t           * adapter;
+	pcap_if_t* allAdapters;
+	pcap_if_t* adapter;
 
 	// retrieve the adapters from the computer
 	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &allAdapters, errorBuffer) == -1)
@@ -296,9 +297,37 @@ int StartCapturePackets(int AutoPickAdapter)
 	else
 		adapterNumber = AutoPickAdapter; //this is my default wireless adapter
 
+	// free the adapter list
+	pcap_freealldevs(allAdapters);
+
+	return adapterNumber;
+}
+
+int StartCapturePackets(int AutoPickAdapter)
+{
+	pcap_if_t           * allAdapters;
+	pcap_if_t           * adapter;
+
+	// retrieve the adapters from the computer
+	if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &allAdapters, errorBuffer) == -1)
+	{
+		fprintf(stderr, "Error in pcap_findalldevs_ex function: %s\n", errorBuffer);
+		return -1;
+	}
+
+	// if there are no adapters, print an error
+	if (allAdapters == NULL)
+	{
+		printf("\nNo adapters found! Make sure WinPcap is installed.\n");
+		return 0;
+	}
+
+	// print the list of adapters along with basic information about an adapter
+	int adapterNumber = AutoPickAdapter; //this is my default wireless adapter
+
 	// parse the list until we reach the desired adapter
 	adapter = allAdapters;
-	for (crtAdapter = 0; crtAdapter < adapterNumber - 1; crtAdapter++)
+	for (int crtAdapter = 0; crtAdapter < adapterNumber - 1; crtAdapter++)
 		adapter = adapter->next;
 
 	// open the adapter
