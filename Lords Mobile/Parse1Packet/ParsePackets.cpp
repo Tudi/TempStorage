@@ -418,7 +418,8 @@ void ProcessPacket1(unsigned char *packet, int size)
 		GiftReceived22* pkt = (GiftReceived22*)packet;
 		QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
 		pkt->Name[12] = 0;
-		printf("\nCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
+		if(pkt->Name[0] != 0)
+			printf("\nCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
 	}
 	return;
 #endif
