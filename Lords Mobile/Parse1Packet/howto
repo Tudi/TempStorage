@@ -18,7 +18,8 @@ Building
 Installation
 =======================
 Database:
-	- import database
+	- create database "RUM_LM"
+	- import database "db.sql"
 	- if database has some old data. delete those ( except monstertypes table )
 Web:
 	- put website files under zwamp webserver http folder

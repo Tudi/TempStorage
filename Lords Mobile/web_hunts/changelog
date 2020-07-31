@@ -1,0 +1,24 @@
+============================================
+Todo:
+============================================
+- decode all 250 ( or more ) gift types. Right now only at 24
+- make logs account based ( new column )
+- make new table to log gifts from open gift event
+- log server time and computer time. Store values based on game time. Substract conputer time from game server time
+- make printed values game server time based
+- load configs from config file
+- allow multiple http upload locations based on config
+- parse packet for opening gifts
+- count unknown gifts. To be able to guess later the type of them
+
+============================================
+Changelog
+============================================
+31/7/2020
+- added changelog + todo to the end of the index
+- convert days to full date for statistics
+- stats for multi day interval get green color based on number of days passed
+- list is ordered based on : "value of gift"/"cost of gift" => i can get 6.4 lvl 1 gifts from the cost of lvl 2 gift but lvl 2 gift is 4 times better
+  Score for lvl 2 gift is : 4 / 6.4 = 0.625
+- on index page, added quick jump to specific stats
+- make a ranking column for showstats
