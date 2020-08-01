@@ -7,7 +7,7 @@ echo "<a href=\"#pastweek\">Past week&nbsp;&nbsp;&nbsp;</a>";
 echo "<a href=\"#pastmonth\">Past month&nbsp;&nbsp;&nbsp;</a>";
 echo "<br>";
 
-echo "Webserver time now : ".GetCompensatedDate();
+//echo "Webserver time now : ".GetCompensatedDate();
 
 $timezone	= new DateTimeZone( 'GMT' );
 $today      = new DateTime('now', $timezone);

@@ -32,11 +32,6 @@ if(isset($MergedList2))
 	unset($MergedList2);
 	$MergedList2 = NULL;
 }
-$lvlCoeff[1] = 1;
-$lvlcoeff[2] = 4/6; //costs 6 times more, gives 4 times reward
-$lvlcoeff[3] = (4*4)/(6*6); //costs 6 times more, gives 4 times reward
-$lvlcoeff[4] = (4*4*4)/(6*6*6); //costs 6 times more, gives 4 times reward
-$lvlcoeff[5] = (4*4*4*4)/(6*6*6*6); //costs 6 times more, gives 4 times reward
 //get the list from the popup events
 {
 	$query1 = "select PlayerName,lvl1,lvl2,lvl3,lvl4,lvl5 from PlayerHunts where day>=$day+$start and day<=$day+$end and year=$year";
@@ -80,11 +75,16 @@ $lvlcoeff[5] = (4*4*4*4)/(6*6*6*6); //costs 6 times more, gives 4 times reward
 	if( $MergedList == NULL || !isset($MergedList))
 		die();
 	//calc score
+	$lvlCoeff[1] = 1;
+	$lvlCoeff[2] = 4/6; //costs 6 times more, gives 4 times reward
+	$lvlCoeff[3] = (4*4)/(6*6); //costs 6 times more, gives 4 times reward
+	$lvlCoeff[4] = (4*4*4)/(6*6*6); //costs 6 times more, gives 4 times reward
+	$lvlCoeff[5] = (4*4*4*4)/(6*6*6*6); //costs 6 times more, gives 4 times reward
 	foreach($MergedList as $PlayerName => $score)
 	{
 		@$MergedList[$PlayerName][0] = 0;
 		for($lvl=1;$lvl<=5;$lvl++)
-			@$MergedList[$PlayerName][0] += $MergedList[$PlayerName][$lvl] * $lvlCoeff[$lvl];
+			$MergedList[$PlayerName][0] += $MergedList[$PlayerName][$lvl] * $lvlCoeff[$lvl];
 	}
 	//get total kills
 	foreach($MergedList as $PlayerName => $score)
@@ -142,6 +142,40 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 			</tr>
 			<?php
 		}
+	?>
+	<?php
+	//get a list of distinct names that hunted past month and print those that did not yet hunt
+//	if( $start==0 && $end==0)
+	{
+		$query1 = "select distinct(PlayerName) from PlayerHunts where day>=($day-31) and year=$year";
+		$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
+		while(list($PlayerName1) = mysqli_fetch_row($result1))
+		{
+			//check if the name is already printed as hunted
+			$AlreadyHunted = 0;
+			foreach($MergedList as $key => $score)
+				if( strcmp($PlayerName1,$score[-1])==0 )
+				{
+//					echo "equals=$PlayerName1,${score[-1]} ";
+					$AlreadyHunted = 1;
+					break 1;
+				}
+			if($AlreadyHunted == 1)
+				continue;
+			
+			?>
+			<tr bgcolor="#FFAAAA">
+				<td></td>
+				<td><?php echo $PlayerName1;?></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<?php
+		}
+	}
 	?>
 	<tr>
 		<td><?php echo $TTKills[0];?></td>
