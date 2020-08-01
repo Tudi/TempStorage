@@ -1,12 +1,12 @@
 <?php
 function GetYear()
 {
-	return date("Y");
+	return date("Y", GetCompensatedTime());
 }
 
 function GetDayOfYear()
 {
-	return date('z') + 1;
+	return date('z', GetCompensatedTime()) + 1;
 }
 
 function getDateFromDay($dayOfYear, $year) 
@@ -14,6 +14,18 @@ function getDateFromDay($dayOfYear, $year)
   $date = DateTime::createFromFormat('z Y', strval($dayOfYear) . ' ' . strval($year));
   return $date;
 }
+
+function GetCompensatedTime()
+{
+	global $GameServerTimeDifference;
+	return time() + $GameServerTimeDifference * 60;
+}
+
+function GetCompensatedDate()
+{
+	return date('Y-m-d H:i:s', GetCompensatedTime());
+}
+
 function OrderMergedList($l)
 {
 	$RowsAdded=0;

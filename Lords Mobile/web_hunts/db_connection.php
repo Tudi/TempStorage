@@ -1,4 +1,5 @@
 <?php
+$GameServerTimeDifference = 0; // given in minutes
 if(!isset($db_connection_php))
 {
 	$db_connection_php = 1;
@@ -16,6 +17,8 @@ if(!isset($db_connection_php))
 	}
 
 	//connect to DB
+	$servername = "localhost";
+
 	$servername = "localhost";
 	$username = "root";
 	$password = "";

@@ -7,6 +7,15 @@ echo "<a href=\"#pastweek\">Past week&nbsp;&nbsp;&nbsp;</a>";
 echo "<a href=\"#pastmonth\">Past month&nbsp;&nbsp;&nbsp;</a>";
 echo "<br>";
 
+echo "Webserver time now : ".GetCompensatedDate();
+
+$timezone	= new DateTimeZone( 'GMT' );
+$today      = new DateTime('now', $timezone);
+$tomorrow   = new DateTime('tomorrow', $timezone);
+$difference = $today->diff($tomorrow);
+$TimeLeft = $difference->format('<br>Remaning time until tomorrow : <u><b>%h hours %i minutes </b></u>');
+echo "$TimeLeft<br>";
+
 echo "Hunting score for today:<br>";
 $start=0;
 $end=0;

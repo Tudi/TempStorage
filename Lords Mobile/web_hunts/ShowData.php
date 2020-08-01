@@ -10,21 +10,11 @@ $ServerTimeCompensation = -2;
 $StartDate = getDateFromDay($day+$start+$ServerTimeCompensation, $year);
 $EndDate = getDateFromDay($day+$end+$ServerTimeCompensation, $year);
 if($StartDate == $EndDate)
-{
 	$IntervalString = " ".$StartDate->format('d/m/Y');
-	//show remaining hours from today
-	if($start == 0)
-	{
-		$today      = new DateTime('now');
-		$tomorrow   = new DateTime('tomorrow');
-		$difference = $today->diff($tomorrow);
-		$IntervalString .= $difference->format('<br>Remaning time until tomorrow : <u><b>%h hours %i minutes </b></u>');
-	}
-}
 else
 	$IntervalString = "s ".$StartDate->format('d/m/Y')."-".$EndDate->format('d/m/Y');
 
-$DaysInterval = -($end + $start) + 1;
+$DaysInterval = $end - $start + 1;
 
 //merge multiple rows to 1
 if(isset($MergedList))
@@ -32,24 +22,81 @@ if(isset($MergedList))
 	unset($MergedList);
 	$MergedList = NULL;
 }
-
-$lvl2coef = 4/6; //costs 6 times more, gives 4 times reward
-$lvl3coef = (4*4)/(6*6); //costs 6 times more, gives 4 times reward
-$lvl4coef = (4*4*4)/(6*6*6); //costs 6 times more, gives 4 times reward
-$lvl5coef = (4*4*4*4)/(6*6*6*6); //costs 6 times more, gives 4 times reward
-$query1 = "select PlayerName,lvl1,lvl2,lvl3,lvl4,lvl5,(lvl1+$lvl2coef*lvl2+$lvl3coef*lvl3+$lvl4coef*lvl4+$lvl5coef*lvl5) as playerscore from PlayerHunts where day>=$day+$start and day<=$day+$end and year=$year order by playerscore desc";
-$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
-while(list($PlayerName,$lvl1,$lvl2,$lvl3,$lvl4,$lvl5,$score) = mysqli_fetch_row($result1))
+if(isset($MergedList1))
 {
-	@$MergedList[$PlayerName][-1] = $PlayerName;
-	@$MergedList[$PlayerName][0] += $score;
-	@$MergedList[$PlayerName][1] += $lvl1;
-	@$MergedList[$PlayerName][2] += $lvl2;
-	@$MergedList[$PlayerName][3] += $lvl3;
-	@$MergedList[$PlayerName][4] += $lvl4;
-	@$MergedList[$PlayerName][5] += $lvl5;
+	unset($MergedList1);
+	$MergedList1 = NULL;
 }
-$MergedList = OrderMergedList($MergedList);
+if(isset($MergedList2))
+{
+	unset($MergedList2);
+	$MergedList2 = NULL;
+}
+$lvlCoeff[1] = 1;
+$lvlcoeff[2] = 4/6; //costs 6 times more, gives 4 times reward
+$lvlcoeff[3] = (4*4)/(6*6); //costs 6 times more, gives 4 times reward
+$lvlcoeff[4] = (4*4*4)/(6*6*6); //costs 6 times more, gives 4 times reward
+$lvlcoeff[5] = (4*4*4*4)/(6*6*6*6); //costs 6 times more, gives 4 times reward
+//get the list from the popup events
+{
+	$query1 = "select PlayerName,lvl1,lvl2,lvl3,lvl4,lvl5 from PlayerHunts where day>=$day+$start and day<=$day+$end and year=$year";
+	$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
+	while(list($PlayerName,$lvl1,$lvl2,$lvl3,$lvl4,$lvl5) = mysqli_fetch_row($result1))
+	{
+		@$MergedList1[$PlayerName][-1] = $PlayerName;
+		@$MergedList1[$PlayerName][1] += $lvl1;
+		@$MergedList1[$PlayerName][2] += $lvl2;
+		@$MergedList1[$PlayerName][3] += $lvl3;
+		@$MergedList1[$PlayerName][4] += $lvl4;
+		@$MergedList1[$PlayerName][5] += $lvl5;
+	}
+}
+//get the list from opening gifts
+{
+	$query1 = "select PlayerName,lvl from PlayerHuntsList where day>=$day+$start and day<=$day+$end and year=$year";
+	$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
+	while(list($PlayerName,$lvl) = mysqli_fetch_row($result1))
+	{
+		@$MergedList2[$PlayerName][-1] = $PlayerName;
+		@$MergedList2[$PlayerName][$lvl] += 1;
+	}
+}
+//merge the 2 lists
+{
+	if( $MergedList1 != NULL )
+	foreach($MergedList1 as $PlayerName => $score)
+	{
+		@$MergedList[$PlayerName][-1] = $PlayerName;
+		for($lvl=1;$lvl<=5;$lvl++)
+			@$MergedList[$PlayerName][$lvl] = max($MergedList1[$PlayerName][$lvl],$MergedList2[$PlayerName][$lvl]);
+	}
+	if( $MergedList2 != NULL )
+	foreach($MergedList2 as $PlayerName => $score)
+	{
+		@$MergedList[$PlayerName][-1] = $PlayerName;
+		for($lvl=1;$lvl<=5;$lvl++)
+			@$MergedList[$PlayerName][$lvl] = max($MergedList1[$PlayerName][$lvl],$MergedList2[$PlayerName][$lvl]);
+	}
+	if( $MergedList == NULL || !isset($MergedList))
+		die();
+	//calc score
+	foreach($MergedList as $PlayerName => $score)
+	{
+		@$MergedList[$PlayerName][0] = 0;
+		for($lvl=1;$lvl<=5;$lvl++)
+			@$MergedList[$PlayerName][0] += $MergedList[$PlayerName][$lvl] * $lvlCoeff[$lvl];
+	}
+	//get total kills
+	foreach($MergedList as $PlayerName => $score)
+	{
+		for($lvl=1;$lvl<=5;$lvl++)
+		{
+			@$TTKills[0] += $MergedList[$PlayerName][$lvl];
+			@$TTKills[$lvl] += $MergedList[$PlayerName][$lvl];
+		}
+	}
+	$MergedList = OrderMergedList($MergedList);
+}
 ?>
 Hunts Made on day<?php echo $IntervalString; ?><br />
 <table border='1'>
@@ -96,4 +143,13 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 			<?php
 		}
 	?>
+	<tr>
+		<td><?php echo $TTKills[0];?></td>
+		<td>Total Kills</td>
+		<td><?php echo $TTKills[1];?></td>
+		<td><?php echo $TTKills[2];?></td>
+		<td><?php echo $TTKills[3];?></td>
+		<td><?php echo $TTKills[4];?></td>
+		<td><?php echo $TTKills[5];?></td>
+	</tr>	
 </table>
