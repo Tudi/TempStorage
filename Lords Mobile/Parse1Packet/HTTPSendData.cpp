@@ -168,7 +168,7 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 
 int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
-	printf("\rSend http for player %s, vip %d", name, vip);
+	printf("\rSend http for player %s, vip %d\n", name, vip);
 
 	//HTTP GET
 	string get_http = "GET /LM/UploadData.php?";

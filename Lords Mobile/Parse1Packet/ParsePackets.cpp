@@ -403,7 +403,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 		//	if (packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x12)
 	{
 #pragma pack(push, 1)
-		struct GiftReceived22
+		struct GiftReceived49
 		{
 			unsigned char Opcode[3];
 			unsigned char SomeCounter;
@@ -415,11 +415,62 @@ void ProcessPacket1(unsigned char *packet, int size)
 			char Name[13];
 		};
 #pragma pack(pop)
-		GiftReceived22* pkt = (GiftReceived22*)packet;
-		QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
+		GiftReceived49* pkt = (GiftReceived49*)packet;
 		pkt->Name[12] = 0;
+/*		for (int i = 0; i < 12; i++)
+		{
+			int IsGood = 0;
+			if (pkt->Name[i] >= 'a' && pkt->Name[i] <= 'z')
+				IsGood = 1;
+			else if (pkt->Name[i] >= 'A' && pkt->Name[i] <= 'Z')
+				IsGood = 1;
+			else if (pkt->Name[i] >= '0' && pkt->Name[i] <= '9')
+				IsGood = 1;
+			else if (pkt->Name[i] == 0)
+				break;
+			else
+				pkt->Name[i] = '_';
+		}*/
+		QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
 		if(pkt->Name[0] != 0)
-			printf("\nCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
+			printf("\rCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
+	}
+	if (packet[0] == 0x37 && packet[1] == 0x0B && packet[2] == 0x00)
+	{
+#pragma pack(push, 1)
+		struct GiftListEntry
+		{
+			int SortIndex; //does not increase 1 by 1
+			unsigned char unk1; // always 1
+			unsigned int  Time[2];
+			unsigned char MonsterType;
+			unsigned char x0A;
+			unsigned char GiftType;
+			unsigned char unk2; // always 3
+			unsigned char GiftCount;
+			unsigned char unk3[2]; // always 0 
+			char Name[13];
+		};
+		struct GiftListOpen
+		{
+			unsigned char Opcode[3];
+			unsigned char Unk[9];
+			unsigned char EntryCount;
+			GiftListEntry Entries[1]; //there are EntryCount Entries here
+		};
+#pragma pack(pop)
+		GiftListOpen* pkt = (GiftListOpen*)packet;
+		for (int i = 0; i < pkt->EntryCount; i++)
+		{
+			pkt->Entries[i].Name[12] = 0;
+			unsigned int GUID = pkt->Entries[i].SortIndex;
+//			GUID |= ((int)pkt->Entries[i].GiftCount << 9);
+//			GUID |= ((int)pkt->Entries[i].MonsterType << 16);
+//			GUID |= ((int)pkt->Entries[i].GiftType << 24);
+			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT_LIST, 0, GUID, pkt->Entries[i].GiftType, pkt->Entries[i].Name, NULL, NULL, pkt->Entries[i].GiftCount, 0, 0, 0, 0, 0, 0, 0, pkt->Entries[i].MonsterType, 0);
+			if (pkt->Entries[i].Name[0] != 0)
+				printf("\rgift list packet, gift %d from %s\n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name);
+		}
 	}
 	return;
 #endif
@@ -659,7 +710,7 @@ DWORD WINAPI BackgroundProcessPackets(LPVOID lpParam)
 			{
 				//parse the packet and if it is a packet we want we will use a HTTP API to push it into our DB. The http API runs async
 //				printf("process packet : in queue %d\n", PacketCircularBufferWriteIndex - PopIndex);
-				printf("\rprocess packet : in queue %d     ", PacketCircularBufferWriteIndex - PopIndex);
+				printf("\rprocess packet : in queue %d                     ", PacketCircularBufferWriteIndex - PopIndex);
 				ProcessPacket1(&PopBuffer[2], *(unsigned short*)PopBuffer);
 				//we no longer need this buffer
 				free( PopBuffer );
