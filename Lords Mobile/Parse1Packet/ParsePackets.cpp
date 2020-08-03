@@ -298,7 +298,7 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 				{
 					printf("ResourceMax:%d\n", PD->B.MEx.ResourceMax);
 					printf("Mined percent:%.2f\n", PD->B.MEx.MinedPercent);
-					printf("Timestamp:%d . Diff yesterday %d minutes\n", PD->B.MEx.SomeTimestamp, (PD->B.MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60)) / 60);
+					printf("Timestamp:%d . Diff yesterday %lld minutes\n", PD->B.MEx.SomeTimestamp, (PD->B.MEx.SomeTimestamp - (time(NULL) - 24 * 60 * 60)) / 60);
 					//					if (PD->B.PEx.ExtendedTypeId != 0 && PD->B.PEx.ExtendedTypeId != 513)
 					//						printf("unk2 is not 0\n");
 				}
@@ -375,8 +375,105 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 #endif
 }
 
+#define ONLY_GENERATE_HUNTING_GIFTS
 void ProcessPacket1(unsigned char *packet, int size)
 {
+#ifdef ONLY_GENERATE_HUNTING_GIFTS
+/*	if (size == 0x16 && packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x12)
+//	if (packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x12)
+	{
+#pragma pack(push, 1)
+		struct GiftReceived22
+		{
+			unsigned char Opcode[3];
+			unsigned short SomeCounter;
+			unsigned char MonsterType;
+			unsigned char Fixed0A; // OBJECT_TYPE_MONSTER
+			char Name[13];
+		};
+#pragma pack(pop)
+		GiftReceived22* pkt = (GiftReceived22*)packet;
+		QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
+		pkt->Name[12] = 0;
+		printf("\nCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
+	}*/
+	if (
+		//size == 0x2A && 
+		packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x13)
+		//	if (packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x12)
+	{
+#pragma pack(push, 1)
+		struct GiftReceived49
+		{
+			unsigned char Opcode[3];
+			unsigned char SomeCounter;
+			unsigned int  Unk1;
+			unsigned int  Time[2];
+			unsigned char MonsterType;
+			unsigned char Fixed0A; // OBJECT_TYPE_MONSTER
+			unsigned char Unk2[5];
+			char Name[13];
+		};
+#pragma pack(pop)
+		GiftReceived49* pkt = (GiftReceived49*)packet;
+		pkt->Name[12] = 0;
+/*		for (int i = 0; i < 12; i++)
+		{
+			int IsGood = 0;
+			if (pkt->Name[i] >= 'a' && pkt->Name[i] <= 'z')
+				IsGood = 1;
+			else if (pkt->Name[i] >= 'A' && pkt->Name[i] <= 'Z')
+				IsGood = 1;
+			else if (pkt->Name[i] >= '0' && pkt->Name[i] <= '9')
+				IsGood = 1;
+			else if (pkt->Name[i] == 0)
+				break;
+			else
+				pkt->Name[i] = '_';
+		}*/
+		QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
+		if(pkt->Name[0] != 0)
+			printf("\rCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
+	}
+	if (packet[0] == 0x37 && packet[1] == 0x0B && packet[2] == 0x00)
+	{
+#pragma pack(push, 1)
+		struct GiftListEntry
+		{
+			int SortIndex; //does not increase 1 by 1
+			unsigned char unk1; // always 1
+			unsigned int  Time[2];
+			unsigned char MonsterType;
+			unsigned char x0A;
+			unsigned char GiftType;
+			unsigned char unk2; // always 3
+			unsigned char GiftCount;
+			unsigned char unk3[2]; // always 0 
+			char Name[13];
+		};
+		struct GiftListOpen
+		{
+			unsigned char Opcode[3];
+			unsigned char Unk[9];
+			unsigned char EntryCount;
+			GiftListEntry Entries[1]; //there are EntryCount Entries here
+		};
+#pragma pack(pop)
+		GiftListOpen* pkt = (GiftListOpen*)packet;
+		for (int i = 0; i < pkt->EntryCount; i++)
+		{
+			pkt->Entries[i].Name[12] = 0;
+			unsigned int GUID = pkt->Entries[i].SortIndex;
+//			GUID |= ((int)pkt->Entries[i].GiftCount << 9);
+//			GUID |= ((int)pkt->Entries[i].MonsterType << 16);
+//			GUID |= ((int)pkt->Entries[i].GiftType << 24);
+			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT_LIST, 0, GUID, pkt->Entries[i].GiftType, pkt->Entries[i].Name, NULL, NULL, pkt->Entries[i].GiftCount, 0, 0, 0, 0, 0, 0, 0, pkt->Entries[i].MonsterType, 0);
+			if (pkt->Entries[i].Name[0] != 0)
+				printf("\rgift list packet, gift %d from %s\n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name);
+		}
+	}
+	return;
+#endif
 	// some invalid id packet ?
 	if (size <= 17)
 		return;
@@ -545,7 +642,7 @@ void ParseOfflineDump(const char *FileName)
 	//	errno_t er = fopen_s(&f, "P3.bin", "rb");
 	//(ip.src == 192.243.47.118 && ip.dst == 192.168.1.101) || (ip.src == 192.168.1.101 && ip.dst==192.243.47.118)
 	errno_t er = fopen_s(&f, FileName, "rb");
-	unsigned char PacketBuffer[65535];
+	unsigned char *PacketBuffer = (unsigned char*)malloc(65000);
 	size_t ReadCount;
 	int AbortAfterNPackets = 100;
 	int PacketsRead = 0;
@@ -612,7 +709,8 @@ DWORD WINAPI BackgroundProcessPackets(LPVOID lpParam)
 			if (PopBuffer != NULL)
 			{
 				//parse the packet and if it is a packet we want we will use a HTTP API to push it into our DB. The http API runs async
-				printf("process packet : in queue %d\n", PacketCircularBufferWriteIndex - PopIndex);
+//				printf("process packet : in queue %d\n", PacketCircularBufferWriteIndex - PopIndex);
+				printf("\rprocess packet : in queue %d                     ", PacketCircularBufferWriteIndex - PopIndex);
 				ProcessPacket1(&PopBuffer[2], *(unsigned short*)PopBuffer);
 				//we no longer need this buffer
 				free( PopBuffer );
@@ -670,7 +768,7 @@ void	StopThreadedPacketParser()
 
 void ProcessPacketDebug(char *HexStr)
 {
-	unsigned char TPacket[32000];
+	unsigned char TPacket[16000];
 	int TSize;
 	HexToByteStr(HexStr, TPacket, TSize);
 	ProcessPacket1((unsigned char*)TPacket, TSize);
