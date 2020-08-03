@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PipeWriteData", "PipeWriteData.vcxproj", "{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		TestPipeOverHead|x64 = TestPipeOverHead|x64
+		TestPipeOverHead|x86 = TestPipeOverHead|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Debug|x64.ActiveCfg = Debug|x64
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Debug|x64.Build.0 = Debug|x64
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Debug|x86.ActiveCfg = Debug|Win32
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Debug|x86.Build.0 = Debug|Win32
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Release|x64.ActiveCfg = Release|x64
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Release|x64.Build.0 = Release|x64
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Release|x86.ActiveCfg = Release|Win32
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.Release|x86.Build.0 = Release|Win32
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.TestPipeOverHead|x64.ActiveCfg = TestPipeOverHead|x64
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.TestPipeOverHead|x64.Build.0 = TestPipeOverHead|x64
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.TestPipeOverHead|x86.ActiveCfg = TestPipeOverHead|Win32
+		{D5404BB7-4A67-48C7-8A37-2E3DCFEC078A}.TestPipeOverHead|x86.Build.0 = TestPipeOverHead|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B504FFED-4109-48B1-9AC6-3A7BC5A8E3F2}
+	EndGlobalSection
+EndGlobal

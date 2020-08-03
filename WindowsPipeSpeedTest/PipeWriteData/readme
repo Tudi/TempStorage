@@ -1,0 +1,3 @@
+Simple project to profile pipe performance
+The aim is to compare pipe speed with shared memory
+This project relies on PipeConsumeNullRender. It will try to spawn it as a child process and send data to it
