@@ -437,19 +437,32 @@ void ProcessPacket1(unsigned char *packet, int size)
 	}
 	if (packet[0] == 0x37 && packet[1] == 0x0B && packet[2] == 0x00)
 	{
+		enum GiftSourceType
+		{
+			GST_VIP = 7, 
+			GST_SHOP = 9,
+			GST_MONSTER = 10
+		};
+		enum GiftTypeGroup
+		{
+			GTG_RESOURCE = 3,
+			GTG_SPEEDUP = 4,
+			GTG_HERO_CHEST = 7,
+			GTG_MATERIAL = 15
+		};
 #pragma pack(push, 1)
 		struct GiftListEntry
 		{
 			int SortIndex; //does not increase 1 by 1
-			unsigned char unk1; // always 1
+			unsigned char unk1_always1; // always 1
 			unsigned int  Time[2];
 			unsigned char MonsterType;
-			unsigned char x0A;
+			unsigned char GiftSourceType; //10(monster), 7(VIP gift)
 			unsigned char GiftType;
-			unsigned char unk2; // always 3
+			unsigned char GiftTypeGroup; // sometimes 3(rss),4(speedup, quest scroll),7(hero chest),15(mats)
 			unsigned char GiftCount;
-			unsigned char unk3[2]; // always 0 
-			char Name[13];
+			unsigned char unk3_always0; // always 0 
+			unsigned char MaterialQuality; // 0 (rss, speedup), 1(gray),2(green material), 3(blue mat)			char Name[13];
 		};
 		struct GiftListOpen
 		{
@@ -464,12 +477,20 @@ void ProcessPacket1(unsigned char *packet, int size)
 		{
 			pkt->Entries[i].Name[12] = 0;
 			unsigned int GUID = pkt->Entries[i].SortIndex;
-//			GUID |= ((int)pkt->Entries[i].GiftCount << 9);
-//			GUID |= ((int)pkt->Entries[i].MonsterType << 16);
-//			GUID |= ((int)pkt->Entries[i].GiftType << 24);
-			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT_LIST, 0, GUID, pkt->Entries[i].GiftType, pkt->Entries[i].Name, NULL, NULL, pkt->Entries[i].GiftCount, 0, 0, 0, 0, 0, 0, 0, pkt->Entries[i].MonsterType, 0);
+			if (pkt->Entries[i].unk1_always1 != 1 
+				|| (pkt->Entries[i].GiftSourceType != GST_VIP && pkt->Entries[i].GiftSourceType != GST_SHOP && pkt->Entries[i].GiftSourceType != GST_MONSTER)
+				|| pkt->Entries[i].unk3_always0 != 0 
+				|| (pkt->Entries[i].GiftTypeGroup != GTG_RESOURCE && pkt->Entries[i].GiftTypeGroup != GTG_SPEEDUP && pkt->Entries[i].GiftTypeGroup != GTG_MATERIAL && pkt->Entries[i].GiftTypeGroup != GTG_HERO_CHEST))
+			{
+				printf("\rInvestigate gift case %d %d %d %d\n", pkt->Entries[i].unk1_always1, pkt->Entries[i].GiftSourceType, pkt->Entries[i].GiftTypeGroup, pkt->Entries[i].unk3_always0);
+				for (int j = 0; j < sizeof(pkt->Unk); j++)
+					printf("%02X ", pkt->Unk[j]);
+				printf("\n");
+			}
+			if (pkt->Entries[i].GiftSourceType == GST_MONSTER)
+				QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT_LIST, 0, GUID, pkt->Entries[i].GiftType, pkt->Entries[i].Name, NULL, NULL, pkt->Entries[i].GiftCount, 0, 0, 0, 0, 0, 0, 0, pkt->Entries[i].MonsterType, 0);
 			if (pkt->Entries[i].Name[0] != 0)
-				printf("\rgift list packet, gift %d from %s\n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name);
+				printf("\rgift list packet, gift %d from %s. source %d, reward group %d, count %d, quality %d\n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name, pkt->Entries[i].GiftSourceType, pkt->Entries[i].GiftTypeGroup, pkt->Entries[i].GiftCount, pkt->Entries[i].MaterialQuality);
 		}
 	}
 	return;

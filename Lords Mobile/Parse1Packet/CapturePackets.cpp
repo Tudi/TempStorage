@@ -336,7 +336,7 @@ int StartCapturePackets(int AutoPickAdapter)
 		// 65536 guarantees that the whole 
 		// packet will be captured
 		PCAP_OPENFLAG_PROMISCUOUS, // promiscuous mode
-		-1,             // read timeout - 1 millisecond
+		1000,             // read timeout - 1 millisecond
 		errorBuffer    // error buffer
 		);
 
