@@ -431,7 +431,10 @@ void ProcessPacket1(unsigned char *packet, int size)
 			else
 				pkt->Name[i] = '_';
 		}*/
-		QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
+		if(pkt->Unk1 != 20 || pkt->Unk2[0] != 0 || pkt->Unk2[1] != 0 || pkt->Unk2[2] != 0 || pkt->Unk2[3] != 0 || pkt->Unk2[4] != 0)
+			pkt->Name[12] = 0;
+		if(pkt->Fixed0A == 0x0A) // gift source monster
+			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
 		if(pkt->Name[0] != 0)
 			printf("\rCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
 	}
@@ -463,6 +466,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 			unsigned char GiftCount;
 			unsigned char unk3_always0; // always 0 
 			unsigned char MaterialQuality; // 0 (rss, speedup), 1(gray),2(green material), 3(blue mat)			char Name[13];
+			char Name[13];
 		};
 		struct GiftListOpen
 		{
