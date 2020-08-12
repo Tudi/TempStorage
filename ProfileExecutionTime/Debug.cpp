@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "Debug.h"
 
 static double               PCFreq = 0.0;         // CPU speed bazed timer. Must be divided to be the same on all PC
 __int64                     CounterStart;
@@ -134,9 +135,6 @@ enum FunctionCallState
     CALL_STATE_STARTED = 1,
     CALL_STATE_FINISHED = 2,
 };
-
-#define REMOVE_CALLSTACK_LOGGING
-#define USE_DUMP_STATS_ON_EXIT
 
 //callback function we used to instrument the CPP files
 void ProfileLine(const char* File, const char* Func, int line, char* comment, int FuncStart = CALL_STATE_NOT_SPECIFIED)
@@ -361,37 +359,25 @@ void PrintReport()
 }
 
 #ifdef USE_DUMP_STATS_ON_EXIT
-class AutoCleanupProfiler
+AutoCleanupProfiler::AutoCleanupProfiler()
 {
-public:
-    AutoCleanupProfiler()
-    {
-        StartCounter();
-    }
-    ~AutoCleanupProfiler()
-    {
-        PrintReport();
-    }
-};
+	StartCounter();
+}
+AutoCleanupProfiler::~AutoCleanupProfiler()
+{
+	PrintReport();
+}
 AutoCleanupProfiler tStartProfiler;
 #endif
-//create a stack variable. Destructor will auto call profiling stop for this function. Only available for c++ projects
-class AutoCloseFunctionProfiling
+
+AutoCloseFunctionProfiling::AutoCloseFunctionProfiling(const char* File, const char* Func, int line, char* comment, int FuncStart = CALL_STATE_NOT_SPECIFIED)
 {
-public:
-    AutoCloseFunctionProfiling(const char* File, const char* Func, int line, char* comment, int FuncStart = CALL_STATE_NOT_SPECIFIED)
-    {
-        pFile = File;
-        pFunc = Func;
-        pLine = line;
-        ProfileLine(pFile, pFunc, pLine, comment, FuncStart);
-    }
-    ~AutoCloseFunctionProfiling()
-    {
-        ProfileLine(pFile, pFunc, pLine, "End", CALL_STATE_FINISHED);
-    }
-protected:
-    const char* pFile;
-    const char* pFunc;
-    int pLine;
-};
+	pFile = File;
+	pFunc = Func;
+	pLine = line;
+	ProfileLine(pFile, pFunc, pLine, comment, FuncStart);
+}
+AutoCloseFunctionProfiling::~AutoCloseFunctionProfiling()
+{
+	ProfileLine(pFile, pFunc, pLine, "End", CALL_STATE_FINISHED);
+}
