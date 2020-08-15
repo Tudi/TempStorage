@@ -366,6 +366,9 @@ int StartCapturePackets(int AutoPickAdapter)
 	//capture packets using callback
 	pcap_loop(adapterHandle, 0, packet_handler, NULL);
 
+	// if we got here, chances are network got interrupted
+//	exit(1);
+
 	printf("Done creating background thread to monitor network trafic\n");
 
 	return 0;

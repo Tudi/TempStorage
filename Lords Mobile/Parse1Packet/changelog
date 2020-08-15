@@ -1,7 +1,7 @@
 ============================================
 Todo:
 ============================================
-- decode all 250 ( or more ) gift types. Right now only at 56
+- decode most gift types. Right now only at 97
 - make logs account based ( new column )
 - load configs from config file
 - allow multiple http upload locations based on config
@@ -11,6 +11,8 @@ Todo:
 ============================================
 Changelog
 ============================================
+14/08/2020
+- adjusted bot time to reset day when ingame DNs reset
 06/08/2020
 - only register monster gifts. Skip handling shop / vip gifts
 01/08/2020

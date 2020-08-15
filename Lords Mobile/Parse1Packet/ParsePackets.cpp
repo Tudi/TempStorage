@@ -431,7 +431,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 			else
 				pkt->Name[i] = '_';
 		}*/
-		if(pkt->Unk1 != 20 || pkt->Unk2[0] != 0 || pkt->Unk2[1] != 0 || pkt->Unk2[2] != 0 || pkt->Unk2[3] != 0 || pkt->Unk2[4] != 0)
+		if((pkt->Unk1 != 20 && pkt->Unk1 != 22) || pkt->Unk2[0] != 0 || pkt->Unk2[1] != 0 || pkt->Unk2[2] != 0 || pkt->Unk2[3] != 0 || pkt->Unk2[4] != 0)
 			pkt->Name[12] = 0;
 		if(pkt->Fixed0A == 0x0A) // gift source monster
 			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);

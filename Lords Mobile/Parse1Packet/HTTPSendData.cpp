@@ -144,7 +144,7 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 	// recieve html
 //#define DEBUG_HTTP_BEHAVIOR 1
 #ifdef DEBUG_HTTP_BEHAVIOR
-	printf("Our http query is : %s\n", get_http.c_str());
+	printf("\nOur http query is : %s\n", get_http.c_str());
 	char buffer[10000];
 	int nDataLength;
 	string website_HTML;
