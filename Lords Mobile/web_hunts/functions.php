@@ -46,6 +46,38 @@ function OrderMergedList($l)
 			$l[$PN][0] = -1;
 		}
 	}while($BestScore != -1);
+	if(!isset($ret))
+		return NULL;
 	return $ret;
+}
+function CalcNumberOfDaysWorthOfHunts($Stats)
+{
+	$DaysWorth = 0;
+	do{
+		if($Stats[1] >= 15 && $Stats[2] >= 3)
+		{
+			$DaysWorth++;
+			$Stats[1] -= 15;
+			$Stats[2] -= 3;
+		}
+		else if($Stats[2] >= 7)
+		{
+			$DaysWorth++;
+			$Stats[2] -= 7;
+		}
+		else if($Stats[3] >= 2)
+		{
+			$DaysWorth++;
+			$Stats[3] -= 2;
+		}
+		else if($Stats[4] >= 1)
+		{
+			$DaysWorth++;
+			$Stats[4] -= 1;
+		}
+		else
+			break;
+	}while(1);
+	return $DaysWorth;
 }
 ?>

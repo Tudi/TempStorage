@@ -58,28 +58,28 @@ if(isset($MergedList2))
 }
 //merge the 2 lists
 {
-	if( $MergedList1 != NULL )
+	if( isset($MergedList1) && $MergedList1 != NULL )
 	foreach($MergedList1 as $PlayerName => $score)
 	{
 		@$MergedList[$PlayerName][-1] = $PlayerName;
 		for($lvl=1;$lvl<=5;$lvl++)
 			@$MergedList[$PlayerName][$lvl] = max($MergedList1[$PlayerName][$lvl],$MergedList2[$PlayerName][$lvl]);
 	}
-	if( $MergedList2 != NULL )
+	if( isset($MergedList2) && $MergedList2 != NULL )
 	foreach($MergedList2 as $PlayerName => $score)
 	{
 		@$MergedList[$PlayerName][-1] = $PlayerName;
 		for($lvl=1;$lvl<=5;$lvl++)
 			@$MergedList[$PlayerName][$lvl] = max($MergedList1[$PlayerName][$lvl],$MergedList2[$PlayerName][$lvl]);
 	}
-	if( $MergedList == NULL || !isset($MergedList))
-		die();
+	if(!isset($MergedList) || $MergedList == NULL)
+		$MergedList = array();
 	//calc score
 	$lvlCoeff[1] = 1;
-	$lvlCoeff[2] = 4/6; //costs 6 times more, gives 4 times reward
-	$lvlCoeff[3] = (4*4)/(6*6); //costs 6 times more, gives 4 times reward
-	$lvlCoeff[4] = (4*4*4)/(6*6*6); //costs 6 times more, gives 4 times reward
-	$lvlCoeff[5] = (4*4*4*4)/(6*6*6*6); //costs 6 times more, gives 4 times reward
+	$lvlCoeff[2] = 0.56; //costs 6 times more, gives 4 times reward
+	$lvlCoeff[3] = 0.42; //costs 6 times more, gives 4 times reward
+	$lvlCoeff[4] = 0.29; //costs 6 times more, gives 4 times reward
+	$lvlCoeff[5] = 0.14; //costs 6 times more, gives 4 times reward
 	foreach($MergedList as $PlayerName => $score)
 	{
 		@$MergedList[$PlayerName][0] = 0;
@@ -87,6 +87,8 @@ if(isset($MergedList2))
 			$MergedList[$PlayerName][0] += $MergedList[$PlayerName][$lvl] * $lvlCoeff[$lvl];
 	}
 	//get total kills
+	for($lvl=0;$lvl<=5;$lvl++)
+		$TTKills[$lvl]=0;
 	foreach($MergedList as $PlayerName => $score)
 	{
 		for($lvl=1;$lvl<=5;$lvl++)
@@ -108,37 +110,29 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 		<td>lvl 3 kills</td>
 		<td>lvl 4 kills</td>
 		<td>lvl 5 kills</td>
+		<?php if($start!=$end) echo "<td>Days worth of hunts</td>"; ?>
 	</tr>
 	<?php
+	$TotalDaysWorthOfHunts = 0;
+	if(isset($MergedList[0]))
 	foreach($MergedList as $Index => $Stats)
 		{
-			$lvl1 = $Stats[1];
-			$lvl2 = $Stats[2];
-			$lvl3 = $Stats[3];
-			$lvl4 = $Stats[4];
-			$lvl5 = $Stats[5];
 			$PlayerName = $Stats[-1];
-			$PassedVerification = 0;
 			$BgColor = "";
-			if($lvl1 >= 15 * $DaysInterval && $lvl2 >= 3 * $DaysInterval)
-				$PassedVerification = 1;
-			if($lvl2 >= 7 * $DaysInterval)
-				$PassedVerification = 1;
-			if($lvl3 >= 2 * $DaysInterval)
-				$PassedVerification = 1;
-			if($lvl4 >= 1 * $DaysInterval)
-				$PassedVerification = 1;
-			if($PassedVerification)
+			$DaysWorthOfHunts = CalcNumberOfDaysWorthOfHunts($Stats);
+			if($DaysWorthOfHunts >= $DaysInterval)
 				$BgColor = "bgcolor=\"0x0000FF00\"";
+			$TotalDaysWorthOfHunts += $DaysWorthOfHunts;			
 			?>
 			<tr <?php echo $BgColor; ?>>
 				<td><?php echo $Index;?></td>
 				<td><?php echo $PlayerName;?></td>
-				<td><?php echo $lvl1;?></td>
-				<td><?php echo $lvl2;?></td>
-				<td><?php echo $lvl3;?></td>
-				<td><?php echo $lvl4;?></td>
-				<td><?php echo $lvl5;?></td>
+				<td style="text-align: center;"><?php echo $Stats[1];?></td>
+				<td style="text-align: center;"><?php echo $Stats[2];?></td>
+				<td style="text-align: center;"><?php echo $Stats[3];?></td>
+				<td style="text-align: center;"><?php echo $Stats[4];?></td>
+				<td style="text-align: center;"><?php echo $Stats[5];?></td>
+				<?php if($start!=$end) echo "<td style=\"text-align: center;\">$DaysWorthOfHunts</td>"; ?>
 			</tr>
 			<?php
 		}
@@ -153,6 +147,7 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 		{
 			//check if the name is already printed as hunted
 			$AlreadyHunted = 0;
+			if(isset($MergedList[0]))
 			foreach($MergedList as $key => $score)
 				if( strcmp($PlayerName1,$score[-1])==0 )
 				{
@@ -180,10 +175,11 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 	<tr>
 		<td><?php echo $TTKills[0];?></td>
 		<td>Total Kills</td>
-		<td><?php echo $TTKills[1];?></td>
-		<td><?php echo $TTKills[2];?></td>
-		<td><?php echo $TTKills[3];?></td>
-		<td><?php echo $TTKills[4];?></td>
-		<td><?php echo $TTKills[5];?></td>
+		<td><?php echo @$TTKills[1];?></td>
+		<td><?php echo @$TTKills[2];?></td>
+		<td><?php echo @$TTKills[3];?></td>
+		<td><?php echo @$TTKills[4];?></td>
+		<td><?php echo @$TTKills[5];?></td>
+		<?php if($start!=$end) echo "<td>$TotalDaysWorthOfHunts</td>"; ?>
 	</tr>	
 </table>

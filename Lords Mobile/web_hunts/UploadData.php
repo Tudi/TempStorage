@@ -11,19 +11,23 @@ $day = GetDayOfYear();
 if($objtype == 110)
 {
 	$Level = GetMonsterLevel($monstertype);
-	if($Level==0)
-		die();
-	
-	//check if we have an id for this player
-	$query1 = "update PlayerHunts set Lvl$Level=Lvl$Level+1 where Day=$day and year=$year and PlayerName = '".mysqli_real_escape_string($dbi,$name)."'";
-	$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
-
-	list($matched, $changed, $warnings) = sscanf($conn->info, "Rows matched: %d Changed: %d Warnings: %d");
-	if($changed == 0)
-	{
-		$query1 = "insert into PlayerHunts (PlayerName, Lvl$Level, year, day) values('".mysqli_real_escape_string($dbi,$name)."',1,$year,$day)";
+	if($Level!=0)
+	{	
+		//check if we have an id for this player
+		$query1 = "update PlayerHunts set Lvl$Level=Lvl$Level+1 where Day=$day and year=$year and PlayerName = '".mysqli_real_escape_string($dbi,$name)."'";
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+		//echo $query1;
+
+		list($matched, $changed, $warnings) = sscanf($dbi->info, "Rows matched: %d Changed: %d Warnings: %d");
+		if($changed == 0)
+		{
+			$query1 = "insert into PlayerHunts (PlayerName, Lvl$Level, year, day) values('".mysqli_real_escape_string($dbi,$name)."',1,$year,$day)";
+			$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+			//echo $query1;
+		}
 	}
+	else
+		echo "Monster $monstertype level is zero";
 }
 else if($objtype == 111)
 {
@@ -35,15 +39,18 @@ else if($objtype == 111)
 		die();*/
 
 	$Level = GetMonsterLevel($monstertype);
-	if($Level==0)
-		die();
-
-	$query1 = "insert into PlayerHuntsList (Lvl,Day,Year,PlayerName,GUID,Monster,Gift,GiftCount) values ($Level,$day,$year,'".mysqli_real_escape_string($dbi,$name)."',$x,$monstertype,$y,$CLevel)";
-	$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+	if($Level!=0)
+	{
+		$query1 = "insert into PlayerHuntsList (Lvl,Day,Year,PlayerName,GUID,Monster,Gift,GiftCount) values ($Level,$day,$year,'".mysqli_real_escape_string($dbi,$name)."',$x,$monstertype,$y,$CLevel)";
+		//echo $query1;
+		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+	}
+	else
+		echo "Monster $monstertype level is zero";
 }
 
 //if this is on local server, forward it to main server
-if( isset($k) && isset($vip) )
+if( isset($k) )
 {
 	$Escaped_name=urlencode($name);
 	//$ch = curl_init("http://rum-lm.eu5.org/UploadData.php?name=$name&monstertype=$monstertype");
@@ -68,7 +75,7 @@ function GetMonsterLevel($Type)
 	$query1 = "select MonsterLevel from MonsterTypes where MonsterType='$Type' limit 0,1";
 	$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
 	list($MonsterLevel) = mysqli_fetch_row($result1);
-	if(!isset($MonsterLevel) || $MonsterLevel==0)
+	if(!isset($MonsterLevel))
 	{
 		$query1 = "insert into MonsterTypes (MonsterType,MonsterLevel)values($Type,1)";
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022003 <br> ".$query1." <br> ".mysqli_error($dbi));
