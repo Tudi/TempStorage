@@ -80,4 +80,27 @@ function CalcNumberOfDaysWorthOfHunts($Stats)
 	}while(1);
 	return $DaysWorth;
 }
+function SafeToExecuteOnMysql($val)
+{
+	$len = strlen($val);
+	$isSafe = 0;
+	for($i=0;$i<$len;$i++)
+	{
+		if($val[$i]=='\\' || $val[$i]=='\`' || $val[$i]=='\'' || $val[$i]=='\"' || $val[$i]==';' || $val[$i]=='\n' || $val[$i]=='\r' || $val[$i]==0x1a)
+		{
+//			echo "'".$val[$i]."'";
+			return 0;
+		}
+		if($val[$i] >= 'a' && $val[$i] <= 'z')
+			$isSafe++;
+		if($val[$i] >= 'A' && $val[$i] <= 'Z')
+			$isSafe++;
+		if($val[$i] >= '0' && $val[$i] <= '9')
+			$isSafe++;
+		if($val[$i] == ' ')
+			$isSafe++;
+	}
+//	echo "$isSafe==$len";
+	return $isSafe==$len;
+}
 ?>

@@ -32,9 +32,11 @@ if(isset($MergedList2))
 	unset($MergedList2);
 	$MergedList2 = NULL;
 }
+if(!isset($FilterPlayerName))
+	$FilterPlayerName = "";
 //get the list from the popup events
 {
-	$query1 = "select PlayerName,lvl1,lvl2,lvl3,lvl4,lvl5 from PlayerHunts where day>=$day+$start and day<=$day+$end and year=$year";
+	$query1 = "select PlayerName,lvl1,lvl2,lvl3,lvl4,lvl5 from PlayerHunts where day>=$day+$start and day<=$day+$end and year=$year $FilterPlayerName";
 	$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
 	while(list($PlayerName,$lvl1,$lvl2,$lvl3,$lvl4,$lvl5) = mysqli_fetch_row($result1))
 	{
@@ -48,7 +50,7 @@ if(isset($MergedList2))
 }
 //get the list from opening gifts
 {
-	$query1 = "select PlayerName,lvl from PlayerHuntsList where day>=$day+$start and day<=$day+$end and year=$year";
+	$query1 = "select PlayerName,lvl from PlayerHuntsList where day>=$day+$start and day<=$day+$end and year=$year $FilterPlayerName";
 	$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
 	while(list($PlayerName,$lvl) = mysqli_fetch_row($result1))
 	{
@@ -99,20 +101,25 @@ if(isset($MergedList2))
 	}
 	$MergedList = OrderMergedList($MergedList);
 }
-?>
-Hunts Made on day<?php echo $IntervalString; ?><br />
-<table border='1'>
-	<tr>
-		<td>Rank</td>
-		<td>Player Name</td>
-		<td>lvl 1 kills</td>
-		<td>lvl 2 kills</td>
-		<td>lvl 3 kills</td>
-		<td>lvl 4 kills</td>
-		<td>lvl 5 kills</td>
-		<?php if($start!=$end) echo "<td>Days worth of hunts</td>"; ?>
-	</tr>
+if(!($FilterPlayerName != "" && !isset($MergedList[0])))
+{
+	if($FilterPlayerName == "")
+	{
+	?>
+		Hunts Made on day<?php echo $IntervalString; ?><br />
+		<table border='1'>
+			<tr>
+				<td>Rank</td>
+				<td>Player Name</td>
+				<td>lvl 1 kills</td>
+				<td>lvl 2 kills</td>
+				<td>lvl 3 kills</td>
+				<td>lvl 4 kills</td>
+				<td>lvl 5 kills</td>
+				<?php if($start!=$end) echo "<td>Days worth of hunts</td>"; ?>
+			</tr>
 	<?php
+	}
 	$TotalDaysWorthOfHunts = 0;
 	if(isset($MergedList[0]))
 	foreach($MergedList as $Index => $Stats)
@@ -122,11 +129,13 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 			$DaysWorthOfHunts = CalcNumberOfDaysWorthOfHunts($Stats);
 			if($DaysWorthOfHunts >= $DaysInterval)
 				$BgColor = "bgcolor=\"0x0000FF00\"";
-			$TotalDaysWorthOfHunts += $DaysWorthOfHunts;			
+			$TotalDaysWorthOfHunts += $DaysWorthOfHunts;	
+			if($FilterPlayerName != "")
+				$Index = $IntervalString;
 			?>
 			<tr <?php echo $BgColor; ?>>
 				<td><?php echo $Index;?></td>
-				<td><?php echo $PlayerName;?></td>
+				<td><a href="ShowPlayerStats.php?FilterPlayerName=<?php echo $PlayerName;?>"><?php echo $PlayerName;?></a></td>
 				<td style="text-align: center;"><?php echo $Stats[1];?></td>
 				<td style="text-align: center;"><?php echo $Stats[2];?></td>
 				<td style="text-align: center;"><?php echo $Stats[3];?></td>
@@ -139,7 +148,7 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 	?>
 	<?php
 	//get a list of distinct names that hunted past month and print those that did not yet hunt
-//	if( $start==0 && $end==0)
+	if( $FilterPlayerName=="")
 	{
 		$query1 = "select distinct(PlayerName) from PlayerHunts where day>=($day-31) and year=$year";
 		$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
@@ -171,6 +180,8 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 			<?php
 		}
 	}
+	if( $FilterPlayerName == "" )
+	{
 	?>
 	<tr>
 		<td><?php echo $TTKills[0];?></td>
@@ -181,5 +192,14 @@ Hunts Made on day<?php echo $IntervalString; ?><br />
 		<td><?php echo @$TTKills[4];?></td>
 		<td><?php echo @$TTKills[5];?></td>
 		<?php if($start!=$end) echo "<td>$TotalDaysWorthOfHunts</td>"; ?>
-	</tr>	
-</table>
+	</tr>
+	<?php 
+	}
+	if($FilterPlayerName == "")
+	{
+	?>
+		</table>
+<?php 
+	}
+}
+?>
