@@ -22,16 +22,16 @@ $start=0;
 $end=0;
 include("ShowData.php");
 
-/*echo "<br><br>";
+echo "<br><br>";
 echo "<a id=\"yesterday\">Yesterday = </a>";
 $start=-1;
 $end=-1;
-include("ShowData.php");*/
+include("ShowData.php");/**/
 
 echo "<br><br>";
-echo "<a id=\"pastweek\">Past 1 week = </a>";
-$start=-6;
-$end=0;
+echo "<a id=\"pastweek\">Past 1 week (not counting today)= </a>";
+$start=-8;
+$end=-1;
 include("ShowData.php");
 
 echo "<br><br>";

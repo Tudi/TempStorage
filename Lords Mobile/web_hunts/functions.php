@@ -75,6 +75,11 @@ function CalcNumberOfDaysWorthOfHunts($Stats)
 			$DaysWorth++;
 			$Stats[4] -= 1;
 		}
+		else if($Stats[5] >= 1)
+		{
+			$DaysWorth++;
+			$Stats[5] -= 1;
+		}		
 		else
 			break;
 	}while(1);
@@ -102,5 +107,47 @@ function SafeToExecuteOnMysql($val)
 	}
 //	echo "$isSafe==$len";
 	return $isSafe==$len;
+}
+
+function GetTimeDiffShortFormat($time, $IsDiff = 0)
+{
+	if($time==0)
+		return "";
+	if(!isset($IsDiff) || $IsDiff == 0 )
+		$diff = time() - $time;
+	else
+		$diff = $time;
+//echo $time." - ".$diff." ; ";	
+	if($diff > 356 * 24 * 60 * 60 )
+	{
+		$diff = ((int)($diff / 356 / 24 / 60 / 6 ) / 10 );
+		if( $diff >= "48")
+			$diff = "";
+		else
+			$diff .= " y";
+	}
+	else if($diff > 31 * 24 * 60 * 60 )
+		$diff = ((int)($diff / 31 / 24 / 60 / 6 ) / 10 ) ."m";
+	else if($diff > 24 * 60 * 60 )
+		$diff = ((int)($diff / 24 / 60 / 6 ) / 10 ) ."d";
+	else if($diff > 60 * 60 )
+		$diff = ((int)($diff / 60 / 6 ) / 10 )."h";
+	else if($diff>60)
+		$diff = ( (int)($diff / 6 ) / 10 )."m";
+	else
+		$diff = $diff."s";
+	return $diff;
+}
+
+function mysql_real_escape_string($inp)
+{
+    if(is_array($inp))
+        return array_map(__METHOD__, $inp);
+
+    if(!empty($inp) && is_string($inp)) {
+        return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp);
+    }
+
+    return $inp; 
 }
 ?>
