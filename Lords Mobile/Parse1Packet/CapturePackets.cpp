@@ -107,7 +107,7 @@ unsigned int ReadIndex = 0;
 unsigned int ThrowAwayPacketsUntilSmallPackets = 1;
 #define MAX_PACKET_SIZE					(10 * 1024 * 1024)
 #define WAITING_FOR_X_BYTES				(*(unsigned short*)&TempPacketStore[ReadIndex])
-#define MAX_PACKET_SIZE_SERVER_SENDS	15000
+#define MAX_PACKET_SIZE_SERVER_SENDS	0x7FFF
 int ThrowAwayCount = 0;
 void QueuePacketForMore(unsigned char *data, unsigned int size)
 {
@@ -203,6 +203,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	ip_len = ih->ip_header_len * 4;
 
     //dump all incomming packet
+#ifdef _DEBUG
     if (ih->ip_protocol == PROTOCOL_TCPIP
         && (((unsigned char*)&ih->ip_destaddr)[0] == 192 && ((unsigned char*)&ih->ip_destaddr)[1] == 243)
         )
@@ -226,6 +227,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
             }
         }
     }
+#endif
 
 	//capturing all TCP packets from IP
 	if (ih->ip_protocol == PROTOCOL_TCPIP
@@ -241,7 +243,9 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		int BytesToDump = header->len - TotalHeaderSize;
 		if (BytesToDump > 0)
 		{
+#ifdef _DEBUG
 			DumpContent(DataStart, BytesToDump);
+#endif
 			Wait1FullPacketThenParse(DataStart, BytesToDump);
 		}
 	}

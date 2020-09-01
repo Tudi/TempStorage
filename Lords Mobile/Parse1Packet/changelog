@@ -1,16 +1,23 @@
 ============================================
 Todo:
 ============================================
-- decode most gift types. Right now only at 97
 - make logs account based ( new column )
-- load configs from config file
 - allow multiple http upload locations based on config
 - add passowrd protection for upload data
 - if it's freeky friday, update kill requirements
-- have a list of active players in guild and print in red those who did not hunt today
 ============================================
 Changelog
 ============================================
+18/08/2020
+- if server is not responding, retry 15 times to see if it can connect
+- if still can't connect to the server, delay sending data until next hunt event
+- use backup server to store data until it's sent to main server
+16/08/2020
+- show player huntes once name is clicked
+15/08/2020
+- show number of hunts made / interval. Helps see how bad of a hunter someone is
+- removed data for "yesterday". Useless
+- added config reader
 14/08/2020
 - adjusted bot time to reset day when ingame DNs reset
 06/08/2020
