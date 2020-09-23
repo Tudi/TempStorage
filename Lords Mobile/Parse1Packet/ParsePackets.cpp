@@ -375,7 +375,9 @@ void ParsePacketQueryTileObjectReply(unsigned char *packet, int size)
 #endif
 }
 
+//#define PARSE_CASSTLE_PACKETS
 #define ONLY_GENERATE_HUNTING_GIFTS
+#define PARSE_PLAYER_MIGHT_LIST
 void ProcessPacket1(unsigned char *packet, int size)
 {
 #ifdef ONLY_GENERATE_HUNTING_GIFTS
@@ -407,7 +409,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 		{
 			unsigned char Opcode[3];
 			unsigned char SomeCounter;
-			unsigned int  Unk1; // maybe 0 if self hunt ?
+			unsigned int  Unk1; 
 			unsigned int  Time[2];
 			unsigned short MonsterType;
 //			unsigned char Fixed0A; // OBJECT_TYPE_MONSTER
@@ -497,8 +499,32 @@ void ProcessPacket1(unsigned char *packet, int size)
 				printf("\rgift list packet, gift %d from %s. reward group %d, count %d, quality %d. Old Entry %d %d \n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name, pkt->Entries[i].GiftTypeGroup, pkt->Entries[i].GiftCount, pkt->Entries[i].MaterialQuality, pkt->Entries[i].MonsterType >> 8, pkt->Entries[i].MonsterType & 0xFF);
 		}
 	}
-	return;
 #endif
+#ifdef PARSE_PLAYER_MIGHT_LIST
+	if (packet[0] == 0x06 && packet[1] == 0x0B && packet[2] == 0x00)
+	{
+		unsigned char PlayersInList = *(unsigned char*)&packet[4];
+#pragma pack(push, 1)
+		struct PlayerMightListEntry
+		{
+			unsigned __int64 Unk1; //seems to be increasing as list goes along
+			unsigned short Unk2; 
+			char Name[13];
+			char Rank;
+			unsigned __int64 Might;
+			unsigned __int64 Kills;
+			unsigned __int64 LastSeen;
+		};
+#pragma pack(pop)
+		PlayerMightListEntry* pkt = (PlayerMightListEntry*)&packet[5];
+		for (int i = 0; i < PlayersInList; i++)
+		{
+			pkt[i].Name[12] = 0;
+			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_GUILD_MEMBER_MIGHT, 0, 0, 0, pkt[i].Name, NULL, NULL, 0, pkt[i].Kills, 0, pkt[i].Rank, pkt[i].Might, 0, 0, 0, 0, 0);
+		}
+	}
+#endif
+#ifdef PARSE_CASSTLE_PACKETS
 	// some invalid id packet ?
 	if (size <= 17)
 		return;
@@ -599,6 +625,7 @@ void ProcessPacket1(unsigned char *packet, int size)
 	//	PrintDataMultipleFormats(packet, size, PrevNameStart, size);
 	PrintDataHexFormat(packet, size, 0, size);
 	printf("\n\n");
+#endif
 #endif
 }
 

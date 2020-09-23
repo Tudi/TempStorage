@@ -8,6 +8,10 @@ Todo:
 ============================================
 Changelog
 ============================================
+06/09/2020
+- catch player might list packet
+- when checking players who skipped hunting, get the player names from might list
+- create page to show player might change over interval
 18/08/2020
 - if server is not responding, retry 15 times to see if it can connect
 - if still can't connect to the server, delay sending data until next hunt event

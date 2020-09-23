@@ -145,7 +145,9 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 	int ResultOK = 1;
 #define DEBUG_HTTP_BEHAVIOR 1
 #ifdef DEBUG_HTTP_BEHAVIOR
+#ifdef _DEBUG
 	printf("\nOur http query is : %s\n", get_http.c_str());
+#endif
 	char buffer[10000];
 	int nDataLength;
 	string website_HTML;
@@ -334,7 +336,7 @@ DWORD WINAPI BackgroundProcessPlayers(LPVOID lpParam)
 		{
 			PlayerCircularBufferWriteIndex = PlayerCircularBufferReadIndex = 0;
 			//avoid 100% CPU usage. There is no scientific value here
-			Sleep(10);
+			Sleep(100);
 		}
 	}
 	KeepPlayerPushThreadsRunning = 0;
