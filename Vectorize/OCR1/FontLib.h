@@ -46,3 +46,4 @@ void OCR_ResizeFontsStaticSize(int Width, int Height);
 void OCR_BinarizeFonts(int ToBlackAnythingBelow);
 //how much do pixels need to travel to find their place in destination locations ?
 void OCR_GetMorphCost(BYTE *Pixels1, int Width, int Height, int pitch, BYTE *Pixels2, int pitch2, ShapeMorphStatus *ret);
+void OCR_GenRotatedFonts();

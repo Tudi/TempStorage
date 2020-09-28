@@ -102,6 +102,7 @@ FontExtracted* GetShapeBoundaries(FIBITMAP* dib, int x, int y, int IDMarker)
 	ret->ShapeID = IDMarker;
 	ret->PixelCount = PixelCount;
 	ret->AssignedString = NULL;
+	ret->fss = NULL;
 
 	return ret;
 }

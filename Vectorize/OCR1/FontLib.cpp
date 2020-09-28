@@ -796,3 +796,42 @@ void OCR_GetMorphCost(BYTE* Pixels1, int Width, int Height, int pitch, BYTE* Pix
 		}
 	free(tPixels1);
 }
+
+FontImg* RotateFontBy90(FontImg* i)
+{
+	FontImg* i2 = (FontImg*)malloc(sizeof(FontImg));
+	memset(i2, 0, sizeof(FontImg));
+	i2->Angle = i->Angle + 90;
+	i2->AssignedString = i->AssignedString;
+	i2->Height = i->Width;
+	i2->Width = i->Height;
+	i2->pitch = i2->Width * 3;
+	i2->Scale = 1;
+	i2->Pixels = (BYTE*)malloc(i2->Height * i2->pitch);
+	for (int y = 0; y < i->Height; y++)
+		for (int x = 0; x < i->Width; x++)
+		{
+			i2->Pixels[x * i2->pitch + y * 3 + 0] = i->Pixels[y * i->pitch + x * 3 + 0];
+			i2->Pixels[x * i2->pitch + y * 3 + 1] = i->Pixels[y * i->pitch + x * 3 + 1];
+			i2->Pixels[x * i2->pitch + y * 3 + 2] = i->Pixels[y * i->pitch + x * 3 + 2];
+		}
+	return i2;
+}
+
+void OCR_GenRotatedFonts()
+{
+	for (auto itr = CachedFonts.begin(); itr != CachedFonts.end(); itr++)
+	{
+		if ((*itr)->LoadedFromFile != 1)
+			continue;
+
+		//rotate 90 degree to left
+		FontImg* i = (*itr);
+		FontImg* i2 = RotateFontBy90(i);
+		FontImg* i3 = RotateFontBy90(i2);
+		FontImg* i4 = RotateFontBy90(i3);
+		CachedFonts.push_back(i2);
+		CachedFonts.push_back(i3);
+		CachedFonts.push_back(i4);
+	}
+}

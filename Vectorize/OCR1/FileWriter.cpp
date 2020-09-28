@@ -45,13 +45,16 @@ void WriteTextToFileMerged(std::list<FontExtracted*>* FontShapes, const char* Fi
 		if (fe->MergedPrev != NULL)
 			continue;
 		//if we already used this shape
+		float Angle = 0;
+		if (fe->fss && fe->fss->fi)
+			Angle = fe->fss->fi->Angle;
 		if (fe->MergedNext == NULL && fe->MergedPrev == NULL)
 		{
-			fprintf(f, "CHAR:%d,%d,%d,%d,%s\n", fe->x, fe->y, fe->Width, fe->Height, fe->AssignedString);
+			fprintf(f, "CHAR:%d,%d,%d,%d,%f,%s\n", fe->x, fe->y, fe->Width, fe->Height, Angle, fe->AssignedString);
 			continue;
 		}
 		//print sequence of chars
-		fprintf(f, "TEXT:%d,%d,%d,%d,%s", fe->x, fe->y, fe->Width, fe->Height, fe->AssignedString);
+		fprintf(f, "TEXT:%d,%d,%d,%d,%f,%s", fe->x, fe->y, fe->Width, fe->Height, Angle, fe->AssignedString);
 		fe = fe->MergedNext;
 		while (fe != NULL)
 		{

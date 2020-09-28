@@ -14,7 +14,8 @@ void ExtractShapesThanMatchFontsToShapes(FIBITMAP* dib, int BinarizationStrength
 
 //	OCR_LoadFontsFromDir("FontsRescaled");
 	OCR_BinarizeFonts( 200 );
-	OCR_GenBlurredFonts(4);
+//	OCR_GenBlurredFonts(4);
+	OCR_GenRotatedFonts();
 #if defined( _DEBUG ) && 0
 	OCR_SaveFontVisualDebug();
 #endif // DEBUG
@@ -149,6 +150,7 @@ void ExtractShapesThanMatchFontsToShapes(FIBITMAP* dib, int BinarizationStrength
 			free(fss);
 			continue;
 		}
+		fe->fss = fss;
 #ifdef _DEBUG
 		printf("At pos %dx%d found string %s\n", fe->x, fe->y, fss->fi->AssignedString);
 #endif
@@ -163,7 +165,7 @@ void ExtractShapesThanMatchFontsToShapes(FIBITMAP* dib, int BinarizationStrength
 				Pixels2[(fe->y + ty) * pitch2 + (fe->x + tx) * Bytespp + 2] = ScaledFont[ty * fe->Width * Bytespp + tx * Bytespp + 2];
 			}
 #endif
-		free(fss);
+//		free(fss);
 	}
 #ifdef DUMP_GUESSED_CHARS_TO_NEW_IMG
 	FreeImage_Save(FIF_PNG, dib2, "guessedFonts.png", 0);

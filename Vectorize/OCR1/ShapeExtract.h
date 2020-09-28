@@ -1,5 +1,7 @@
 #pragma once
 
+struct FontSimilarityScore;
+
 struct FontExtracted
 {
 	BYTE* Pixels;
@@ -11,6 +13,7 @@ struct FontExtracted
 	FontExtracted *MergedNext;
 	FontExtracted* MergedPrev;
 	int LastX, LastY; // when merged multiple characters check if we can add another one to the last
+	FontSimilarityScore *fss;
 };
 
 FontExtracted* GetShapeBoundaries(FIBITMAP* dib, int x, int y, int IDMarker);

@@ -19,8 +19,9 @@ int main(int argc, char** argv)
 {
 	FIBITMAP* dib = NULL;
 	// open and load the file using the default load option
-	const char* InputFileName = "../FilesReceived/311-010000007001-B.PNG";
-//	const char* InputFileName = "../FilesReceived/6725714110030.PNG";
+//	const char* InputFileName = "../FilesReceived/311-010000007001-B.PNG";
+	const char* InputFileName = "../FilesReceived/41-14-08-252-024.PNG";
+	//	const char* InputFileName = "../FilesReceived/6725714110030.PNG";
 //	const char* InputFileName = "../FilesReceived/6a (377491).PNG";
 //	const char* InputFileName = "Fonts_Hairline.png";
 //	const char* InputFileName = "FontLib/A 8.png";
