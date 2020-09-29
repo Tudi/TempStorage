@@ -25,6 +25,7 @@ namespace CSVIngester
         public static MessageLogger Logger = null;
         public static int NULLValue = -9999999; // has to fit into a float without truncations
         public static Window MyMainWindow = null;
+        public static IndexCache CachedIndexes = null;
     }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -42,6 +43,7 @@ namespace CSVIngester
             ExportEndDate.SelectedDate = DateTime.Now;
             AExportStartDate.SelectedDate = new DateTime(2001, 1, 1);
             AExportEndDate.SelectedDate = DateTime.Now;
+            GlobalVariables.CachedIndexes = new IndexCache();
             DBBusyMonitorThreadStart();
         }
 
