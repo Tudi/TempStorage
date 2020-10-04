@@ -4,4 +4,5 @@
 void StartListenConsole();
 void StopListenConsole();
 
+extern int WorkerThreadAlive;
 #endif

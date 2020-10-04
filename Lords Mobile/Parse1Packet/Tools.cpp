@@ -160,7 +160,7 @@ int HexToByte(unsigned char Hex)
 void HexToByteStr(char *HexStr, unsigned char *ByteStr, int &size)
 {
 	int Ind = 0;
-	int MaxInd = strlen(HexStr);
+	int MaxInd = (int)strlen(HexStr);
 	size = 0;
 	while (HexStr[Ind] != 0 && Ind<MaxInd)
 	{

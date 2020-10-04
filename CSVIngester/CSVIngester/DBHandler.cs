@@ -67,13 +67,14 @@ namespace CSVIngester
         public SQLiteConnection m_dbConnection = null;
         public DBHandler()
         {
+            string sql;
 //            SQLiteConnection.CreateFile("EbayCSV.db");
             m_dbConnection = new SQLiteConnection("Data Source=EbayCSV.db;New=False;Version=3;journal_mode=WAL;synchronous=NORMAL");
             m_dbConnection.Open();
 
             {
                 SQLiteCommand command = m_dbConnection.CreateCommand();
-                command.CommandText = "PRAGMA cache_size=100000";
+                command.CommandText = "PRAGMA cache_size=1000000";
                 var name = command.ExecuteScalar();
             }
             {
@@ -101,18 +102,26 @@ namespace CSVIngester
                 if (!(name != null && name.ToString() == "InventoryCSV"))
                 {
 
-                    string sql = "create table InventoryCSV (ebay_id_Hash INT4,asin_hash INT4,vat FLOAT DEFAULT "+GlobalVariables.NULLValue+", ebay_id_str varchar(20),asin_str varchar(20))";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueItemId ON InventoryCSV (ebay_id_Hash)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON InventoryCSV (asin_hash)";
+                    sql = "create table InventoryCSV (ebay_id_Hash INT4,asin_hash INT4,vat FLOAT DEFAULT "+GlobalVariables.NULLValue+", ebay_id_str varchar(20),asin_str varchar(20))";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueItemId ON InventoryCSV (ebay_id_Hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON InventoryCSV (asin_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueItemIds ON InventoryCSV (ebay_id_str)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductIds ON InventoryCSV (asin_str)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
             }
 
             using (TransactionScope tran = new TransactionScope())
@@ -124,18 +133,26 @@ namespace CSVIngester
                 if (!(name != null && name.ToString() == "AMAZON_ORDERS"))
                 {
 
-                    string sql = "create table AMAZON_ORDERS (date varchar(20),ORDER_ID varchar(20),TITLE varchar(200),GROSS double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20), NET double, vat_rate double, asin_hash int4, ORDER_ID_hash int4,TStamp INT,SACCOUNT varchar(200),SELLER varchar(200),SELLER_VAT varchar(200))";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_ORDERS (ORDER_ID_hash)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_ORDERS (asin_hash)";
+                    sql = "create table AMAZON_ORDERS (date varchar(20),ORDER_ID varchar(20),TITLE varchar(200),GROSS double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20), NET double, vat_rate double, asin_hash int4, ORDER_ID_hash int4,TStamp INT,SACCOUNT varchar(200),SELLER varchar(200),SELLER_VAT varchar(200))";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_ORDERS (ORDER_ID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_ORDERS (asin_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON AMAZON_ORDERS (ORDER_ID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductIds ON AMAZON_ORDERS (asin)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
             }
 
             using (TransactionScope tran = new TransactionScope())
@@ -147,18 +164,26 @@ namespace CSVIngester
                 if (!(name != null && name.ToString() == "AMAZON_REFUNDS"))
                 {
 
-                    string sql = "create table AMAZON_REFUNDS (date varchar(20),ORDER_ID varchar(20),TITLE varchar(200),GROSS double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20), NET double, vat_rate double, asin_hash int4, ORDER_ID_hash int4,TStamp INT,SACCOUNT varchar(200),SELLER varchar(200),SELLER_VAT varchar(200))";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_REFUNDS (ORDER_ID_hash)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_REFUNDS (asin_hash)";
+                    sql = "create table AMAZON_REFUNDS (date varchar(20),ORDER_ID varchar(20),TITLE varchar(200),GROSS double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20), NET double, vat_rate double, asin_hash int4, ORDER_ID_hash int4,TStamp INT,SACCOUNT varchar(200),SELLER varchar(200),SELLER_VAT varchar(200))";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_REFUNDS (ORDER_ID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_REFUNDS (asin_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON AMAZON_REFUNDS (ORDER_ID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductIds ON AMAZON_REFUNDS (asin)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
             }
 
             using (TransactionScope tran = new TransactionScope())
@@ -169,18 +194,26 @@ namespace CSVIngester
 
                 if (!(name != null && name.ToString() == "AMAZON_BLOCKED"))
                 {
-                    string sql = "create table AMAZON_BLOCKED (date varchar(20),ORDER_ID varchar(20),DISPATCH varchar(20),TITLE varchar(200),PRICE double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20),PAYMENT varchar(200), asin_hash int4, ORDER_ID_hash int4,TStamp INT)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_BLOCKED (ORDER_ID_hash)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_BLOCKED (asin_hash)";
+                    sql = "create table AMAZON_BLOCKED (date varchar(20),ORDER_ID varchar(20),DISPATCH varchar(20),TITLE varchar(200),PRICE double,vat double,BuyerName varchar(200),Buyeraddr varchar(200), asin varchar(20),PAYMENT varchar(200), asin_hash int4, ORDER_ID_hash int4,TStamp INT)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON AMAZON_BLOCKED (ORDER_ID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductId ON AMAZON_BLOCKED (asin_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON AMAZON_BLOCKED (ORDER_ID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueProductIds ON AMAZON_BLOCKED (asin)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
             }
 
             using (TransactionScope tran = new TransactionScope())
@@ -192,14 +225,16 @@ namespace CSVIngester
                 if (!(name != null && name.ToString() == "PAYPAL_SALES"))
                 {
 
-                    string sql = "create table PAYPAL_SALES (date varchar(20),BuyerName varchar(20),GROSS double,PayPalFee double,TransactionID varchar(200),Title varchar(200), ItemId varchar(200), BuyerAddr varchar(200), Phone varchar(200), vat double, net double, vat_rate double, TransactionID_hash int4, TStamp INT)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON PAYPAL_SALES (TransactionID_hash)";
+                    sql = "create table PAYPAL_SALES (date varchar(20),BuyerName varchar(20),GROSS double,PayPalFee double,TransactionID varchar(200),Title varchar(200), ItemId varchar(200), BuyerAddr varchar(200), Phone varchar(200), vat double, net double, vat_rate double, TransactionID_hash int4, TStamp INT)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON PAYPAL_SALES (TransactionID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON PAYPAL_SALES (TransactionID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
             }
 
             using (TransactionScope tran = new TransactionScope())
@@ -211,15 +246,24 @@ namespace CSVIngester
                 if (!(name != null && name.ToString() == "PAYPAL_REFUNDS"))
                 {
 
-                    string sql = "create table PAYPAL_REFUNDS (date varchar(20),BuyerName varchar(20),GROSS double,PayPalFee double,TransactionID varchar(200),Title varchar(200), ItemId varchar(200), ReferenceID varchar(200), vat double, net double, vat_rate double, TransactionID_hash int4, ReferenceID_hash int4, TStamp INT)";
-                    command = new SQLiteCommand(sql, m_dbConnection);
-                    command.ExecuteNonQuery();
-
-                    sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON PAYPAL_REFUNDS (TransactionID_hash)";
+                    sql = "create table PAYPAL_REFUNDS (date varchar(20),BuyerName varchar(20),GROSS double,PayPalFee double,TransactionID varchar(200),Title varchar(200), ItemId varchar(200), ReferenceID varchar(200), vat double, net double, vat_rate double, TransactionID_hash int4, ReferenceID_hash int4, TStamp INT)";
                     command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
                 }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON PAYPAL_REFUNDS (TransactionID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON PAYPAL_REFUNDS (TransactionID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
             }
+        }
+
+        public SQLiteConnection GetConnection()
+        {
+            return m_dbConnection;
         }
 
         private void ReplaceInventoryRow(string ebay_id, string asin, string vat)
@@ -663,7 +707,7 @@ namespace CSVIngester
             string TableName = "PAYPAL_SALES";
 
             //check if ts record already exists
-            var cmd1 = new SQLiteCommand(m_dbConnection);
+/*            var cmd1 = new SQLiteCommand(m_dbConnection);
             cmd1.CommandText = "SELECT 1 FROM " + TableName + " where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol";
             cmd1.Parameters.AddWithValue("@IdColhash", IdColhash);
             cmd1.Parameters.AddWithValue("@TransactionIDCol", TransactionIDCol);
@@ -674,8 +718,15 @@ namespace CSVIngester
             {
                 ReturnCode = InvenotryInsertResultCodes.RowExisted;
             }
+            else */
+            if(GlobalVariables.CachedIndexes.CheckRowExists(IdColhash, TransactionIDCol)==true)
+            {
+                ReturnCode = InvenotryInsertResultCodes.RowExisted;
+            }
             else
             {
+                GlobalVariables.CachedIndexes.AddRow(IdColhash, TransactionIDCol);
+
                 long TStamp = DateParser.GetUnixStamp(DateCol);
                 var cmd = new SQLiteCommand(m_dbConnection);
                 cmd.CommandText = "REPLACE INTO " + TableName + "(date,BuyerName,GROSS,PayPalFee,TransactionID,Title,ItemId,BuyerAddr,Phone,vat,net,vat_rate,TransactionID_hash,TStamp) " +

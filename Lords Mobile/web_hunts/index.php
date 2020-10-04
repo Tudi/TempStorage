@@ -1,40 +1,41 @@
 <?php
 require_once("db_connection.php");
 
-echo "Jump to stats :";
-echo "<a href=\"#yesterday\">Yesterday&nbsp;&nbsp;&nbsp;</a>";
-echo "<a href=\"#pastweek\">Past week&nbsp;&nbsp;&nbsp;</a>";
-echo "<a href=\"#pastmonth\">Past month&nbsp;&nbsp;&nbsp;</a>";
+echo "Jump to stats : &nbsp;&nbsp;&nbsp;";
+echo "<a href=\"#yesterday\">Yesterday</a>&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;";
+echo "<a href=\"#pastweek\">Past week</a>&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;";
+echo "<a href=\"#pastmonth\">Past month</a>";
 echo "<br>";
 
+include("HuntStatistics.html");
+
 //echo "Webserver time now : ".GetCompensatedDate();
+$MinutesPassedToday = intval(date('H', GetCompensatedTime()))*60 + intval(date('i', GetCompensatedTime()));
+$MinutesRemain = 24*60 - $MinutesPassedToday;
+$differenceHours = (int)($MinutesRemain / 60);
+$differenceMinutes = (int)($MinutesRemain % 60);
+//echo "Server time : ".date("Y-m-d H:i", GetCompensatedTime())."<br>";
+echo "Remaning time until tomorrow : <u><b>${differenceHours}:${differenceMinutes}</b></u><br>";
 
-$timezone	= new DateTimeZone( 'GMT' );
-$today      = new DateTime('now', $timezone);
-$tomorrow   = new DateTime('tomorrow', $timezone);
-$difference = $today->diff($tomorrow);
-$TimeLeft = $difference->format('<br>Remaning time until tomorrow : <u><b>%h hours %i minutes </b></u>');
-echo "$TimeLeft<br>";
-
-echo "Hunting score for today:<br>";
+echo "Today = ";
 $start=0;
 $end=0;
 include("ShowData.php");
 
 echo "<br><br>";
-echo "<a id=\"yesterday\">Hunting score for yesterday:</a><br>";
+echo "<a id=\"yesterday\">Yesterday = </a>";
 $start=-1;
+$end=-1;
+include("ShowData.php");/**/
+
+echo "<br><br>";
+echo "<a id=\"pastweek\">Past 1 week (not counting today)= </a>";
+$start=-8;
 $end=-1;
 include("ShowData.php");
 
 echo "<br><br>";
-echo "<a id=\"pastweek\">Hunting score for past 1 week:</a><br>";
-$start=-6;
-$end=0;
-include("ShowData.php");
-
-echo "<br><br>";
-echo "<a id=\"pastmonth\">Hunting score for past 1 month:</a><br>";
+echo "<a id=\"pastmonth\">Past 1 month = </a>";
 $start=-31;
 $end=0;
 include("ShowData.php");

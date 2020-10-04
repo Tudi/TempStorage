@@ -142,16 +142,19 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 	BytesTotalSent = send(Socket, get_http.c_str(), (int)BytesToSend, 0);
 
 	// recieve html
-//#define DEBUG_HTTP_BEHAVIOR 1
+	int ResultOK = 1;
+#define DEBUG_HTTP_BEHAVIOR 1
 #ifdef DEBUG_HTTP_BEHAVIOR
-	printf("Our http query is : %s\n", get_http.c_str());
+#ifdef _DEBUG
+	printf("\nOur http query is : %s\n", get_http.c_str());
+#endif
 	char buffer[10000];
 	int nDataLength;
 	string website_HTML;
-	while ((nDataLength = recv(Socket, buffer, 10000, 0)) > 0)
+	while ((nDataLength = recv(Socket, buffer, sizeof(buffer), 0)) > 0)
 	{
 		int i = 0;
-		while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r')
+		while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r' && i < nDataLength)
 		{
 			website_HTML += buffer[i];
 			i += 1;
@@ -159,16 +162,22 @@ int HTTPPostData(string get_http, string p_url, int p_port)
 	}
 
 	// Display HTML source 
+#ifdef _DEBUG
 	printf("%s\n", website_HTML.c_str());
+#endif
+	ResultOK = 0;
+	if (strstr(website_HTML.c_str(), " 200 OK"))
+		ResultOK = 1;
 #endif
 
 	closesocket(Socket);
-	return !(BytesTotalSent == BytesToSend);
+	return !(BytesTotalSent == BytesToSend && ResultOK == 1);
 }
 
 int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
-	printf("\rSend http for player %s, vip %d\n", name, vip);
+//	printf("\rSend http for player %s, vip %d\n", name, vip);
+	printf("\rSend http for player %s\n", name);
 
 	//HTTP GET
 	string get_http = "GET /LM/UploadData.php?";
@@ -260,8 +269,12 @@ int PlayerCircularBufferReadIndex = 0;
 int PlayerCircularBufferWriteIndex = 0;
 int	KeepPlayerPushThreadsRunning = 1;
 
+CRITICAL_SECTION ListLock; // some values are getting lost. Trying to debug how
+
 void QueueObjectToProcess(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt)
 {
+	EnterCriticalSection(&ListLock);
+
 	int WriteIndex = PlayerCircularBufferWriteIndex;
 	PlayerCircularBuffer[WriteIndex].type = type;
 	PlayerCircularBuffer[WriteIndex].k = k;
@@ -293,6 +306,8 @@ void QueueObjectToProcess(int type, int k, int x, int y, char *name, char *guild
 	PlayerCircularBuffer[WriteIndex].monstertype = monstertype;
 
 	PlayerCircularBufferWriteIndex = (PlayerCircularBufferWriteIndex + 1) % MAX_PLAYERS_CIRCULAR_BUFFER;
+
+	LeaveCriticalSection(&ListLock);
 }
 
 int HTTPPostData(ObjectCommitStore &t)
@@ -302,20 +317,26 @@ int HTTPPostData(ObjectCommitStore &t)
 
 DWORD WINAPI BackgroundProcessPlayers(LPVOID lpParam)
 {
+	InitializeCriticalSection(&ListLock);
+
 	while (KeepPlayerPushThreadsRunning == 1)
 	{
 		//can we pop a packet from the queue ?
 		if (PlayerCircularBufferReadIndex != PlayerCircularBufferWriteIndex)
 		{
+			EnterCriticalSection(&ListLock);
+
 			printf("process player : in queue %d ( slots remain %d)\n", PlayerCircularBufferWriteIndex - PlayerCircularBufferReadIndex, MAX_PLAYERS_CIRCULAR_BUFFER - PlayerCircularBufferWriteIndex);
 			if (HTTPPostData(PlayerCircularBuffer[PlayerCircularBufferReadIndex]) == 0)
 				PlayerCircularBufferReadIndex = (PlayerCircularBufferReadIndex + 1) % MAX_PLAYERS_CIRCULAR_BUFFER;
+
+			LeaveCriticalSection(&ListLock);
 		}
 		else
 		{
 			PlayerCircularBufferWriteIndex = PlayerCircularBufferReadIndex = 0;
 			//avoid 100% CPU usage. There is no scientific value here
-			Sleep(10);
+			Sleep(100);
 		}
 	}
 	KeepPlayerPushThreadsRunning = 0;

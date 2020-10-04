@@ -6,6 +6,7 @@
 #include "LordsMobileControl.h"
 #include "ConsoleListener.h"
 #include <Windows.h>
+#include "ConfigLoader.h"
 
 void OfflineParsing()
 {
@@ -31,7 +32,9 @@ void OnlineScanParsing()
 	CreateBackgroundPacketProcessThread();
 
 	//needs to be before we start listening to console
-	int PickedAdapter = PickAdapter(-1);
+	int PickedAdapter = GlobalConfigs.AutoPickCard;
+	if(PickedAdapter == -1)
+		PickedAdapter = PickAdapter(-1);
 
 	//listen to console to send commands to game control
 	StartListenConsole();
@@ -40,18 +43,20 @@ void OnlineScanParsing()
 //	QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, "test", NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0);
 
 	// listen to network interface, assemble packets, queue them to the process queue
-	StartCapturePackets(PickedAdapter);
+	while(WorkerThreadAlive)
+		StartCapturePackets(PickedAdapter);
 }
 
 void main()
 {
+	LoadAllConfigs();
 //	OfflineParsing(); return;
 	OnlineScanParsing();
 
 	printf("Waiting for packets to come and process\n. Press 'a' key to exit");
 	char AKey = ' ';
 	while (AKey != 'a')
-		scanf_s("%c", &AKey, sizeof(AKey));
+		scanf_s("%c", &AKey, (unsigned int)sizeof(AKey));
 
 	//shut everything down
 	StopCapturePackets();

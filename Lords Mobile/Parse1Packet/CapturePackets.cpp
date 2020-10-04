@@ -107,7 +107,7 @@ unsigned int ReadIndex = 0;
 unsigned int ThrowAwayPacketsUntilSmallPackets = 1;
 #define MAX_PACKET_SIZE					(10 * 1024 * 1024)
 #define WAITING_FOR_X_BYTES				(*(unsigned short*)&TempPacketStore[ReadIndex])
-#define MAX_PACKET_SIZE_SERVER_SENDS	15000
+#define MAX_PACKET_SIZE_SERVER_SENDS	0x7FFF
 int ThrowAwayCount = 0;
 void QueuePacketForMore(unsigned char *data, unsigned int size)
 {
@@ -171,16 +171,22 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			//this could be a full packet. Consider ourself syncronized
 			if (ThrowAwayPacketsUntilSmallPackets > 0)
 				ThrowAwayPacketsUntilSmallPackets--;
+			WriteIndex = 0;
 			return;
 		}
 		//more than 1 server packet inside a single network packet
-		if ( size>FullPacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
+		int BytesUnconsumed = size;
+		while (BytesUnconsumed >= FullPacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
 		{
 			//ProcessPacket1(&data[2], FullPacketSize - 2);
 			QueuePacketToProcess(&data[2], FullPacketSize - 2);
-			QueuePacketForMore(&data[FullPacketSize], size - FullPacketSize); // should never happen
-			return;
+			//jump to the start of the next packet
+			data = &data[FullPacketSize];
+			FullPacketSize = *(unsigned short*)data;
 		}
+		if(BytesUnconsumed>0)
+			QueuePacketForMore(data, BytesUnconsumed); // should never happen
+		return;
 	}
 	//if we got here than this is a fragmented packet with first fragment
 	QueuePacketForMore(data, size);
@@ -203,6 +209,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	ip_len = ih->ip_header_len * 4;
 
     //dump all incomming packet
+#ifdef _DEBUG
     if (ih->ip_protocol == PROTOCOL_TCPIP
         && (((unsigned char*)&ih->ip_destaddr)[0] == 192 && ((unsigned char*)&ih->ip_destaddr)[1] == 243)
         )
@@ -226,6 +233,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
             }
         }
     }
+#endif
 
 	//capturing all TCP packets from IP
 	if (ih->ip_protocol == PROTOCOL_TCPIP
@@ -241,7 +249,9 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 		int BytesToDump = header->len - TotalHeaderSize;
 		if (BytesToDump > 0)
 		{
+#ifdef _DEBUG
 			DumpContent(DataStart, BytesToDump);
+#endif
 			Wait1FullPacketThenParse(DataStart, BytesToDump);
 		}
 	}
@@ -336,7 +346,7 @@ int StartCapturePackets(int AutoPickAdapter)
 		// 65536 guarantees that the whole 
 		// packet will be captured
 		PCAP_OPENFLAG_PROMISCUOUS, // promiscuous mode
-		-1,             // read timeout - 1 millisecond
+		1000,             // read timeout - 1 millisecond
 		errorBuffer    // error buffer
 		);
 
@@ -363,8 +373,16 @@ int StartCapturePackets(int AutoPickAdapter)
 	// free the adapter list
 	pcap_freealldevs(allAdapters);
 
+	WriteIndex = 0;
+	ReadIndex = 0;
+	ThrowAwayPacketsUntilSmallPackets = 1;
+	ThrowAwayCount = 0;
+
 	//capture packets using callback
 	pcap_loop(adapterHandle, 0, packet_handler, NULL);
+
+	// if we got here, chances are network got interrupted
+//	exit(1);
 
 	printf("Done creating background thread to monitor network trafic\n");
 

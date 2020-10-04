@@ -2,7 +2,7 @@
 ini_set('memory_limit','16M');
 
 //open the file
-$f = fopen( "enviromt.cpp", "rt" );
+$f = fopen( "codec.cpp", "rt" );
 //read the whole file
 $content = fread( $f, 1024*1024*4 );
 //no need to keep the file open anymore
@@ -13,18 +13,18 @@ $ContentLenght = strlen( $content );
 $index = 0;
 do{
 	//try to get the next function start by searching return
-	$loc = strpos( $content, "return", $index );
+	$loc = strpos( $content, "return ", $index );
 	
-if( strpos( $content, "int Environment::FetchHWProfile(CString& profile)")	<= $loc && strpos( $content, "bool Environment::HWProfilesEqual(CString profileA, CString profileB)" ) >= $loc )
-	echo "!asdfjlashdklfjhasdkj^#()*!^$@()#*$&(k`";
+//if( strpos( $content, "int Environment::FetchHWProfile(CString& profile)")	<= $loc && strpos( $content, "bool Environment::HWProfilesEqual(CString profileA, CString profileB)" ) >= $loc )
+//	echo "!asdfjlashdklfjhasdkj^#()*!^$@()#*$&(k`";
 	if( $loc > $index && $loc > 0 )
 	{
 		//check if this return is commented. Skip if so
 		if( IsLineCommented( $content, $loc ) == 1 )
 		{
 			$index = $loc + 1;
-if( strpos( $content, "int Environment::FetchHWProfile(CString& profile)")	<= $loc && strpos( $content, "bool Environment::HWProfilesEqual(CString profileA, CString profileB)" ) >= $loc )
-	echo "!^#()*!^$@()#*$&(*";
+//if( strpos( $content, "int Environment::FetchHWProfile(CString& profile)")	<= $loc && strpos( $content, "bool Environment::HWProfilesEqual(CString profileA, CString profileB)" ) >= $loc )
+//	echo "!^#()*!^$@()#*$&(*";
 			continue;
 		}
 		
@@ -52,7 +52,7 @@ $ContentLenght = strlen( $content );
 $index = 0;
 do{
 	//try to get the next function start by searching ::
-	$loc = strpos( $content, "Environment::", $index );
+	$loc = strpos( $content, "wxCodec::", $index );
 	
 	if( $loc > $index && IsLineCommented( $content, $loc ) == 1 )
 	{
@@ -92,10 +92,12 @@ do{
 	{
 		$loc = $loc2 - 2;
 		//insert debug code
-		$content = substr( $content, 0, $loc )."\n      ProfileLine( __FILE__, __FUNCTION__, __LINE__, \"End\", 2 );\n".substr( $content, $loc );
+		$AddedContent = "\n      ProfileLine( __FILE__, __FUNCTION__, __LINE__, \"End\", 2 );\n";
+		$content = substr( $content, 0, $loc ).$AddedContent.substr( $content, $loc );
 		$loc = strpos( $content, ");", $loc ) + 2;
 		$index = $loc;
-		$ContentLenght += 50;
+//		$ContentLenght += strlen($AddedContent)+1;
+		$ContentLenght += 10;
 	}
 	else
 		$index+=100;	//make sure we do not deadlock
@@ -107,7 +109,7 @@ $ContentLenght = strlen( $content );
 $index = 0;
 do{
 	//try to get the next function start by searching ::
-	$loc = strpos( $content, "Environment::", $index );
+	$loc = strpos( $content, "wxCodec::", $index );
 	
 	if( $loc > $index && ( IsLineCommented( $content, $loc ) == 1 || IsCodeAtMainLevel( $content, $loc ) == 0 ) )
 	{
@@ -140,7 +142,7 @@ do{
 		$index+=100;	//make sure we do not deadlock
 }while($index<$ContentLenght && $loc > 0 );
 
-$f = fopen( "enviromt2.cpp", "wt" );
+$f = fopen( "codec2.cpp", "wt" );
 //echo $content;
 fwrite( $f, $content );
 fclose( $f );
@@ -151,6 +153,11 @@ function IsLineCommented( $content, $loc )
 	$PrevLineEnd = strrpos( $content, "\n", -strlen($content) + $loc ) + 1;
 	$CommentPos = strpos( $content, "//", $PrevLineEnd );
 	if( $PrevLineEnd <= $CommentPos && $CommentPos <= $loc )
+		return 1;
+	//check if there is /* before us and */ after us
+	$CommentStart = strrpos( $content, "/*", -strlen($content) + $loc ) + 1;
+	$CommentEnd = strrpos( $content, "*/", -strlen($content) + $loc ) + 1;
+	if($CommentEnd < $CommentStart)
 		return 1;
 	return 0;
 }
@@ -171,16 +178,28 @@ function IsCodeAtMainLevel( $content, $loc )
 	$t = strrpos( $content, "\"End\", 2 );", -strlen($content) + $loc );
 	if( $t > 0 && $t > $PrevFuncLoc )
 		$PrevFuncLoc = $t;
-	$t = strrpos( $content, "int Environment::", -strlen($content) + $loc );
+	$t = strrpos( $content, "int wxCodec::", -strlen($content) + $loc );
 	if( $t > 0 && $t > $PrevFuncLoc )
 		$PrevFuncLoc = $t;
-	$t = strrpos( $content, "BOOL Environment::", -strlen($content) + $loc );
+	$t = strrpos( $content, "BOOL wxCodec::", -strlen($content) + $loc );
 	if( $t > 0 && $t > $PrevFuncLoc )
 		$PrevFuncLoc = $t;
-	$t = strrpos( $content, "void Environment::", -strlen($content) + $loc );
+	$t = strrpos( $content, "bool wxCodec::", -strlen($content) + $loc );
 	if( $t > 0 && $t > $PrevFuncLoc )
 		$PrevFuncLoc = $t;
-	$t = strrpos( $content, "CString Environment::", -strlen($content) + $loc );
+	$t = strrpos( $content, "void wxCodec::", -strlen($content) + $loc );
+	if( $t > 0 && $t > $PrevFuncLoc )
+		$PrevFuncLoc = $t;
+	$t = strrpos( $content, "CString wxCodec::", -strlen($content) + $loc );
+	if( $t > 0 && $t > $PrevFuncLoc )
+		$PrevFuncLoc = $t;
+	$t = strrpos( $content, "wxString wxCodec::", -strlen($content) + $loc );
+	if( $t > 0 && $t > $PrevFuncLoc )
+		$PrevFuncLoc = $t;
+	$t = strrpos( $content, "PxConvName wxCodec::", -strlen($content) + $loc );
+	if( $t > 0 && $t > $PrevFuncLoc )
+		$PrevFuncLoc = $t;
+	$t = strrpos( $content, "inline unsigned short wxCodec::", -strlen($content) + $loc );
 	if( $t > 0 && $t > $PrevFuncLoc )
 		$PrevFuncLoc = $t;
 	$t = strrpos( $content, "\n}", -strlen($content) + $loc ) + 2;

@@ -565,6 +565,8 @@ namespace CSVIngester
                 return;
             }
 
+            GlobalVariables.CachedIndexes.CacheExistingIndexes(CachedIndexTypes.CIT_PaypalSales);
+
             GlobalVariables.Logger.Log("File import destination database is '" + TableName + "' and 'PAYPAL_REFUNDS'");
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvReader(reader))
