@@ -146,6 +146,14 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 //		ProcessPacket1(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
 		QueuePacketToProcess(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
 		ReadIndex += WAITING_FOR_X_BYTES;
+		if (WAITING_FOR_X_BYTES == 0)
+		{
+			WriteIndex = 0;
+			ReadIndex = 0;
+			ThrowAwayPacketsUntilSmallPackets = 1;
+			ThrowAwayCount = 0;
+			return;
+		}
 	}
 
 	//did we pop all packets ?
@@ -182,8 +190,17 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			QueuePacketToProcess(&data[2], FullPacketSize - 2);
 			//jump to the start of the next packet
 			data = &data[FullPacketSize];
-			BytesUnconsumed -= FullPacketSize;
+			BytesUnconsumed -= (int)FullPacketSize;
 			FullPacketSize = *(unsigned short*)data;
+			//wow, that is bad
+			if (FullPacketSize == 0)
+			{
+				WriteIndex = 0;
+				ReadIndex = 0;
+				ThrowAwayPacketsUntilSmallPackets = 1;
+				ThrowAwayCount = 0;
+				return;
+			}
 		}
 		if(BytesUnconsumed>0)
 			QueuePacketForMore(data, BytesUnconsumed); // should never happen
