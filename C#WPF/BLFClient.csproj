@@ -24,7 +24,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationRevision>14</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -51,10 +51,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>0375BFE0323783C6AE7667AA2D87C55EA956DDF0</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>84617AF39AAFFBFE28F32C74DDD215186A725DF4</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>BLFClient_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>BLFClient_2_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -178,6 +178,7 @@
     </Compile>
     <Compile Include="Backend\NetworkPacketTools.cs" />
     <Compile Include="Backend\OutlookAPI.cs" />
+    <Compile Include="Backend\PasswordStore.cs" />
     <Compile Include="Backend\PersPortManager.cs" />
     <Compile Include="Backend\PhoneNumberManager.cs" />
     <Compile Include="Backend\ServerAntiFloodManager.cs" />
@@ -326,6 +327,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Skins\GradientAnimatedStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Skins\GradientStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Skins\RoundedStyles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -353,6 +362,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="BLFClient_1_TemporaryKey.pfx" />
+    <None Include="BLFClient_2_TemporaryKey.pfx" />
     <None Include="BLFClient_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -404,6 +415,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\FlagIt.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Connected.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\NotConnected.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
     <Content Include="Resources\Translations.txt">

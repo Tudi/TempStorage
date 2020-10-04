@@ -716,6 +716,24 @@ namespace BLFClient
                 IndexCards[i].OnToggleShowCanonical();
         }
 
+        private void Click_Menu_IsResizable(object sender, RoutedEventArgs e)
+        {
+            if (HasAdminPriviledges == false)
+                return;
+
+            //the state of the IsChecked is already updated in the UI
+            if (cbMenuResizable.IsChecked == true)
+            {
+                this.ResizeMode = ResizeMode.CanResize;
+//                this.cbMenuResizable.IsChecked = true;
+            }
+            else
+            {
+                this.ResizeMode = ResizeMode.NoResize;
+//                this.cbMenuResizable.IsChecked = false;
+            }
+        }
+
         public bool ShowCannonical()
         {
             return GeneralSettings.ShowCanonical;
@@ -858,6 +876,7 @@ namespace BLFClient
                 this.FILE_SAVE.IsEnabled = true;
                 this.FILE_SAVE_AS.IsEnabled = true;
                 this.Tools_User_Admin.IsChecked = true;
+                this.cbMenuResizable.IsCheckable = true;
             }
             else
                 this.Tools_User_Admin.IsChecked = false;

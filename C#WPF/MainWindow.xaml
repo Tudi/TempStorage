@@ -13,6 +13,7 @@
         Deactivated="Window_Deactivated"
         Closed="Window_Closed"
         Loaded="Window_Loaded"
+        ResizeMode="NoResize"
         >
     <DockPanel>
 
@@ -41,6 +42,7 @@
                 <MenuItem Header="_Absence management" Name="cbMenuViewAbsence" IsCheckable="True" Click="Click_Menu_ViewAbsenceManagementToggle"/>
                 <MenuItem Header="_Always on top" Name="cbMenuViewOnTop" IsCheckable="True" Click="Click_Menu_TopmostToggle"/>
                 <MenuItem Header="_Canonical number" Name="cbMenuViewCanonical" IsCheckable="True" Click="Click_Menu_CanonicalToggle"/>
+                <MenuItem Header="_Resizable" Name="cbMenuResizable" IsCheckable="False" Click="Click_Menu_IsResizable"/>
             </MenuItem>
             <MenuItem Header="_Tools">
                 <MenuItem Header="Options" >
