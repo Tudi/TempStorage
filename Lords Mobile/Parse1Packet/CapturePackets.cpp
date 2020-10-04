@@ -171,16 +171,22 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			//this could be a full packet. Consider ourself syncronized
 			if (ThrowAwayPacketsUntilSmallPackets > 0)
 				ThrowAwayPacketsUntilSmallPackets--;
+			WriteIndex = 0;
 			return;
 		}
 		//more than 1 server packet inside a single network packet
-		if ( size>FullPacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
+		int BytesUnconsumed = size;
+		while (BytesUnconsumed >= FullPacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
 		{
 			//ProcessPacket1(&data[2], FullPacketSize - 2);
 			QueuePacketToProcess(&data[2], FullPacketSize - 2);
-			QueuePacketForMore(&data[FullPacketSize], size - FullPacketSize); // should never happen
-			return;
+			//jump to the start of the next packet
+			data = &data[FullPacketSize];
+			FullPacketSize = *(unsigned short*)data;
 		}
+		if(BytesUnconsumed>0)
+			QueuePacketForMore(data, BytesUnconsumed); // should never happen
+		return;
 	}
 	//if we got here than this is a fragmented packet with first fragment
 	QueuePacketForMore(data, size);
@@ -366,6 +372,11 @@ int StartCapturePackets(int AutoPickAdapter)
 
 	// free the adapter list
 	pcap_freealldevs(allAdapters);
+
+	WriteIndex = 0;
+	ReadIndex = 0;
+	ThrowAwayPacketsUntilSmallPackets = 1;
+	ThrowAwayCount = 0;
 
 	//capture packets using callback
 	pcap_loop(adapterHandle, 0, packet_handler, NULL);
