@@ -179,7 +179,8 @@ if(!($FilterPlayerName != "" && !isset($MergedList[0])))
 	//get a list of distinct names that hunted past month and print those that did not yet hunt
 	if( $FilterPlayerName=="")
 	{
-		$query1 = "select distinct(PlayerName) from PlayerHunts where day>=($day-7) and year=$year";
+//		$query1 = "select distinct(PlayerName) from PlayerHunts where day>=($day-7) and year=$year";
+		$query1 = "select distinct(PlayerName) from PlayerMights where day>=($day-7) and year=$year";
 		$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
 		while(list($PlayerName1) = mysqli_fetch_row($result1))
 		{

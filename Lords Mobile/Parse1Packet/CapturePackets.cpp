@@ -107,7 +107,7 @@ unsigned int ReadIndex = 0;
 unsigned int ThrowAwayPacketsUntilSmallPackets = 1;
 #define MAX_PACKET_SIZE					(10 * 1024 * 1024)
 #define WAITING_FOR_X_BYTES				(*(unsigned short*)&TempPacketStore[ReadIndex])
-#define MAX_PACKET_SIZE_SERVER_SENDS	0x7FFF
+#define MAX_PACKET_SIZE_SERVER_SENDS	0x3FFF
 int ThrowAwayCount = 0;
 void QueuePacketForMore(unsigned char *data, unsigned int size)
 {
@@ -182,6 +182,7 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			QueuePacketToProcess(&data[2], FullPacketSize - 2);
 			//jump to the start of the next packet
 			data = &data[FullPacketSize];
+			BytesUnconsumed -= FullPacketSize;
 			FullPacketSize = *(unsigned short*)data;
 		}
 		if(BytesUnconsumed>0)

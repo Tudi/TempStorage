@@ -54,6 +54,34 @@ function CalcNumberOfDaysWorthOfHunts($Stats)
 {
 	$DaysWorth = 0;
 	do{
+		if($Stats[1] >= 5)
+		{
+			$DaysWorth++;
+			$Stats[1] -= 5;
+		}
+		else if($Stats[2] >= 5)
+		{
+			$DaysWorth++;
+			$Stats[2] -= 5;
+		}
+		else if($Stats[3] >= 5)
+		{
+			$DaysWorth++;
+			$Stats[3] -= 5;
+		}
+		else if($Stats[4] >= 5)
+		{
+			$DaysWorth++;
+			$Stats[4] -= 5;
+		}
+		else if($Stats[5] >= 5)
+		{
+			$DaysWorth++;
+			$Stats[5] -= 5;
+		}		
+		else
+			break;		
+		/*
 		if($Stats[1] >= 15 && $Stats[2] >= 3)
 		{
 			$DaysWorth++;
@@ -82,6 +110,7 @@ function CalcNumberOfDaysWorthOfHunts($Stats)
 		}		
 		else
 			break;
+		*/
 	}while(1);
 	return $DaysWorth;
 }
@@ -149,5 +178,16 @@ function mysql_real_escape_string($inp)
     }
 
     return $inp; 
+}
+
+function ValueShortFormat($val)
+{
+	if(abs($val)>1000000000)
+		return (int)($val/1000000000)."B";
+	if(abs($val)>1000000)
+		return (int)($val/1000000)."M";
+	if(abs($val)>1000)
+		return (int)($val/1000)."K";
+	return $val;
 }
 ?>

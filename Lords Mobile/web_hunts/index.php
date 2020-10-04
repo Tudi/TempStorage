@@ -40,6 +40,13 @@ $start=-31;
 $end=0;
 include("ShowData.php");
 
+//check how much time passed since last client packet updated the database
+$query1 = "select VarVal from ServerVars where VarName='LastUpdated'";
+$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+list($LastUpdateStamp)=mysqli_fetch_row($result1);
+$TimeDiff = time() - $LastUpdateStamp;
+echo "Time passsed since last gift : ".date("H:i",$TimeDiff)."<br>";
+
 $changelog = file_get_contents("changelog");
 $changelog = str_replace("\n","\n<br>", $changelog);
 echo "<br>$changelog";

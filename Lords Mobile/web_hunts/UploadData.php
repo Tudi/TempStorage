@@ -27,7 +27,8 @@ if($objtype == 110)
 		}
 	}
 	else
-		echo "Monster $monstertype level is zero";
+		echo "ERROR:Monster $monstertype level is zero";
+	$ForwardObjectType=109;
 }
 else if($objtype == 111)
 {
@@ -49,7 +50,8 @@ else if($objtype == 111)
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
 	}
 	else
-		echo "Monster $monstertype level is zero";
+		echo "ERROR:Monster $monstertype level is zero";
+	$ForwardObjectType=109;
 }
 //this is when local server is trying to update the remote server
 else if($objtype == 109)
@@ -69,10 +71,48 @@ else if($objtype == 109)
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
 //		echo $query1;
 	}
+	$query1 = "update ServerVars set VarVal='".time()."' where VarName='LastUpdated'";
+	$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+}
+if($objtype == 112)
+{
+	$year = GetYear();
+	$day = GetDayOfYear();
+	//check if we have an id for this player
+	$query1 = "update PlayerMights set PlayerMight=$might,PlayerKills=$kills where Day=$day and year=$year and PlayerName = '".mysqli_real_escape_string($dbi,$name)."'";
+	$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+	//echo $query1;
+
+	list($matched, $changed, $warnings) = sscanf($dbi->info, "Rows matched: %d Changed: %d Warnings: %d");
+	if($changed == 0)
+	{
+		$query1 = "insert into PlayerMights (PlayerName, PlayerMight, PlayerKills, year, day) values('".mysqli_real_escape_string($dbi,$name)."',$might,$kills,$year,$day)";
+		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
+		//echo $query1;
+	}
+	$ForwardObjectType=112;
+}
+
+if(isset($k) && $ForwardObjectType==112)
+{
+	$Escaped_name=urlencode($name);
+	$url="http://rui.eu5.org/UploadData.php?name=$Escaped_name&objtype=$ForwardObjectType&might=$might&kills=$kills&day=$day&year=$year";
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+	$data = curl_exec($ch);
+	while(curl_errno($ch) == 28 && $retry < 5)
+	{
+		$data = curl_exec($ch);
+		$retry++;
+	}
+	echo "$url<br>";
+	echo "$data";
+	curl_close($ch);
 }
 
 //if this is on local server, forward it to main server
-if( isset($k) )
+if( isset($k) && $ForwardObjectType==109)
 {
 	$year = GetYear();
 	$day = GetDayOfYear();
@@ -92,7 +132,8 @@ if( isset($k) )
 	if(@$stats[5]>$lvl5) $lvl5=$stats[5];
 	
 	$Escaped_name=urlencode($name);
-	$url="http://rum-lm.eu5.org/UploadData.php?name=$Escaped_name&objtype=109&Lvl1=$lvl1&Lvl2=$lvl2&Lvl3=$lvl3&Lvl4=$lvl4&Lvl5=$lvl5&day=$day&year=$year";
+//	$url="http://rum-lm.eu5.org/UploadData.php?name=$Escaped_name&objtype=109&Lvl1=$lvl1&Lvl2=$lvl2&Lvl3=$lvl3&Lvl4=$lvl4&Lvl5=$lvl5&day=$day&year=$year";
+	$url="http://rui.eu5.org/UploadData.php?name=$Escaped_name&objtype=$ForwardObjectType&Lvl1=$lvl1&Lvl2=$lvl2&Lvl3=$lvl3&Lvl4=$lvl4&Lvl5=$lvl5&day=$day&year=$year";
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -142,10 +183,16 @@ function GetMonsterLevel($Type)
 	list($MonsterLevel) = mysqli_fetch_row($result1);
 	if(!isset($MonsterLevel))
 	{
+		$query1 = "select MonsterLevel from MonsterTypes where MonsterType='".($Type & 0xFF)."' limit 0,1";
+		$result1 = mysqli_query($dbi, $query1) or die("Error : 2017022002 <br> ".$query1." <br> ".mysqli_error($dbi));
+		list($MonsterLevel) = mysqli_fetch_row($result1);
+	}
+	if(!isset($MonsterLevel))
+	{
 		$query1 = "insert into MonsterTypes (MonsterType,MonsterLevel)values($Type,0)";
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022003 <br> ".$query1." <br> ".mysqli_error($dbi));
 		return 0;
-	}
+	}	
 	else
 	{
 		$query1 = "update MonsterTypes set HuntedCount= HuntedCount + 1 where MonsterType='$Type'";
