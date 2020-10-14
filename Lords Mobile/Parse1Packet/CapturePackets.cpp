@@ -144,23 +144,24 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 	while (WriteIndex - ReadIndex >= WAITING_FOR_X_BYTES && WAITING_FOR_X_BYTES>0 && WriteIndex - ReadIndex != 0)
 	{
 //		ProcessPacket1(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
-		QueuePacketToProcess(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES);
+		QueuePacketToProcess(&TempPacketStore[ReadIndex + 2], WAITING_FOR_X_BYTES - 2);
 		ReadIndex += WAITING_FOR_X_BYTES;
-		if (WAITING_FOR_X_BYTES == 0)
-		{
-			WriteIndex = 0;
-			ReadIndex = 0;
-			ThrowAwayPacketsUntilSmallPackets = 1;
-			ThrowAwayCount = 0;
-			return;
-		}
 	}
 
 	//did we pop all packets ?
-	if (ReadIndex >= WriteIndex)
+	if (ReadIndex == WriteIndex)
 	{
 		ReadIndex = 0;
 		WriteIndex = 0;
+	}
+	else if (WAITING_FOR_X_BYTES == 0)
+	{
+		printf("a)Packet header->size = 0. This is bad, try to resync reading\n");
+		WriteIndex = 0;
+		ReadIndex = 0;
+		ThrowAwayPacketsUntilSmallPackets = 1;
+		ThrowAwayCount = 0;
+		return;
 	}
 }
 
@@ -171,39 +172,40 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 	//theoretical size of a full packet. This is GAME specific !
 	if (WriteIndex == 0)
 	{
-		unsigned short FullPacketSize = *(unsigned short*)data;
-		if (size == FullPacketSize)
+		unsigned short GamePacketSize = *(unsigned short*)data;
+		if (size == GamePacketSize)
 		{
 			//ProcessPacket1(data, size);
 			QueuePacketToProcess(&data[2], size - 2);
 			//this could be a full packet. Consider ourself syncronized
 			if (ThrowAwayPacketsUntilSmallPackets > 0)
 				ThrowAwayPacketsUntilSmallPackets--;
-			WriteIndex = 0;
 			return;
 		}
 		//more than 1 server packet inside a single network packet
-		int BytesUnconsumed = size;
-		while (BytesUnconsumed >= FullPacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
+		int BytesRemain = size;
+		while (BytesRemain > 0 && 
+				BytesRemain >= GamePacketSize && ThrowAwayPacketsUntilSmallPackets == 0 )
 		{
-			//ProcessPacket1(&data[2], FullPacketSize - 2);
-			QueuePacketToProcess(&data[2], FullPacketSize - 2);
-			//jump to the start of the next packet
-			data = &data[FullPacketSize];
-			BytesUnconsumed -= (int)FullPacketSize;
-			FullPacketSize = *(unsigned short*)data;
 			//wow, that is bad
-			if (FullPacketSize == 0)
+			if (GamePacketSize == 0)
 			{
+				printf("b)Packet header->size = 0. This is bad, try to resync reading\n");
 				WriteIndex = 0;
 				ReadIndex = 0;
 				ThrowAwayPacketsUntilSmallPackets = 1;
 				ThrowAwayCount = 0;
 				return;
 			}
+			//ProcessPacket1(&data[2], GamePacketSize - 2);
+			QueuePacketToProcess(&data[2], GamePacketSize - 2);
+			//jump to the start of the next packet
+			data = &data[GamePacketSize];
+			BytesRemain -= (int)GamePacketSize;
+			GamePacketSize = *(unsigned short*)data;
 		}
-		if(BytesUnconsumed>0)
-			QueuePacketForMore(data, BytesUnconsumed); // should never happen
+		if(BytesRemain>0)
+			QueuePacketForMore(data, BytesRemain); // should never happen
 		return;
 	}
 	//if we got here than this is a fragmented packet with first fragment

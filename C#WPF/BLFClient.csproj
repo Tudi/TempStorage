@@ -51,10 +51,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>84617AF39AAFFBFE28F32C74DDD215186A725DF4</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>8EDFEB5E49F89E5C0F6E2473F509774C044ED8E2</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>BLFClient_2_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>BLFClient_3_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -364,6 +364,7 @@
     </EmbeddedResource>
     <None Include="BLFClient_1_TemporaryKey.pfx" />
     <None Include="BLFClient_2_TemporaryKey.pfx" />
+    <None Include="BLFClient_3_TemporaryKey.pfx" />
     <None Include="BLFClient_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

@@ -50,10 +50,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>0375BFE0323783C6AE7667AA2D87C55EA956DDF0</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>5E5011B56ED38651CA9C717AA81CA6312E8AE656</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>BLFClient_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>BLFClient_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -239,6 +239,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="BLFClient_1_TemporaryKey.pfx" />
     <None Include="BLFClient_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

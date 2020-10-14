@@ -170,6 +170,9 @@ namespace BLFClient.Backend
         {
             long StartTime = Environment.TickCount;
 
+            if (ServerIPAndPort == null)
+                return;
+
             //if we are parsing already, ditch all that data
             InterruptParsing = true;
             lock (this)
