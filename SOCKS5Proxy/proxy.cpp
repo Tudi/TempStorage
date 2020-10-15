@@ -213,6 +213,13 @@ static DWORD proxy_transfer_handler(LPVOID arg)
 #ifdef PRINT_PACKET_CONTENT
         // Dump stream information to the screen.
         HANDLE console;
+        if (lock == NULL)
+            lock = CreateMutex(NULL, FALSE, NULL);
+        if (lock == NULL)
+        {
+            fprintf(stderr, "error: failed to create mutex (%d)\n", GetLastError());
+            exit(EXIT_FAILURE);
+        }
         console = GetStdHandle(STD_OUTPUT_HANDLE);
         WaitForSingleObject(lock, INFINITE);
         printf("[%.4d] ", len);

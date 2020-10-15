@@ -14,7 +14,7 @@
 /*
  * Lock to sync output.
  */
-HANDLE lock;
+HANDLE lock = NULL;
 
 /*
  * Entry.
@@ -34,28 +34,19 @@ int __cdecl main(int argc, char** argv)
     PWINDIVERT_TCPHDR tcp_header;
 
     port = 80;
-    if (port < 0 || port > 0xFFFF)
-    {
-        fprintf(stderr, "error: invalid port number (%d)\n", port);
-        exit(EXIT_FAILURE);
-    }
     proxy_port = GetOurProxyPort();
-    lock = CreateMutex(NULL, FALSE, NULL);
-    if (lock == NULL)
-    {
-        fprintf(stderr, "error: failed to create mutex (%d)\n", GetLastError());
-        exit(EXIT_FAILURE);
-    }
 
     // Divert all traffic to/from `port', `proxy_port' and `alt_port'.
-    r = snprintf(filter, sizeof(filter),
-        "tcp and "
+/*  r = snprintf(filter, sizeof(filter),
+       "outbound and "
         "(tcp.DstPort == %d or tcp.DstPort == %d or "
         "tcp.SrcPort == %d or tcp.SrcPort == %d )",
         port, proxy_port, port, proxy_port);
- //   r = snprintf(filter, sizeof(filter),
- //       "outbound and tcp.DstPort != %d and tcp.DstPort != %d and tcp.DstPort = 80",
- //       GetOurProxyPort(), GetSOCKSTunnelPort());
+    /**/
+    
+    r = snprintf(filter, sizeof(filter),
+        "outbound and tcp.DstPort != %d and (tcp.DstPort = 80 or tcp.DstPort = 81 or tcp.SrcPort = 5557)",
+        GetSOCKSTunnelPort());/**/
     if (r < 0 || r >= sizeof(filter))
     {
         error("failed to create filter string");
@@ -102,25 +93,7 @@ int __cdecl main(int argc, char** argv)
 //            if (SkipRedirectOnOutboundDestPort(tcp_header->DstPort) == 0)
             {
                 AddRedirection(tcp_header, ip_header);
-                if (tcp_header->DstPort == htons(port))
-                {
-                    // Reflect: PORT ---> PROXY
-#ifdef _DEBUG
-                    unsigned short OriginalSrcPort = htons(tcp_header->SrcPort);
-                    unsigned short OriginalDestPort = htons(tcp_header->DstPort);
-#endif
-                    UINT32 dst_addr = ip_header->DstAddr;
-                    tcp_header->DstPort = htons(GetOurProxyPort());
-                    ip_header->DstAddr = ip_header->SrcAddr; // redirect back to the network adapter it came from ?
-//                    ip_header->DstAddr = htonl(GetOurProxyIP()); // redirect back to the network adapter it came from ?
-                    ip_header->SrcAddr = dst_addr;
-                    addr.Outbound = FALSE;
-#ifdef _DEBUG
-                    printf("redirecting from %d to proxy port : %d\n", port, proxy_port);
-                    printf("\t Destination port %d, src port %d\n", OriginalDestPort, OriginalSrcPort);
-#endif
-                }
-                else if (tcp_header->SrcPort == htons(proxy_port))
+                if (tcp_header->SrcPort == htons(proxy_port))
                 {
                     // Reflect: PROXY ---> PORT
 #ifdef _DEBUG
@@ -134,26 +107,30 @@ int __cdecl main(int argc, char** argv)
                     ip_header->SrcAddr = dst_addr;
                     addr.Outbound = FALSE;
 #ifdef _DEBUG
-                    printf("redirecting from proxy %d to %d\n", proxy_port, port);
-                    printf("\t Destination port(original src) %d, src port(original dest) %d\n", OriginalDestPort, OriginalSRCPort);
+                    printf("redirecting from proxy %d to %d\n", proxy_port, OriginalSRCPort);
+                    printf("\t Destination port(original src) %d, src port(original dest) %d\n", OriginalDestPort, htons(OriginalSRCPort));
 #endif
                 }
-                /**/
+                    else
+//                if (tcp_header->DstPort == htons(port))
+                    {
+                        // Reflect: PORT ---> PROXY
+#ifdef _DEBUG
+                        unsigned short OriginalSrcPort = htons(tcp_header->SrcPort);
+                        unsigned short OriginalDestPort = htons(tcp_header->DstPort);
+#endif
+                        UINT32 dst_addr = ip_header->DstAddr;
+                        tcp_header->DstPort = htons(GetOurProxyPort());
+                        ip_header->DstAddr = ip_header->SrcAddr; // redirect back to the network adapter it came from ?
+                        ip_header->SrcAddr = dst_addr;
+                        addr.Outbound = FALSE;
+#ifdef _DEBUG
+                        printf("redirecting from %d to proxy port : %d\n", OriginalSrcPort, proxy_port);
+                        printf("\t Destination port %d, src port %d\n", OriginalDestPort, OriginalSrcPort);
+#endif
+                    }
             }
-/*            else if (tcp_header->DstPort == htons(alt_port))
-            {
-                // Redirect: ALT ---> PORT
-                tcp_header->DstPort = htons(port);
-            }*/
         }
-/*        else
-        {
-            if (tcp_header->SrcPort == htons(port))
-            {
-                // Redirect: PORT ---> ALT
-                tcp_header->SrcPort = htons(alt_port);
-            }
-        }*/
 
         WinDivertHelperCalcChecksums(packet, packet_len, &addr, 0);
         if (!WinDivertSend(handle, packet, packet_len, NULL, &addr))
