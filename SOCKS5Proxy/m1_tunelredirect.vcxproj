@@ -143,12 +143,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConfigHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="proxy.cpp" />
+    <ClCompile Include="RedirectHistory.cpp" />
     <ClCompile Include="Socks5Proxy.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConfigHandler.h" />
     <ClInclude Include="proxy.h" />
+    <ClInclude Include="RedirectHistory.h" />
     <ClInclude Include="Socks5Proxy.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="windivert.h" />

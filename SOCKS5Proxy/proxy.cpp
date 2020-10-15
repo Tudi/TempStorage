@@ -9,6 +9,8 @@
 #include "proxy.h"
 #include "Utils.h"
 #include "Socks5Proxy.h"
+#include "RedirectHistory.h"
+#include "ConfigHandler.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -19,7 +21,6 @@ DWORD proxy(LPVOID arg)
 {
     PPROXY_CONFIG config = (PPROXY_CONFIG)arg;
     UINT16 proxy_port = config->proxy_port;
-    UINT16 alt_port = config->alt_port;
     int on = 1;
     WSADATA wsa_data;
     WORD wsa_version = MAKEWORD(2, 2);
@@ -40,11 +41,14 @@ DWORD proxy(LPVOID arg)
         error("failed to create socket (%d)", WSAGetLastError());
     }
 
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(int))
-        == SOCKET_ERROR)
+    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(int)) == SOCKET_ERROR)
     {
         error("failed to re-use address (%d)", GetLastError());
     }
+
+#ifdef _DEBUG
+    printf("Our proxy is listening on port : %d\n", proxy_port);
+#endif
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
@@ -78,8 +82,8 @@ DWORD proxy(LPVOID arg)
             error("failed to allocate memory");
         }
         config->s = t;
-        config->alt_port = alt_port;
-        config->dest = addr.sin_addr;
+//        config->dest = addr.sin_addr;
+        memcpy(&config->src_addr, &addr, sizeof(addr));
         thread = CreateThread(NULL, 1, (LPTHREAD_START_ROUTINE)proxy_connection_handler,(LPVOID)config, 0, NULL);
         if (thread == NULL)
         {
@@ -101,10 +105,7 @@ static DWORD proxy_connection_handler(LPVOID arg)
     HANDLE thread;
     PPROXY_CONNECTION_CONFIG config = (PPROXY_CONNECTION_CONFIG)arg;
     SOCKET s = config->s, t;
-    UINT16 alt_port = config->alt_port;
-    struct in_addr dest = config->dest;
-    struct sockaddr_in addr;
-
+    unsigned short SrcPort = config->src_addr.sin_port;
     free(config);
 
     t = socket(AF_INET, SOCK_STREAM, 0);
@@ -115,32 +116,39 @@ static DWORD proxy_connection_handler(LPVOID arg)
         return 0;
     }
 
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(5556);
-    addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
-    if (connect(t, (SOCKADDR*)&addr, sizeof(addr)) == SOCKET_ERROR)
+    //create a connection to our SOCKS 5 tunnel
     {
-        warning("failed to connect socket (%d)", WSAGetLastError());
-        closesocket(s);
-        closesocket(t);
-        return 0;
-    }
+        struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(GetSOCKSTunnelPort());
+        addr.sin_addr.S_un.S_addr = htonl(GetSOCKSTunnelIP());
+        if (connect(t, (SOCKADDR*)&addr, sizeof(addr)) == SOCKET_ERROR)
+        {
+            warning("failed to connect socket (%d)", WSAGetLastError());
+            closesocket(s);
+            closesocket(t);
+            return 0;
+        }
 
-    if (!socksLogin(t))
-    {
-        printf("SOCKS 5 Login failed\n");
-        closesocket(s);
-        closesocket(t);
-        return 0;
-    }
+        if (!socksLogin(t))
+        {
+            printf("SOCKS 5 Login failed\n");
+            closesocket(s);
+            closesocket(t);
+            return 0;
+        }
 
-    if (!socksConnect(t, dest, 80))
-    {
-        printf("SOCKS 5 connect failed\n");
-        closesocket(s);
-        closesocket(t);
-        return 0;
+        unsigned short OriginalDSTPort = htons(GetRedirectedPacketOriginalPort(SrcPort));
+        in_addr OriginalIP;
+        OriginalIP.S_un.S_addr = htonl(GetRedirectedPacketOriginalIP(SrcPort));
+        if (!socksConnect(t, OriginalIP, OriginalDSTPort))
+        {
+            printf("SOCKS 5 connect failed\n");
+            closesocket(s);
+            closesocket(t);
+            return 0;
+        }
     }
 
     config1 = (PPROXY_TRANSFER_CONFIG)malloc(sizeof(PROXY_TRANSFER_CONFIG));
@@ -181,7 +189,6 @@ static DWORD proxy_transfer_handler(LPVOID arg)
     SOCKET s = config->s, t = config->t;
     char buf[8192];
     int len, len2, i;
-    HANDLE console;
 
     free(config);
 
@@ -203,7 +210,9 @@ static DWORD proxy_transfer_handler(LPVOID arg)
             return 0;
         }
 
+#ifdef PRINT_PACKET_CONTENT
         // Dump stream information to the screen.
+        HANDLE console;
         console = GetStdHandle(STD_OUTPUT_HANDLE);
         WaitForSingleObject(lock, INFINITE);
         printf("[%.4d] ", len);
@@ -215,7 +224,7 @@ static DWORD proxy_transfer_handler(LPVOID arg)
         SetConsoleTextAttribute(console, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         printf("%s\n", (len > MAX_LINE ? "..." : ""));
         ReleaseMutex(lock);
-
+#endif
         // Send data to t.
         for (i = 0; i < len; )
         {
