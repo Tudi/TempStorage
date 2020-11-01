@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="AsyncSocket">
+      <UniqueIdentifier>{c7917e76-7474-4bb9-be77-85392102a523}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="curl">
+      <UniqueIdentifier>{a8c44f7b-76eb-4c66-b6aa-e8bc000ca814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExternalCommands">
+      <UniqueIdentifier>{fa0498ff-d14d-47d2-b7fb-0d23005b3f9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Licensing">
+      <UniqueIdentifier>{972facd7-6d1a-4e3a-ac9d-d47e96c2abf0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ConfigHandler">
+      <UniqueIdentifier>{5b01b739-57ec-433b-9411-c684d1249580}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FirewallUtil">
+      <UniqueIdentifier>{6ecbd953-dad9-4080-ad9e-c5803437409b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Logging">
+      <UniqueIdentifier>{07a82997-e320-41ed-b4b8-3913749fd246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JsonParser">
+      <UniqueIdentifier>{edfcc98b-2841-45ca-abf1-8b5a7244fa41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ServiceHandler">
+      <UniqueIdentifier>{e4f99336-ff21-493e-b691-4ba49fef35b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SOCKS5Client">
+      <UniqueIdentifier>{22ab8c8e-a114-4942-b481-00f229f09622}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UtilsGeneric">
+      <UniqueIdentifier>{c92674ce-7e0c-4277-bcb5-ef3fa7293cb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Redirection">
+      <UniqueIdentifier>{3cb5b317-d38b-4ffd-9634-942010fb15c2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketMgrWin32.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketOpsWin32.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketWin32.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="proxy_socket.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="proxy_async.cpp">
+      <Filter>AsyncSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="WhitelistManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Licensing.cpp">
+      <Filter>Licensing</Filter>
+    </ClCompile>
+    <ClCompile Include="LicensingFingerprint.cpp">
+      <Filter>Licensing</Filter>
+    </ClCompile>
+    <ClCompile Include="CommHandler.cpp">
+      <Filter>ExternalCommands</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigHandler.cpp">
+      <Filter>ConfigHandler</Filter>
+    </ClCompile>
+    <ClCompile Include="FirewallUtil.cpp">
+      <Filter>FirewallUtil</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Logging</Filter>
+    </ClCompile>
+    <ClCompile Include="nxjson.c">
+      <Filter>JsonParser</Filter>
+    </ClCompile>
+    <ClCompile Include="ServiceHandler.cpp">
+      <Filter>ServiceHandler</Filter>
+    </ClCompile>
+    <ClCompile Include="Socks5Proxy.cpp">
+      <Filter>SOCKS5Client</Filter>
+    </ClCompile>
+    <ClCompile Include="RestartConnections.cpp">
+      <Filter>ExternalCommands</Filter>
+    </ClCompile>
+    <ClCompile Include="DriverHandler.cpp">
+      <Filter>Redirection</Filter>
+    </ClCompile>
+    <ClCompile Include="FlowManager.cpp">
+      <Filter>Redirection</Filter>
+    </ClCompile>
+    <ClCompile Include="proxy.cpp">
+      <Filter>Redirection</Filter>
+    </ClCompile>
+    <ClCompile Include="RulesManager.cpp">
+      <Filter>Redirection</Filter>
+    </ClCompile>
+    <ClCompile Include="TunnelStatus.cpp">
+      <Filter>Redirection</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>UtilsGeneric</Filter>
+    </ClCompile>
+    <ClCompile Include="GetBiosUUID_Win.cpp">
+      <Filter>Licensing</Filter>
+    </ClCompile>
+    <ClCompile Include="LicensingEncoder.cpp">
+      <Filter>Licensing</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ListenSocketWin32.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="Network.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="proxy_socket.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketDefines.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketMgrWin32.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketOps.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="StraightBuffer.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="Threading.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadStarter.h">
+      <Filter>AsyncSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\curl.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\curlver.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\easy.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\mprintf.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\multi.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\options.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\stdcheaders.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\system.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\typecheck-gcc.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="curl\urlapi.h">
+      <Filter>curl</Filter>
+    </ClInclude>
+    <ClInclude Include="WhitelistManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommHandler.h">
+      <Filter>ExternalCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Licensing.h">
+      <Filter>Licensing</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigHandler.h">
+      <Filter>ConfigHandler</Filter>
+    </ClInclude>
+    <ClInclude Include="FirewallUtil.h">
+      <Filter>FirewallUtil</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Logging</Filter>
+    </ClInclude>
+    <ClInclude Include="nxjson.h">
+      <Filter>JsonParser</Filter>
+    </ClInclude>
+    <ClInclude Include="ServiceHandler.h">
+      <Filter>ServiceHandler</Filter>
+    </ClInclude>
+    <ClInclude Include="Socks5Proxy.h">
+      <Filter>SOCKS5Client</Filter>
+    </ClInclude>
+    <ClInclude Include="RestartConnections.h">
+      <Filter>ExternalCommands</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>UtilsGeneric</Filter>
+    </ClInclude>
+    <ClInclude Include="DriverHandler.h">
+      <Filter>Redirection</Filter>
+    </ClInclude>
+    <ClInclude Include="proxy.h">
+      <Filter>Redirection</Filter>
+    </ClInclude>
+    <ClInclude Include="FlowManager.h">
+      <Filter>Redirection</Filter>
+    </ClInclude>
+    <ClInclude Include="RulesManager.h">
+      <Filter>Redirection</Filter>
+    </ClInclude>
+    <ClInclude Include="TunnelStatus.h">
+      <Filter>Redirection</Filter>
+    </ClInclude>
+    <ClInclude Include="WinDivert\windivert.h">
+      <Filter>Redirection</Filter>
+    </ClInclude>
+    <ClInclude Include="GetBiosUUID.h">
+      <Filter>Licensing</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RedirectToSocks5.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

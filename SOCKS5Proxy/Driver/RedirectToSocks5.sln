@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RedirectToSocks5", "RedirectToSocks5.vcxproj", "{B32D663F-70DA-4BAE-BFF0-413B60857AE8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+		ServiceDebug|x64 = ServiceDebug|x64
+		ServiceRelease|x64 = ServiceRelease|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.Debug|x64.ActiveCfg = Debug|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.Debug|x64.Build.0 = Debug|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.Release|x64.ActiveCfg = Release|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.Release|x64.Build.0 = Release|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.ServiceDebug|x64.ActiveCfg = ServiceDebug|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.ServiceDebug|x64.Build.0 = ServiceDebug|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.ServiceRelease|x64.ActiveCfg = ServiceRelease|x64
+		{B32D663F-70DA-4BAE-BFF0-413B60857AE8}.ServiceRelease|x64.Build.0 = ServiceRelease|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8EF1DF99-5AA4-4FC3-8F8B-E2F72D0BDDAC}
+	EndGlobalSection
+EndGlobal
