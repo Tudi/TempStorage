@@ -412,7 +412,6 @@ void ProcessPacket1(unsigned char *packet, int size)
 			unsigned int  Unk1; 
 			unsigned int  Time[2];
 			unsigned short MonsterType;
-//			unsigned char Fixed0A; // OBJECT_TYPE_MONSTER
 			unsigned char Unk2[5];
 			char Name[13];
 		};
@@ -433,12 +432,14 @@ void ProcessPacket1(unsigned char *packet, int size)
 			else
 				pkt->Name[i] = '_';
 		}*/
+		time_t TimeNow = time(NULL);
+		time_t TimePassed = TimeNow - pkt->Time[0];
 		if((pkt->Unk1 != 20 && pkt->Unk1 != 22) || pkt->Unk2[0] != 0 || pkt->Unk2[1] != 0 || pkt->Unk2[2] != 0 || pkt->Unk2[3] != 0 || pkt->Unk2[4] != 0)
 			pkt->Name[12] = 0;
 //		if(pkt->Fixed0A == 0x0A) // gift source monster
-			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
+			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, (int)TimePassed, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
 		if(pkt->Name[0] != 0)
-			printf("\rCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
+			printf("\rCaught a gift packet, moster %d from %s. Time %d\n", pkt->MonsterType, pkt->Name, (int)TimePassed);
 	}
 	if (packet[0] == 0x37 && packet[1] == 0x0B && packet[2] == 0x00)
 	{
@@ -479,8 +480,10 @@ void ProcessPacket1(unsigned char *packet, int size)
 		};
 #pragma pack(pop)
 		GiftListOpen* pkt = (GiftListOpen*)packet;
+		time_t TimeNow = time(NULL);
 		for (int i = 0; i < pkt->EntryCount; i++)
 		{
+			time_t TimePassed = TimeNow - pkt->Entries[i].Time[0];
 			pkt->Entries[i].Name[12] = 0;
 			unsigned int GUID = pkt->Entries[i].SortIndex;
 			if (pkt->Entries[i].unk1_always1 != 1 
@@ -494,9 +497,9 @@ void ProcessPacket1(unsigned char *packet, int size)
 				printf("\n");
 			}
 //			if (pkt->Entries[i].GiftSourceType == GST_MONSTER) //seems like this can be "anything"
-				QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT_LIST, 0, GUID, pkt->Entries[i].GiftType, pkt->Entries[i].Name, NULL, NULL, pkt->Entries[i].GiftCount, 0, 0, 0, 0, 0, 0, 0, pkt->Entries[i].MonsterType, 0);
+				QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT_LIST, 0, GUID, pkt->Entries[i].GiftType, pkt->Entries[i].Name, NULL, NULL, pkt->Entries[i].GiftCount, (int)TimePassed, 0, 0, 0, 0, 0, 0, pkt->Entries[i].MonsterType, 0);
 			if (pkt->Entries[i].Name[0] != 0)
-				printf("\rgift list packet, gift %d from %s. reward group %d, count %d, quality %d. Old Entry %d %d \n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name, pkt->Entries[i].GiftTypeGroup, pkt->Entries[i].GiftCount, pkt->Entries[i].MaterialQuality, pkt->Entries[i].MonsterType >> 8, pkt->Entries[i].MonsterType & 0xFF);
+				printf("\rgift list packet, gift %d from %s. reward group %d, count %d, quality %d. Old Entry %d %d. Time %d \n", pkt->Entries[i].MonsterType, pkt->Entries[i].Name, pkt->Entries[i].GiftTypeGroup, pkt->Entries[i].GiftCount, pkt->Entries[i].MaterialQuality, pkt->Entries[i].MonsterType >> 8, pkt->Entries[i].MonsterType & 0xFF, (int)TimePassed);
 		}
 	}
 #endif
