@@ -11,6 +11,7 @@ CONFIG += c++11
 SOURCES += \
     CurlInterface.cpp \
     SessionStore.cpp \
+    dialogeditproject.cpp \
     dialoglogin.cpp \
     dialogmemberarea.cpp \
     frameprojectdetailslistview.cpp \
@@ -31,12 +32,14 @@ HEADERS += \
     curl/system.h \
     curl/typecheck-gcc.h \
     curl/urlapi.h \
+    dialogeditproject.h \
     dialoglogin.h \
     dialogmemberarea.h \
     frameprojectdetailslistview.h \
     mainwindow.h
 
 FORMS += \
+    dialogeditproject.ui \
     dialoglogin.ui \
     dialogmemberarea.ui \
     frameprojectdetailslistview.ui \

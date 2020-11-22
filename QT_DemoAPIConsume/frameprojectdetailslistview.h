@@ -12,8 +12,7 @@ class QNetworkReply;
 class FrameProjectDetailsListView : public QFrame
 {
     Q_OBJECT
-    Q_SLOT
-    void slot_netwManagerFinished(QNetworkReply *reply);
+    Q_SLOT void slot_netwManagerFinished(QNetworkReply *reply);
 public:
     explicit FrameProjectDetailsListView(QWidget *parent = nullptr);
     ~FrameProjectDetailsListView();
@@ -23,7 +22,11 @@ public:
     void SetTimeWeek(int Seconds);
     void SetTimeMonth(int Seconds);
     void SetTimeTotal(int Seconds);
+    void SetProjectId(int pProjectId);
 private:
+    int ProjectId;
+    bool Active;
+    void mouseReleaseEvent(QMouseEvent * event);
     Ui::FrameProjectDetailsListView *ui;
 };
 

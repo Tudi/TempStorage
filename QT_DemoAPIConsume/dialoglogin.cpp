@@ -4,6 +4,8 @@
 #include "QJsonParseError"
 #include "SessionStore.h"
 #include "dialogmemberarea.h"
+#include "qmessagebox.h"
+#include "qjsonobject.h"
 
 DialogLogin::DialogLogin(QWidget *parent) :
     QDialog(parent),
@@ -64,7 +66,6 @@ void DialogLogin::on_b_Login_clicked()
     //check server reply for this login
    MemoryStruct *resp = GetAPIReply("auth/login", POSTFIELD, CF_IS_LOGIN);
 
-   //do not leak resources
    if( resp != NULL)
    {
        //qDebug() << "We got API reply : \n" << resp->memory;
@@ -73,6 +74,25 @@ void DialogLogin::on_b_Login_clicked()
        QJsonDocument flowerJson = QJsonDocument::fromJson(QByteArray(resp->memory),&jsonError);
        if (jsonError.error != QJsonParseError::NoError)
              qDebug() << jsonError.errorString();
+       QString LoginError = flowerJson["first_errors"]["email"].toString();
+      if(LoginError.size()>0)
+      {
+          QString LoginError = flowerJson["first_errors"]["email"].toString();
+          QMessageBox::information(
+              this,
+              tr("Quwi"),
+              LoginError );
+          return;
+      }
+       //maybe server reply changed and we no longer recognize a proper reply
+       if(flowerJson["token"].isString() == false)
+       {
+           QMessageBox::information(
+               this,
+               tr("Quwi"),
+               tr("Invalid server reply.") );
+           return;
+       }
        QString Token = flowerJson["token"].toString();
        //qDebug() << "user token : \n" << Token;
        GetSession()->SetSessionToken(Token);
@@ -88,5 +108,12 @@ void DialogLogin::on_b_Login_clicked()
         //create a new main window
         DialogMemberArea *dma = new DialogMemberArea();
         dma->show();
+   }
+   else
+   {
+       QMessageBox::information(
+           this,
+           tr("Quwi"),
+           tr("Unable to connect to the server.") );
    }
 }

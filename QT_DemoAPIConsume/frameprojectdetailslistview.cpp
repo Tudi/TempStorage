@@ -2,6 +2,7 @@
 #include "ui_frameprojectdetailslistview.h"
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include "dialogeditproject.h"
 
 FrameProjectDetailsListView::FrameProjectDetailsListView(QWidget *parent) :
     QFrame(parent),
@@ -15,6 +16,8 @@ FrameProjectDetailsListView::FrameProjectDetailsListView(QWidget *parent) :
 
     this->setStyleSheet("");
     this->setStyleSheet("background-color: rgb(255,255,255)");
+
+    ProjectId = -1;
 }
 
 FrameProjectDetailsListView::~FrameProjectDetailsListView()
@@ -60,6 +63,7 @@ void FrameProjectDetailsListView::slot_netwManagerFinished(QNetworkReply *reply)
 
 void FrameProjectDetailsListView::SetActive(bool pActive)
 {
+    Active = pActive;
     if(pActive)
     {
         this->ui->l_Active->setText("Active");
@@ -101,5 +105,20 @@ void FrameProjectDetailsListView::SetTimeTotal(int Seconds)
     char FormattedContent[50];
     sprintf_s(FormattedContent,sizeof(FormattedContent),"%02d:%02d:%02d",hours,minutes,seconds);
     this->ui->l_TimeTotal->setText(FormattedContent);
+}
 
+void FrameProjectDetailsListView::SetProjectId(int pProjectId)
+{
+    ProjectId = pProjectId;
+}
+
+void FrameProjectDetailsListView::mouseReleaseEvent(QMouseEvent * event)
+{
+    //create a new project edit window
+    DialogEditProject *dep = new DialogEditProject();
+    dep->SetProjectId(ProjectId);
+    dep->SetProjectName(ui->l_ProjectName->text());
+    dep->SetActive(Active);
+    dep->SetOwner(this);
+    dep->show();
 }
