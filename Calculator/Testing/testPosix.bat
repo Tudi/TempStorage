@@ -1,0 +1,16 @@
+"../debug/ToptalCalculator.exe" "11.11 22.22 +" er=33.330000 p
+"../debug/ToptalCalculator.exe" "10 ln" er=2.302585 p
+"../debug/ToptalCalculator.exe" "e ln" er=1 p
+"../debug/ToptalCalculator.exe" "3.14 sin" er=0.001593 p
+"../debug/ToptalCalculator.exe" "pi sin" er=-0 p
+"../debug/ToptalCalculator.exe" "pi cos" er=-1 p
+"../debug/ToptalCalculator.exe" "pi tan" er=1.262627 p
+"../debug/ToptalCalculator.exe" "pi ctan" er=0 p
+"../debug/ToptalCalculator.exe" "-11.11 22.22 33.33 ++" er=44.440000 p
+"../debug/ToptalCalculator.exe" "-1 2 3 * +" er=5 p
+"../debug/ToptalCalculator.exe" "-1 e ln +" er=0 p
+"../debug/ToptalCalculator.exe" "-1 e 1 + ln" er=1 p
+"../debug/ToptalCalculator.exe" "2 3 * 1 +" er=7 p
+"../debug/ToptalCalculator.exe" "2 3 1 * +" er=5 p
+"../debug/ToptalCalculator.exe" "6 3 / 1 -" er=1 p
+"../debug/ToptalCalculator.exe" "6 3 2 / -" er=4.5 p
