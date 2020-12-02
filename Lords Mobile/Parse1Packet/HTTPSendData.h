@@ -11,3 +11,4 @@ void HttpSendShutdown();
 
 void QueueObjectToProcess(int type, int k, int x, int y, char *name, char *guild, char *guildf, int clevel, __int64 kills, int vip, int grank, __int64 might, int StatusFlags, int plevel, int title, int monstertype, int max_amt);
 int IsHTTPQueueEmpty();
+int DoHTTPPost(const char* URL, const char* PostVars);

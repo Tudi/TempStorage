@@ -399,23 +399,43 @@ void ProcessPacket1(unsigned char *packet, int size)
 		pkt->Name[12] = 0;
 		printf("\nCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
 	}*/
+#pragma pack(push, 1)
+	struct GiftReceived49
+	{
+		unsigned char Opcode[3];
+//		unsigned char SomeCounter;
+		unsigned short  SomeCounter;
+//		unsigned int  Time[2];
+		unsigned short MonsterType;
+//		unsigned char Unk2[5];
+		char Name[13];
+	};
+#pragma pack(pop)
+#if 0
+	GiftReceived49* pkt = (GiftReceived49*)packet;
+	if (pkt->Name[0] == 'T' && pkt->Name[1] == 'u' && pkt->Name[2] == 'd')
+		pkt = pkt;
+	int NamePos = -1;
+	char* NameToFind = "Tudi69";
+	int NameLen = (int)strlen(NameToFind);
+	for (int i = 0; i < size; i++)
+	{
+		int Match = 1;
+		for(int j=0;j< NameLen;j++)
+			if (packet[i + j] != NameToFind[j])
+			{
+				Match = 0;
+				break;
+			}
+		if (Match == 1)
+			Match = 1;
+	}
+#endif
 	if (
 		//size == 0x2A && 
-		packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x13)
+		packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x12)
 		//	if (packet[0] == 0x2B && packet[1] == 0x0B && packet[2] == 0x12)
 	{
-#pragma pack(push, 1)
-		struct GiftReceived49
-		{
-			unsigned char Opcode[3];
-			unsigned char SomeCounter;
-			unsigned int  Unk1; 
-			unsigned int  Time[2];
-			unsigned short MonsterType;
-			unsigned char Unk2[5];
-			char Name[13];
-		};
-#pragma pack(pop)
 		GiftReceived49* pkt = (GiftReceived49*)packet;
 		pkt->Name[12] = 0;
 /*		for (int i = 0; i < 12; i++)
@@ -432,14 +452,14 @@ void ProcessPacket1(unsigned char *packet, int size)
 			else
 				pkt->Name[i] = '_';
 		}*/
-		time_t TimeNow = time(NULL);
-		time_t TimePassed = TimeNow - pkt->Time[0];
-		if((pkt->Unk1 != 20 && pkt->Unk1 != 22) || pkt->Unk2[0] != 0 || pkt->Unk2[1] != 0 || pkt->Unk2[2] != 0 || pkt->Unk2[3] != 0 || pkt->Unk2[4] != 0)
-			pkt->Name[12] = 0;
+//		time_t TimeNow = time(NULL);
+//		time_t TimePassed = TimeNow - pkt->Time[0];
+//		if((pkt->Unk1 != 20 && pkt->Unk1 != 22) || pkt->Unk2[0] != 0 || pkt->Unk2[1] != 0 || pkt->Unk2[2] != 0 || pkt->Unk2[3] != 0 || pkt->Unk2[4] != 0)
+//			pkt->Name[12] = 0;
 //		if(pkt->Fixed0A == 0x0A) // gift source monster
-			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, (int)TimePassed, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
+			QueueObjectToProcess(OBJECT_TYPE_CUSTOM_MONSTER_GIFT, 0, 0, 0, pkt->Name, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, pkt->MonsterType, 0);
 		if(pkt->Name[0] != 0)
-			printf("\rCaught a gift packet, moster %d from %s. Time %d\n", pkt->MonsterType, pkt->Name, (int)TimePassed);
+			printf("\rCaught a gift packet, moster %d from %s\n", pkt->MonsterType, pkt->Name);
 	}
 	if (packet[0] == 0x37 && packet[1] == 0x0B && packet[2] == 0x00)
 	{
@@ -741,6 +761,9 @@ void QueuePacketToProcess(unsigned char *data, int size)
 {
 	if (size <= 0)
 		return;
+#ifdef _DEBUG
+	printf("Queue packet for parsing : %d\n", size);
+#endif
 	unsigned char *t = (unsigned char*)malloc(size + 2 + 2);
 	*(unsigned short *)t = size;
 	memcpy(t+2, data, size);
@@ -765,7 +788,9 @@ DWORD WINAPI BackgroundProcessPackets(LPVOID lpParam)
 			{
 				//parse the packet and if it is a packet we want we will use a HTTP API to push it into our DB. The http API runs async
 //				printf("process packet : in queue %d\n", PacketCircularBufferWriteIndex - PopIndex);
+#ifndef _DEBUG
 				printf("\rprocess packet : in queue %d                     ", PacketCircularBufferWriteIndex - PopIndex);
+#endif
 				ProcessPacket1(&PopBuffer[2], *(unsigned short*)PopBuffer);
 				//we no longer need this buffer
 				free( PopBuffer );

@@ -163,6 +163,14 @@ void QueuePacketForMore(unsigned char *data, unsigned int size)
 		ThrowAwayCount = 0;
 		return;
 	}
+	//try to move data to the beginning of the buffer
+	if (ReadIndex > 0)
+	{
+		for (unsigned int i = 0; i <= WriteIndex - ReadIndex; i++)
+			TempPacketStore[i] = TempPacketStore[ReadIndex + i];
+		WriteIndex -= ReadIndex;
+		ReadIndex = 0;
+	}
 }
 
 void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
@@ -204,39 +212,131 @@ void Wait1FullPacketThenParse(unsigned char *data, unsigned int size)
 			BytesRemain -= (int)GamePacketSize;
 			GamePacketSize = *(unsigned short*)data;
 		}
-		if(BytesRemain>0)
+		if (BytesRemain > 0)
+		{
+#ifdef _DEBUG
+			printf("1)Adding fragmented packet with size : %d\n", size);
+#endif
 			QueuePacketForMore(data, BytesRemain); // should never happen
+		}
 		return;
 	}
 	//if we got here than this is a fragmented packet with first fragment
+#ifdef _DEBUG
+	printf("2)Adding fragmented packet with size : %d\n", size);
+#endif
 	QueuePacketForMore(data, size);
 }
 
 #define PROTOCOL_TCPIP	6
+#define SIZE_ETHERNET 14
+
+class SniffSessionStore
+{
+public:
+	SniffSessionStore()
+	{
+		SniffLockedIn = 0;
+	}
+	int IsTrafficSelected(ip_hdr* ih)
+	{
+		if (SniffLockedIn == 0)
+		{
+			if (ih->ip_protocol == PROTOCOL_TCPIP
+				&& (((unsigned char*)&ih->ip_destaddr)[0] == 192 && ((unsigned char*)&ih->ip_destaddr)[1] == 243))
+			{
+				SniffLockedIn = 1;
+				SelectedIP = ih->ip_destaddr;
+				int ip_len = ih->ip_header_len * 4;
+				tcp_header* tcph = (tcp_header*)((u_char*)ih + ip_len);
+				SelectedPort = tcph->dest_port;
+			}
+			if (ih->ip_protocol == PROTOCOL_TCPIP
+				&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243))
+			{
+				SniffLockedIn = 1;
+				SelectedIP = ih->ip_srcaddr;
+				int ip_len = ih->ip_header_len * 4;
+				tcp_header* tcph = (tcp_header*)((u_char*)ih + ip_len);
+				SelectedPort = tcph->source_port;
+			}
+			if (SniffLockedIn == 1)
+			{
+				printf("Selecting server IP for sniffing : ");
+				printf("%d.%d.%d.%d:%d\n", ((unsigned char*)&SelectedIP)[0], ((unsigned char*)&SelectedIP)[1], ((unsigned char*)&SelectedIP)[2], ((unsigned char*)&SelectedIP)[3], htons(SelectedPort));
+			}
+		}
+
+		if (SniffLockedIn == 0)
+			return 0;
+
+		if (ih->ip_protocol == PROTOCOL_TCPIP && ih->ip_destaddr == SelectedIP)
+		{
+			int ip_len = ih->ip_header_len * 4;
+			tcp_header* tcph = (tcp_header*)((u_char*)ih + ip_len);
+			if (SelectedPort == tcph->dest_port)
+				return 1;
+		}
+		if (ih->ip_protocol == PROTOCOL_TCPIP && ih->ip_srcaddr == SelectedIP)
+		{
+			int ip_len = ih->ip_header_len * 4;
+			tcp_header* tcph = (tcp_header*)((u_char*)ih + ip_len);
+			if (SelectedPort == tcph->source_port)
+				return 2;
+		}
+		return 0;
+	}
+	int SniffLockedIn;
+	unsigned int SelectedIP;
+	unsigned short SelectedPort;
+};
+SniffSessionStore sSession;
+
 // Callback function invoked by libpcap for every incoming packet 
 void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_char *pkt_data)
 {
 	ip_hdr *ih;
 	u_int ip_len;
+	u_int length = header->len;
 
 	//Unused variable
 	(VOID)(param);
+	//something must have went wrong
+	if (length < SIZE_ETHERNET)
+		return;
+	//presumably we parsed ethernet header here
+	length -= SIZE_ETHERNET;
+
+	//maybe not a full IP header
+	if (length < sizeof(ip_hdr))
+		return;
 
 	// retireve the position of the ip header
-	ih = (ip_hdr *)(pkt_data + 14); //length of ethernet header
-
-	// retireve the position of the udp header 
+	ih = (ip_hdr *)(pkt_data + SIZE_ETHERNET); //length of ethernet header
 	ip_len = ih->ip_header_len * 4;
+	if (ip_len < 20) 
+	{
+		if(ip_len != 0)
+			printf("   * Invalid IP header length: %u bytes\n", ip_len);
+		return;
+	}
+	length -= ip_len;
 
+	if (length < sizeof(tcp_header))
+		return;
+
+	//this should never trigger
+	if (header->len != header->caplen)
+		printf("Captured data is not the same ! %d-%d\n", header->len, header->caplen);
+
+	int TrafficSelected = sSession.IsTrafficSelected(ih);
     //dump all incomming packet
 #ifdef _DEBUG
-    if (ih->ip_protocol == PROTOCOL_TCPIP
-        && (((unsigned char*)&ih->ip_destaddr)[0] == 192 && ((unsigned char*)&ih->ip_destaddr)[1] == 243)
-        )
+    if (TrafficSelected == 1 )
     {
-        tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + 14 + ip_len);
+        tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + SIZE_ETHERNET + ip_len);
         int tcp_len = tcph->data_offset * 4;
-        unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
+        unsigned char *DataStart = (u_char*)pkt_data + SIZE_ETHERNET + ip_len + tcp_len;
         int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
         int BytesToDump = header->len - TotalHeaderSize;
         if (BytesToDump > 0)
@@ -256,15 +356,11 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 #endif
 
 	//capturing all TCP packets from IP
-	if (ih->ip_protocol == PROTOCOL_TCPIP
-//		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 && ((unsigned char*)&ih->ip_srcaddr)[2] == 47 && ((unsigned char*)&ih->ip_srcaddr)[3] == 118)
-//		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 && ((unsigned char*)&ih->ip_srcaddr)[2] == 47 && ((unsigned char*)&ih->ip_srcaddr)[3] == 39)
-		&& (((unsigned char*)&ih->ip_srcaddr)[0] == 192 && ((unsigned char*)&ih->ip_srcaddr)[1] == 243 )
-		)
+	if (TrafficSelected == 2)
 	{
-		tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + 14 + ip_len);
+		tcp_header *tcph = (tcp_header *)((u_char*)pkt_data + SIZE_ETHERNET + ip_len);
 		int tcp_len = tcph->data_offset * 4;
-		unsigned char *DataStart = (u_char*)pkt_data + 14 + ip_len + tcp_len;
+		unsigned char *DataStart = (u_char*)pkt_data + SIZE_ETHERNET + ip_len + tcp_len;
 		int TotalHeaderSize = (unsigned int)(DataStart - pkt_data);
 		int BytesToDump = header->len - TotalHeaderSize;
 		if (BytesToDump > 0)

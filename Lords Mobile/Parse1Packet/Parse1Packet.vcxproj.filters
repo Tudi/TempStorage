@@ -42,6 +42,9 @@
     <ClCompile Include="ConfigLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HTTPSendDataCurl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CapturePackets.h">

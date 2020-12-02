@@ -43,6 +43,7 @@ string url_encode(const string value)
 	return escaped.str();
 }
 
+//might need to add URL escape here
 void AppendURLQuery(string &url, const char *name, int val, int IsFirst=0)
 {
 	char temp[2000];
@@ -179,8 +180,21 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 //	printf("\rSend http for player %s, vip %d\n", name, vip);
 	printf("\rSend http for player %s\n", name);
 
+#define USE_CURL_FOR_HHTP
+
+#ifndef USE_CURL_FOR_HHTP
+//#define HOST ""
+#define HOST "smashyhunt.eu5.org"
 	//HTTP GET
-	string get_http = "GET /LM/UploadData.php?";
+//	string get_http = "GET /LM/UploadData.php?";
+	string get_http = "GET " \
+		HOST \
+		"/UploadData.php?";
+#else
+//	#define HOST "httP://smashyhunt.eu5.org/UploadData.php"
+	#define HOST "httP://localhost/LM/UploadData.php"
+	string get_http = "";
+#endif
 	AppendURLQuery(get_http, "k", k, 1);
 	AppendURLQuery(get_http, "x", x);
 	AppendURLQuery(get_http, "y", y);
@@ -206,7 +220,11 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 	if (max_amt>0)
 		AppendURLQuery(get_http, "MaxAmtNow", max_amt);
 
-	return HTTPPostData(get_http, "", 0);
+#ifndef USE_CURL_FOR_HHTP
+	return HTTPPostData(get_http, HOST, 0);
+#else
+	return DoHTTPPost(HOST, get_http.c_str());
+#endif
 }
 
 void HTTP_GenerateMaps()

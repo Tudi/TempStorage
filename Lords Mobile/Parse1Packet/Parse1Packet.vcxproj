@@ -142,6 +142,7 @@
     <ClCompile Include="ConfigLoader.cpp" />
     <ClCompile Include="ConsoleListener.cpp" />
     <ClCompile Include="HTTPSendData.cpp" />
+    <ClCompile Include="HTTPSendDataCurl.cpp" />
     <ClCompile Include="LordsMobileControl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ParsePackets.cpp" />
