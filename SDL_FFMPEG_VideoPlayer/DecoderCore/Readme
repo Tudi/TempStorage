@@ -1,0 +1,37 @@
+Video decoder library wrapper
+==============================
+
+README for version 07/07/2020
+==============================
+
+This software is the work of Jozsa Bodnar Istvan on the request of Antoine Dornstetter request specfications.
+
+DOCUMENTATION ROADMAP
+=====================
+OVERVIEW            General description of the program.
+LEGAL ISSUES        Copyright, lack of warranty, terms of distribution.
+INSTALLATION		How to get the player working
+USAGE				Examples how to use the program
+
+OVERVIEW
+========
+This program contains mostly C code, but also some of the C++ extensions. The purpuse is to open a video input file 
+and demux the video and audio stream into separate raw streams. Streams will be consumed by player.
+
+The program relies on FFMPEG libavcodec library. Please refer to ffmpeg documentation for all supported container formats,
+video, audio codecs.
+
+LEGAL ISSUES
+============
+FFMPEG library is based on GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+
+INSTALLATION
+============
+Open "DecoderCore.sln" with Visual Studio 2019
+Make sure you have x64 platform selected for build option and "LibBuild" version. Build the project
+After build finished, it should produce : x64\LibBuild\DecoderCore.lib
+This library paired with "DecoderInterface.h" will be consumed by "DesktopPlayer" project
+
+USAGE
+============
+"DecoderCore.lib" + "DecoderInterface.h" can be consumed by video players

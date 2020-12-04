@@ -191,8 +191,8 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 		HOST \
 		"/UploadData.php?";
 #else
-//	#define HOST "httP://smashyhunt.eu5.org/UploadData.php"
-	#define HOST "httP://localhost/LM/UploadData.php"
+	#define HOST "httP://smashyhunt.eu5.org/UploadData.php"
+//	#define HOST "httP://localhost/LM/UploadData.php"
 	string get_http = "";
 #endif
 	AppendURLQuery(get_http, "k", k, 1);

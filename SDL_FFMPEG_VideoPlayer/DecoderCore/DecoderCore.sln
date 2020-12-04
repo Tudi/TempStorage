@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DecoderCore", "DecoderCore.vcxproj", "{D9F45C6B-F972-4273-98CC-477766B00575}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		LibBuild|x64 = LibBuild|x64
+		Release|x64 = Release|x64
+		SpeedProfile|x64 = SpeedProfile|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9F45C6B-F972-4273-98CC-477766B00575}.Debug|x64.ActiveCfg = Debug|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.Debug|x64.Build.0 = Debug|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.LibBuild|x64.ActiveCfg = LibBuild|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.LibBuild|x64.Build.0 = LibBuild|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.Release|x64.ActiveCfg = Release|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.Release|x64.Build.0 = Release|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.SpeedProfile|x64.ActiveCfg = SpeedProfile|x64
+		{D9F45C6B-F972-4273-98CC-477766B00575}.SpeedProfile|x64.Build.0 = SpeedProfile|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D29FDE44-3E24-4B6B-B84B-723E855F69EC}
+	EndGlobalSection
+EndGlobal

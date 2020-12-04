@@ -1,0 +1,78 @@
+Simple video player
+==============================
+
+README for version 07/07/2020
+==============================
+
+This software is the work of Jozsa Bodnar Istvan on the request of Antoine Dornstetter request specfications.
+
+DOCUMENTATION ROADMAP
+=====================
+OVERVIEW            General description of the program.
+LEGAL ISSUES        Copyright, lack of warranty, terms of distribution.
+INSTALLATION		How to get the player working
+USAGE				Examples how to use the program
+PLAYERCOMMANDS		Keys that control the player UI				
+TO DO               Plans for future.
+
+
+OVERVIEW
+========
+This program contains mostly C code, but also some of the C++ extensions. The purpuse is to open a video input file 
+and demux the video and audio stream into separate files. Program parameters can be set from command line. Once
+file is opened for playing, you can preview the video content on an SDL window. You can seek in the input file
+content. Video file output is a stream of JPEG pictures. Audio can be dumped into a wav file.
+
+The program relies on FFMPEG libavcodec library. Please refer to ffmpeg documentation for all supported container formats,
+video, audio codecs.
+
+For a quick help, run the program without any command line options. It should print currently supported input parameters.
+
+LEGAL ISSUES
+============
+JPEG library does not have legal limitations
+FFMPEG library is based on GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+SDL is based on Simple DirectMedia Layer Copyright (C) 1997-2020 Sam Lantinga
+
+INSTALLATION
+============
+You will need to compile "DecoderCore.sln" projet to generate "DecoderCore.lib" before you can build DesktopPlayer. Make sure to select build type "LibBuild"
+Open DesktopPlayer.sln with Visual Studio 2019
+Make sure you have x64 platform selected for build option and release version. Build the project
+After build finished, it should produce : x64\Release\DesktopPlayer.exe
+In order to use the exe, you will need to copy DLL files from x64\Debug\ directory : avcodec-58.dll, avutil-56.dll, postproc-55.dll, swresample-3.dll, swscale-5.dll, avformat-58.dll, avdevice-58.dll, avfilter-7.dll, SDL2.dll
+
+USAGE
+============
+Running DesktopPlayer.exe without parameters, should print up to date available command line options. Some examples :
+running without params should print : DesktopPlayer.exe in=filename [max_frames_to_decode=<val>] [SaveImageStream=<val>] [SaveAudioStream=<val>] [ShowFrameInfo=1]
+simple play test : "./x64/release/DesktopPlayer.exe" in=TestSamples/small.mp4
+show frame related info : "./x64/release/DesktopPlayer.exe" in=TestSamples/small.mp4 ShowFrameInfo=1
+save video frames into jpeg files : "./x64/release/DesktopPlayer.exe" in=TestSamples/small.mp4 SaveImageStream=Frame
+
+PLAYERCOMMANDS
+============
+whitespace - pause playback
+'s' - if video is paused, save the image as a JPEG file
+'a' - start dumping audio stream to a wav file
+'i' - show decoder info on console
+'m' - mute audio
+'+' - speed up playback. Will pause audio
+'-' - slow down playback. Will pause audio
+'=' - reset playback speed to normal
+'left' - jump back 10 seconds in video
+'right' - jump forward 10 seconds in video
+'mouse click' - horizontal position in window will seek in video coresponding to duration percent
+
+TO DO
+==========
+- add buffer pooling to decodercore At least check if it's worth implementing. Might have a small speed impact
+- improve seek so that it waits for available frames ( with timeout ) instead fixed time amount
+- improve seek to be frame precise
+- check small_flashsv.avi,small_hevc.avi,small_huffyuv.avi,small_qtrle.avi,small_theora.avi decode issue
+- compilation using CMAKE
+- cross platform support
+- more input tests. Tests more silent audios. Audio only input
+- when window events occure and block rendering for some reason, make sure to pause audio play also
+- make the "seek" more parametrizable. Maybe add a progress bar that supports dragging
+

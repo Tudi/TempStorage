@@ -1,0 +1,75 @@
+Simple video player
+==============================
+
+README for version 07/07/2020
+==============================
+
+This software is the work of Jozsa Bodnar Istvan on the request of Antoine Dornstetter request specfications.
+
+DOCUMENTATION ROADMAP
+=====================
+OVERVIEW            General description of the program.
+LEGAL ISSUES        Copyright, lack of warranty, terms of distribution.
+INSTALLATION		How to get the player working
+USAGE				Examples how to use the program
+PLAYERCOMMANDS		Keys that control the player UI				
+TO DO               Plans for future.
+
+
+OVERVIEW
+========
+This program contains mostly C code, but also some of the C++ extensions. The purpuse is to open a video input file 
+and demux the video and audio stream into separate files. Program parameters can be set from command line. Once
+file is opened for playing, you can preview the video content on an SDL window. You can jump into the input file
+content using the keyboard keys "forward" and "backward". Video file output is a stream of JPEG pictures. Audio 
+will be dumped into a wav file.
+
+The program relies on FFMPEG libavcodec library. Please refer to ffmpeg documentation for all supported container formats,
+video, audio codecs.
+
+For a quick help, run the program without any command line options. It should print currently supported input parameters.
+
+LEGAL ISSUES
+============
+JPEG library does not have legal limitations
+FFMPEG library is based on GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+SDL is based on Simple DirectMedia Layer Copyright (C) 1997-2020 Sam Lantinga
+
+INSTALLATION
+============
+Open VideoPlayer1.sln with Visual Studio 2019
+Make sure you have x64 platform selected for build option and release version. Build the project
+After build finished, it should produce : x64\Release\VideoPlayer1.exe
+In order to use the exe, you will need to copy DLL files from x64\Debug\ directory : avcodec-58.dll, avutil-56.dll, postproc-55.dll, swresample-3.dll, swscale-5.dll, avformat-58.dll, avdevice-58.dll, avfilter-7.dll, SDL2.dll
+
+USAGE
+============
+Running VideoPlayer1.exe without parameters, should print up to date available command line options. Some examples :
+running without params should print : VideoPlayer1.exe in=filename [max_frames_to_decode=<val>] [SaveImageStream=<val>] [SaveAudioStream=<val>] [ShowFrameInfo=1]
+simple play test : "./x64/release/VideoPlayer1.exe" in=TestSamples/small.mp4
+show frame related info : "./x64/release/VideoPlayer1.exe" in=TestSamples/small.mp4 ShowFrameInfo=1
+save video frames into jpeg files : "./x64/release/VideoPlayer1.exe" in=TestSamples/small.mp4 SaveImageStream=Frame
+
+PLAYERCOMMANDS
+============
+whitespace - pause playback
+'s' - if video is paused, save the image as a JPEG file
+'a' - start dumping audio stream to a wav file
+'i' - show decoder info on console
+'+' - speed up playback. Will pause audio
+'-' - slow down playback. Will pause audio
+'=' - reset playback speed to normal
+'left' - jump back 10 seconds in video
+'right' - jump forward 10 seconds in video
+'mouse click' - horizontal position in window will seek in video coresponding to duration percent
+
+TO DO
+==========
+- compilation using CMAKE
+- cross platform support
+- stability test. Spamming keys sometimes produces undisired effects like small audio and video desyncronization.
+- more input tests. Tests more silent audios. Audio only input
+- make sure all requested meta data is extracted and shown to the user
+- when window events occure and block rendering for some reason, ake sure to pause audio play also
+- make the "seek" more parametrizable. Maybe add a progress bar that supports dragging
+

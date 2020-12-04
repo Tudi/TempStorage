@@ -2,36 +2,19 @@
 #include <pcap.h>
 #include "ParsePackets.h"
 
-/* 4 bytes IP address */
-typedef struct ip_address{
-	u_char byte1;
-	u_char byte2;
-	u_char byte3;
-	u_char byte4;
-}ip_address;
-
-/* IPv4 header */
-typedef struct ip_header{
-	u_char  ver_ihl;        // Version (4 bits) + Internet header length (4 bits)
-	u_char  tos;            // Type of service 
-	u_short tlen;           // Total length 
-	u_short identification; // Identification
-	u_short flags_fo;       // Flags (3 bits) + Fragment offset (13 bits)
-	u_char  ttl;            // Time to live
-	u_char  proto;          // Protocol
-	u_short crc;            // Header checksum
-	ip_address  saddr;      // Source address
-	ip_address  daddr;      // Destination address
-	u_int   op_pad;         // Option + Padding
-}ip_header;
-
-/* UDP header*/
-typedef struct udp_header{
-	u_short sport;          // Source port
-	u_short dport;          // Destination port
-	u_short len;            // Datagram length
-	u_short crc;            // Checksum
-}udp_header;
+#define ETH_ALEN 6
+#define	ETHERTYPE_PUP		0x0200      /* Xerox PUP */
+#define	ETHERTYPE_IP		0x0800		/* IP */
+#define	ETHERTYPE_ARP		0x0806		/* Address resolution */
+#define	ETHERTYPE_REVARP	0x8035		/* Reverse ARP */
+#define	ETHERTYPE_IPV6		0x86DD		/* IP */
+#pragma pack(push, 1)
+struct ether_header
+{
+	u_int8_t  ether_dhost[ETH_ALEN];	/* destination eth addr	*/
+	u_int8_t  ether_shost[ETH_ALEN];	/* source ether addr	*/
+	u_int16_t ether_type;		        /* packet type ID field	*/
+};
 
 typedef struct ip_hdr
 {
@@ -87,6 +70,8 @@ typedef struct tcp_header
 	unsigned short checksum; // checksum
 	unsigned short urgent_pointer; // urgent pointer
 } TCP_HDR;
+#pragma pack(pop)
+
 
 FILE *FCONTENT = NULL;
 void DumpContent(unsigned char *data, unsigned int size)
@@ -301,11 +286,27 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 
 	//Unused variable
 	(VOID)(param);
+
 	//something must have went wrong
 	if (length < SIZE_ETHERNET)
 		return;
 	//presumably we parsed ethernet header here
 	length -= SIZE_ETHERNET;
+	struct ether_header* eptr = (struct ether_header*)pkt_data;
+	unsigned short eth_Type = ntohs(eptr->ether_type);
+	if (eth_Type != ETHERTYPE_IP)
+	{
+		if (eth_Type == ETHERTYPE_IPV6)
+		{
+			static int ReportItOnce = 0;
+			if (ReportItOnce == 0)
+			{
+				printf("!! Right now only support IPV4. Can't parse ethernet IPV6. last warning\n");
+				ReportItOnce = 1;
+			}
+		}
+		return;
+	}
 
 	//maybe not a full IP header
 	if (length < sizeof(ip_hdr))
@@ -317,7 +318,7 @@ void packet_handler(u_char *param, const struct pcap_pkthdr *header, const u_cha
 	if (ip_len < 20) 
 	{
 		if(ip_len != 0)
-			printf("   * Invalid IP header length: %u bytes\n", ip_len);
+			printf("   * Invalid IP header length: %u bytes. IP ver %d\n", ip_len, ih->ip_version);
 		return;
 	}
 	length -= ip_len;
