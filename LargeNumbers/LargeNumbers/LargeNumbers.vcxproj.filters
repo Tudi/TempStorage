@@ -48,9 +48,6 @@
     <ClCompile Include="DivTest_SQNM.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
-    <ClCompile Include="DivTest_6parts.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DivTest_recDiv.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
@@ -151,6 +148,12 @@
       <Filter>DivTests</Filter>
     </ClCompile>
     <ClCompile Include="DivTest_SqSq3.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_BitByBit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_6parts.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
   </ItemGroup>
