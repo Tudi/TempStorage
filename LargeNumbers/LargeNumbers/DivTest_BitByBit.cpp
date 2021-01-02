@@ -83,7 +83,9 @@ void DivTestBitByBit_(__int64 A, __int64 B)
         PrevList->clear();
         delete PrevList;
         PrevList = NextList;
-        //printf("NextList size = %d\n", (int)NextList->size());
+#ifdef _DEBUG
+        printf("NextList size = %d\n", (int)NextList->size());
+#endif
     }
 }
 

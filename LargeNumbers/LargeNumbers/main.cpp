@@ -44,7 +44,8 @@ void main()
 //	DivTestab5();
 //	DivTestab6();
 //    DivTestsqsq3();
-    DivTestBitByBit();
+//    DivTestBitByBit();
+    DivTestBitByBit2();
 
     printf("All done\n");
 }
