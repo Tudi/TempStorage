@@ -159,6 +159,9 @@
     <ClCompile Include="DivTest_BitByBit2.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_BitByBit3.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
