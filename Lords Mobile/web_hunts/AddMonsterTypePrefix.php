@@ -24,13 +24,14 @@ AddNewPrefix(39,10); //helldrider
 AddNewPrefix(92,10); //mecha trojan
 AddNewPrefix(12,10); // terror thorn
 AddNewPrefix(7,10); // jade wyrm
+AddNewPrefix(39,11); // hootclaw
 
 /*
-echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (234 + 10 * 256, 'Hardrox lvl 1', 1);<br>";
-echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (235 + 10 * 256, 'Hardrox lvl 2', 2);<br>";
-echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (236 + 10 * 256, 'Hardrox lvl 3', 3);<br>";
-echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (237 + 10 * 256, 'Hardrox lvl 4', 4);<br>";
-echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (238 + 10 * 256, 'Hardrox lvl 5', 5);<br>";
+echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (39 + 11 * 256, 'hootclaw lvl 1', 1);<br>";
+echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (40 + 11 * 256, 'hootclaw lvl 2', 2);<br>";
+echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (41 + 11 * 256, 'hootclaw lvl 3', 3);<br>";
+echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (42 + 11 * 256, 'hootclaw lvl 4', 4);<br>";
+echo "Insert ignore into MonsterTypes (MonsterType, MonsterName, MonsterLevel) values (43 + 11 * 256, 'hootclaw lvl 5', 5);<br>";
 */
 
 $query1 = "select MonsterName from MonsterTypes where MonsterName not in ($MonsterNameList)";

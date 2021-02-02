@@ -4,6 +4,8 @@ require_once("db_connection.php");
 if(!isset($name))
 	die("Not a proper upload");
 
+if(!isset($kills))
+	$kills=0;
 
 if($objtype == 110)
 {
@@ -12,7 +14,7 @@ if($objtype == 110)
 	{	
 		//get monster level for type
 		$year = GetYear();
-		$day = GetDayOfYear();
+		$day = GetDayOfYear($kills);
 		//check if we have an id for this player
 		$query1 = "update PlayerHunts set Lvl$Level=Lvl$Level+1 where Day=$day and year=$year and PlayerName = '".mysqli_real_escape_string($dbi,$name)."'";
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
@@ -27,7 +29,15 @@ if($objtype == 110)
 		}
 	}
 	else
+	{
 		echo "ERROR:Monster $monstertype level is zero";
+		$f = fopen("UnknownMonsterTypes.txt","at");
+		if($f)
+		{
+			fputs($f,"Monster $monstertype level is zero");
+			fclose($f);
+		}
+	}
 	$ForwardObjectType=109;
 }
 else if($objtype == 111)
@@ -44,13 +54,21 @@ else if($objtype == 111)
 	{
 		//get monster level for type
 		$year = GetYear();
-		$day = GetDayOfYear();
+		$day = GetDayOfYear($kills);
 		$query1 = "insert into PlayerHuntsList (Lvl,Day,Year,PlayerName,GUID,Monster,Gift,GiftCount) values ($Level,$day,$year,'".mysqli_real_escape_string($dbi,$name)."',$x,$monstertype,$y,$CLevel)";
 		//echo $query1;
 		$result1 = mysqli_query($dbi,$query1) or die("Error : 2017022001 <br> ".$query1." <br> ".mysqli_error($dbi));
 	}
 	else
+	{
 		echo "ERROR:Monster $monstertype level is zero";
+		$f = fopen("UnknownMonsterTypes.txt","at");
+		if($f)
+		{
+			fputs($f,"Monster $monstertype level is zero");
+			fclose($f);
+		}
+	}
 	$ForwardObjectType=109;
 }
 //this is when local server is trying to update the remote server

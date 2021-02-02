@@ -4,9 +4,9 @@ function GetYear()
 	return date("Y", GetCompensatedTime());
 }
 
-function GetDayOfYear()
+function GetDayOfYear($TimeMod=0)
 {
-	return date('z', GetCompensatedTime()) + 1;
+	return date('z', GetCompensatedTime($TimeMod)) + 1;
 }
 
 function getDateFromDay($dayOfYear, $year) 
@@ -15,10 +15,10 @@ function getDateFromDay($dayOfYear, $year)
   return $date;
 }
 
-function GetCompensatedTime()
+function GetCompensatedTime($TimeMod=0)
 {
 	global $GameServerTimeDifference;
-	return time() + $GameServerTimeDifference * 60;
+	return time() + $GameServerTimeDifference * 60 + $TimeMod;
 }
 
 function GetCompensatedDate()
@@ -53,8 +53,9 @@ function OrderMergedList($l)
 function CalcNumberOfDaysWorthOfHunts($Stats)
 {
 	$DaysWorth = 0;
+	$Sum = $Stats[1]+$Stats[2]+$Stats[3]+$Stats[4]+$Stats[5];
 	do{
-		if($Stats[1] >= 5)
+/*		if($Stats[1] >= 5)
 		{
 			$DaysWorth++;
 			$Stats[1] -= 5;
@@ -78,7 +79,12 @@ function CalcNumberOfDaysWorthOfHunts($Stats)
 		{
 			$DaysWorth++;
 			$Stats[5] -= 5;
-		}		
+		}		*/
+		if( $Sum >= 5)
+		{
+			$Sum -= 5;
+			$DaysWorth++;
+		}
 		else
 			break;		
 		/*
@@ -168,7 +174,7 @@ function GetTimeDiffShortFormat($time, $IsDiff = 0)
 	return $diff;
 }
 
-function mysql_real_escape_string($inp)
+function mysql_real_escape_string_($inp)
 {
     if(is_array($inp))
         return array_map(__METHOD__, $inp);

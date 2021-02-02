@@ -9,7 +9,7 @@ if( strpos($_SERVER['SCRIPT_FILENAME'],"UploadData.php")==0 )
 		$ip = $_SERVER['REMOTE_ADDR'];
 	}
 
-	$query1 = "insert into access_logs (script,URI,IP,stamp)values('".mysql_real_escape_string($_SERVER['SCRIPT_FILENAME'])."','".mysql_real_escape_string($_SERVER['REQUEST_URI'])."','$ip','".mysql_real_escape_string($_SERVER['REQUEST_TIME'])."')";		
+	$query1 = "insert into access_logs (script,URI,IP,stamp)values('".mysql_real_escape_string_($_SERVER['SCRIPT_FILENAME'])."','".mysql_real_escape_string_($_SERVER['REQUEST_URI'])."','$ip','".mysql_real_escape_string_($_SERVER['REQUEST_TIME'])."')";		
 	$result1 = mysqli_query($dbi,$query1) or die("Error : 20170220041630 <br>".$query1." <br> ".mysqli_error($dbi));
 }
 

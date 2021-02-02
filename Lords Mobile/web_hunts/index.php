@@ -6,6 +6,7 @@ echo "<a href=\"#yesterday\">Yesterday</a>&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp
 echo "<a href=\"#pastweek\">Past week</a>&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;";
 echo "<a href=\"#pastmonth\">Past month</a>";
 echo "<br>";
+echo "<a href=\"ShowPlayerMightStats.php\">Player might history</a><br>";
 
 include("HuntStatistics.html");
 
