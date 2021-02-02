@@ -18,27 +18,6 @@ if(!isset($db_connection_php))
 
 	//connect to DB
 	$servername = "localhost";
-	$username = "id14499332_rumlm";
-	//$password = "NXg*d>9Bw$u6/Vua";
-	$password = "NXg*d>9Bw\$u6/Vua";
-	$database = "id14499332_rum_lm";
-
-	$servername = "fdb29.awardspace.net";
-	$username = "3527125_lm";
-	$password = "ZvZ8R5TSBG7M12k";
-	$database = "3527125_lm";
-
-	$servername = "sql202.epizy.com";
-	$username = "epiz_26394502";
-	$password = "ZvZ8R5TSBG7M12k";
-	$database = "epiz_26394502_1";
-
-	$servername = "localhost";
-	$username = "142280";
-	$password = "itMh8YRzJ93WHzZ";
-	$database = "142280";	
-
-	$servername = "localhost";
 	$username = "root";
 	$password = "";
 	$database = "RUM_LM";
