@@ -111,6 +111,7 @@ if($objtype == 112)
 	$ForwardObjectType=112;
 }
 
+/*
 if(isset($k) && $ForwardObjectType==112)
 {
 	$Escaped_name=urlencode($name);
