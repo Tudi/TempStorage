@@ -56,15 +56,18 @@ int DoHTTPPost(const char *URL, const char *PostVars)
         //get the fingerprint to this computer so that the license can not be shared between multiple PCs
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, PostVars);
 
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
         /* cert is stored PEM coded in file... */
         /* since PEM is default, we needn't set it for PEM */
-        //curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "PEM");
+        curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "PEM");
 
         /* set the cert for client authentication */
-        //curl_easy_setopt(curl, CURLOPT_SSLCERT, "curl-ca-bundle.crt");
+        curl_easy_setopt(curl, CURLOPT_SSLCERT, "curl-ca-bundle.crt");
 
         /* set the private key (file or ID in engine) */
-//            curl_easy_setopt(curl, CURLOPT_SSLKEY, pKeyName);
+ //       curl_easy_setopt(curl, CURLOPT_SSLKEY, pKeyName);
 
             /* send all data to this function  */
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
