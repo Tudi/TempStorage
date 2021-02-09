@@ -94,4 +94,5 @@ void LoadAllConfigs()
 {
 	GlobalConfigs.AutoPickCard = -1;
 	GetIntConfig("init.cfg", "CardIndex", &GlobalConfigs.AutoPickCard);
+	GetStrConfig("init.cfg", "UploadURL", GlobalConfigs.UploadURL, sizeof(GlobalConfigs.UploadURL));
 }

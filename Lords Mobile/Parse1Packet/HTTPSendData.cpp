@@ -15,6 +15,7 @@
 #include <string>
 
 #include "ParsePackets.h"
+#include "ConfigLoader.h"
 
 using namespace std;
 #pragma comment(lib,"ws2_32.lib")
@@ -191,7 +192,9 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 		HOST \
 		"/UploadData.php?";
 #else
-	#define HOST "httP://smashyhunt.eu5.org/UploadData.php"
+//	#define HOST "httP://smashyhunt.eu5.org/UploadData.php"
+//	#define HOST "httP://rui.eu5.org/UploadData.php"
+	#define HOST "http://206.189.229.17/rui/UploadData.php"
 //	#define HOST "httP://localhost/LM/UploadData.php"
 	string get_http = "";
 #endif
@@ -223,7 +226,7 @@ int HTTPPostDataPlayer(int type, int k, int x, int y, char *name, char *guild, c
 #ifndef USE_CURL_FOR_HHTP
 	return HTTPPostData(get_http, HOST, 0);
 #else
-	return DoHTTPPost(HOST, get_http.c_str());
+	return DoHTTPPost(GlobalConfigs.UploadURL, get_http.c_str());
 #endif
 }
 
