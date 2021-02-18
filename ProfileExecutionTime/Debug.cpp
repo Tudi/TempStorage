@@ -128,16 +128,8 @@ int crc32(int crc, const void* buf, size_t size)
 }
 void PrintReport();
 
-//states defined for our callback
-enum FunctionCallState
-{
-    CALL_STATE_NOT_SPECIFIED = 0,
-    CALL_STATE_STARTED = 1,
-    CALL_STATE_FINISHED = 2,
-};
-
 //callback function we used to instrument the CPP files
-void ProfileLine(const char* File, const char* Func, int line, char* comment, int FuncStart = CALL_STATE_NOT_SPECIFIED)
+void ProfileLine(const char* File, const char* Func, int line, const char* comment, FunctionCallState FuncStart = CALL_STATE_NOT_SPECIFIED)
 {
     __int64 TickNow = GetTick();    //skip recording time spent in this func
     __int64 CallDiff = 0;
@@ -159,7 +151,8 @@ void ProfileLine(const char* File, const char* Func, int line, char* comment, in
     if (Context->FileDebug == 0)
     {
         char FileName[500];
-        sprintf_s(FileName, 500, "d:/temp/perf_%d.txt", ThreadId);
+//        sprintf_s(FileName, 500, "d:/temp/perf_%d.txt", ThreadId);
+        sprintf_s(FileName, 500, "perf_%d.txt", ThreadId);
 #endif
         //first time initialize
         if (Context->CounterPrev == 0)
@@ -192,9 +185,10 @@ void ProfileLine(const char* File, const char* Func, int line, char* comment, in
         //Sanity check. I would not do this :P
         if (comment == NULL)
             comment = "";
+//        int namecrc = crc32(0, Func, strlen(Func)) + line;
+        int namecrc = crc32(0, Func, strlen(Func));
         if (FuncStart == CALL_STATE_STARTED)
         {
-            int namecrc = crc32(0, Func, strlen(Func));
 
             //first time call for this function name ? Add the string to our name list. Duping is not a must, but i fear the destructors
             if (Context->FuncCallStart.find(namecrc) == Context->FuncCallStart.end())
@@ -221,7 +215,6 @@ void ProfileLine(const char* File, const char* Func, int line, char* comment, in
         }
         else if (FuncStart == CALL_STATE_FINISHED)
         {
-            int namecrc = crc32(0, Func, strlen(Func));
             //in case of error when function start is missing and only function end is present
             if (Context->FuncCallStart.find(namecrc) == Context->FuncCallStart.end())
             {
@@ -299,13 +292,20 @@ void ProfileLine(const char* File, const char* Func, int line, char* comment, in
 void PrintReport()
 {
     if (ThreadsDebugged.empty())
+	{
+		printf("No threads were detected\n");
         return;
+	}
     char FileName[500];
 
-    sprintf_s(FileName, 500, "d:/temp/perf_report_%d.txt", (int)GetCurrentProcessId());
+//    sprintf_s(FileName, 500, "d:/temp/perf_report_%d.txt", (int)GetCurrentProcessId());
+    sprintf_s(FileName, 500, "perf_report_%d.txt", (int)GetCurrentProcessId());
     FILE* FileDebug = fopen(FileName, "wt");
     if (!FileDebug)
+	{
+		printf("Could not open destination file for reporting\n");
         return;
+	}
     for (std::map<DWORD, ThreadDebugContext*>::iterator citr = ThreadsDebugged.begin(); citr != ThreadsDebugged.end(); citr++)
     {
         ThreadDebugContext* Context = citr->second;
@@ -370,14 +370,19 @@ AutoCleanupProfiler::~AutoCleanupProfiler()
 AutoCleanupProfiler tStartProfiler;
 #endif
 
-AutoCloseFunctionProfiling::AutoCloseFunctionProfiling(const char* File, const char* Func, int line, char* comment, int FuncStart = CALL_STATE_NOT_SPECIFIED)
+AutoCloseFunctionProfiling::AutoCloseFunctionProfiling(const char* File, const char* Func, int line, const char* comment, FunctionCallState FuncStart = CALL_STATE_NOT_SPECIFIED)
 {
+	int NewFuncLen=strlen(File)+strlen(Func)+10;
+	char *NewFuncName=(char*)malloc(NewFuncLen);
+//	sprintf(NewFuncName,"%s:%s:%d",File,Func,line);//not all compilers include class name in func name
+	sprintf(NewFuncName,"%s:%d",Func,line);//classes with multiple functions with same name can be tracked separately
 	pFile = File;
-	pFunc = Func;
+	pFunc = NewFuncName;
 	pLine = line;
 	ProfileLine(pFile, pFunc, pLine, comment, FuncStart);
 }
 AutoCloseFunctionProfiling::~AutoCloseFunctionProfiling()
 {
 	ProfileLine(pFile, pFunc, pLine, "End", CALL_STATE_FINISHED);
+	free(pFunc);
 }
