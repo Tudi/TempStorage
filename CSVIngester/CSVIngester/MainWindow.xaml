@@ -56,7 +56,7 @@
             </StackPanel>
 
             <StackPanel Margin="5,10" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update VAT" Margin="5,25,5,5" Click="UpdateVatButton_Click"/>
+                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,25,5,5" Click="UpdateVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 
@@ -102,7 +102,7 @@
                         Accounting Report
                     </GroupBox.Header>
                     <StackPanel Margin="5,5,5,20">
-                        <RadioButton Name="ARTG1" GroupName="RaportTypeGroup" Content="SALES" IsChecked="True"/>
+                        <RadioButton Name="ARTG1" GroupName="RaportTypeGroup" Content="PAYPAL SALES" IsChecked="True"/>
                         <RadioButton Name="ARTG2" GroupName="RaportTypeGroup" Content="SALES RETURNS" />
                         <RadioButton Name="ARTG3" GroupName="RaportTypeGroup" Content="PURCHASES" />
                         <RadioButton Name="ARTG4" GroupName="RaportTypeGroup" Content="PURCHASES RETURNS"/>

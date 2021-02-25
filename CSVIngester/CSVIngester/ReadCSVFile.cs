@@ -565,7 +565,9 @@ namespace CSVIngester
                 return;
             }
 
+#if USE_CACHE
             GlobalVariables.CachedIndexes.CacheExistingIndexes(CachedIndexTypes.CIT_PaypalSales);
+#endif
 
             GlobalVariables.Logger.Log("File import destination database is '" + TableName + "' and 'PAYPAL_REFUNDS'");
             using (var reader = new StreamReader(FileName))

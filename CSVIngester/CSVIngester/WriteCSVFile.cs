@@ -84,7 +84,7 @@ namespace CSVIngester
             File.Delete(FileName);
             //create a new csv file
             writer = new StreamWriter(FileName);
-            csv = new CsvWriter(writer);
+            csv = new CsvWriter(writer, new Configuration { HasHeaderRecord = false });
         }
         public void WriteDynamicFileRow(dynamic RowData)
         {

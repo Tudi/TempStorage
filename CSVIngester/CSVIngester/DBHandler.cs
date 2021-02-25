@@ -706,8 +706,17 @@ namespace CSVIngester
 
             string TableName = "PAYPAL_SALES";
 
+#if USE_CACHING
+            if (GlobalVariables.CachedIndexes.CheckRowExists(IdColhash, TransactionIDCol)==true)
+            {
+                ReturnCode = InvenotryInsertResultCodes.RowExisted;
+            }
+            else
+            {
+                GlobalVariables.CachedIndexes.AddRow(IdColhash, TransactionIDCol);
+#else
             //check if ts record already exists
-/*            var cmd1 = new SQLiteCommand(m_dbConnection);
+            var cmd1 = new SQLiteCommand(m_dbConnection);
             cmd1.CommandText = "SELECT 1 FROM " + TableName + " where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol";
             cmd1.Parameters.AddWithValue("@IdColhash", IdColhash);
             cmd1.Parameters.AddWithValue("@TransactionIDCol", TransactionIDCol);
@@ -718,14 +727,9 @@ namespace CSVIngester
             {
                 ReturnCode = InvenotryInsertResultCodes.RowExisted;
             }
-            else */
-            if(GlobalVariables.CachedIndexes.CheckRowExists(IdColhash, TransactionIDCol)==true)
-            {
-                ReturnCode = InvenotryInsertResultCodes.RowExisted;
-            }
             else
             {
-                GlobalVariables.CachedIndexes.AddRow(IdColhash, TransactionIDCol);
+#endif
 
                 long TStamp = DateParser.GetUnixStamp(DateCol);
                 var cmd = new SQLiteCommand(m_dbConnection);
@@ -1146,13 +1150,29 @@ namespace CSVIngester
 
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
             ExportInventoryCSV.CreateDynamicFile("./reports/" + CSVFileName + ".csv");
+
+            // Write row as header. Some versions of CSVHelper reorder header columns, so we write them as row
+            dynamic record2 = new System.Dynamic.ExpandoObject();
+            record2.a = "DATE";
+            record2.b = "Type";
+            record2.c = "DETAILS";
+            record2.d = "CURRENCY";
+            record2.e = "GROSS";
+            record2.f = "Vat";
+            record2.g = "NET";
+            record2.h = "VAT_RATE";
+            record2.i = "FEES_VAT";
+            record2.j = "FEES_NET";
+            ExportInventoryCSV.WriteDynamicFileRow(record2);
+
+            dynamic record = new System.Dynamic.ExpandoObject();
+
             var cmd = new SQLiteCommand(m_dbConnection);
             cmd.CommandText = "SELECT date,TransactionID,ItemId,GROSS,VAT,NET,PayPalFee,vat_rate FROM " + TableName + " where TStamp >= @TStart and TStamp <= @TEnd order by TStamp asc";
             cmd.Parameters.AddWithValue("@TStart", TStart);
             cmd.Parameters.AddWithValue("@TEnd", TEnd);
             cmd.Prepare();
 
-            dynamic record = new System.Dynamic.ExpandoObject();
             SQLiteDataReader rdr = cmd.ExecuteReader();
             while (rdr.Read() && rdr.HasRows == true)
             {
@@ -1185,30 +1205,21 @@ namespace CSVIngester
                 else
                     record.NET = "";
                 double Fee = rdr.GetDouble(6);
-                if (Fee != (double)GlobalVariables.NULLValue)
-                    record.FEES = Math.Round(Fee, 2).ToString();
-                else
-                    record.FEES = "";
+
                 double vat_rate = rdr.GetDouble(7);
                 if (vat_rate != (double)GlobalVariables.NULLValue)
                     record.VAT_RATE = Math.Round(vat_rate, 2).ToString();
                 else
                     record.VAT_RATE = "";
 
+                record.FEES_VAT = 0.00;
+
+                if (Fee != (double)GlobalVariables.NULLValue)
+                    record.FEES_NET = Math.Round(Fee, 2).ToString();
+                else
+                    record.FEES_NET = "";
+
                 ExportInventoryCSV.WriteDynamicFileRow(record);
-            }
-            if (ExportInventoryCSV.RowsWritten() == 0)
-            {
-                record.DATE = "";
-                record.Type = "";
-                record.DETAILS = "";
-                record.CURRENCY = "GBP";
-                record.GROSS = "";
-                record.Vat = "";
-                record.NET = "";
-                record.FEES = 0;
-                record.VAT_RATE = "";
-                ExportInventoryCSV.WriteDynamicFileHeader(record);
             }
             ExportInventoryCSV.Dispose();
         }
