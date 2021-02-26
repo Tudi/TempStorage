@@ -92,6 +92,11 @@ namespace CSVIngester
             csv.WriteRecord<dynamic>(RowData);
             csv.NextRecord();
         }
+        public void WriteLine(string line)
+        {
+            RowsAdded++;
+            writer.Write(line);
+        }
         public void WriteDynamicFileHeader(dynamic RowData)
         {
             RowsAdded++;

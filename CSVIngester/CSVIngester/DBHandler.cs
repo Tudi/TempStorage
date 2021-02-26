@@ -19,6 +19,9 @@ namespace CSVIngester
         {
             long ret = DateTimeToMinutes(new DateTime(2001, 1, 2));
             long retInitial = ret;
+            DateStr = DateStr.Replace('/', '-');
+            DateStr = DateStr.Replace('\\', '-');
+            DateStr = DateStr.Replace("\n", "");
             //expected date is dd/MM/YY
             if (DateStr.Length == 8)
             {
@@ -42,13 +45,15 @@ namespace CSVIngester
             {
                 try
                 {
-                    ret = DateTimeToMinutes(DateTime.ParseExact(DateStr,"dd-MM-YYYY", CultureInfo.InvariantCulture));
+                    DateTime dt = DateTime.ParseExact(DateStr, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+                    ret = DateTimeToMinutes(dt);
                 }
                 catch
                 {
                     try
                     {
-                        ret = DateTimeToMinutes(DateTime.Parse(DateStr));
+                        DateTime dt = DateTime.Parse(DateStr);
+                        ret = DateTimeToMinutes(dt);
                     }
                     catch
                     {
@@ -259,6 +264,52 @@ namespace CSVIngester
                 command = new SQLiteCommand(sql, m_dbConnection);
                 command.ExecuteNonQuery();
             }
+
+            using (TransactionScope tran = new TransactionScope())
+            {
+                SQLiteCommand command = m_dbConnection.CreateCommand();
+                command.CommandText = "SELECT name FROM sqlite_master WHERE name='EBAY_SALES'";
+                var name = command.ExecuteScalar();
+
+                if (!(name != null && name.ToString() == "EBAY_SALES"))
+                {
+
+                    sql = "create table EBAY_SALES (date varchar(20),BuyerName varchar(20),address varchar(20),TransactionID varchar(200), ItemId varchar(200),GROSS double, vat double, net double, vat_rate double, Fee double, FeeNet double, FeeVAT double, TransactionID_hash int4, TStamp INT)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+                }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON EBAY_SALES (TransactionID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON EBAY_SALES (TransactionID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+            }
+
+            using (TransactionScope tran = new TransactionScope())
+            {
+                SQLiteCommand command = m_dbConnection.CreateCommand();
+                command.CommandText = "SELECT name FROM sqlite_master WHERE name='EBAY_REFUNDS'";
+                var name = command.ExecuteScalar();
+
+                if (!(name != null && name.ToString() == "EBAY_REFUNDS"))
+                {
+
+                    sql = "create table EBAY_REFUNDS (date varchar(20),BuyerName varchar(20),address varchar(20),TransactionID varchar(200), ItemId varchar(200),GROSS double, vat double, net double, vat_rate double, Fee double, FeeNet double, FeeVAT double, TransactionID_hash int4, TStamp INT)";
+                    command = new SQLiteCommand(sql, m_dbConnection);
+                    command.ExecuteNonQuery();
+                }
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderId ON EBAY_REFUNDS (TransactionID_hash)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+
+                sql = "CREATE INDEX IF NOT EXISTS UniqueOrderIds ON EBAY_REFUNDS (TransactionID)";
+                command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+            }
         }
 
         public SQLiteConnection GetConnection()
@@ -283,7 +334,7 @@ namespace CSVIngester
 
             cmd.ExecuteNonQuery(); 
         }
-        public enum InvenotryInsertResultCodes
+        public enum InventoryInsertResultCodes
         {
             RowExistedButWasEmpty = 1,
             RowExisted = 2,
@@ -292,9 +343,9 @@ namespace CSVIngester
             RowDidNotExist = 5,
             RowDeleted = 6,
         }
-        public InvenotryInsertResultCodes InsertInventory(string ebay_id, string asin, string vat)
+        public InventoryInsertResultCodes InsertInventory(string ebay_id, string asin, string vat)
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             int ebayhash = ebay_id.GetHashCode();
 
             //check if ts record already exists
@@ -316,17 +367,17 @@ namespace CSVIngester
                 {
                     //value exists, but it still needs import
                     ReplaceInventoryRow(ebay_id, asin, oldVAT.ToString());
-                    ReturnCode = InvenotryInsertResultCodes.RowExistedButWasEmpty;
+                    ReturnCode = InventoryInsertResultCodes.RowExistedButWasEmpty;
                 }
                 else
                 {
-                    ReturnCode = InvenotryInsertResultCodes.RowExisted;
+                    ReturnCode = InventoryInsertResultCodes.RowExisted;
                 }
             }
             else
             {
                 ReplaceInventoryRow(ebay_id, asin, vat);
-                ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;/**/
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;/**/
             }
             
             return ReturnCode;
@@ -409,6 +460,25 @@ namespace CSVIngester
             cmd.ExecuteNonQuery();
         }
 
+        public void UpdateInventoryEbayAsin(string ebay_id, string asin)
+        {
+            if (asin == null || asin.Length == 0 || ebay_id == null || ebay_id.Length == 0)
+                return;
+
+            int ebayhash = ebay_id.GetHashCode();
+            int asinHash = asin.GetHashCode();
+
+            //check if ts record already exists
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "update InventoryCSV set asin_hash=@asin_hash and asin_str=@asin_str where ebay_id_hash=@ebay_id_hash and ebay_id_str=@ebay_id_str and asin_hash<=0";
+            cmd.Parameters.AddWithValue("@asin_hash", asinHash);
+            cmd.Parameters.AddWithValue("@asin_str", asin);
+            cmd.Parameters.AddWithValue("@ebay_id_hash", ebayhash);
+            cmd.Parameters.AddWithValue("@ebay_id_str", ebay_id);
+            cmd.Prepare();
+            cmd.ExecuteNonQuery();
+        }
+
         public void ExportInventoryTable()
         {
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
@@ -447,9 +517,9 @@ namespace CSVIngester
 
             cmd.ExecuteNonQuery();
         }
-        public InvenotryInsertResultCodes InsertAmazonOrder(string TableName, string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, double NET, double VAT_RATE, string SACCOUNT, string SELLER, string SELLER_VAT)
+        public InventoryInsertResultCodes InsertAmazonOrder(string TableName, string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, double NET, double VAT_RATE, string SACCOUNT, string SELLER, string SELLER_VAT)
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             int ORDER_ID_hashhash = IdCol.GetHashCode();
 
             //check if ts record already exists
@@ -462,7 +532,7 @@ namespace CSVIngester
             SQLiteDataReader rdr = cmd.ExecuteReader();
             if (rdr.Read() && rdr.HasRows == true)
             {
-                ReturnCode = InvenotryInsertResultCodes.RowExisted;
+                ReturnCode = InventoryInsertResultCodes.RowExisted;
             }
             else
             {
@@ -494,13 +564,13 @@ namespace CSVIngester
 
                 cmd2.ExecuteNonQuery();
 
-                ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             }
 
             return ReturnCode;
         }
 
-        public InvenotryInsertResultCodes IsAmazonOrderBlocked(string IdCol)
+        public InventoryInsertResultCodes IsAmazonOrderBlocked(string IdCol)
         {
             int ORDER_ID_hashhash = IdCol.GetHashCode();
 
@@ -513,8 +583,8 @@ namespace CSVIngester
 
             SQLiteDataReader rdr = cmd.ExecuteReader();
             if (rdr.Read() && rdr.HasRows == true)
-                return InvenotryInsertResultCodes.RowExisted;
-            return InvenotryInsertResultCodes.RowDidNotExist;
+                return InventoryInsertResultCodes.RowExisted;
+            return InventoryInsertResultCodes.RowDidNotExist;
         }
 
         public void DeleteAmazonOrderBlocked(string IdCol)
@@ -530,14 +600,14 @@ namespace CSVIngester
             cmd.ExecuteNonQuery();
         }
 
-        public InvenotryInsertResultCodes InsertAmazonBlocked(string TableName, string IdCol, string DispatchedCol, string DateCol, string TitleCol, string PriceCol, string VatCol, string BuyerCol, string AddressCol, string ASINCol, string PaymentCol)
+        public InventoryInsertResultCodes InsertAmazonBlocked(string TableName, string IdCol, string DispatchedCol, string DateCol, string TitleCol, string PriceCol, string VatCol, string BuyerCol, string AddressCol, string ASINCol, string PaymentCol)
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             //check if ts record already exists
-            InvenotryInsertResultCodes AmazonOrderBlockedRowStatus = IsAmazonOrderBlocked(IdCol);
-            if (AmazonOrderBlockedRowStatus == InvenotryInsertResultCodes.RowExisted)
+            InventoryInsertResultCodes AmazonOrderBlockedRowStatus = IsAmazonOrderBlocked(IdCol);
+            if (AmazonOrderBlockedRowStatus == InventoryInsertResultCodes.RowExisted)
             {
-                return InvenotryInsertResultCodes.RowExisted;
+                return InventoryInsertResultCodes.RowExisted;
             }
             else
             {
@@ -566,7 +636,7 @@ namespace CSVIngester
 
                 cmd2.ExecuteNonQuery();
 
-                ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             }
             return ReturnCode;
         }
@@ -577,23 +647,35 @@ namespace CSVIngester
             GlobalVariables.Logger.Log("Content of the AMAZON-BLOCKED table has been cleared");
         }
 
-        public InvenotryInsertResultCodes DeleteAmazonOrder(string IdCol)
+        public void ClearEbaySales()
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            ClearTable("EBAY_SALES");
+            GlobalVariables.Logger.Log("Content of the EBAY-SALES table has been cleared");
+        }
+
+        public void ClearEbayRefunds()
+        {
+            ClearTable("EBAY_REFUNDS");
+            GlobalVariables.Logger.Log("Content of the EBAY-REFUNDS table has been cleared");
+        }
+
+        public InventoryInsertResultCodes DeleteAmazonOrder(string IdCol)
+        {
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             //check if ts record already exists
-            InvenotryInsertResultCodes AmazonOrderBlockedRowStatus = IsAmazonOrderBlocked(IdCol);
-            if (AmazonOrderBlockedRowStatus == InvenotryInsertResultCodes.RowExisted)
+            InventoryInsertResultCodes AmazonOrderBlockedRowStatus = IsAmazonOrderBlocked(IdCol);
+            if (AmazonOrderBlockedRowStatus == InventoryInsertResultCodes.RowExisted)
             {
                 var cmd2 = new SQLiteCommand(m_dbConnection);
                 cmd2.CommandText = "delete from AMAZON_ORDERS where ORDER_ID=@ORDER_ID";
                 cmd2.Parameters.AddWithValue("@ORDER_ID", IdCol);
                 cmd2.Prepare();
                 cmd2.ExecuteNonQuery();
-                ReturnCode = InvenotryInsertResultCodes.RowDeleted;
+                ReturnCode = InventoryInsertResultCodes.RowDeleted;
             }
             else
             {
-                ReturnCode = InvenotryInsertResultCodes.RowDidNotExist;
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExist;
             }
             return ReturnCode;
         }
@@ -699,9 +781,9 @@ namespace CSVIngester
             GlobalVariables.Logger.Log("Content of the PAYPAL-REFUNDS table has been cleared");
         }
 
-        public InvenotryInsertResultCodes InsertPaypalRow(string DateCol, string NameCol, string PriceCol, string PPFeeCol, string TransactionIDCol, string TitleCol, string ItemIdCol, string AddressCol, string PhoneCol)
+        public InventoryInsertResultCodes InsertPaypalRow(string DateCol, string NameCol, string PriceCol, string PPFeeCol, string TransactionIDCol, string TitleCol, string ItemIdCol, string AddressCol, string PhoneCol)
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             int IdColhash = TransactionIDCol.GetHashCode();
 
             string TableName = "PAYPAL_SALES";
@@ -709,7 +791,7 @@ namespace CSVIngester
 #if USE_CACHING
             if (GlobalVariables.CachedIndexes.CheckRowExists(IdColhash, TransactionIDCol)==true)
             {
-                ReturnCode = InvenotryInsertResultCodes.RowExisted;
+                ReturnCode = InventoryInsertResultCodes.RowExisted;
             }
             else
             {
@@ -725,7 +807,7 @@ namespace CSVIngester
             SQLiteDataReader rdr = cmd1.ExecuteReader();
             if (rdr.Read() && rdr.HasRows == true)
             {
-                ReturnCode = InvenotryInsertResultCodes.RowExisted;
+                ReturnCode = InventoryInsertResultCodes.RowExisted;
             }
             else
             {
@@ -754,15 +836,15 @@ namespace CSVIngester
 
                 cmd.ExecuteNonQuery();
 
-                ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             }
 
             return ReturnCode;
         }
 
-        public InvenotryInsertResultCodes InsertPaypalRefundRow(string DateCol, string NameCol, string PriceCol, string PPFeeCol, string TransactionIDCol, string TitleCol, string ItemIdCol, string ReferenceIDCol)
+        public InventoryInsertResultCodes InsertPaypalRefundRow(string DateCol, string NameCol, string PriceCol, string PPFeeCol, string TransactionIDCol, string TitleCol, string ItemIdCol, string ReferenceIDCol)
         {
-            InvenotryInsertResultCodes ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             int IdColhash = TransactionIDCol.GetHashCode();
 
             string TableName = "PAYPAL_REFUNDS";
@@ -777,7 +859,7 @@ namespace CSVIngester
             SQLiteDataReader rdr = cmd1.ExecuteReader();
             if (rdr.Read() && rdr.HasRows == true)
             {
-                ReturnCode = InvenotryInsertResultCodes.RowExisted;
+                ReturnCode = InventoryInsertResultCodes.RowExisted;
             }
             else
             {
@@ -803,7 +885,7 @@ namespace CSVIngester
 
                 cmd.ExecuteNonQuery();
 
-                ReturnCode = InvenotryInsertResultCodes.RowDidNotExistInsertedNew;
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
             }
 
             return ReturnCode;
@@ -1374,6 +1456,113 @@ namespace CSVIngester
                 ExportInventoryCSV.WriteDynamicFileHeader(record);
             }
             ExportInventoryCSV.Dispose();
+        }
+        public void ReplaceEbaySaleRefund(string Table, string date, string name, string address, string transactionId, string itemId, string valGross, double fee, double val_vat, double val_net, double vat_rate)
+        {
+            int TIDhash = transactionId.GetHashCode();
+            long TStamp = DateParser.GetUnixStamp(date);
+
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "REPLACE INTO "+Table+"(date,BuyerName,address,TransactionID,ItemId,GROSS,vat,net,vat_rate,fee,feenet,feevat,TransactionID_hash,TStamp) " +
+                "VALUES(@date,@BuyerName,@address,@TransactionID,@ItemId,@GROSS,@vat,@net,@vat_rate,@fee,@feenet,@feevat,@TransactionID_hash,@TStamp)";
+
+            cmd.Parameters.AddWithValue("@date", date);
+            cmd.Parameters.AddWithValue("@BuyerName", name);
+            cmd.Parameters.AddWithValue("@address", address);
+            cmd.Parameters.AddWithValue("@TransactionID", transactionId);
+            cmd.Parameters.AddWithValue("@ItemId", itemId);
+            cmd.Parameters.AddWithValue("@GROSS", valGross);
+            cmd.Parameters.AddWithValue("@vat", val_vat);
+            cmd.Parameters.AddWithValue("@net", val_net);
+            cmd.Parameters.AddWithValue("@vat_rate", vat_rate);
+            cmd.Parameters.AddWithValue("@fee", fee);
+            cmd.Parameters.AddWithValue("@feenet", fee / 1.2);
+            cmd.Parameters.AddWithValue("@feevat", fee *0.2/1.2);
+            cmd.Parameters.AddWithValue("@TransactionID_hash", TIDhash);
+            cmd.Parameters.AddWithValue("@TStamp", TStamp);
+            cmd.Prepare();
+
+            cmd.ExecuteNonQuery();
+        }
+
+        public InventoryInsertResultCodes InsertEbaySaleRefund(string Table, string date, string name, string address, string transactionId, string itemId, string valGross, double fee, double vat)
+        {
+            InventoryInsertResultCodes ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
+
+            if(Table.ToLower() == "ebay_sales")
+            { 
+/*                int TIDhash = transactionId.GetHashCode();
+
+                //check if ts record already exists
+                var cmd = new SQLiteCommand(m_dbConnection);
+                cmd.CommandText = "SELECT TransactionID FROM "+Table+ " where TransactionID_hash=@TIDhash and TransactionID=@TID";
+                cmd.Parameters.AddWithValue("@TIDhash", TIDhash);
+                cmd.Parameters.AddWithValue("@TID", transactionId);
+                cmd.Prepare();
+
+                SQLiteDataReader rdr = cmd.ExecuteReader();
+                if (rdr.Read() && rdr.HasRows == true)
+                {
+                    ReturnCode = InventoryInsertResultCodes.RowExisted;
+                }
+                else */
+                {
+                    ReplaceEbaySaleRefund(Table, date, name, address, transactionId, itemId, valGross, fee, vat, 0, 0);
+                    ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
+                }
+            }
+            else // Refund / claim rows are not unique
+            {
+                ReplaceEbaySaleRefund(Table, date, name, address, transactionId, itemId, valGross, fee, vat, 0, 0);
+                ReturnCode = InventoryInsertResultCodes.RowDidNotExistInsertedNew;
+            }
+
+            return ReturnCode;
+        }
+
+        public string EbayGetItemID(string transactionId)
+        {
+            int TIDhash = transactionId.GetHashCode();
+
+            //check if ts record already exists
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT ItemId FROM EBAY_SALES where TransactionID_hash=@TIDhash and TransactionID=@TID";
+            cmd.Parameters.AddWithValue("@TIDhash", TIDhash);
+            cmd.Parameters.AddWithValue("@TID", transactionId);
+            cmd.Prepare();
+
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            if (rdr.Read() && rdr.HasRows == true)
+            {
+                //check if the existing row has values
+                if (!rdr.IsDBNull(0))
+                    return rdr.GetString(0);
+            }
+
+            return "";
+        }
+
+        public bool EbayCheckClaimExists(string transactionId, string GROSS)
+        {
+            int TIDhash = transactionId.GetHashCode();
+
+            //check if ts record already exists
+            var cmd = new SQLiteCommand(m_dbConnection);
+            cmd.CommandText = "SELECT ItemId FROM EBAY_REFUNDS where TransactionID_hash=@TIDhash and TransactionID=@TID and GROSS=@GROSS";
+            cmd.Parameters.AddWithValue("@TIDhash", TIDhash);
+            cmd.Parameters.AddWithValue("@TID", transactionId);
+            cmd.Parameters.AddWithValue("@GROSS", GROSS);
+            cmd.Prepare();
+
+            SQLiteDataReader rdr = cmd.ExecuteReader();
+            if (rdr.Read() && rdr.HasRows == true)
+            {
+                //check if the existing row has values
+                if (!rdr.IsDBNull(0) && rdr.GetString(0).Length > 0)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

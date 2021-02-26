@@ -24,6 +24,7 @@
                     <RadioButton Name="FIG6" GroupName="FileImportGroup" Content="amazon-blocked.csv"/>
                     <RadioButton Name="FIG5" GroupName="FileImportGroup" Content="paypal.csv"/>
                     <RadioButton Name="FIG7" GroupName="FileImportGroup" Content="imanageds.csv"/>
+                    <RadioButton Name="FIG8" GroupName="FileImportGroup" Content="ebay.csv"/>
                 </StackPanel>
             </GroupBox>
             <GroupBox Margin="0">
@@ -59,7 +60,8 @@
             </StackPanel>
 
             <StackPanel Margin="5,5" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,40,5,5" Click="UpdateVatButton_Click"/>
+                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,15,5,5" Click="UpdateVatButton_Click"/>
+                <Button Name="UpdateVatButtonEbay" Content="Update EBAY VAT" Margin="5,5,5,5" Click="UpdateEbayVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 
@@ -98,7 +100,7 @@
                     <DatePicker Name="ExportEndDate"  Grid.Row="1" Grid.Column="1"/>
                 </Grid>
             </GroupBox>
-            <Button Name="CreateRaportButton" Content="Export Table" Margin="5,15" Click="CreateRaportButton_Click"/>
+            <Button Name="CreateRaportButton" Content="Export Table" Margin="5,20" Click="CreateRaportButton_Click"/>
         </StackPanel>
 
             <StackPanel Margin="5" Background="White" Width="200" Height="300" VerticalAlignment="Top">
