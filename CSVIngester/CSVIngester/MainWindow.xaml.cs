@@ -124,6 +124,8 @@ namespace CSVIngester
                 Task.Factory.StartNew(() => ReadCSVFile.ReadPaypalSalesCSVFile(ThreadParam));
             else if(FIG6.IsChecked == true)
                 Task.Factory.StartNew(() => ReadCSVFile.ReadAmazonDeleteCSVFile(ThreadParam));
+            else if (FIG7.IsChecked == true)
+                Task.Factory.StartNew(() => ReadCSVFile.ReadIManagedCSVFile(ThreadParam));
         }
 
         private void DeleteSelectedDatabase_Click(object sender, RoutedEventArgs e)
@@ -141,6 +143,10 @@ namespace CSVIngester
                 TableName = "Paypal-Refunds";
             else if (DDG6.IsChecked == true)
                 TableName = "Amazon-Blocked";
+            else if (DDG6.IsChecked == true)
+                TableName = "Ebay-Sales";
+            else if (DDG6.IsChecked == true)
+                TableName = "Ebay-Refunds";
 
             MessageBoxResult messageBoxResult = System.Windows.MessageBox.Show("Are you sure you wish to empty "+ TableName +" Database ? ", "Delete Confirmation", System.Windows.MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
@@ -157,6 +163,10 @@ namespace CSVIngester
                     GlobalVariables.DBStorage.ClearPaypalRefunds();
                 else if (DDG6.IsChecked == true)
                     GlobalVariables.DBStorage.ClearAmazonBlocked();
+                else if (DDG7.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearEbaySales();
+                else if (DDG7.IsChecked == true)
+                    GlobalVariables.DBStorage.ClearEbayRefunds();
             }
         }
 
@@ -209,7 +219,7 @@ namespace CSVIngester
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ConsoleTextbox.Width = this.Width - 25;
-            ConsoleTextbox.Height = this.Height - 315;
+            ConsoleTextbox.Height = this.Height - 365;
         }
 
         private void UpdateVatButton_Click(object sender, RoutedEventArgs e)

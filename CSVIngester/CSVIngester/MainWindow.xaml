@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CSVIngester"
         mc:Ignorable="d"
-        Title="eBay Accounting" Height="400" Width="855"
+        Title="eBay Accounting" Height="500" Width="855"
         Background="LightGray"
         SizeChanged="Window_SizeChanged"
         >
     <StackPanel>
     <StackPanel Orientation="Horizontal" Margin="5">
-        <StackPanel Background="White" Width="200" Height="250" VerticalAlignment="Top" Margin="5">
-            <GroupBox Margin="5">
+        <StackPanel Background="White" Width="200" Height="300" VerticalAlignment="Top" Margin="5">
+            <GroupBox Margin="5" Height="151">
                 <GroupBox.Header>
                     File Type
                 </GroupBox.Header>
@@ -23,21 +23,22 @@
                     <RadioButton Name="FIG4" GroupName="FileImportGroup" Content="amazon-refunds.csv"/>
                     <RadioButton Name="FIG6" GroupName="FileImportGroup" Content="amazon-blocked.csv"/>
                     <RadioButton Name="FIG5" GroupName="FileImportGroup" Content="paypal.csv"/>
+                    <RadioButton Name="FIG7" GroupName="FileImportGroup" Content="imanageds.csv"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Margin="5">
+            <GroupBox Margin="0">
                 <GroupBox.Header>
                     File Location
                 </GroupBox.Header>
-                <StackPanel Orientation="Horizontal" Margin="5">
+                <StackPanel Orientation="Horizontal" Margin="1">
                     <TextBox Name="FileImportLocation" Text="-" TextAlignment="Center" Width="100" Margin="5"/>
                     <Button Name="PopupFileSelect" Content="..." Width="20" Margin="5" Click="PopupFileSelect_Click"/>
                 </StackPanel>
             </GroupBox>
-            <Button Name="FileImportProcess" Content="Import File" Margin="5,20" VerticalAlignment="Bottom" Click="FileImportProcess_Click"/>
+            <Button Name="FileImportProcess" Content="Import File" Margin="5,50" VerticalAlignment="Bottom" Click="FileImportProcess_Click"/>
         </StackPanel>
 
-        <StackPanel Width="200" Height="255" VerticalAlignment="Top">
+        <StackPanel Width="200" Height="305" VerticalAlignment="Top">
             <StackPanel Margin="5" Background="White">
                 <GroupBox Margin="5">
                     <GroupBox.Header>
@@ -50,17 +51,19 @@
                         <RadioButton Name="DDG6" GroupName="DatabaseDeleteGroup" Content="AMAZON-BLOCKED"/>
                         <RadioButton Name="DDG4" GroupName="DatabaseDeleteGroup" Content="PAYPAL-SALES"/>
                         <RadioButton Name="DDG5" GroupName="DatabaseDeleteGroup" Content="PAYPAL-REFUNDS"/>
+                        <RadioButton Name="DDG7" GroupName="DatabaseDeleteGroup" Content="EBAY-SALES"/>
+                        <RadioButton Name="DDG8" GroupName="DatabaseDeleteGroup" Content="EBAY-REFUNDS"/>
                     </StackPanel>
                 </GroupBox>
                 <Button Name="DeleteSelectedDatabase" Content="Delete Table" Margin="5,10,5,20" Click="DeleteSelectedDatabase_Click"/>
             </StackPanel>
 
-            <StackPanel Margin="5,10" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,25,5,5" Click="UpdateVatButton_Click"/>
+            <StackPanel Margin="5,5" Background="White" Height="100">
+                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,40,5,5" Click="UpdateVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 
-        <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
+        <StackPanel Margin="5" Background="White" Width="200" Height="300" VerticalAlignment="Top">
             <GroupBox Margin="5">
                 <GroupBox.Header>
                     Table Type
@@ -72,6 +75,8 @@
                     <RadioButton Name="RTG6" GroupName="RaportTypeGroup" Content="AMAZON-BLOCKED"/>
                     <RadioButton Name="RTG4" GroupName="RaportTypeGroup" Content="PAYPAL-SALES"/>
                     <RadioButton Name="RTG5" GroupName="RaportTypeGroup" Content="PAYPAL-REFUNDS"/>
+                    <RadioButton Name="RTG7" GroupName="RaportTypeGroup" Content="EBAY-SALES"/>
+                    <RadioButton Name="RTG8" GroupName="RaportTypeGroup" Content="EBAY-REFUNDS"/>
                 </StackPanel>
             </GroupBox>
             <GroupBox Margin="5">
@@ -93,11 +98,11 @@
                     <DatePicker Name="ExportEndDate"  Grid.Row="1" Grid.Column="1"/>
                 </Grid>
             </GroupBox>
-            <Button Name="CreateRaportButton" Content="Export Table" Margin="5" Click="CreateRaportButton_Click"/>
+            <Button Name="CreateRaportButton" Content="Export Table" Margin="5,15" Click="CreateRaportButton_Click"/>
         </StackPanel>
 
-            <StackPanel Margin="5" Background="White" Width="200" Height="250" VerticalAlignment="Top">
-                <GroupBox Margin="5">
+            <StackPanel Margin="5" Background="White" Width="200" Height="300" VerticalAlignment="Top">
+                <GroupBox Margin="5" Height="152">
                     <GroupBox.Header>
                         Accounting Report
                     </GroupBox.Header>
@@ -106,6 +111,8 @@
                         <RadioButton Name="ARTG2" GroupName="RaportTypeGroup" Content="SALES RETURNS" />
                         <RadioButton Name="ARTG3" GroupName="RaportTypeGroup" Content="PURCHASES" />
                         <RadioButton Name="ARTG4" GroupName="RaportTypeGroup" Content="PURCHASES RETURNS"/>
+                        <RadioButton Name="ARTG5" GroupName="RaportTypeGroup" Content="EBAY SALES"/>
+                        <RadioButton Name="ARTG6" GroupName="RaportTypeGroup" Content="EBAY SALES REFUNDS"/>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Margin="5">
