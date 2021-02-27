@@ -219,13 +219,13 @@ namespace CSVIngester
             else if (RTG7.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'EBAY-SALES' table - started");
-//                GlobalVariables.DBStorage.ExportEbaySales(ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportEbaySalesRefunds("EBAY_SALES","EBAY-SALES",ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'EBAY-SALES' table - Finished");
             }
             else if (RTG8.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'EBAY-REFUNDS' table - started");
-//                GlobalVariables.DBStorage.ExportEbayRefunds(ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportEbaySalesRefunds("EBAY_REFUNDS","EBAY-REFUNDS",ExportStartDate.SelectedDate.Value, ExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'EBAY-REFUNDS' table - Finished");
             }
         }
@@ -243,7 +243,7 @@ namespace CSVIngester
 
         private void UpdateEbayVatButton_Click(object sender, RoutedEventArgs e)
         {
-//            Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateEbayVAT());
+            Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateEbayVAT());
         }
 
         private void CreateAccountingRaportButton_Click(object sender, RoutedEventArgs e)
@@ -281,13 +281,13 @@ namespace CSVIngester
             else if (ARTG5.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'EBAY SALES' report - started");
-//                GlobalVariables.DBStorage.ExportEbayAccountingSalesReport("Ebay_sales", "SALES", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportEbayAccountingSalesReport("Ebay_sales", "EBAY SALES", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'EBAY SALES' report - Finished");
             }
             else if (ARTG6.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'EBAY REFUNDS' report - started");
-//                GlobalVariables.DBStorage.ExportEbayAccountingSalesReport("ebay_refunds", "REFUNDS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportEbayAccountingSalesReport("ebay_refunds", "EBAY SALES RETURNS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'EBAY REFUNDS' report - Finished");
             }
         }

@@ -953,7 +953,10 @@ namespace CSVIngester
                     // Import row
                     DBHandler.InventoryInsertResultCodes ret = GlobalVariables.DBStorage.InsertInventory(EbayCol, SourceCol, GlobalVariables.NULLValue.ToString());
                     if (ret == DBHandler.InventoryInsertResultCodes.RowDidNotExistInsertedNew)
+                    {
                         RowsInserted++;
+                        ImportResultCSV.WriteLine(csv.Context.RawRecord);
+                    }
                     else if (ret == DBHandler.InventoryInsertResultCodes.RowExistedButWasEmpty)
                         RowsUpdated++;
                     else
@@ -967,7 +970,6 @@ namespace CSVIngester
                 GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
                 GlobalVariables.Logger.Log("CSV file rows valid: " + RowsReadValid);
                 GlobalVariables.Logger.Log("CSV file rows inserted : " + RowsInserted);
-                GlobalVariables.Logger.Log("CSV file rows updated : " + RowsUpdated);
                 GlobalVariables.Logger.Log("CSV file rows skipped : " + RowsSkipped);
                 transaction.Commit();
                 ImportResultCSV.Dispose();
@@ -1253,6 +1255,8 @@ namespace CSVIngester
 
             foreach (var row in CsvList)
             {
+                RowsRead++;
+
                 if (row[EbayColumnsUsed.Type] == "Hold")
                 {
                     HoldsCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
@@ -1260,9 +1264,13 @@ namespace CSVIngester
                     continue;
                 }
 
-                RowsRead++;
+                double FeeGross = DoubleParseEbay(row[EbayColumnsUsed.FinalValueFixed]);
+                FeeGross += DoubleParseEbay(row[EbayColumnsUsed.FinalValueVariable]);
+                FeeGross += DoubleParseEbay(row[EbayColumnsUsed.ItemNotAsDescribedFee]);
+                FeeGross += DoubleParseEbay(row[EbayColumnsUsed.ItemBelowPerformanceFee]);
+                FeeGross += DoubleParseEbay(row[EbayColumnsUsed.ItemInternationalFee]);
 
-                string InsertIntoTableName = "";
+//                string InsertIntoTableName = "";
                 string ItemId = row[EbayColumnsUsed.ItemId];
                 if (row[EbayColumnsUsed.Type] == "Order")
                 {
@@ -1287,13 +1295,27 @@ namespace CSVIngester
 
                         SalesImported++;
                         SalesRunCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
-                        InsertIntoTableName = "EBAY_SALES";
+                        GlobalVariables.DBStorage.ReplaceEbaySale(
+                            row[EbayColumnsUsed.Date],
+                            row[EbayColumnsUsed.Name],
+                            row[EbayColumnsUsed.Address],
+                            row[EbayColumnsUsed.TransactionId],
+                            ItemId,
+                            row[EbayColumnsUsed.ValGross],
+                            FeeGross,
+                            GlobalVariables.NULLValue,
+                            GlobalVariables.NULLValue,
+                            GlobalVariables.NULLValue
+                            );
+                        RowsInserted++;
                     }
                 }
+
+
                 else if (row[EbayColumnsUsed.Type] == "Refund")
                 {
                     RefundCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
-                    bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckClaimExists(row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
+                    bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckRefundExists(row[EbayColumnsUsed.Date], row[EbayColumnsUsed.Type], row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
                     if (AlreadyInserted == true)
                     {
                         RowsSkipped++;
@@ -1302,33 +1324,67 @@ namespace CSVIngester
                     }
 
                     RefundsImported++;
-                    InsertIntoTableName = "EBAY_REFUNDS";
                     // Get item id from sales for this refund
                     ItemId = GlobalVariables.DBStorage.EbayGetItemID(row[EbayColumnsUsed.TransactionId]);
+                    
                     RefundRunCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+                    
+                    GlobalVariables.DBStorage.ReplaceEbayRefund(row[EbayColumnsUsed.Type],
+                        row[EbayColumnsUsed.Date],
+                        row[EbayColumnsUsed.Name],
+                        row[EbayColumnsUsed.Address],
+                        row[EbayColumnsUsed.TransactionId],
+                        ItemId,
+                        row[EbayColumnsUsed.ValGross],
+                        FeeGross,
+                        GlobalVariables.NULLValue,
+                        GlobalVariables.NULLValue,
+                        GlobalVariables.NULLValue
+                        );
+                    
+                    RowsInserted++;
                 }
+
+
                 else if (row[EbayColumnsUsed.Type] == "Claim")
                 {
                     ClaimCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
                     // check if this claim is already present in the db
-                    bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckClaimExists(row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
-                    if(AlreadyInserted == true)
+                    bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckRefundExists(row[EbayColumnsUsed.Date], row[EbayColumnsUsed.Type], row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
+                    if (AlreadyInserted == true)
                     {
                         RowsSkipped++;
                         ClaimsSkipped++;
                         continue;
                     }
                     ClaimsImported++;
+
                     // Get item id from sales for this refund
                     ItemId = GlobalVariables.DBStorage.EbayGetItemID(row[EbayColumnsUsed.TransactionId]);
-                    InsertIntoTableName = "EBAY_REFUNDS";
+
                     // save to file what we insert
                     ClaimRunCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+
+                    GlobalVariables.DBStorage.ReplaceEbayRefund(row[EbayColumnsUsed.Type],
+                        row[EbayColumnsUsed.Date],
+                        row[EbayColumnsUsed.Name],
+                        row[EbayColumnsUsed.Address],
+                        row[EbayColumnsUsed.TransactionId],
+                        ItemId,
+                        row[EbayColumnsUsed.ValGross],
+                        FeeGross,
+                        GlobalVariables.NULLValue,
+                        GlobalVariables.NULLValue,
+                        GlobalVariables.NULLValue
+                        );
+                    RowsInserted++;
                 }
+
+
                 else if (row[EbayColumnsUsed.Type] == "Payment dispute")
                 {
                     DisputesCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
-                    bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckClaimExists(row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
+                    bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckRefundExists(row[EbayColumnsUsed.Date], row[EbayColumnsUsed.Type], row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
                     if (AlreadyInserted == true)
                     {
                         RowsSkipped++;
@@ -1337,28 +1393,13 @@ namespace CSVIngester
                     }
 
                     DisputesImported++;
-                    InsertIntoTableName = "EBAY_REFUNDS";
+
                     // Get item id from sales for this refund
                     ItemId = GlobalVariables.DBStorage.EbayGetItemID(row[EbayColumnsUsed.TransactionId]);
+
                     DisputesRunCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
-                }
-                else
-                {
-                    UnknownCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
-                    RowsSkipped++;
-                    continue;
-                }
 
-                if (InsertIntoTableName.Length != 0)
-                {
-                    double FeeGross = DoubleParseEbay(row[EbayColumnsUsed.FinalValueFixed]);
-                    FeeGross += DoubleParseEbay(row[EbayColumnsUsed.FinalValueVariable]);
-                    FeeGross += DoubleParseEbay(row[EbayColumnsUsed.ItemNotAsDescribedFee]);
-                    FeeGross += DoubleParseEbay(row[EbayColumnsUsed.ItemBelowPerformanceFee]);
-                    FeeGross += DoubleParseEbay(row[EbayColumnsUsed.ItemInternationalFee]);
-
-                    // Add to DB
-                    GlobalVariables.DBStorage.ReplaceEbaySaleRefund(InsertIntoTableName,
+                    GlobalVariables.DBStorage.ReplaceEbayRefund(row[EbayColumnsUsed.Type],
                         row[EbayColumnsUsed.Date],
                         row[EbayColumnsUsed.Name],
                         row[EbayColumnsUsed.Address],
@@ -1370,7 +1411,14 @@ namespace CSVIngester
                         0,
                         0
                         );
+
                     RowsInserted++;
+                }
+                else
+                {
+                    UnknownCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+                    RowsSkipped++;
+                    continue;
                 }
             }
             transaction.Commit();
