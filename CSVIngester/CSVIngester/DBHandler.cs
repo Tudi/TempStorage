@@ -475,7 +475,6 @@ namespace CSVIngester
         {
             WriteCSVFile ExportInventoryCSV = new WriteCSVFile();
             ExportInventoryCSV.CreateInventoryRunFile("./reports/INVENTORY.csv");
-            ExportInventoryCSV.WriteLine("ebay_id_str,asin_str,vat\n");
             var cmd = new SQLiteCommand(m_dbConnection);
             cmd.CommandText = "SELECT ebay_id_str,asin_str,vat FROM InventoryCSV";
             cmd.Prepare();
@@ -1449,8 +1448,10 @@ namespace CSVIngester
             cmd.Parameters.AddWithValue("@net", val_net);
             cmd.Parameters.AddWithValue("@vat_rate", vat_rate);
             cmd.Parameters.AddWithValue("@fee", fee);
-            cmd.Parameters.AddWithValue("@feenet", fee / 1.2);
-            cmd.Parameters.AddWithValue("@feevat", fee *0.2/1.2);
+            double feeNet = fee / 1.2;
+            cmd.Parameters.AddWithValue("@feenet", feeNet);
+            double feeVat = fee - feeNet;
+            cmd.Parameters.AddWithValue("@feevat", feeVat);
             cmd.Parameters.AddWithValue("@TransactionID_hash", TIDhash);
             cmd.Parameters.AddWithValue("@TStamp", TStamp);
             cmd.Prepare();
@@ -1559,34 +1560,20 @@ namespace CSVIngester
             SQLiteDataReader rdr = cmd.ExecuteReader();
             while (rdr.Read() && rdr.HasRows == true)
             {
-                record.date = "";
-                if (!rdr.IsDBNull(0))
-                    record.date = rdr.GetString(0);
-                record.ORDER_ID = "";
-                if (!rdr.IsDBNull(1))
-                    record.ORDER_ID = rdr.GetString(1);
-                record.BuyerName = "";
-                if (!rdr.IsDBNull(2))
-                    record.BuyerName = rdr.GetString(2);
-                record.address = "";
-                if (!rdr.IsDBNull(3))
-                    record.address = rdr.GetString(3);
-                record.ItemId = "";
-                if (!rdr.IsDBNull(4))
-                    record.ItemId = rdr.GetString(4);
-                record.GROSS = Math.Round(rdr.GetDouble(5), 2).ToString();
-                record.vat = Math.Round(rdr.GetDouble(6), 2).ToString();
-                record.vatNet = Math.Round(rdr.GetDouble(7), 2).ToString();
-                record.vatRate = Math.Round(rdr.GetDouble(8), 2).ToString();
-                record.fee = Math.Round(rdr.GetDouble(9), 2).ToString();
-                record.feeNet = Math.Round(rdr.GetDouble(10), 2).ToString();
-                record.feeVat = Math.Round(rdr.GetDouble(11), 2).ToString();
+                record.date = GetNonNullString(rdr, 0);
+                record.ORDER_ID = GetNonNullString(rdr, 1);
+                record.BuyerName = GetNonNullString(rdr, 2);
+                record.address = GetNonNullString(rdr, 3);
+                record.ItemId = GetNonNullString(rdr, 4);
+                record.GROSS = GetNonNullDouble(rdr,5);
+                record.vat = GetNonNullDouble(rdr, 6);
+                record.vatNet = GetNonNullDouble(rdr, 7);
+                record.vatRate = GetNonNullDouble(rdr, 8);
+                record.fee = GetNonNullDouble(rdr, 9);
+                record.feeNet = GetNonNullDouble(rdr, 10);
+                record.feeVat = GetNonNullDouble(rdr, 11);
                 if (ExtraCol.Length > 0)
-                {
-                    record.type = "";
-                    if (!rdr.IsDBNull(12))
-                        record.type = rdr.GetString(12);
-                }
+                    record.type = GetNonNullString(rdr, 12);
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
@@ -1611,64 +1598,19 @@ namespace CSVIngester
             SQLiteDataReader rdr = cmd.ExecuteReader();
             while (rdr.Read() && rdr.HasRows == true)
             {
-                if (!rdr.IsDBNull(0))
-                    record.DATE = rdr.GetString(0);
-                else
-                    record.DATE = "";
-
-                if (!rdr.IsDBNull(1))
-                    record.Type = rdr.GetString(1);
-                else
-                    record.Type = "";
-
-                if (!rdr.IsDBNull(2))
-                    record.DETAILS = rdr.GetString(2);
-                else
-                    record.DETAILS = "";
-
+                record.DATE = GetNonNullString(rdr, 0);
+                record.Type = GetNonNullString(rdr, 1);
+                record.DETAILS = GetNonNullString(rdr, 2);
                 record.CURRENCY = "GBP";
-
-                double Gross = rdr.GetDouble(3);
-                if (Gross != (double)GlobalVariables.NULLValue)
-                    record.GROSS = Math.Round(Gross, 2).ToString();
-                else
-                    record.GROSS = "";
-
-                double vat = rdr.GetDouble(4);
-                if (vat != (double)GlobalVariables.NULLValue)
-                    record.VAT = Math.Round(vat, 2).ToString();
-                else
-                    record.Vat = "";
-
-                double NET = rdr.GetDouble(5);
-                if (NET != (double)GlobalVariables.NULLValue)
-                    record.NET = Math.Round(NET, 2).ToString();
-                else
-                    record.NET = "";
-
-                double vat_rate = rdr.GetDouble(6);
-                if (vat_rate != (double)GlobalVariables.NULLValue)
-                    record.VAT_RATE = Math.Round(vat_rate, 2).ToString();
-                else
-                    record.VAT_RATE = "";
-
-                double Fee = rdr.GetDouble(7);
-                if (Fee != (double)GlobalVariables.NULLValue)
-                    record.Fee = Math.Round(Fee, 2).ToString();
-                else
-                    record.Fee = "";
-
-                double FeeVAT = rdr.GetDouble(8);
-                if (FeeVAT != (double)GlobalVariables.NULLValue)
-                    record.FEES_VAT = Math.Round(FeeVAT, 2).ToString();
-                else
-                    record.FEES_VAT = "";
-
-                double FeeNet = rdr.GetDouble(9);
-                if (FeeNet != (double)GlobalVariables.NULLValue)
-                    record.FEES_NET = Math.Round(FeeNet, 2).ToString();
-                else
-                    record.FEES_NET = "";
+                record.GROSS = GetNonNullDouble(rdr, 3);
+                record.Vat = GetNonNullDouble(rdr, 4);
+                record.NET = GetNonNullDouble(rdr, 5);
+                record.VAT_RATE = GetNonNullDouble(rdr, 6);
+                record.Fee = GetNonNullDouble(rdr, 7);
+                record.FEES_VAT = GetNonNullDouble(rdr, 8);
+                record.FEES_NET = GetNonNullDouble(rdr, 9);
+                if (double.Parse(record.Fee) != double.Parse(record.FEES_VAT) + double.Parse(record.FEES_NET))
+                    record.FEES_NET = double.Parse(record.Fee) - double.Parse(record.FEES_VAT);
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
 

@@ -935,7 +935,8 @@ namespace CSVIngester
                 int RowsSkipped = 0;
                 int RowsUpdated = 0;
                 WriteCSVFile ImportResultCSV = new WriteCSVFile();
-                ImportResultCSV.CreateInventoryRunFile("./reports/IMANAGED-RUN.csv");
+                ImportResultCSV.CreateDynamicFile("./reports/IMANAGED-RUN.csv");
+                ImportResultCSV.WriteLine("ebay_id,asin,vat\n");
                 while (csv.Read())
                 {
                     string EbayCol = csv.GetField<string>(EbayColName);
@@ -955,17 +956,12 @@ namespace CSVIngester
                     if (ret == DBHandler.InventoryInsertResultCodes.RowDidNotExistInsertedNew)
                     {
                         RowsInserted++;
-                        ImportResultCSV.WriteLine(csv.Context.RawRecord);
+                        ImportResultCSV.WriteLine(EbayCol+","+ SourceCol+",\n");
                     }
                     else if (ret == DBHandler.InventoryInsertResultCodes.RowExistedButWasEmpty)
                         RowsUpdated++;
                     else
                         RowsSkipped++;
-
-                    // Write values to csv file to manually check validity
-                    if (ret == DBHandler.InventoryInsertResultCodes.RowDidNotExistInsertedNew || ret == DBHandler.InventoryInsertResultCodes.RowExistedButWasEmpty)
-                        GlobalVariables.DBStorage.UpdateInventoryEbayAsin(EbayCol, SourceCol);
-
                 }
                 GlobalVariables.Logger.Log("CSV file rows : " + RowsRead);
                 GlobalVariables.Logger.Log("CSV file rows valid: " + RowsReadValid);
@@ -1023,14 +1019,22 @@ namespace CSVIngester
             string HeaderRow = "";
             using (var reader = new StreamReader(FileName))
             {
-                // Skip first 10 lines
-                for (int i = 0; i < 10; i++)
-                    reader.ReadLine();
-
                 using (var csv = new CsvReader(reader))
                 {
+                    // Is the first line the header or is it the version where it's 10 lines worth of comments ?
                     csv.Read();
                     csv.ReadHeader();
+                    string DateColNameCheck = GetMatchingColumnName(csv.Context.HeaderRecord, "Transaction date");
+                    if (DateColNameCheck.Length == 0)
+                    {
+                        // Skip first 10 lines
+                        for (int i = 0; i < 9; i++)
+                            csv.Read();
+
+                        csv.Read();
+                        csv.ReadHeader();
+                    }
+
                     HeaderRow = csv.Context.RawRecord;
                     string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Transaction date");
                     string NameColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Buyer username");
@@ -1219,27 +1223,27 @@ namespace CSVIngester
             WriteCSVFile SalesHoldsCSV = new WriteCSVFile();
             SalesHoldsCSV.CreateDynamicFile("./reports/report-ebay-sales-hold.csv");
             SalesHoldsCSV.WriteLine(HeaderRow);
-            WriteCSVFile SalesCSV = new WriteCSVFile();
-            SalesCSV.CreateDynamicFile("./reports/report-ebay-sales.csv");
-            SalesCSV.WriteLine(HeaderRow);
+//            WriteCSVFile SalesCSV = new WriteCSVFile();
+//            SalesCSV.CreateDynamicFile("./reports/report-ebay-sales.csv");
+//            SalesCSV.WriteLine(HeaderRow);
             WriteCSVFile SalesRunCSV = new WriteCSVFile();
             SalesRunCSV.CreateDynamicFile("./reports/report-ebay-sales-run.csv");
             SalesRunCSV.WriteLine(HeaderRow);
-            WriteCSVFile RefundCSV = new WriteCSVFile();
-            RefundCSV.CreateDynamicFile("./reports/report-ebay-refunds.csv");
-            RefundCSV.WriteLine(HeaderRow);
+//            WriteCSVFile RefundCSV = new WriteCSVFile();
+//            RefundCSV.CreateDynamicFile("./reports/report-ebay-refunds.csv");
+//            RefundCSV.WriteLine(HeaderRow);
             WriteCSVFile RefundRunCSV = new WriteCSVFile();
             RefundRunCSV.CreateDynamicFile("./reports/report-ebay-refunds-run.csv");
             RefundRunCSV.WriteLine(HeaderRow);
-            WriteCSVFile ClaimCSV = new WriteCSVFile();
-            ClaimCSV.CreateDynamicFile("./reports/report-ebay-claim.csv");
-            ClaimCSV.WriteLine(HeaderRow);
+//            WriteCSVFile ClaimCSV = new WriteCSVFile();
+//            ClaimCSV.CreateDynamicFile("./reports/report-ebay-claim.csv");
+//            ClaimCSV.WriteLine(HeaderRow);
             WriteCSVFile ClaimRunCSV = new WriteCSVFile();
             ClaimRunCSV.CreateDynamicFile("./reports/report-ebay-claim-run.csv");
             ClaimRunCSV.WriteLine(HeaderRow);
-            WriteCSVFile DisputesCSV = new WriteCSVFile();
-            DisputesCSV.CreateDynamicFile("./reports/report-ebay-disputes.csv");
-            DisputesCSV.WriteLine(HeaderRow);
+//            WriteCSVFile DisputesCSV = new WriteCSVFile();
+//            DisputesCSV.CreateDynamicFile("./reports/report-ebay-disputes.csv");
+//            DisputesCSV.WriteLine(HeaderRow);
             WriteCSVFile DisputesRunCSV = new WriteCSVFile();
             DisputesRunCSV.CreateDynamicFile("./reports/report-ebay-disputes-run.csv");
             DisputesRunCSV.WriteLine(HeaderRow);
@@ -1283,7 +1287,7 @@ namespace CSVIngester
                     else if (row[EbayColumnsUsed.ReasonForHold].Length == 0)
                     {
                         // For manual checking 
-                        SalesCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+//                        SalesCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
 
                         string AlreadyInserted = GlobalVariables.DBStorage.EbayGetItemID(row[EbayColumnsUsed.TransactionId]);
                         if (AlreadyInserted.Length > 0)
@@ -1314,7 +1318,7 @@ namespace CSVIngester
 
                 else if (row[EbayColumnsUsed.Type] == "Refund")
                 {
-                    RefundCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+//                    RefundCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
                     bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckRefundExists(row[EbayColumnsUsed.Date], row[EbayColumnsUsed.Type], row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
                     if (AlreadyInserted == true)
                     {
@@ -1348,7 +1352,7 @@ namespace CSVIngester
 
                 else if (row[EbayColumnsUsed.Type] == "Claim")
                 {
-                    ClaimCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+//                    ClaimCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
                     // check if this claim is already present in the db
                     bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckRefundExists(row[EbayColumnsUsed.Date], row[EbayColumnsUsed.Type], row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
                     if (AlreadyInserted == true)
@@ -1383,7 +1387,7 @@ namespace CSVIngester
 
                 else if (row[EbayColumnsUsed.Type] == "Payment dispute")
                 {
-                    DisputesCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
+//                    DisputesCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
                     bool AlreadyInserted = GlobalVariables.DBStorage.EbayCheckRefundExists(row[EbayColumnsUsed.Date], row[EbayColumnsUsed.Type], row[EbayColumnsUsed.TransactionId], row[EbayColumnsUsed.ValGross]);
                     if (AlreadyInserted == true)
                     {
@@ -1439,13 +1443,13 @@ namespace CSVIngester
 
             HoldsCSV.Dispose();
             SalesHoldsCSV.Dispose();
-            SalesCSV.Dispose();
-            RefundCSV.Dispose();
+//            SalesCSV.Dispose();
+//            RefundCSV.Dispose();
             RefundRunCSV.Dispose();
             SalesRunCSV.Dispose();
             ClaimRunCSV.Dispose();
-            ClaimCSV.Dispose();
-            DisputesCSV.Dispose();
+//            ClaimCSV.Dispose();
+//            DisputesCSV.Dispose();
             DisputesRunCSV.Dispose();
             UnknownCSV.Dispose();
 
