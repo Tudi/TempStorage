@@ -1036,7 +1036,7 @@ namespace CSVIngester
                     }
 
                     HeaderRow = csv.Context.RawRecord;
-                    string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Transaction date");
+/*                    string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Transaction date");
                     string NameColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Buyer username");
                     string AddressColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Post to postcode");
                     string TransactionIDColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Order number");
@@ -1107,27 +1107,43 @@ namespace CSVIngester
                     {
                         GlobalVariables.Logger.Log("Mandatory column 'International fee' not detected.Not an " + TableName + " csv file : " + FileName);
                         return;
-                    }
+                    } */
 
                     while (csv.Read())
                     {
                         Dictionary<EbayColumnsUsed, string> CSVRow = new Dictionary<EbayColumnsUsed, string>();
 
-                        CSVRow[EbayColumnsUsed.Date] = csv.GetField<string>(DateColName);
-                        CSVRow[EbayColumnsUsed.Name] = csv.GetField<string>(NameColName);
-                        CSVRow[EbayColumnsUsed.Address] = csv.GetField<string>(AddressColName);
-                        CSVRow[EbayColumnsUsed.TransactionId] = csv.GetField<string>(TransactionIDColName);
-                        CSVRow[EbayColumnsUsed.ItemId] = csv.GetField<string>(ItemIdColName);
-                        CSVRow[EbayColumnsUsed.ValGross] = csv.GetField<string>(PriceColName);
-                        CSVRow[EbayColumnsUsed.FinalValueFixed] = csv.GetField<string>(FVFeeFixedColName);
-                        CSVRow[EbayColumnsUsed.FinalValueVariable] = csv.GetField<string>(FVFeeVariableColName);
-                        CSVRow[EbayColumnsUsed.ItemNotAsDescribedFee] = csv.GetField<string>(FeeItemNotAsDescribedColName);
-                        CSVRow[EbayColumnsUsed.ItemBelowPerformanceFee] = csv.GetField<string>(FeeBelowPerformanceColName);
-                        CSVRow[EbayColumnsUsed.ItemInternationalFee] = csv.GetField<string>(FeeInternationalColName);
-                        CSVRow[EbayColumnsUsed.Type] = csv.GetField<string>(TypeColName);
-                        CSVRow[EbayColumnsUsed.ItemSubTotal] = csv.GetField<string>(ItemSubtotalColName);
-                        CSVRow[EbayColumnsUsed.Postage] = csv.GetField<string>(PostageColName);
-                        CSVRow[EbayColumnsUsed.ReasonForHold] = csv.GetField<string>(ReasonForHoldColName);
+                        /*                        CSVRow[EbayColumnsUsed.Date] = csv.GetField<string>(DateColName);
+                                                CSVRow[EbayColumnsUsed.Name] = csv.GetField<string>(NameColName);
+                                                CSVRow[EbayColumnsUsed.Address] = csv.GetField<string>(AddressColName);
+                                                CSVRow[EbayColumnsUsed.TransactionId] = csv.GetField<string>(TransactionIDColName);
+                                                CSVRow[EbayColumnsUsed.ItemId] = csv.GetField<string>(ItemIdColName);
+                                                CSVRow[EbayColumnsUsed.ValGross] = csv.GetField<string>(PriceColName);
+                                                CSVRow[EbayColumnsUsed.FinalValueFixed] = csv.GetField<string>(FVFeeFixedColName);
+                                                CSVRow[EbayColumnsUsed.FinalValueVariable] = csv.GetField<string>(FVFeeVariableColName);
+                                                CSVRow[EbayColumnsUsed.ItemNotAsDescribedFee] = csv.GetField<string>(FeeItemNotAsDescribedColName);
+                                                CSVRow[EbayColumnsUsed.ItemBelowPerformanceFee] = csv.GetField<string>(FeeBelowPerformanceColName);
+                                                CSVRow[EbayColumnsUsed.ItemInternationalFee] = csv.GetField<string>(FeeInternationalColName);
+                                                CSVRow[EbayColumnsUsed.Type] = csv.GetField<string>(TypeColName);
+                                                CSVRow[EbayColumnsUsed.ItemSubTotal] = csv.GetField<string>(ItemSubtotalColName);
+                                                CSVRow[EbayColumnsUsed.Postage] = csv.GetField<string>(PostageColName);
+                                                CSVRow[EbayColumnsUsed.ReasonForHold] = csv.GetField<string>(ReasonForHoldColName);*/
+
+                        CSVRow[EbayColumnsUsed.Date] = csv.GetField<string>('a'-'a');
+                        CSVRow[EbayColumnsUsed.Name] = csv.GetField<string>('e'-'a');
+                        CSVRow[EbayColumnsUsed.Address] = csv.GetField<string>('i'-'a');
+                        CSVRow[EbayColumnsUsed.TransactionId] = csv.GetField<string>('c'-'a');
+                        CSVRow[EbayColumnsUsed.ItemId] = csv.GetField<string>('r'-'a');
+                        CSVRow[EbayColumnsUsed.ValGross] = csv.GetField<string>('z'-'a'+'g'-'a'+1);
+                        CSVRow[EbayColumnsUsed.FinalValueFixed] = csv.GetField<string>('z' - 'a' + 'b' - 'a' + 1);
+                        CSVRow[EbayColumnsUsed.FinalValueVariable] = csv.GetField<string>('z' - 'a' + 'c' - 'a' + 1);
+                        CSVRow[EbayColumnsUsed.ItemNotAsDescribedFee] = csv.GetField<string>('z' - 'a' + 'd' - 'a' + 1);
+                        CSVRow[EbayColumnsUsed.ItemBelowPerformanceFee] = csv.GetField<string>('z' - 'a' + 'e' - 'a' + 1);
+                        CSVRow[EbayColumnsUsed.ItemInternationalFee] = csv.GetField<string>('z' - 'a' + 'f' - 'a' + 1);
+                        CSVRow[EbayColumnsUsed.Type] = csv.GetField<string>('b' - 'a');
+                        CSVRow[EbayColumnsUsed.ItemSubTotal] = csv.GetField<string>('w' - 'a');
+                        CSVRow[EbayColumnsUsed.Postage] = csv.GetField<string>('x' - 'a');
+                        CSVRow[EbayColumnsUsed.ReasonForHold] = csv.GetField<string>('q' - 'a');
 
                         CSVRow[EbayColumnsUsed.WholeRow] = csv.Context.RawRecord;
 

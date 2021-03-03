@@ -351,19 +351,23 @@ namespace CSVIngester
             if(rdr.Read() && rdr.HasRows == true)
             {
                 //check if the existing row has values
+                int ebayidhash = rdr.GetInt32(0);
                 string asin_str = "";
                 if (!rdr.IsDBNull(1))
                     asin_str = rdr.GetString(1);
                 double oldVAT = rdr.GetDouble(2);
-                if (asin_str.Length == 0)
+                ReturnCode = InventoryInsertResultCodes.RowExisted;
+                if (asin_str.Length == 0 && asin.Length != 0)
                 {
                     //value exists, but it still needs import
-                    ReplaceInventoryRow(ebay_id, asin, oldVAT.ToString());
+                    UpdateInventoryEbayAsin(ebay_id, asin);
                     ReturnCode = InventoryInsertResultCodes.RowExistedButWasEmpty;
                 }
-                else
+                if(oldVAT == (double)GlobalVariables.NULLValue && double.Parse(vat) != (double)GlobalVariables.NULLValue)
                 {
-                    ReturnCode = InventoryInsertResultCodes.RowExisted;
+                    //value exists, but it still needs import
+                    UpdateInventoryVatEbay(ebay_id, vat);
+                    ReturnCode = InventoryInsertResultCodes.RowExistedButWasEmpty;
                 }
             }
             else
@@ -462,7 +466,7 @@ namespace CSVIngester
 
             //check if ts record already exists
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "update InventoryCSV set asin_hash=@asin_hash and asin_str=@asin_str where ebay_id_hash=@ebay_id_hash and ebay_id_str=@ebay_id_str and asin_hash<=0";
+            cmd.CommandText = "update InventoryCSV set asin_hash=@asin_hash,asin_str=@asin_str where ebay_id_hash=@ebay_id_hash and ebay_id_str=@ebay_id_str and (asin_hash=0 or asin_hash is NULL)";
             cmd.Parameters.AddWithValue("@asin_hash", asinHash);
             cmd.Parameters.AddWithValue("@asin_str", asin);
             cmd.Parameters.AddWithValue("@ebay_id_hash", ebayhash);
@@ -1572,6 +1576,8 @@ namespace CSVIngester
                 record.fee = GetNonNullDouble(rdr, 9);
                 record.feeNet = GetNonNullDouble(rdr, 10);
                 record.feeVat = GetNonNullDouble(rdr, 11);
+                if (double.Parse(record.fee) != double.Parse(record.feeVat) + double.Parse(record.feeNet))
+                      record.fee = (double.Parse(record.feeNet) + double.Parse(record.feeVat)).ToString();
                 if (ExtraCol.Length > 0)
                     record.type = GetNonNullString(rdr, 12);
 
@@ -1610,7 +1616,7 @@ namespace CSVIngester
                 record.FEES_VAT = GetNonNullDouble(rdr, 8);
                 record.FEES_NET = GetNonNullDouble(rdr, 9);
                 if (double.Parse(record.Fee) != double.Parse(record.FEES_VAT) + double.Parse(record.FEES_NET))
-                    record.FEES_NET = double.Parse(record.Fee) - double.Parse(record.FEES_VAT);
+                    record.Fee = (double.Parse(record.FEES_NET) + double.Parse(record.FEES_VAT)).ToString();
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
 
