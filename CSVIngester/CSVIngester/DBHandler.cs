@@ -1021,9 +1021,9 @@ namespace CSVIngester
             long B = long.Parse(bparts[0]);
             long SignA = 1;
             long SignB = 1;
-            if (A < 0)
+            if (a < 0)
                 SignA = -1;
-            if (B < 0)
+            if (a < 0)
                 SignB = -1;
             for (int i=0;i<Precision;i++)
             {
@@ -1746,7 +1746,12 @@ namespace CSVIngester
                         if (i == 0)
                             cmd2.CommandText = "UPDATE ebay_sales set vat_rate=@vat_rate,net=@net,vat=@vat where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol";
                         else
-                            cmd2.CommandText = "UPDATE ebay_refunds set vat_rate=@vat_rate,net=@net,vat=@vat where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol";
+                        {
+                            cmd2.CommandText = "UPDATE ebay_refunds set vat_rate=@vat_rate,net=@net,vat=@vat where TransactionID_hash=@IdColhash and TransactionID=@TransactionIDCol and date=@date and gross=@gross and ordertype=@ordertype";
+                            cmd2.Parameters.AddWithValue("@date", record.Date);
+                            cmd2.Parameters.AddWithValue("@gross", Gross);
+                            cmd2.Parameters.AddWithValue("@ordertype", record.ordertype);
+                        }
                         cmd2.Parameters.AddWithValue("@vat_rate", InventoryVAT);
                         cmd2.Parameters.AddWithValue("@net", NET);
                         cmd2.Parameters.AddWithValue("@vat", vat);
