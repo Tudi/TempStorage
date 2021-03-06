@@ -241,6 +241,11 @@ namespace CSVIngester
             Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateVAT());
         }
 
+        private void UpdateDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateV1DB());
+        }
+
         private void UpdateEbayVatButton_Click(object sender, RoutedEventArgs e)
         {
             Task.Factory.StartNew(() => GlobalVariables.DBStorage.UpdateEbayVAT());

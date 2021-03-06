@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CSVIngester"
         mc:Ignorable="d"
-        Title="eBay Accounting" Height="500" Width="855"
+        Title="eBay Accounting v2" Height="500" Width="855"
         Background="LightGray"
         SizeChanged="Window_SizeChanged"
         >
@@ -56,12 +56,10 @@
                         <RadioButton Name="DDG8" GroupName="DatabaseDeleteGroup" Content="EBAY-REFUNDS"/>
                     </StackPanel>
                 </GroupBox>
-                <Button Name="DeleteSelectedDatabase" Content="Delete Table" Margin="5,10,5,20" Click="DeleteSelectedDatabase_Click"/>
-            </StackPanel>
-
-            <StackPanel Margin="5,5" Background="White" Height="100">
-                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,15,5,5" Click="UpdateVatButton_Click"/>
-                <Button Name="UpdateVatButtonEbay" Content="Update EBAY VAT" Margin="5,5,5,5" Click="UpdateEbayVatButton_Click"/>
+                <Button Name="DeleteSelectedDatabase" Content="Delete Table" Margin="5,10,5,5" Click="DeleteSelectedDatabase_Click"/>
+                <Button Name="Updatev1DB" Content="Update v1 DB" Margin="5,10,5,5" Click="UpdateDatabase_Click"/>
+                <Button Name="UpdateVatButton" Content="Update PAYPAL VAT" Margin="5,5,5,5" Click="UpdateVatButton_Click"/>
+                <Button Name="UpdateVatButtonEbay" Content="Update EBAY VAT" Margin="5,5,5,15" Click="UpdateEbayVatButton_Click"/>
             </StackPanel>
         </StackPanel>
 
