@@ -985,7 +985,7 @@ namespace CSVIngester
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
-            if (ExportInventoryCSV.RowsWritten() == 0)
+/*            if (ExportInventoryCSV.RowsWritten() == 0)
             {
                 record.Date = "";
                 record.Name = "";
@@ -1007,7 +1007,7 @@ namespace CSVIngester
                 record.NET = "";
                 record.vat_rate = "";
                 ExportInventoryCSV.WriteDynamicFileHeader(record);
-            }
+            }*/
             ExportInventoryCSV.Dispose();
         }
 
@@ -1054,6 +1054,8 @@ namespace CSVIngester
             ExportSalesCSV.CreateDynamicFile("./reports/no-vat-paypal-sales.csv");
             WriteCSVFile ExportRefundsCSV = new WriteCSVFile();
             ExportRefundsCSV.CreateDynamicFile("./reports/no-vat-paypal-refunds.csv");
+            ExportSalesCSV.WriteLine("Date,Name,Gross,Paypal_Fee,Transaction_ID,Title,Item_Id,Address,Phone,Vat,NET,vat_rate\n");
+            ExportRefundsCSV.WriteLine("Date,Name,Gross,Paypal_Fee,Transaction_ID,Title,Item_Id,Address,Phone,Vat,NET,vat_rate\n");
             for (int i = 0; i < 2; i++)
             {
                 var cmd = new SQLiteCommand(m_dbConnection);
@@ -1191,39 +1193,6 @@ namespace CSVIngester
                 }
             }
             GlobalVariables.ImportingToDBBlock = "";
-            if (ExportSalesCSV.RowsWritten() == 0)
-            {
-                dynamic record = new System.Dynamic.ExpandoObject();
-                record.Date = "";
-                record.Name = "";
-                record.Gross = "";
-                record.Paypal_Fee = "";
-                record.Transaction_ID = "";
-                record.Title = "";
-                record.Item_Id = "";
-                record.Address = "";
-                record.Phone = "";
-                record.Vat = "";
-                record.NET = "";
-                record.vat_rate = "";
-                ExportSalesCSV.WriteDynamicFileHeader(record);
-            }
-            if (ExportRefundsCSV.RowsWritten() == 0)
-            {
-                dynamic record = new System.Dynamic.ExpandoObject();
-                record.Date = "";
-                record.Name = "";
-                record.Gross = "";
-                record.Paypal_Fee = "";
-                record.Transaction_ID = "";
-                record.Title = "";
-                record.Item_Id = "";
-                record.Reference_Id = "";
-                record.Vat = "";
-                record.NET = "";
-                record.vat_rate = "";
-                ExportRefundsCSV.WriteDynamicFileHeader(record);
-            }
             ExportSalesCSV.Dispose();
             ExportRefundsCSV.Dispose();
             GlobalVariables.Logger.Log("Update VAT - Finished");
@@ -1453,7 +1422,7 @@ namespace CSVIngester
             cmd.Parameters.AddWithValue("@net", val_net);
             cmd.Parameters.AddWithValue("@vat_rate", vat_rate);
             cmd.Parameters.AddWithValue("@fee", fee);
-            double feeNet = fee / 1.2;
+            double feeNet = Math.Round(fee / 1.2, 2);
             cmd.Parameters.AddWithValue("@feenet", feeNet);
             double feeVat = fee - feeNet;
             cmd.Parameters.AddWithValue("@feevat", feeVat);
@@ -1484,8 +1453,10 @@ namespace CSVIngester
             cmd.Parameters.AddWithValue("@net", val_net);
             cmd.Parameters.AddWithValue("@vat_rate", vat_rate);
             cmd.Parameters.AddWithValue("@fee", fee);
-            cmd.Parameters.AddWithValue("@feenet", fee / 1.2);
-            cmd.Parameters.AddWithValue("@feevat", fee * 0.2 / 1.2);
+            double feeNet = Math.Round(fee / 1.2, 2);
+            cmd.Parameters.AddWithValue("@feenet", feeNet);
+            double feeVat = fee - feeNet;
+            cmd.Parameters.AddWithValue("@feevat", feeVat);
             cmd.Parameters.AddWithValue("@TransactionID_hash", TIDhash);
             cmd.Parameters.AddWithValue("@TStamp", TStamp);
             cmd.Prepare();
@@ -1578,7 +1549,7 @@ namespace CSVIngester
                 record.feeNet = GetNonNullDouble(rdr, 10);
                 record.feeVat = GetNonNullDouble(rdr, 11);
                 if (double.Parse(record.fee) != double.Parse(record.feeVat) + double.Parse(record.feeNet))
-                    record.fee = (double.Parse(record.feeNet) + double.Parse(record.feeVat)).ToString();
+                    record.feeVat = (FloatSubstract(double.Parse(record.fee), double.Parse(record.feeNet), 3)).ToString();
                 if (ExtraCol.Length > 0)
                     record.type = GetNonNullString(rdr, 12);
 
@@ -1617,7 +1588,7 @@ namespace CSVIngester
                 record.FEES_VAT = GetNonNullDouble(rdr, 8);
                 record.FEES_NET = GetNonNullDouble(rdr, 9);
                 if (double.Parse(record.Fee) != double.Parse(record.FEES_VAT) + double.Parse(record.FEES_NET))
-                    record.Fee = (double.Parse(record.FEES_NET) + double.Parse(record.FEES_VAT)).ToString();
+                    record.FEES_VAT = (FloatSubstract(double.Parse(record.Fee),double.Parse(record.FEES_NET),3)).ToString();
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
 
@@ -1786,7 +1757,7 @@ namespace CSVIngester
             GlobalVariables.Logger.Log("Started upgrading InventoryCSV");
             //check if ts record already exists
             var cmd = new SQLiteCommand(m_dbConnection);
-            cmd.CommandText = "SELECT ebay_id_Hash,ebay_id_str FROM InventoryCSV";
+            cmd.CommandText = "SELECT ebay_id_Hash,ebay_id_str,asin_str,asin_hash FROM InventoryCSV";
             cmd.Prepare();
 
             SQLiteDataReader rdr = cmd.ExecuteReader();
@@ -1794,15 +1765,24 @@ namespace CSVIngester
             {
                 int ebay_id_hash = rdr.GetInt32(0);
                 string ebay_id_str = GetNonNullString(rdr,1);
-                int new_Hash = ebay_id_str.GetHashCode();
+                int new_ebay_Hash = ebay_id_str.GetHashCode();
 
-                if (ebay_id_hash != new_Hash)
+                string asin_str = GetNonNullString(rdr, 2);
+                int asin_hash = 0;
+                if (!rdr.IsDBNull(3))
+                    asin_hash = rdr.GetInt32(3);
+                int new_asin_Hash = asin_str.GetHashCode();
+
+                if (ebay_id_hash != new_ebay_Hash || asin_hash != new_asin_Hash)
                 {
                     var cmd2 = new SQLiteCommand(m_dbConnection);
-                    cmd2.CommandText = "update InventoryCSV set ebay_id_hash=@ebay_id_hash_new where ebay_id_hash=@ebay_id_hash and ebay_id_str=@ebay_id_str";
-                    cmd2.Parameters.AddWithValue("@ebay_id_hash_new", new_Hash);
+                    cmd2.CommandText = "update InventoryCSV set ebay_id_hash=@ebay_id_hash_new,asin_hash=@new_asin_hash where ebay_id_hash=@ebay_id_hash and ebay_id_str=@ebay_id_str and asin_str=@asin_str and asin_hash=@asin_hash";
+                    cmd2.Parameters.AddWithValue("@ebay_id_hash_new", new_ebay_Hash);
                     cmd2.Parameters.AddWithValue("@ebay_id_hash", ebay_id_hash);
                     cmd2.Parameters.AddWithValue("@ebay_id_str", ebay_id_str);
+                    cmd2.Parameters.AddWithValue("@asin_str", asin_str);
+                    cmd2.Parameters.AddWithValue("@asin_hash", asin_hash);
+                    cmd2.Parameters.AddWithValue("@new_asin_hash", new_asin_Hash);
                     cmd2.Prepare();
                     int AffectedCount = cmd2.ExecuteNonQuery();
                     Debug.Assert(AffectedCount == 1);

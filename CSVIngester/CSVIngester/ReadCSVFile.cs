@@ -570,11 +570,13 @@ namespace CSVIngester
 #endif
 
             GlobalVariables.Logger.Log("File import destination database is '" + TableName + "' and 'PAYPAL_REFUNDS'");
+            string HeaderRow;
             using (var reader = new StreamReader(FileName))
             using (var csv = new CsvReader(reader))
             {
                 csv.Read();
                 csv.ReadHeader();
+                HeaderRow = csv.Context.RawRecord;
                 string DateColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Date");
                 string NameColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Name");
                 string PriceColName = GetMatchingColumnName(csv.Context.HeaderRecord, "Gross");
@@ -662,18 +664,25 @@ namespace CSVIngester
 
                 WriteCSVFile SalesMemoCSV = new WriteCSVFile();
                 SalesMemoCSV.CreateDynamicFile("./reports/report-sales-memo.csv");
+                SalesMemoCSV.WriteLine(HeaderRow);
                 WriteCSVFile WithDrawMemoCSV = new WriteCSVFile();
                 WithDrawMemoCSV.CreateDynamicFile("./reports/report-withdrawals-memo.csv");
+                WithDrawMemoCSV.WriteLine(HeaderRow);
                 WriteCSVFile WithDrawCSV = new WriteCSVFile();
                 WithDrawCSV.CreateDynamicFile("./reports/report-withdrawals.csv");
+                WithDrawCSV.WriteLine(HeaderRow);
                 WriteCSVFile HoldsCSV = new WriteCSVFile();
                 HoldsCSV.CreateDynamicFile("./reports/report-holds.csv");
+                HoldsCSV.WriteLine(HeaderRow);
                 WriteCSVFile SalesCSV = new WriteCSVFile();
                 SalesCSV.CreateDynamicFile("./reports/report-paypal-sales.csv");
+                SalesCSV.WriteLine(HeaderRow);
                 WriteCSVFile SalesRefundsCSV = new WriteCSVFile();
                 SalesRefundsCSV.CreateDynamicFile("./reports/report-paypal-refunds.csv");
+                SalesRefundsCSV.WriteLine(HeaderRow);
                 WriteCSVFile RemainingtransactionCSV = new WriteCSVFile();
                 RemainingtransactionCSV.CreateDynamicFile("./reports/remaining-transactions.csv ");
+                RemainingtransactionCSV.WriteLine(HeaderRow);
 
                 SQLiteTransaction transaction = GlobalVariables.DBStorage.m_dbConnection.BeginTransaction();
 
