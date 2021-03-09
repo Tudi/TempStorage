@@ -1776,7 +1776,11 @@ namespace CSVIngester
                 if (ebay_id_hash != new_ebay_Hash || asin_hash != new_asin_Hash)
                 {
                     var cmd2 = new SQLiteCommand(m_dbConnection);
-                    cmd2.CommandText = "update InventoryCSV set ebay_id_hash=@ebay_id_hash_new,asin_hash=@new_asin_hash where ebay_id_hash=@ebay_id_hash and ebay_id_str=@ebay_id_str and asin_str=@asin_str and asin_hash=@asin_hash";
+                    cmd2.CommandText = "update InventoryCSV set ebay_id_hash=@ebay_id_hash_new,asin_hash=@new_asin_hash where " +
+                        "((ebay_id_hash is NULL) or ebay_id_hash=@ebay_id_hash)" +
+                        " and ((ebay_id_str is NULL) or ebay_id_str=@ebay_id_str)" +
+                        " and ((asin_str is null) or asin_str=@asin_str)" +
+                        " and ((asin_hash is NULL) or asin_hash=@asin_hash)";
                     cmd2.Parameters.AddWithValue("@ebay_id_hash_new", new_ebay_Hash);
                     cmd2.Parameters.AddWithValue("@ebay_id_hash", ebay_id_hash);
                     cmd2.Parameters.AddWithValue("@ebay_id_str", ebay_id_str);
@@ -1811,7 +1815,11 @@ namespace CSVIngester
                     if (asin_hash != new_asin_hash || ORDER_ID_hash != new_ORDER_ID_hash)
                     {
                         var cmd2 = new SQLiteCommand(m_dbConnection);
-                        cmd2.CommandText = "update " + Table + " set asin_hash=@asin_hash_new,ORDER_ID_hash=@ORDER_ID_hash_new where asin_hash=@asin_hash and ORDER_ID_hash=@ORDER_ID_hash and ORDER_ID=@ORDER_ID and asin=@asin";
+                        cmd2.CommandText = "update " + Table + " set asin_hash=@asin_hash_new,ORDER_ID_hash=@ORDER_ID_hash_new where " +
+                            " ((ORDER_ID_hash is NULL) or ORDER_ID_hash=@ORDER_ID_hash)" +
+                            " and ((ORDER_ID is NULL) or ORDER_ID=@ORDER_ID)" +
+                            " and ((asin_hash is NULL) or asin_hash=@asin_hash)" +
+                            " and ((asin is NULL) or asin=@asin)";
                         cmd2.Parameters.AddWithValue("@ORDER_ID_hash_new", new_ORDER_ID_hash);
                         cmd2.Parameters.AddWithValue("@asin_hash_new", new_asin_hash);
                         cmd2.Parameters.AddWithValue("@asin_hash", asin_hash);
@@ -1834,9 +1842,29 @@ namespace CSVIngester
                 cmd.CommandText = "SELECT TransactionID_hash,TransactionID FROM " + Table;
                 cmd.Prepare();
 
+                int RowsToProcess = 1;
+                int RowsProcessed = 0;
+                int PercentShown = 0;
+                {
+                    var cmd1 = new SQLiteCommand(m_dbConnection);
+                    cmd1.CommandText = "SELECT count(*) FROM " + Table;
+                    cmd1.Prepare();
+                    SQLiteDataReader rdr2 = cmd1.ExecuteReader();
+                    if (rdr2.Read() && rdr2.HasRows == true)
+                        RowsToProcess = rdr2.GetInt32(0);
+                }
+
                 rdr = cmd.ExecuteReader();
                 while (rdr.Read() && rdr.HasRows == true)
                 {
+                    RowsProcessed++;
+                    int PercentProcessed = RowsProcessed * 100 / RowsToProcess;
+                    if (PercentProcessed != PercentShown)
+                    {
+                        PercentShown = PercentProcessed;
+                        GlobalVariables.Logger.Log("Progress : " + PercentShown + "%");
+                    }
+
                     int TransactionID_hash = rdr.GetInt32(0);
                     string TransactionID = GetNonNullString(rdr, 1);
                     int TransactionID_hash_new = TransactionID.GetHashCode();
@@ -1844,7 +1872,9 @@ namespace CSVIngester
                     if (TransactionID_hash_new != TransactionID_hash)
                     {
                         var cmd2 = new SQLiteCommand(m_dbConnection);
-                        cmd2.CommandText = "update " + Table + " set TransactionID_hash=@TransactionID_hash_new where TransactionID=@TransactionID and TransactionID_hash=@TransactionID_hash";
+                        cmd2.CommandText = "update " + Table + " set TransactionID_hash=@TransactionID_hash_new where " +
+                            "((TransactionID is NULL) or TransactionID=@TransactionID)" +
+                            " and ((TransactionID_hash is NULL) or TransactionID_hash=@TransactionID_hash)";
                         cmd2.Parameters.AddWithValue("@TransactionID_hash_new", TransactionID_hash_new);
                         cmd2.Parameters.AddWithValue("@TransactionID", TransactionID);
                         cmd2.Parameters.AddWithValue("@TransactionID_hash", TransactionID_hash);

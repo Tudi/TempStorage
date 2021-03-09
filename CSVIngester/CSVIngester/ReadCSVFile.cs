@@ -1436,9 +1436,9 @@ namespace CSVIngester
                         ItemId,
                         row[EbayColumnsUsed.ValGross],
                         FeeGross,
-                        0,
-                        0,
-                        0
+                        GlobalVariables.NULLValue,
+                        GlobalVariables.NULLValue,
+                        GlobalVariables.NULLValue
                         );
 
                     RowsInserted++;
