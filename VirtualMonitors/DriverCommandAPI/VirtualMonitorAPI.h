@@ -70,6 +70,7 @@ public:
     {
         unsigned int    UID = 0; // You should not reuse IDs for monitors when creating new monitors or else driver will not know if it's a resolution change or new monitor
         ResolutionInfo  resolutions[MaxMonitorResolutions] = {}; // Could have been a vector, but I was advised to be static length
+        unsigned char   enableHardwareCursor = 1; // By default there is no reason for both Jump desktop to render the mouse and Windows to render another mouse
 
         /*
         * Helper function to save settings in the first available resolution slot

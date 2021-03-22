@@ -11,6 +11,7 @@
 
 // After monitor has been plugged in, how much time should we wait to enable HW mouse support
 #define TIME_TOGGLE_HW_MOUSE_SUPPORT_MS	2000
+#define MOUSE_ENABLE_RETRY_COUNT		3		// In my test I rarely seen the API fail more than once
 #define MOUSE_CURSOR_PIXEL_SIZE			32
 #define SHUTDOWN_TIMEOUT_MS				10000 // Must be larget than DriverSettingsUpdateIntervalMS
 
@@ -20,7 +21,7 @@ public:
 	AutoLock(CRITICAL_SECTION* cs);
 	~AutoLock();
 private:
-	CRITICAL_SECTION *SectionLock;
+	CRITICAL_SECTION* SectionLock;
 };
 /*
 * Driver should have one object for settings
@@ -40,9 +41,11 @@ public:
 		// This plugged in monitor is using settings located at this index
 		unsigned int		settingsIndex = 0xFFFF;
 		// Monitor pointer is used if we wish to unplug only 1 monitor
-		const void			*pMonitor = NULL;
+		const void* pMonitor = NULL;
 		// After monitor has been plugged in and setup finalized, we enable mouse hardware rendering 
-		unsigned long long	enableHWMouseStamp = 0; 
+		unsigned long long	enableHWMouseStamp = 0;
+		// Do not try too many times to enable HW mouse
+		unsigned char		mouseEnableRetries = 0;
 	};
 
 	enum ThreadStates
@@ -62,23 +65,23 @@ public:
 	void UnInitialize();
 	/*
 	* Fetch settings info from parent application
-	* Disadvanatages of using a pipe is that a device might load up slower than the wait timout 
+	* Disadvanatages of using a pipe is that a device might load up slower than the wait timout
 	*/
-//	bool GetSettingsFromPipe();
-	
-/*
-	* Fetch settings from registry entry
-	*/
+	//	bool GetSettingsFromPipe();
+
+	/*
+		* Fetch settings from registry entry
+		*/
 	bool GetSettingsFromRegistry(bool firstCall);
-	
+
 	/*
 	* Number of monitors we should create
 	*/
-	unsigned int GetMonitorCount() 
-	{ 
+	unsigned int GetMonitorCount()
+	{
 		return JumpDisplayDriverControl::DriverSettings::MonitorCountGet(mSettingsApplied);
 	}
-	
+
 	/*
 	* Inverse lookup table to get connector index from monitor object
 	*/
@@ -93,14 +96,14 @@ public:
 	* All supported resolutions and refresh rates supported by default + settings requested by app
 	*/
 	const JumpDisplayDriverControl::MonitorInfo* MonitorSettingsGet(const void* pMonitor)
-	{ 
+	{
 		unsigned int index = MonitorIndexGet(pMonitor);
 		// Sanity check
 		if (index >= MaxMonitorCount)
 		{
 			return NULL;
 		}
-		return &mSettingsApplied.monitorInfos[index]; 
+		return &mSettingsApplied.monitorInfos[index];
 	};
 
 	/*

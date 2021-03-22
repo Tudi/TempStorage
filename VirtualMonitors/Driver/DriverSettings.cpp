@@ -31,7 +31,7 @@ DriverSettingManager::~DriverSettingManager()
 #ifndef DisablePipeImplementation
 bool DriverSettingManager::GetSettingsFromPipe()
 {
-	std::vector< JumpDisplayDriverControl::MonitorInfo> ret;
+    std::vector< JumpDisplayDriverControl::MonitorInfo> ret;
 
     HANDLE hPipe;
 
@@ -87,7 +87,7 @@ bool DriverSettingManager::GetSettingsFromPipe()
                 return false;
             }
             // Check if received values have realistic ranges
-            if(mMonitors[i].width <= 0 || mMonitors[i].width > SANITY_CHECK_MAX_RESOLUTION || mMonitors[i].height <= 0 || mMonitors[i].height > SANITY_CHECK_MAX_RESOLUTION)
+            if (mMonitors[i].width <= 0 || mMonitors[i].width > SANITY_CHECK_MAX_RESOLUTION || mMonitors[i].height <= 0 || mMonitors[i].height > SANITY_CHECK_MAX_RESOLUTION)
             {
                 LOG_ERROR(NULL, "Monitor {} setting is invalid {}x{}, {} Hz\n", i, mMonitors[i].width, mMonitors[i].height, mMonitors[i].verticalSync);
                 CloseHandle(hPipe);
@@ -159,6 +159,7 @@ void DriverSettingManager::MonitorIndexSet(const void* pMonitor, unsigned int co
         mAdapterStatus[connectorIndex].monitorUID = mSettingsApplied.monitorInfos[i].UID;
         mAdapterStatus[connectorIndex].settingsIndex = i;
         mAdapterStatus[connectorIndex].enableHWMouseStamp = GetTickCount64() + TIME_TOGGLE_HW_MOUSE_SUPPORT_MS;
+        mAdapterStatus[connectorIndex].mouseEnableRetries = 0;
 
         LOG_INFO(NULL, "Set monitor UID {}, monitor {}, adapter index {}\n", mSettingsApplied.monitorInfos[i].UID, pMonitor, connectorIndex);
         return;
@@ -167,7 +168,7 @@ void DriverSettingManager::MonitorIndexSet(const void* pMonitor, unsigned int co
     LOG_ERROR(NULL, "Adapter asked for a free monitor to be plugged in, but we have none\n");
 }
 
-bool DriverSettingManager::GetSettingsFromRegistry(bool firstCall=true)
+bool DriverSettingManager::GetSettingsFromRegistry(bool firstCall = true)
 {
     HKEY hKey;
 
@@ -203,7 +204,7 @@ bool DriverSettingManager::GetSettingsFromRegistry(bool firstCall=true)
         return false;
     }
 
-    if(settings.size != sizeof(settings))
+    if (settings.size != sizeof(settings))
     {
         LOG_ERROR(NULL, "Structure size mismatch. Got {}, expected {}\n", settings.size, sizeof(settings));
         return false;
@@ -217,7 +218,7 @@ bool DriverSettingManager::GetSettingsFromRegistry(bool firstCall=true)
 
     // If we received a new path to start logging data, reinitialize the logger
     std::string sLogFilePath = settings.driverLogFilePath;
-    if (sLogFilePath.size() > 0 && memcmp(settings.driverLogFilePath,mSettingsApplied.driverLogFilePath,sizeof(settings.driverLogFilePath)) != 0)
+    if (sLogFilePath.size() > 0 && memcmp(settings.driverLogFilePath, mSettingsApplied.driverLogFilePath, sizeof(settings.driverLogFilePath)) != 0)
     {
         sLogger.Init(sLogFilePath.c_str());
     }
@@ -380,10 +381,16 @@ void DriverSettingManager::HardwareMouseCursorTryEnable()
     for (int j = 0; j < MaxMonitorCount; j++)
     {
         // This monitor no longer requires it's HW cursor support to be toggled
-        if (mAdapterStatus[j].enableHWMouseStamp == 0)
+        if (mAdapterStatus[j].enableHWMouseStamp == 0
+            || mAdapterStatus[j].mouseEnableRetries >= MOUSE_ENABLE_RETRY_COUNT
+            || mSettingsApplied.monitorInfos[mAdapterStatus[j].settingsIndex].enableHardwareCursor == 0
+            )
         {
             continue;
         }
+
+        // Do not spam the API call forever if it keeps failing
+        mAdapterStatus[j].mouseEnableRetries++;
 
         // Disable Hardware mouse support for this monitor
         // Right now this code returns : STATUS_INVALID_PARAMETER

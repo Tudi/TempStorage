@@ -261,15 +261,15 @@ namespace CSVIngester
 
             if (ARTG1.IsChecked == true)
             {
-                GlobalVariables.Logger.Log("Exporting 'SALES' report - started");
-                GlobalVariables.DBStorage.ExportAccountingSalesReport("PAYPAL_SALES", "SALES", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
-                GlobalVariables.Logger.Log("Exporting 'SALES' report - Finished");
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL SALES' report - started");
+                GlobalVariables.DBStorage.ExportAccountingSalesReport("PAYPAL_SALES", "PAYPAL SALES", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL SALES' report - Finished");
             }
             else if (ARTG2.IsChecked == true)
             {
-                GlobalVariables.Logger.Log("Exporting 'SALES RETURNS' report - started");
-                GlobalVariables.DBStorage.ExportAccountingSalesReport("PAYPAL_REFUNDS", "SALES RETURNS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
-                GlobalVariables.Logger.Log("Exporting 'SALES RETURNS' report - Finished");
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL SALES REFUNDS' report - started");
+                GlobalVariables.DBStorage.ExportAccountingSalesReport("PAYPAL_REFUNDS", "PAYPAL SALES REFUNDS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.Logger.Log("Exporting 'PAYPAL SALES REFUNDS' report - Finished");
             }
             else if (ARTG3.IsChecked == true)
             {
@@ -292,7 +292,7 @@ namespace CSVIngester
             else if (ARTG6.IsChecked == true)
             {
                 GlobalVariables.Logger.Log("Exporting 'EBAY REFUNDS' report - started");
-                GlobalVariables.DBStorage.ExportEbayAccountingSalesReport("ebay_refunds", "EBAY SALES RETURNS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
+                GlobalVariables.DBStorage.ExportEbayAccountingSalesReport("ebay_refunds", "EBAY SALES REFUNDS", AExportStartDate.SelectedDate.Value, AExportEndDate.SelectedDate.Value);
                 GlobalVariables.Logger.Log("Exporting 'EBAY REFUNDS' report - Finished");
             }
         }

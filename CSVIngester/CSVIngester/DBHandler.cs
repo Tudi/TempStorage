@@ -512,7 +512,7 @@ namespace CSVIngester
             cmd.Parameters.AddWithValue("@asin", ASINCol);
             cmd.Prepare();
 
-            cmd.ExecuteNonQuery();
+            int RowsAffected = cmd.ExecuteNonQuery();
         }
         public InventoryInsertResultCodes InsertAmazonOrder(string TableName, string DateCol, string IdCol, string TitleCol, string PriceCol, string VATCol, string BuyerCol, string AddressCol, string ASINCol, double NET, double VAT_RATE, string SACCOUNT, string SELLER, string SELLER_VAT)
         {
@@ -985,29 +985,6 @@ namespace CSVIngester
 
                 ExportInventoryCSV.WriteDynamicFileRow(record);
             }
-/*            if (ExportInventoryCSV.RowsWritten() == 0)
-            {
-                record.Date = "";
-                record.Name = "";
-                record.Gross = "";
-                record.Paypal_Fee = "";
-                record.Transaction_ID = "";
-                record.Title = "";
-                record.Item_Id = "";
-                if (TableName == "PAYPAL_SALES")
-                {
-                    record.Address = "";
-                    record.Phone = "";
-                }
-                else
-                {
-                    record.Reference_Id = "";
-                }
-                record.Vat = "";
-                record.NET = "";
-                record.vat_rate = "";
-                ExportInventoryCSV.WriteDynamicFileHeader(record);
-            }*/
             ExportInventoryCSV.Dispose();
         }
 
@@ -1260,7 +1237,10 @@ namespace CSVIngester
                     record.VAT_RATE = "";
 
                 double Fee = rdr.GetDouble(7);
-                record.fee = 0;
+                if (Fee != (double)GlobalVariables.NULLValue)
+                    record.fee = Math.Round(Fee, 2).ToString();
+                else
+                    record.fee = "";
 
                 record.FEES_VAT = 0.00;
 

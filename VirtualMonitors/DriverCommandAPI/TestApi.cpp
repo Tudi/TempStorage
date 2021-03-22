@@ -150,11 +150,12 @@ void TestingRemoveAddNewMonitor()
 void TestingReplaceMonitor()
 {
     LOG_TRACE(NULL, "********************************************************\n");
-    LOG_TRACE(NULL, "Testing : Remove and add a monitor from same connector in 1 cycle:\n");
+    LOG_TRACE(NULL, "Testing : Remove and add a monitor from same connector in 1 cycle. Also no hardware cursor enabling for the new monitor:\n");
     assert(sMonitors.size() == 4);
 
     // Add a new monitor
     sMonitors[1].UID = JumpDisplayDriverControl::MonitorInfo::UIDGenerate();
+    sMonitors[1].enableHardwareCursor = 0;
 
     bool monitorCreateResult = sDriverControlSession.DriverUpdateSettings(sMonitors);
 }

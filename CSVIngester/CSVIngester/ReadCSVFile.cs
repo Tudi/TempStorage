@@ -1423,7 +1423,7 @@ namespace CSVIngester
 
                     DisputesImported++;
 
-                    // Get item id from sales for this refund
+                    // Get item id from sales for this refundxpe
                     ItemId = GlobalVariables.DBStorage.EbayGetItemID(row[EbayColumnsUsed.TransactionId]);
 
                     DisputesRunCSV.WriteLine(row[EbayColumnsUsed.WholeRow]);
