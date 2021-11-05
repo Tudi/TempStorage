@@ -24,7 +24,7 @@ static int scanstr2(char const* tgt, const int64_t tgt_len, char const pat[2], i
     unsigned short head = MSBF16(pat), wind = MSBF16(tgt);
 
     tgt += 2;
-    for (int64_t counter = 0; counter <= tgt_len - len - 2; counter++)
+    for (int64_t counter = 0; counter <= tgt_len - len; counter++)
     {
         if (wind == head)
             return 1;

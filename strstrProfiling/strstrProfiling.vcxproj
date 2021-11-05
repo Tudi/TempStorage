@@ -102,6 +102,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);WINDOWS_BUILD</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +132,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);WINDOWS_BUILD</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +146,9 @@
     <ClCompile Include="InputGenerator.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="ProfileTimer.c" />
+    <ClCompile Include="strstr5bit.c" />
+    <ClCompile Include="strstrAVX2.c" />
+    <ClCompile Include="strstrAVX2_V2.c" />
     <ClCompile Include="strstrBothLen.c" />
     <ClCompile Include="strstrBothLen_v2.c" />
     <ClCompile Include="strstrMischasan.c" />
@@ -149,10 +156,14 @@
     <ClCompile Include="strstrNOPString.c" />
     <ClCompile Include="strstrReference.c" />
     <ClCompile Include="strstrSearchedLen.c" />
+    <ClCompile Include="strstrSumCmp.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InputGenerator.h" />
     <ClInclude Include="ProfileTimer.h" />
+    <ClInclude Include="strstr5bit.h" />
+    <ClInclude Include="strstrAVX2.h" />
+    <ClInclude Include="strstrAVX2_V2.h" />
     <ClInclude Include="strstrBothLen.h" />
     <ClInclude Include="strstrBothLen_v2.h" />
     <ClInclude Include="strstrMischasan.h" />
@@ -160,6 +171,7 @@
     <ClInclude Include="strstrNOPString.h" />
     <ClInclude Include="strstrReference.h" />
     <ClInclude Include="strstrSearchedLen.h" />
+    <ClInclude Include="strstrSumCmp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

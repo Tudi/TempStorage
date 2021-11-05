@@ -6,13 +6,14 @@ BIN_DIR:=bin
 
 TARGET_BIN:=$(BIN_DIR)/strstrProfile
 
-SRCS:=strstrBothLen_v2.c main.c strstrSearchedLen.c strstrReference.c strstrMischasanEdited.c strstrBothLen.c strstrNOPString.c InputGenerator.c ProfileTimer.c
+SRCS:=strstrBothLen_v2.c main.c strstrSearchedLen.c strstrReference.c strstrMischasanEdited.c strstrBothLen.c \
+	strstrNOPString.c InputGenerator.c ProfileTimer.c strstrAVX2.c strstrAVX2_V2.c strstrSumCmp.c
 
 OBJS:=$(addprefix $(OBJ_DIR)/, $(SRCS:%.c=%.o))
 
 INCLUDE_DIRS:=. 
 
-CFLAGS:=$(CFLAGS) -Werror -Wall -Ofast -g
+CFLAGS:=$(CFLAGS) -Werror -Wall -Ofast -g -mavx2
 CFLAGS:=$(CFLAGS) $(addprefix -I, $(INCLUDE_DIRS))
 
 all: $(TARGET_BIN)

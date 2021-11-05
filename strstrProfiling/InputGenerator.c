@@ -14,15 +14,9 @@ noPointerString** sInputNOPStrings = NULL;
 
 char* strPartialDup(const char* str, size_t start, size_t count, char addPadding)
 {
-	char* ret = (char*)malloc(count + 1 + addPadding * 3);
+	char* ret = (char*)malloc(count + 1 + addPadding);
 	memcpy(ret, &str[start], count);
-	ret[count] = 0;
-	if (addPadding)
-	{
-		ret[count+1] = 0;
-		ret[count+2] = 0;
-		ret[count+3] = 0;
-	}
+	memset(&ret[count], 0, 1 + addPadding);
 	return ret;
 }
 
@@ -76,7 +70,9 @@ void GenerateInputNOPStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen
 	for (size_t index = 0; index < stringCount; index++)
 	{
 		// cut a portion of the seed string
-		sInputNOPStrings[index] = (noPointerString*)malloc(sizeof(noPointerString) + strLen + 1);
+		size_t allocSize = GetNOPStringSize(strLen + 1); // in case more than 1 string 
+		sInputNOPStrings[index] = (noPointerString*)malloc(allocSize + addPadding);
+		sInputNOPStrings[index]->loc = sizeof(noPointerString); // write right after the struct. If more than 1 string, a write index should be used
 		sInputNOPStrings[index]->len = (unsigned short)strLen;
 		char* strStore = GetNOPString(sInputNOPStrings[index]);
 		memcpy(strStore, &SeedString[strStart], strLen);

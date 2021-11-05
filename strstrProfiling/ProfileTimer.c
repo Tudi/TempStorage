@@ -53,7 +53,7 @@ double EndTimer()
 	{
 		LARGE_INTEGER li;
 		QueryPerformanceCounter(&li);
-		time_passed = (double)(li.QuadPart - CounterStart.QuadPart) / freq;
+		time_passed = (double)(li.QuadPart - CounterStart.QuadPart) / freq / 1000;
 	}
 	return time_passed;
 }

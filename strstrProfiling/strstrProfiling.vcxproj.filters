@@ -45,6 +45,18 @@
     <ClCompile Include="strstrNOPString.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="strstrAVX2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strstrAVX2_V2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strstrSumCmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strstr5bit.c">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InputGenerator.h">
@@ -72,6 +84,18 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="strstrNOPString.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strstrAVX2.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strstrAVX2_V2.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strstrSumCmp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="strstr5bit.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
