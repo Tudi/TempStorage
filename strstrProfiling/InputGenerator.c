@@ -1,8 +1,9 @@
 #include "InputGenerator.h"
 #include <string.h>
 #include <stdlib.h>
+#include "strstr5bit.h"
 
-const char* SeedString = "The quick brown fox jumps over the lazy dog.The quick brown fox jumps over the lazy dog.";
+const char* SeedString = "the quick brown fox jumps over the lazy dog.the quick brown fox jumps over the lazy dog.";
 size_t uiInputStrCount = 0;
 profiledStringStore* sInputStrings = NULL;
 
@@ -11,6 +12,9 @@ profiledStringStore* sSearchedStrings = NULL;
 
 size_t uiInputNOPStrCount = 0;
 noPointerString** sInputNOPStrings = NULL;
+
+str5Bit* sInputStrings5Bit = NULL;
+str5Bit* sSearchedStrings5Bit = NULL;
 
 char* strPartialDup(const char* str, size_t start, size_t count, char addPadding)
 {
@@ -48,14 +52,49 @@ void GenerateStrings_(size_t memorySizeUsed, size_t minLen, size_t maxLen, char 
 	}
 }
 
+void GenerateInput5BitStrings_(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding, str5Bit** strStore)
+{
+	size_t avgLen = (minLen + maxLen) / 2;
+	size_t stringCount = memorySizeUsed / avgLen;
+	size_t seedLen = strlen(SeedString) / 2;
+	size_t strStart = 0;
+	size_t strLen = minLen;
+	(*strStore) = (str5Bit*)malloc((stringCount + 1) * sizeof(str5Bit));
+	for (size_t index = 0; index < stringCount; index++)
+	{
+		// cut a portion of the seed string
+		char* tstr = strPartialDup(SeedString, strStart, strLen, addPadding);
+		str5Bit* t5bitstr = ConvertTo5Bit(tstr);
+
+		(*strStore)[index].str = t5bitstr->str;
+		(*strStore)[index].len = t5bitstr->len;
+
+		free(tstr);
+		free(t5bitstr);
+
+		strLen++;
+		if (strLen > maxLen)
+		{
+			strLen = minLen;
+		}
+		strStart++;
+		if (strStart >= seedLen)
+		{
+			strStart = 0;
+		}
+	}
+}
+
 void GenerateInputStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding)
 {
 	GenerateStrings_(memorySizeUsed, minLen, maxLen, addPadding, &sInputStrings, &uiInputStrCount);
+	GenerateInput5BitStrings_(memorySizeUsed, minLen, maxLen, addPadding, &sInputStrings5Bit);
 }
 
 void GenerateSearchedStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding)
 {
 	GenerateStrings_(memorySizeUsed, minLen, maxLen, addPadding, &sSearchedStrings, &uiSearchedStrCount);
+	GenerateInput5BitStrings_(memorySizeUsed, minLen, maxLen, addPadding, &sSearchedStrings5Bit);
 }
 
 void GenerateInputNOPStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding)

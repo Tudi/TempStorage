@@ -115,7 +115,8 @@ _noinline_ void Run_strstr_Mischasan_Extended_test()
     StartTimer();
     size_t searchesMade = 0;
     size_t foundCount = 0; // anti optimization
-    for (size_t searchedIndex = 0; searchedIndex < uiSearchedStrCount; searchedIndex++)
+    for (size_t repeatCount = 0; repeatCount < REPEAT_SAME_TEST_COUNT; repeatCount++)
+        for (size_t searchedIndex = 0; searchedIndex < uiSearchedStrCount; searchedIndex++)
     {
         for (size_t inputIndex = 0; inputIndex < uiInputStrCount; inputIndex++)
         {

@@ -7,7 +7,7 @@ BIN_DIR:=bin
 TARGET_BIN:=$(BIN_DIR)/strstrProfile
 
 SRCS:=strstrBothLen_v2.c main.c strstrSearchedLen.c strstrReference.c strstrMischasanEdited.c strstrBothLen.c \
-	strstrNOPString.c InputGenerator.c ProfileTimer.c strstrAVX2.c strstrAVX2_V2.c strstrSumCmp.c
+	strstrNOPString.c InputGenerator.c ProfileTimer.c strstrAVX2.c strstrAVX2_V2.c strstrSumCmp.c strstr5bit.c
 
 OBJS:=$(addprefix $(OBJ_DIR)/, $(SRCS:%.c=%.o))
 

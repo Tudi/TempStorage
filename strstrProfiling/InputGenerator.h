@@ -4,16 +4,19 @@
 #ifdef _DEBUG
 	#define MEMORY_ALLOC_FOR_INPUT		(1024) // 100M 
 
-	#define MIN_SEARCH_LEN				2	// just to test very small values also use 2. Probably not realistic though
+	#define MIN_SEARCH_LEN				1	// just to test very small values also use 2. Probably not realistic though
 	#define MAX_SEARCH_LEN				25	
+	#define REPEAT_SAME_TEST_COUNT		1
+	#define MIN_INPUT_LEN				1	//1 byte
 #else
-	#define MEMORY_ALLOC_FOR_INPUT		(100*1024*1024) // 100M 
+	#define MEMORY_ALLOC_FOR_INPUT		(10*1024*1024) // 100M 
 
 	#define MIN_SEARCH_LEN				4	// just to test very small values also use 2. Probably not realistic though
 	#define MAX_SEARCH_LEN				15	
+	#define REPEAT_SAME_TEST_COUNT		20 // make sure tests run for enough time to rule out CPU spikes
+	#define MIN_INPUT_LEN				4	//number of bytes
 #endif
 
-#define MIN_INPUT_LEN				1	//1 byte
 #define MAX_INPUT_LEN				25	
 
 #define MEMORY_ALLOC_FOR_SEARCH		(1024) // 1K 
@@ -38,6 +41,7 @@
 void GenerateInputStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding);
 void GenerateSearchedStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding);
 void GenerateInputNOPStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding);
+void GenerateInput5BitStrings(size_t memorySizeUsed, size_t minLen, size_t maxLen, char addPadding);
 
 typedef struct profiledStringStore
 {
@@ -51,11 +55,14 @@ typedef struct profiledStringStore
 /// <summary>
 /// The actual string comes after the structure so no pointer is used. This reduces structure size by 6 bytes
 /// </summary>
+#pragma pack (push,1) // optimize for cache line usage. Only valid for stream read
 typedef struct noPointerString
 {
 	unsigned short len;
 	unsigned short loc; // required if structure contains more than 1 string
 }noPointerString;
+#pragma pack (pop)
+
 #define GetNOPStringSize(len) (sizeof(noPointerString)+len)
 //#define GetNOPString(store) ((char*)(store)+(sizeof(noPointerString)))
 #define GetNOPString(store) ((char*)(store)+store->loc)
@@ -66,8 +73,8 @@ extern profiledStringStore *sInputStrings;
 extern size_t uiInputNOPStrCount;
 extern noPointerString** sInputNOPStrings;
 
-extern size_t uiInputStrCount;
-extern profiledStringStore* sInputStrings;
+extern struct str5Bit* sInputStrings5Bit;
+extern struct str5Bit* sSearchedStrings5Bit;
 
 extern size_t uiSearchedStrCount;
 extern profiledStringStore* sSearchedStrings;
