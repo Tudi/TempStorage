@@ -31,7 +31,7 @@ char* ConvertFrom5Bit(const str5Bit* str5bit);
 /// <param name="largeStr"></param>
 /// <param name="subStr"></param>
 /// <returns></returns>
-int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr);
+size_t HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr);
 
 void RunDebug5BitTests();
 

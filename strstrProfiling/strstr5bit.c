@@ -11,9 +11,9 @@
 	#define assert(x,s)
 #endif
 
-static unsigned char replaceChars[256]; // in order to reduce the number of charactes, we need to replace/remove some of the existing chars
-static unsigned char conversionMap[256];
-static unsigned char reverseconversionMap[256];
+static char replaceChars[256]; // in order to reduce the number of charactes, we need to replace/remove some of the existing chars
+static char conversionMap[256];
+static char reverseconversionMap[256];
 
 /// <summary>
 /// 4 bits are not enough. 6 looks more feasable. Would mean it will not be able to distinguish 60% of chars
@@ -146,17 +146,21 @@ void InitConversionMap5Bit()
 	replaceChars['y'] = '7';
 	replaceChars['Y'] = '7';
 	// at this point we should have reduced from 96 to 31 characters : [1-31]
-	unsigned char charsUsed[256];
+	char charsUsed[256];
 	memset(charsUsed, 0, sizeof(charsUsed));
-	const unsigned char* printableAsciiChars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+	const char* printableAsciiChars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 	//create a string that contains all printable ascii chars
+#ifdef WINDOWS_BUILD
 	strcpy_s(charsUsed, sizeof(charsUsed), printableAsciiChars);
+#else
+	strcpy(charsUsed, printableAsciiChars);
+#endif
 	//reduce the number of characters based on our replace map
 	for (size_t index = 0; index < strlen(charsUsed); index++)
 	{
-		if (replaceChars[charsUsed[index]] != 0)
+		if (replaceChars[(size_t)*(unsigned char*)&charsUsed[index]] != 0)
 		{
-			charsUsed[index] = replaceChars[charsUsed[index]];
+			charsUsed[index] = replaceChars[(size_t) *(unsigned char*)&charsUsed[index]];
 		}
 	}
 	size_t usedCharsCount = 0;
@@ -198,7 +202,7 @@ void InitConversionMap5Bit()
 
 	for (size_t i = 0; i < 256; i++)
 	{
-		replaceChars[i] = conversionMap[replaceChars[i]];
+		replaceChars[i] = conversionMap[(size_t) *(unsigned char*)&replaceChars[i]];
 	}
 }
 
@@ -247,7 +251,44 @@ char* ConvertFrom5Bit(const str5Bit* str)
 	return resstr;
 }
 
-int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
+#ifdef WINDOWS_BUILD
+	#define forceinline__ __forceinline
+#else
+	#define forceinline__ __attribute__((always_inline))
+#endif
+
+/// <summary>
+/// The only reason this would be faster is no bounds checking + inlining
+/// </summary>
+/// <param name="m1"></param>
+/// <param name="m2"></param>
+/// <param name="count"></param>
+/// <returns></returns>
+#define smallmemcmpNOT(m1, m2, count) \
+{ \
+	switch (count) \
+	{ \
+		case 1: return m1[0] == m2[0]; \
+		case 2: return *(unsigned short*)m1 == *(unsigned short*)m2; \
+		case 3: return ((*(unsigned int*)m1) & 0x00FFFFFF) == ((*(unsigned int*)m2) & 0x00FFFFFF); \
+		case 4: return ((*(unsigned int*)m1)) == ((*(unsigned int*)m2)); \
+		case 5: return ((*(uint64_t*)m1) & 0xFFFFFFFFFF) == ((*(uint64_t*)m2) & 0xFFFFFFFFFF); \
+		case 6: return ((*(uint64_t*)m1) & 0xFFFFFFFFFFFF) == ((*(uint64_t*)m2) & 0xFFFFFFFFFFFF); \
+		case 7: return ((*(uint64_t*)m1) & 0xFFFFFFFFFFFFFF) == ((*(uint64_t*)m2) & 0xFFFFFFFFFFFFFF); \
+		case 8: return ((*(uint64_t*)m1)) == ((*(uint64_t*)m2)); \
+		case 9: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (m1[8] == m2[8])); \
+		case 10: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (*(unsigned short*)&m1[8] == *(unsigned short*)&m2[8])); \
+		case 11: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (((*(int*)&m1[8]) & 0x00FFFFFF) == (((*(int*)&m2[8]))& 0x00FFFFFF))); \
+		case 12: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (((*(int*)&m1[8])) == ((*(int*)&m2[8])))); \
+		case 13: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (((*(uint64_t*)&m1[8]) & 0xFFFFFFFFFF) == (((*(uint64_t*)&m2[8]) & 0xFFFFFFFFFF)))); \
+		case 14: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (((*(uint64_t*)&m1[8]) & 0xFFFFFFFFFFFF) == (((*(uint64_t*)&m2[8]) & 0xFFFFFFFFFFFF)))); \
+		case 15: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (((*(uint64_t*)&m1[8]) & 0xFFFFFFFFFFFFFF) == (((*(uint64_t*)&m2[8]) & 0xFFFFFFFFFFFFFF)))); \
+		case 16: return (((*(uint64_t*)m1)) == ((*(uint64_t*)m2)) && (((*(uint64_t*)&m1[8])) == ((*(uint64_t*)&m2[8])))); \
+	} \
+	return !memcmp(m1, m2, count); \
+} \
+
+size_t HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 {
 #define REGISTER_BITCOUNT	64						// this is just constant naming, you should not change it
 #define COMPARE_MAX_BITLEN	(REGISTER_BITCOUNT-7)	// because 8 bits would make us read 1 byte next
@@ -257,25 +298,13 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 	}
 	if (largeStr->len == subStr->len)
 	{
-		int ret = memcmp(largeStr->str, subStr->str, (largeStr->len * 5 + 7) / 8);
-		return !ret;
+		smallmemcmpNOT(largeStr->str, subStr->str, (largeStr->len * 5 + 7) / 8);
 	}
-	uint64_t searchedValue = *(uint64_t*)subStr->str;
 	uint64_t searchedBitlen2 = subStr->len * 5;
-	uint64_t searchedBitlen = searchedBitlen2;
 	size_t sourceBits = largeStr->len * 5;
-	// we need 7 bits free so that we can shift the value
-	if (searchedBitlen > COMPARE_MAX_BITLEN)
-	{
-		searchedBitlen = COMPARE_MAX_BITLEN;
-	}
-
-	uint64_t searchedMask = ~0;
-	uint64_t unusedBits = (REGISTER_BITCOUNT - searchedBitlen);
-	searchedMask = searchedMask >> unusedBits;
-	searchedValue = searchedValue & searchedMask;
-	int64_t stepCount = largeStr->len - subStr->len;
 	size_t bitReadIndex = 0;
+	uint64_t searchedMask;
+	uint64_t searchedValue;
 #define SHIFT_AND_COMPARE(shift) if( ((readVal>>shift)&searchedMask)==searchedValue) return 1;
 #define PREPARE_SRC_BITS size_t byteReadIndex = bitReadIndex >> 3; \
 						 size_t bitReadIndex2 = bitReadIndex & 0x07; \
@@ -286,6 +315,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 	{
 		case 1: // 5 bits are used out of the 64 - 7. bitReadIndex can be : 0,5,2,7,4,1,6,3 !
 		{
+			searchedMask = 0b11111;
+			searchedValue = (*(unsigned char*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 55;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -308,6 +340,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 2: // 10 bits are used out of the 64 - 7. bitReadIndex can be : 0,2,4,6 !
 		{
+			searchedMask = 0b1111111111;
+			searchedValue = (*(unsigned short*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 50;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -328,6 +363,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 3: // 15 bits are used out of the 64 - 7. bitReadIndex can be : 0,7,6,5,4,3,2,1 !
 		{
+			searchedMask = 0b111111111111111;
+			searchedValue = (*(unsigned short*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 45;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -347,6 +385,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 4: // 20 bits are used out of the 64 - 7. bitReadIndex can be : 0,5,2,7,4,1,6,3 !
 		{
+			searchedMask = 0b11111111111111111111;
+			searchedValue = (*(unsigned int*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 40;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -365,6 +406,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 5: // 25 bits are used out of the 57. bitReadIndex can be : 0,1,2,3,4,5,6,7 !
 		{
+			searchedMask = 0b1111111111111111111111111;
+			searchedValue = (*(unsigned int*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 35;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -382,6 +426,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 6: // 30 bits are used out of the 58. bitReadIndex can be : 0,6,4,2 !
 		{
+			searchedMask = 0b111111111111111111111111111111;
+			searchedValue = (*(unsigned int*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 30;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -398,6 +445,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 7: // 35 bits are used out of the 57. bitReadIndex can be : 0,3,6,1,4,7,2,5 !
 		{
+			searchedMask = 0b11111111111111111111111111111111111;
+			searchedValue = (*(uint64_t*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 25;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -413,6 +463,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 8: // 40 bits are used out of the 64. bitReadIndex can be : 0 !
 		{
+			searchedMask = 0b1111111111111111111111111111111111111111;
+			searchedValue = (*(uint64_t*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 25;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -428,6 +481,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 9: // 45 bits are used out of the 57. bitReadIndex can be : 0,5,2,7,4,1,6,3 !
 		{
+			searchedMask = 0b111111111111111111111111111111111111111111111;
+			searchedValue = (*(uint64_t*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 15;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -441,6 +497,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 10: // 50 bits are used out of the 58. bitReadIndex can be : 0,2,4,6 !
 		{
+			searchedMask = 0b11111111111111111111111111111111111111111111111111;
+			searchedValue = (*(uint64_t*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 10;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -453,6 +512,9 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		}break;
 		case 11: // 55 bits are used out of the 57
 		{
+			searchedMask = 0b1111111111111111111111111111111111111111111111111111111;
+			searchedValue = (*(uint64_t*)&subStr->str[0]) & searchedMask;
+
 			const size_t bitsPerBatch = 5;
 			size_t stepCount2 = (sourceBits / bitsPerBatch);
 			for (; stepCount2 > 0; --stepCount2)
@@ -465,16 +527,19 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 		//for anything larger than 60 bits
 		default:
 		{
+			searchedMask = 0b111111111111111111111111111111111111111111111111111111111;
+			uint64_t searchedValue = *(uint64_t*)subStr->str;
+			searchedValue = searchedValue & searchedMask;
+			int64_t stepCount = largeStr->len - subStr->len;
 			// compare 57 bits(11 chars) and repeat until we run out of source to compare
 			for (; stepCount >= 0; stepCount--)
 			{
 				PREPARE_SRC_BITS;
-				if (((readVal >> 0) & searchedMask) == searchedValue)
+				if ((readVal & searchedMask) == searchedValue)
 				{
 					// check the remaining values in chunks of 57 bits
-					size_t checkStartLargeStr = bitReadIndex + COMPARE_MAX_BITLEN + 1;
 					assert(searchedBitlen2 > COMPARE_MAX_BITLEN + 1, "ValueOverflow");
-					size_t checkCount = searchedBitlen2 - (COMPARE_MAX_BITLEN + 1);
+					size_t checkStartLargeStr = bitReadIndex + COMPARE_MAX_BITLEN + 1;
 					size_t checkStartSubStr = COMPARE_MAX_BITLEN + 1;
 					for (; checkStartSubStr < searchedBitlen2; checkStartSubStr += 58)
 					{
@@ -490,16 +555,14 @@ int HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 						uint64_t searchedMask2 = ~0;
 						uint64_t unusedBits2 = (REGISTER_BITCOUNT - searchBitcount2);
 						searchedMask2 = searchedMask2 >> unusedBits2;
-						searchedValue2 = searchedValue2 & searchedMask2;
+
+						byteReadIndex = checkStartLargeStr >> 3;
+						bitReadIndex2 = checkStartLargeStr & 0x07;
+						readVal = *(uint64_t*)&largeStr->str[byteReadIndex];
+						readVal = readVal >> bitReadIndex2;
+						if ((readVal & searchedMask2) != (searchedValue2 & searchedMask2))
 						{
-							size_t byteReadIndex = checkStartLargeStr >> 3;
-							size_t bitReadIndex2 = checkStartLargeStr & 0x07;
-							uint64_t readVal = *(uint64_t*)&largeStr->str[byteReadIndex];
-							readVal = readVal >> bitReadIndex2;
-							if (((readVal >> 0) & searchedMask2) != searchedValue2)
-							{
-								goto no_full_match_found;
-							}
+							goto no_full_match_found;
 						}
 					}
 					// check remaining bits 1 by 1
@@ -629,13 +692,15 @@ no_full_match_found:
 void RunDebug5BitTests()
 {
 	InitConversionMap5Bit();
+#ifdef _DEBUG
 	return;
 	char test[] = "This is A test 1234 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~The quick brown fox jumps over the lazy dog.";
 	char sustr[] = "his ";
 	str5Bit* str5bit = ConvertTo5Bit(test);
 	str5Bit* substr5bit = ConvertTo5Bit(sustr);
 	char* str8bit = ConvertFrom5Bit(str5bit);
-	int hasstr = HasStr5Bit(str5bit, substr5bit);
+	size_t hasstr = HasStr5Bit(str5bit, substr5bit);
+#endif
 }
 
 _noinline_ void Run_strstr_5Bit()
@@ -649,7 +714,7 @@ _noinline_ void Run_strstr_5Bit()
 	{
 		for (size_t inputIndex = 0; inputIndex < uiInputStrCount; inputIndex++)
 		{
-			int testRes = HasStr5Bit(&sInputStrings5Bit[inputIndex], &sSearchedStrings5Bit[searchedIndex]);
+			size_t testRes = HasStr5Bit(&sInputStrings5Bit[inputIndex], &sSearchedStrings5Bit[searchedIndex]);
 #ifdef _DEBUG
 			int debugstrstrRes = strstr(sInputStrings[inputIndex].str, sSearchedStrings[searchedIndex].str) != NULL;
 			if (testRes != debugstrstrRes)
