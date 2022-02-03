@@ -1,87 +1,28 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "InputGenerator.h"
-#include "ProfileTimer.h"
-#include "strstr5bit.h"
-
-#ifdef _DEBUG
-	#define assert(x,s) if(!x)printf("%s:%d %s\n",__FILE__,__LINE__,s);
+//#define _DEBUG_STR_5_BIT_LEVEL_2
+//#define _DEBUG_STR_5_BIT
+#ifdef _DEBUG_STR_5_BIT
+	#define assert_5bit(x,s) if(!(x))printf("%s:%d %s\n",__FILE__,__LINE__,s);
 #else
-	#define assert(x,s)
+	#define assert_5bit(x,s)
 #endif
 
-static char replaceChars[256]; // in order to reduce the number of charactes, we need to replace/remove some of the existing chars
 static char conversionMap[256];
 static char reverseconversionMap[256];
 
 /// <summary>
-/// 4 bits are not enough. 6 looks more feasable. Would mean it will not be able to distinguish 60% of chars
-/// </summary>
-void InitConversionMap4Bit()
-{
-	// 15 chars : ' ' + '_' + "0123456789"+'r'+'i'+'o'
-	memset(replaceChars, 0, sizeof(replaceChars));
-
-	// lowercase characters
-	for (size_t i = 'A'; i <= 'Z'; i++) // 26 chars
-	{
-		replaceChars[i] = ((unsigned char)i - 'A') % 10 + '0';
-	}
-	for (size_t i = 'a'; i <= 'z'; i++)
-	{
-		replaceChars[i] = ((unsigned char)i - 'a') % 10 + '0';
-	}
-	for (size_t i = '0'; i <= '9'; i++)
-	{
-		replaceChars[i] = (unsigned char)i;
-	}
-
-	// only these could be kept. These are most frequent chars
-	replaceChars['r'] = 'r';
-	replaceChars['i'] = 'i';
-	replaceChars['o'] = 'o';
-	// all sign characters replaced by '_'
-	replaceChars[' '] = ' ';
-	replaceChars['!'] = '_';
-	replaceChars['"'] = '_';
-	replaceChars['#'] = '_';
-	replaceChars['$'] = '_';
-	replaceChars['%'] = '_';
-	replaceChars['&'] = '_';
-	replaceChars['\''] = '_';
-	replaceChars['('] = '_';
-	replaceChars[')'] = '_';
-	replaceChars['*'] = '_';
-	replaceChars['+'] = '_';
-	replaceChars[','] = '_';
-	replaceChars['-'] = '_';
-	replaceChars['.'] = '_';
-	replaceChars['/'] = '_';
-	replaceChars[':'] = '_';
-	replaceChars[';'] = '_';
-	replaceChars['<'] = '_';
-	replaceChars['='] = '_';
-	replaceChars['>'] = '_';
-	replaceChars['?'] = '_';
-	replaceChars['@'] = '_';
-	replaceChars['['] = '_';
-	replaceChars['\\'] = '_';
-	replaceChars[']'] = '_';
-	replaceChars['^'] = '_';
-	replaceChars['_'] = '_';
-	replaceChars['`'] = '_';
-	replaceChars['{'] = '_';
-	replaceChars['|'] = '_';
-	replaceChars['}'] = '_';
-	replaceChars['~'] = '_';
-}
-
-/// <summary>
-/// 5 bits might be too few. 6 looks more feasable
+/// Convert selected characters to destination caracters
+/// Any non specified character in the list will be converted to 0
+/// The new 5bit string does not check for NULL terminator. 0 value is allowed
+/// Values that can not be converted, will be skipped
+/// 5 bits might be too few :
+///		- all numbers : 10 values
+///		- punctuation '_', ' ' : 2 values
+///		- special 1 : 1 value
+///		- characters : 'a' .. 'z' except : 'z', 'q', 'j', 'x', 'k', 'b', 'w', 'y' : 17 values
 /// </summary>
 void InitConversionMap5Bit()
 {
+	char replaceChars[256]; // in order to reduce the number of charactes, we need to replace/remove some of the existing chars
 	memset(replaceChars, 0, sizeof(replaceChars));
 	// lowercase characters
 	for (size_t i = 'A'; i <= 'Z'; i++) // 26 chars
@@ -131,6 +72,7 @@ void InitConversionMap5Bit()
 	replaceChars['}'] = '_';
 	replaceChars['~'] = '_';
 	// in order to get to 5 bits, we need to get rid of 7 characters
+	// these are the least used chars in english alphabet
 	replaceChars['z'] = '1';
 	replaceChars['Z'] = '1';
 	replaceChars['q'] = '2';
@@ -145,6 +87,10 @@ void InitConversionMap5Bit()
 	replaceChars['B'] = '6';
 	replaceChars['y'] = '7';
 	replaceChars['Y'] = '7';
+	replaceChars['w'] = '8'; // because we want special chars
+	replaceChars['W'] = '8'; // because we want special chars
+//	replaceChars['g'] = '9';
+//	replaceChars['G'] = '9';
 	// at this point we should have reduced from 96 to 31 characters : [1-31]
 	char charsUsed[256];
 	memset(charsUsed, 0, sizeof(charsUsed));
@@ -155,6 +101,7 @@ void InitConversionMap5Bit()
 #else
 	strcpy(charsUsed, printableAsciiChars);
 #endif
+
 	//reduce the number of characters based on our replace map
 	for (size_t index = 0; index < strlen(charsUsed); index++)
 	{
@@ -181,52 +128,138 @@ void InitConversionMap5Bit()
 			usedCharsCount++;
 		}
 	}
-	assert(usedCharsCount < 32, "Can't have more than 31 chars");
 
-	size_t Code = 1;
-	memset(conversionMap, 0, sizeof(conversionMap));
+#ifdef _DEBUG_STR_5_BIT
+	if (usedCharsCount != 30)
+	{
+		printf("Found %d chars. Can't have more than 30 chars\n", (int)usedCharsCount);
+		for (size_t i = 0; i < usedCharsCount; i++)
+		{
+			printf("%c", charsUnique[i]);
+		}
+		printf("\n");
+	}
+#endif
+
+	size_t Code = 0;
+	memset(conversionMap, 32, sizeof(conversionMap));
 	memset(reverseconversionMap, 0, sizeof(reverseconversionMap));
 	for (size_t i = 0; i < usedCharsCount; i++)
 	{
+		int inputChar = charsUnique[i];
 		for (size_t i2 = 0; i2 < 256; i2++)
 		{
-			if(replaceChars[i2] == charsUnique[i])
+			if(replaceChars[i2] == inputChar)
 			{
 				conversionMap[i2] = (unsigned char)Code;
 			}
 		}
-		reverseconversionMap[Code] = charsUnique[i];
+		reverseconversionMap[Code] = inputChar;
 		Code++;
 	}
-	assert(Code < 32, "Can't have more than 31 chars");
 
-	for (size_t i = 0; i < 256; i++)
-	{
-		replaceChars[i] = conversionMap[(size_t) *(unsigned char*)&replaceChars[i]];
-	}
+#ifdef _DEBUG_STR_5_BIT
+	if(Code != 30)printf("Using %d char codes, instead optimal char count 30\n", (int)Code);
+#endif
+
+	// bleah, special case for array separators. Want to replace value 1 with 31
+	conversionMap[1] = 31;
+	reverseconversionMap[31] = 1;
 }
 
-str5Bit* ConvertTo5Bit(const char* str)
+void initStr5Bit(str5Bit* str)
+{
+	str->len = 0;
+	str->str = NULL;
+}
+
+void freeStr5Bit(str5Bit* str)
+{
+	str->len = 0;
+	free(str->str);
+	str->str = NULL;
+}
+
+/// <summary>
+/// Based on the conversion table, convert input characters to destination characters
+/// Characters that can not be converted, will be skipped. Example UTF8 or '\n'
+/// </summary>
+/// <param name="str"></param>
+/// <param name="out_dst"></param>
+/// <returns></returns>
+str5Bit* ConvertTo5Bit(const char* str, str5Bit* out_dst)
 {
 	size_t bitWriteIndex = 0;
 	size_t len = strlen(str);
 	size_t newLen = (len * 5 + 7) / 8;
+	newLen += 7; // Have to add padding to make sure we do not read more than have data
+
+	assert_5bit(newLen < 0xFFFF, "Can't have more than 0xFFFF chars");
+
 	char* resstr = (char*)malloc(newLen);
+	if (resstr == NULL)
+	{
+		if (out_dst)
+		{
+			initStr5Bit(out_dst);
+		}
+		return NULL;
+	}
+
+	memset(resstr, 0, newLen); // we might end up skipping all chars due to utf8
 	for (size_t i = 0; i < len; i++)
 	{
 		unsigned char inputChar = str[i];
-		unsigned char inputSymbol = conversionMap[inputChar];
-		size_t byteWriteIndex = bitWriteIndex >> 3;
+
+		unsigned short inputSymbol = conversionMap[inputChar];
+		if (inputSymbol > 31)
+		{
+#ifdef _DEBUG_STR_5_BIT_LEVEL_2
+			// Does not support UTF8 char set
+			if (inputChar < 128 && inputChar != '\n' && inputChar != '\r' && inputChar != '\t')
+			{
+				printf("unable to convert source char %c=%d at pos %d/%d\n", inputChar, (int)inputChar, (int)i, (int)len);
+			}
+#endif
+			continue;
+		}
+		size_t byteWriteIndex = bitWriteIndex >> 3; // remainder of 8 to get the byte index
 		size_t bitWriteIndex2 = bitWriteIndex & 0x07; // can be anything from [0..7], we might be writing 13 bits
 		unsigned short clearMask = ~(0xFFFFFFFF << bitWriteIndex2);
 		unsigned short setSymbol = inputSymbol << bitWriteIndex2;
-		*(unsigned short*)&resstr[byteWriteIndex] = (*(unsigned short*)&resstr[byteWriteIndex] & clearMask) | setSymbol;
+		unsigned short prevDestValue = *(unsigned short*)&resstr[byteWriteIndex];
+		prevDestValue = prevDestValue & clearMask; // make sure we do not mix old unused data with new data
+		*(unsigned short*)(&resstr[byteWriteIndex]) = prevDestValue | setSymbol;
 		bitWriteIndex+=5;
 	}
-	str5Bit* res = (str5Bit*)malloc(sizeof(str5Bit));
-	res->len = (unsigned short)len;
-	res->str = resstr;
-	return res;
+	if (out_dst == NULL)
+	{
+		str5Bit* res = (str5Bit*)malloc(sizeof(str5Bit));
+		res->len = (unsigned short)len;
+		res->str = resstr;
+		return res;
+	}
+	out_dst->len = (unsigned short)(bitWriteIndex/5);
+	out_dst->str = resstr;
+
+#ifdef _DEBUG_STR_5_BIT_LEVEL_2
+	char* oriStr = ConvertFrom5Bit(out_dst);
+	if (strlen(str) != strlen(oriStr))
+	{
+		printf("Reconversion length different %d!=%d=%d\n", (int)strlen(str), (int)strlen(oriStr), out_dst->len);
+	}
+	if (strcmp(oriStr, str) != 0)
+	{
+		printf("Separator '1' is converted into %c=%d reversed %c=%d\n", 
+			conversionMap[1], (int)conversionMap[1], reverseconversionMap[(int)conversionMap[1]], (int)reverseconversionMap[(int)conversionMap[1]]);
+		printf("++++++++++++++++++++++++++++++++++++++++\n");
+		printf("ori str : \n'%s' \n, not same : \n'%s'\n", str, oriStr);
+		printf("========================================\n");
+	}
+	free(oriStr);
+#endif
+
+	return out_dst;
 }
 
 char* ConvertFrom5Bit(const str5Bit* str)
@@ -237,12 +270,12 @@ char* ConvertFrom5Bit(const str5Bit* str)
 	for (size_t i = 0; i < newLen; i++)
 	{
 		size_t readMask = 0x1F;
-		size_t byteReadIndex = bitReadIndex / 8;
+		size_t byteReadIndex = bitReadIndex >> 3;
 		size_t bitReadIndex2 = bitReadIndex & 0x07;
-		size_t readVal = *(size_t*)&str[byteReadIndex];
+		size_t readVal = *(size_t*)(&str->str[byteReadIndex]);
 		readVal = readVal >> bitReadIndex2;
 		readVal = readVal & readMask;
-		assert(readVal >= 256, "character code is beyond possibility");
+		assert_5bit(readVal <= 31, "character code is beyond possibility");
 		unsigned char outputChar = reverseconversionMap[readVal];
 		resstr[i] = outputChar;
 		bitReadIndex += 5;

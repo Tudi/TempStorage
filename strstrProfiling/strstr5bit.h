@@ -27,6 +27,7 @@ char* ConvertFrom5Bit(const str5Bit* str5bit);
 
 /// <summary>
 /// In a 5 bit str, check if the substring exists
+/// Specially made for SMALL !! strings ( less than 20 bytes )
 /// </summary>
 /// <param name="largeStr"></param>
 /// <param name="subStr"></param>
