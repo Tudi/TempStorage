@@ -16,7 +16,7 @@ void InitConversionMap5Bit();
 /// </summary>
 /// <param name="str"></param>
 /// <returns></returns>
-str5Bit* ConvertTo5Bit(const char* str);
+str5Bit* ConvertTo5Bit(const char* str, str5Bit* out_dst);
 
 /// <summary>
 /// Convert a 5bit str to ASCII char str

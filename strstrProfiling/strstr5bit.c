@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <inttypes.h>
+#include <string.h>
+#include <stdlib.h>
+#include "strstr5bit.h"
+
 //#define _DEBUG_STR_5_BIT_LEVEL_2
 //#define _DEBUG_STR_5_BIT
 #ifdef _DEBUG_STR_5_BIT
@@ -284,6 +290,9 @@ char* ConvertFrom5Bit(const str5Bit* str)
 	return resstr;
 }
 
+#ifndef _noinline_
+	#define _noinline_ 
+#endif
 #ifdef WINDOWS_BUILD
 	#define forceinline__ __forceinline
 #else
@@ -571,7 +580,7 @@ size_t HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr)
 				if ((readVal & searchedMask) == searchedValue)
 				{
 					// check the remaining values in chunks of 57 bits
-					assert(searchedBitlen2 > COMPARE_MAX_BITLEN + 1, "ValueOverflow");
+					assert_5bit(searchedBitlen2 > COMPARE_MAX_BITLEN + 1, "ValueOverflow");
 					size_t checkStartLargeStr = bitReadIndex + COMPARE_MAX_BITLEN + 1;
 					size_t checkStartSubStr = COMPARE_MAX_BITLEN + 1;
 					for (; checkStartSubStr < searchedBitlen2; checkStartSubStr += 58)
@@ -714,7 +723,7 @@ no_full_match_found:
 		}break;
 #ifdef _DEBUG
 		case 0: break;
-		default: assert(remainingBits == 0, "unexpected remaining bitcount");
+		default: assert_5bit(remainingBits == 0, "unexpected remaining bitcount");
 #endif
 		}
 	}
@@ -729,13 +738,15 @@ void RunDebug5BitTests()
 	return;
 	char test[] = "This is A test 1234 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~The quick brown fox jumps over the lazy dog.";
 	char sustr[] = "his ";
-	str5Bit* str5bit = ConvertTo5Bit(test);
-	str5Bit* substr5bit = ConvertTo5Bit(sustr);
+	str5Bit* str5bit = ConvertTo5Bit(test, NULL);
+	str5Bit* substr5bit = ConvertTo5Bit(sustr, NULL);
 	char* str8bit = ConvertFrom5Bit(str5bit);
 	size_t hasstr = HasStr5Bit(str5bit, substr5bit);
 #endif
 }
 
+#include "InputGenerator.h"
+#include "ProfileTimer.h"
 _noinline_ void Run_strstr_5Bit()
 {
 	printf("Starting test %s ...", __FUNCTION__);
