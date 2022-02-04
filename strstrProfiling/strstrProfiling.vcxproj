@@ -147,6 +147,8 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="ProfileTimer.c" />
     <ClCompile Include="strstr5bit.c" />
+    <ClCompile Include="strstr5bit_LH.c" />
+    <ClCompile Include="strstr5bit_LH_testing.c" />
     <ClCompile Include="strstrAVX2.c" />
     <ClCompile Include="strstrAVX2_V2.c" />
     <ClCompile Include="strstrBothLen.c" />

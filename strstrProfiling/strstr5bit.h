@@ -4,6 +4,7 @@
 typedef struct str5Bit {
 	unsigned short len; // this is character len. byte len is (len*5+7)/8
 	char* str; // this is not a null terminated string !
+	unsigned char* str_LH; // low 4 bits followed by high 1 bit
 }str5Bit;
 
 /// <summary>
@@ -11,12 +12,17 @@ typedef struct str5Bit {
 /// </summary>
 void InitConversionMap5Bit();
 
+// constructor / destructor
+void initStr5Bit(str5Bit* str);
+void freeStr5Bit(str5Bit* str);
+
 /// <summary>
 /// Simple ascii text lower case only uses 36 character : 10 numbers + 26 chars + 33 punctuations
 /// </summary>
 /// <param name="str"></param>
 /// <returns></returns>
 str5Bit* ConvertTo5Bit(const char* str, str5Bit* out_dst);
+str5Bit* ConvertTo5BitLH(const char* str, str5Bit* out_dst);
 
 /// <summary>
 /// Convert a 5bit str to ASCII char str
@@ -33,6 +39,7 @@ char* ConvertFrom5Bit(const str5Bit* str5bit);
 /// <param name="subStr"></param>
 /// <returns></returns>
 size_t HasStr5Bit(const str5Bit* largeStr, const str5Bit* subStr);
+size_t HasStr5BitLH(const str5Bit* largeStr, const str5Bit* subStr);
 
 void RunDebug5BitTests();
 
@@ -40,5 +47,6 @@ void RunDebug5BitTests();
 /// Just how much worse is this compared to normal strstr. It does save memory....
 /// </summary>
 void Run_strstr_5Bit();
+void Run_strstr_5Bit_LH();
 
 #endif

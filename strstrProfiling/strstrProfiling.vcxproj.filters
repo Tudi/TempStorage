@@ -57,6 +57,12 @@
     <ClCompile Include="strstr5bit.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="strstr5bit_LH.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strstr5bit_LH_testing.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InputGenerator.h">

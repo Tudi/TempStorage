@@ -17,7 +17,7 @@
 	#define MIN_INPUT_LEN				4	//number of bytes
 #endif
 
-#define MAX_INPUT_LEN				25	
+#define MAX_INPUT_LEN				15	
 
 #define MEMORY_ALLOC_FOR_SEARCH		(1024) // 1K 
 

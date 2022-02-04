@@ -32,18 +32,17 @@ int main()
 
 	// run a specific test
 	Run_strstr_reference_test();
-//	Run_strstr_know_searched_length_test();
+	Run_strstr_5Bit_LH();
+	Run_strstr_5Bit();				// suffers greatly in multi threaded environment
+	//	Run_strstr_know_searched_length_test();
 //	Run_strstr_know_both_lengths_test();
 //	Run_strstr_Mischasan_test();
 	Run_strstr_Mischasan_Extended_test(); // this is better on linux but not on windows ?
 	Run_strstr_Both_Len_V2_test();	// about 15% better than strstr
 	Run_strstr_NOPString_test();
-#ifdef WINDOWS_BUILD
 	Run_strstr_AVX2_test();			// about 15% better than strstr
-#endif
 //	Run_strstr_AVX2_V2_test();
 //	Run_strstr_Sum_Word_test();		// this is only for large strings where the value does not fit into single registry
-	Run_strstr_5Bit();
 
 	printf("\nAll tests finished\n");
 	// not using this

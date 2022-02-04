@@ -100,7 +100,9 @@ void InitConversionMap5Bit()
 	// at this point we should have reduced from 96 to 31 characters : [1-31]
 	char charsUsed[256];
 	memset(charsUsed, 0, sizeof(charsUsed));
-	const char* printableAsciiChars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+//	const char* printableAsciiChars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+	// reorganized order so some characters would fit into 4 bits
+	const char* printableAsciiChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789{|}~ !\"#$%&'()*+,-./:;<=>?@[\\]^_`";
 	//create a string that contains all printable ascii chars
 #ifdef WINDOWS_BUILD
 	strcpy_s(charsUsed, sizeof(charsUsed), printableAsciiChars);
@@ -136,6 +138,8 @@ void InitConversionMap5Bit()
 	}
 
 #ifdef _DEBUG_STR_5_BIT
+	charsUnique[usedCharsCount] = 0;
+	printf("charsUnique : '%s'\n", charsUnique);
 	if (usedCharsCount != 30)
 	{
 		printf("Found %d chars. Can't have more than 30 chars\n", (int)usedCharsCount);
@@ -177,6 +181,7 @@ void initStr5Bit(str5Bit* str)
 {
 	str->len = 0;
 	str->str = NULL;
+	str->str_LH = NULL;
 }
 
 void freeStr5Bit(str5Bit* str)
@@ -184,6 +189,74 @@ void freeStr5Bit(str5Bit* str)
 	str->len = 0;
 	free(str->str);
 	str->str = NULL;
+	free(str->str_LH);
+	str->str_LH = NULL;
+}
+
+#define STR5BIT_GET_L_LEN(strlen) ((strlen * 4 + 7) / 8 + 7)
+str5Bit* ConvertTo5BitLH(const char* str, str5Bit* out_dst)
+{
+	size_t len = strlen(str);
+	size_t newLen_low = STR5BIT_GET_L_LEN(len);
+	size_t newLen_high = (len * 1 + 7) / 8;
+
+	assert_5bit(newLen_low < 0xFFFF, "Can't have more than 0xFFFF chars");
+
+	const size_t padding = 6; // needed because we read outside the size
+	unsigned char* resstr_low = (unsigned char*)malloc(newLen_low + newLen_high + padding); // padding added to avoid illegal read
+	if (resstr_low == NULL)
+	{
+		if (out_dst)
+		{
+			initStr5Bit(out_dst);
+		}
+		return NULL;
+	}
+	memset(resstr_low, 0, newLen_low + newLen_high + padding); // we might end up skipping all chars due to utf8
+	unsigned char* resstr_high = &resstr_low[newLen_low];
+
+	size_t valuesWritten = 0;
+	for (size_t i = 0; i < len; i++)
+	{
+		unsigned char inputChar = str[i];
+
+		unsigned short inputSymbol = conversionMap[inputChar];
+		if (inputSymbol > 31) // only happens to cut out characters like UTF8
+		{
+			continue;
+		}
+		size_t byteWriteIndex_low = valuesWritten / 2;
+		if ((valuesWritten & 1) == 0)
+		{
+			unsigned char setSymbol = inputSymbol & 0x0F; // shift out the higher 4 bits. Only need lower 4 bits
+			unsigned char prevDestValue = resstr_low[byteWriteIndex_low];
+			//prevDestValue = prevDestValue & 0xF0; // make sure we do not mix old unused data with new data
+			resstr_low[byteWriteIndex_low] = prevDestValue | setSymbol;
+		}
+		else
+		{
+			unsigned char setSymbol = inputSymbol << 4; // shift out the higher 4 bits. Only need lower 4 bits
+			unsigned char prevDestValue = resstr_low[byteWriteIndex_low];
+//			prevDestValue = prevDestValue & 0x0F; // make sure we do not mix old unused data with new data
+			resstr_low[byteWriteIndex_low] = prevDestValue | setSymbol;
+		}
+		size_t byteWriteIndex = valuesWritten >> 3; // remainder of 8 to get the byte index
+		size_t bitWriteIndex2 = valuesWritten & 0x07; // can be anything from [0..7], we might be writing 13 bits
+		unsigned char clearMask = ~(0xFFFFFFFF << bitWriteIndex2);
+		unsigned char setSymbol = (inputSymbol >> 4) << bitWriteIndex2; // only store the high bits
+		unsigned char prevDestValue = resstr_high[byteWriteIndex];
+		prevDestValue = prevDestValue & clearMask; // make sure we do not mix old unused data with new data
+		resstr_high[byteWriteIndex] = prevDestValue | setSymbol;
+		valuesWritten++;
+	}
+	if (out_dst == NULL)
+	{
+		out_dst = (str5Bit*)malloc(sizeof(str5Bit));
+	}
+	out_dst->str_LH = resstr_low;
+	out_dst->len = (unsigned short)valuesWritten;
+
+	return out_dst;
 }
 
 /// <summary>
@@ -240,13 +313,12 @@ str5Bit* ConvertTo5Bit(const char* str, str5Bit* out_dst)
 	}
 	if (out_dst == NULL)
 	{
-		str5Bit* res = (str5Bit*)malloc(sizeof(str5Bit));
-		res->len = (unsigned short)len;
-		res->str = resstr;
-		return res;
+		out_dst = (str5Bit*)malloc(sizeof(str5Bit));
+		initStr5Bit(out_dst);
 	}
 	out_dst->len = (unsigned short)(bitWriteIndex/5);
 	out_dst->str = resstr;
+	ConvertTo5BitLH(str, out_dst);
 
 #ifdef _DEBUG_STR_5_BIT_LEVEL_2
 	char* oriStr = ConvertFrom5Bit(out_dst);
@@ -289,10 +361,6 @@ char* ConvertFrom5Bit(const str5Bit* str)
 	resstr[newLen] = 0;
 	return resstr;
 }
-
-#ifndef _noinline_
-	#define _noinline_ 
-#endif
 #ifdef WINDOWS_BUILD
 	#define forceinline__ __forceinline
 #else
@@ -731,9 +799,11 @@ no_full_match_found:
 	return 0;
 }
 
+void runstr5BitLHTests();
 void RunDebug5BitTests()
 {
 	InitConversionMap5Bit();
+	runstr5BitLHTests();
 #ifdef _DEBUG
 	return;
 	char test[] = "This is A test 1234 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~The quick brown fox jumps over the lazy dog.";
@@ -747,6 +817,11 @@ void RunDebug5BitTests()
 
 #include "InputGenerator.h"
 #include "ProfileTimer.h"
+
+#ifndef _noinline_
+	#define _noinline_ 
+#endif
+
 _noinline_ void Run_strstr_5Bit()
 {
 	printf("Starting test %s ...", __FUNCTION__);

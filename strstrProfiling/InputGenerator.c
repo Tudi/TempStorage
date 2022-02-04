@@ -64,13 +64,9 @@ void GenerateInput5BitStrings_(size_t memorySizeUsed, size_t minLen, size_t maxL
 	{
 		// cut a portion of the seed string
 		char* tstr = strPartialDup(SeedString, strStart, strLen, addPadding);
-		str5Bit* t5bitstr = ConvertTo5Bit(tstr, NULL);
-
-		(*strStore)[index].str = t5bitstr->str;
-		(*strStore)[index].len = t5bitstr->len;
+		ConvertTo5Bit(tstr, &(*strStore)[index]);
 
 		free(tstr);
-		free(t5bitstr);
 
 		strLen++;
 		if (strLen > maxLen)
