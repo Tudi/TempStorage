@@ -193,7 +193,7 @@ void freeStr5Bit(str5Bit* str)
 	str->str_LH = NULL;
 }
 
-#define STR5BIT_GET_L_LEN(strlen) ((strlen * 4 + 7) / 8 + 7)
+#define STR5BIT_GET_L_LEN(strlen) ((strlen * 4 + 7) / 8 + 1)
 str5Bit* ConvertTo5BitLH(const char* str, str5Bit* out_dst)
 {
 	size_t len = strlen(str);
@@ -202,7 +202,7 @@ str5Bit* ConvertTo5BitLH(const char* str, str5Bit* out_dst)
 
 	assert_5bit(newLen_low < 0xFFFF, "Can't have more than 0xFFFF chars");
 
-	const size_t padding = 6; // needed because we read outside the size
+	const size_t padding = 2; // needed because we read outside the size
 	unsigned char* resstr_low = (unsigned char*)malloc(newLen_low + newLen_high + padding); // padding added to avoid illegal read
 	if (resstr_low == NULL)
 	{
@@ -851,5 +851,5 @@ _noinline_ void Run_strstr_5Bit()
 	}
 	double runtimeSec = EndTimer();
 	printf(" ... Done\n");
-	printf("Searches made %d. Found the string %d times. Seconds : %f\n\n", (int)searchesMade, (int)foundCount, (float)runtimeSec);
+	printf("Searches made %zd. Found the string %d times. Seconds : %f\n\n", searchesMade, (int)foundCount, (float)runtimeSec);
 }

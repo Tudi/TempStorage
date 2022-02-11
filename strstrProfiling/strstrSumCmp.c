@@ -83,5 +83,5 @@ _noinline_ void Run_strstr_Sum_Word_test()
     }
     double runtimeSec = EndTimer();
     printf(" ... Done\n");
-    printf("Searches made %d. Found the string %d times. Seconds : %f\n\n", (int)searchesMade, (int)foundCount, (float)runtimeSec);
+    printf("Searches made %zd. Found the string %d times. Seconds : %f\n\n", searchesMade, (int)foundCount, (float)runtimeSec);
 }

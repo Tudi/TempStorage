@@ -14,7 +14,7 @@ OBJS:=$(addprefix $(OBJ_DIR)/, $(SRCS:%.c=%.o))
 
 INCLUDE_DIRS:=. 
 
-CFLAGS:=$(CFLAGS) -Werror -Wall -Ofast -g -mavx2 -msse4.1 -DNMC_VECTORIZE_TARGET=AVX2
+CFLAGS:=$(CFLAGS) -Werror -Wall -O3 -g -mavx2 -msse4.1 -DNMC_VECTORIZE_TARGET=AVX2
 CFLAGS:=$(CFLAGS) $(addprefix -I, $(INCLUDE_DIRS))
 
 all: $(TARGET_BIN)
