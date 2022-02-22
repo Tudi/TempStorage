@@ -2,21 +2,21 @@
 #include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
-#include "strstr5bit.h"
+#include "strstr5bit_LH.h"
 
 void runstr5BitLHTest(const char* large, const char* small)
 {
-	str5Bit Large, Small;
-	ConvertTo5Bit(large, &Large);
-	ConvertTo5Bit(small, &Small);
+	str5BitLH *Large, *Small;
+	Large = ConvertTo5BitLH(large, NULL, 0);
+	Small = ConvertTo5BitLH(small, NULL, 0);
 	int expectedResult = strstr(large, small) != NULL;
-	if (HasStr5BitLH(&Large, &Small) != expectedResult)
+	if (HasStr5BitLH(Large, Small) != expectedResult)
 	{
 		printf("b0rken %s - %s\n", large, small);
-		HasStr5BitLH(&Large, &Small);
+		HasStr5BitLH(Large, Small);
 	}
-	freeStr5Bit(&Large);
-	freeStr5Bit(&Small);
+	free(Large);
+	free(Small);
 }
 
 void runstr5BitLHTests()
@@ -102,6 +102,14 @@ void runstr5BitLHTests()
 	runstr5BitLHTest("bb9999999999b", "9999999999");
 	runstr5BitLHTest("bbbbbbb9999999999", "9999999999");
 	runstr5BitLHTest("bbbbbbbb9999999999", "9999999999");
+	
+/*	runstr5BitLHTest("9999999999999999", "9999999999999999");
+	runstr5BitLHTest("9999999999999999b", "9999999999999999");
+	runstr5BitLHTest("b9999999999999999", "9999999999999999");
+	runstr5BitLHTest("bb9999999999999999", "9999999999999999");
+	runstr5BitLHTest("bb9999999999999999b", "9999999999999999");
+	runstr5BitLHTest("bbbbbbb9999999999999999", "9999999999999999");
+	runstr5BitLHTest("bbbbbbbb9999999999999999", "9999999999999999");*/
 }
 
 #include "InputGenerator.h"
@@ -117,13 +125,13 @@ _noinline_ void Run_strstr_5Bit_LH()
 		{
 			for (size_t inputIndex = 0; inputIndex < uiInputStrCount; inputIndex++)
 			{
-				size_t testRes = HasStr5BitLH(&sInputStrings5Bit[inputIndex], &sSearchedStrings5Bit[searchedIndex]);
+				size_t testRes = HasStr5BitLH(sInputStrings5BitLH[inputIndex], sSearchedStrings5BitLH[searchedIndex]);
 #ifdef _DEBUG
 				int debugstrstrRes = strstr(sInputStrings[inputIndex].str, sSearchedStrings[searchedIndex].str) != NULL;
 				if (testRes != debugstrstrRes)
 				{
-					testRes = HasStr5BitLH(&sInputStrings5Bit[inputIndex], &sSearchedStrings5Bit[searchedIndex]);
-					testRes = HasStr5BitLH(&sInputStrings5Bit[inputIndex], &sSearchedStrings5Bit[searchedIndex]);
+					testRes = HasStr5BitLH(sInputStrings5BitLH[inputIndex], sSearchedStrings5BitLH[searchedIndex]);
+					testRes = HasStr5BitLH(sInputStrings5BitLH[inputIndex], sSearchedStrings5BitLH[searchedIndex]);
 				}
 #endif
 				if (testRes != 0)
@@ -135,5 +143,5 @@ _noinline_ void Run_strstr_5Bit_LH()
 		}
 	double runtimeSec = EndTimer();
 	printf(" ... Done\n");
-	printf("Searches made %zd. Found the string %d times. Seconds : %f\n\n", searchesMade, (int)foundCount, (float)runtimeSec);
+	printf("Searches made %zu. Found the string %zu times. Seconds : %f\n\n", searchesMade, foundCount, (float)runtimeSec);
 }

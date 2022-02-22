@@ -137,5 +137,5 @@ _noinline_ void Run_strstr_Mischasan_Extended_test()
     }
     double runtimeSec = EndTimer();
     printf(" ... Done\n");
-    printf("Searches made %zd. Found the string %d times. Seconds : %f\n\n", searchesMade, (int)foundCount, (float)runtimeSec);
+    printf("Searches made %zu. Found the string %zu times. Seconds : %f\n\n", searchesMade, foundCount, (float)runtimeSec);
 }

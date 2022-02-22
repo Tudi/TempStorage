@@ -177,11 +177,51 @@ void InitConversionMap5Bit()
 	reverseconversionMap[31] = 1;
 }
 
+void PrintConversionMap5Bit()
+{
+#define PRINT_VALUES_PER_ROW 20
+	printf("\nstatic unsigned char conversionMap[256] = {\n");
+	for (size_t row = 0; row < 256 / PRINT_VALUES_PER_ROW + 1; row++)
+	{
+		for (size_t col = 0; col < PRINT_VALUES_PER_ROW; col++)
+		{
+			size_t index = row * PRINT_VALUES_PER_ROW + col;
+			if (index < 255)
+			{
+				printf("% 3d,", conversionMap[index]);
+			}
+			else if (index == 255)
+			{
+				printf("% 3d", conversionMap[index]);
+			}
+		}
+		printf("\n");
+	}
+	printf("};\n");
+	printf("\nstatic unsigned char reverseconversionMap[256] = {\n");
+	for (size_t row = 0; row < 256 / PRINT_VALUES_PER_ROW + 1; row++)
+	{
+		for (size_t col = 0; col < PRINT_VALUES_PER_ROW; col++)
+		{
+			size_t index = row * PRINT_VALUES_PER_ROW + col;
+			if (index < 255)
+			{
+				printf("% 4d,", reverseconversionMap[index]);
+			}
+			else if (index == 255)
+			{
+				printf("% 4d", reverseconversionMap[index]);
+			}
+		}
+		printf("\n");
+	}
+	printf("};\n");
+}
+
 void initStr5Bit(str5Bit* str)
 {
 	str->len = 0;
 	str->str = NULL;
-	str->str_LH = NULL;
 }
 
 void freeStr5Bit(str5Bit* str)
@@ -189,74 +229,6 @@ void freeStr5Bit(str5Bit* str)
 	str->len = 0;
 	free(str->str);
 	str->str = NULL;
-	free(str->str_LH);
-	str->str_LH = NULL;
-}
-
-#define STR5BIT_GET_L_LEN(strlen) ((strlen * 4 + 7) / 8 + 1)
-str5Bit* ConvertTo5BitLH(const char* str, str5Bit* out_dst)
-{
-	size_t len = strlen(str);
-	size_t newLen_low = STR5BIT_GET_L_LEN(len);
-	size_t newLen_high = (len * 1 + 7) / 8;
-
-	assert_5bit(newLen_low < 0xFFFF, "Can't have more than 0xFFFF chars");
-
-	const size_t padding = 2; // needed because we read outside the size
-	unsigned char* resstr_low = (unsigned char*)malloc(newLen_low + newLen_high + padding); // padding added to avoid illegal read
-	if (resstr_low == NULL)
-	{
-		if (out_dst)
-		{
-			initStr5Bit(out_dst);
-		}
-		return NULL;
-	}
-	memset(resstr_low, 0, newLen_low + newLen_high + padding); // we might end up skipping all chars due to utf8
-	unsigned char* resstr_high = &resstr_low[newLen_low];
-
-	size_t valuesWritten = 0;
-	for (size_t i = 0; i < len; i++)
-	{
-		unsigned char inputChar = str[i];
-
-		unsigned short inputSymbol = conversionMap[inputChar];
-		if (inputSymbol > 31) // only happens to cut out characters like UTF8
-		{
-			continue;
-		}
-		size_t byteWriteIndex_low = valuesWritten / 2;
-		if ((valuesWritten & 1) == 0)
-		{
-			unsigned char setSymbol = inputSymbol & 0x0F; // shift out the higher 4 bits. Only need lower 4 bits
-			unsigned char prevDestValue = resstr_low[byteWriteIndex_low];
-			//prevDestValue = prevDestValue & 0xF0; // make sure we do not mix old unused data with new data
-			resstr_low[byteWriteIndex_low] = prevDestValue | setSymbol;
-		}
-		else
-		{
-			unsigned char setSymbol = inputSymbol << 4; // shift out the higher 4 bits. Only need lower 4 bits
-			unsigned char prevDestValue = resstr_low[byteWriteIndex_low];
-//			prevDestValue = prevDestValue & 0x0F; // make sure we do not mix old unused data with new data
-			resstr_low[byteWriteIndex_low] = prevDestValue | setSymbol;
-		}
-		size_t byteWriteIndex = valuesWritten >> 3; // remainder of 8 to get the byte index
-		size_t bitWriteIndex2 = valuesWritten & 0x07; // can be anything from [0..7], we might be writing 13 bits
-		unsigned char clearMask = ~(0xFFFFFFFF << bitWriteIndex2);
-		unsigned char setSymbol = (inputSymbol >> 4) << bitWriteIndex2; // only store the high bits
-		unsigned char prevDestValue = resstr_high[byteWriteIndex];
-		prevDestValue = prevDestValue & clearMask; // make sure we do not mix old unused data with new data
-		resstr_high[byteWriteIndex] = prevDestValue | setSymbol;
-		valuesWritten++;
-	}
-	if (out_dst == NULL)
-	{
-		out_dst = (str5Bit*)malloc(sizeof(str5Bit));
-	}
-	out_dst->str_LH = resstr_low;
-	out_dst->len = (unsigned short)valuesWritten;
-
-	return out_dst;
 }
 
 /// <summary>
@@ -318,7 +290,6 @@ str5Bit* ConvertTo5Bit(const char* str, str5Bit* out_dst)
 	}
 	out_dst->len = (unsigned short)(bitWriteIndex/5);
 	out_dst->str = resstr;
-	ConvertTo5BitLH(str, out_dst);
 
 #ifdef _DEBUG_STR_5_BIT_LEVEL_2
 	char* oriStr = ConvertFrom5Bit(out_dst);
@@ -803,6 +774,7 @@ void runstr5BitLHTests();
 void RunDebug5BitTests()
 {
 	InitConversionMap5Bit();
+//	PrintConversionMap5Bit();
 	runstr5BitLHTests();
 #ifdef _DEBUG
 	return;
@@ -851,5 +823,5 @@ _noinline_ void Run_strstr_5Bit()
 	}
 	double runtimeSec = EndTimer();
 	printf(" ... Done\n");
-	printf("Searches made %zd. Found the string %d times. Seconds : %f\n\n", searchesMade, (int)foundCount, (float)runtimeSec);
+	printf("Searches made %zu. Found the string %zu times. Seconds : %f\n\n", searchesMade, foundCount, (float)runtimeSec);
 }

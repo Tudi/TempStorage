@@ -164,6 +164,7 @@
     <ClInclude Include="InputGenerator.h" />
     <ClInclude Include="ProfileTimer.h" />
     <ClInclude Include="strstr5bit.h" />
+    <ClInclude Include="strstr5bit_LH.h" />
     <ClInclude Include="strstrAVX2.h" />
     <ClInclude Include="strstrAVX2_V2.h" />
     <ClInclude Include="strstrBothLen.h" />

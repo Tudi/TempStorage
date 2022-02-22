@@ -12,6 +12,7 @@
 #include "strstrAVX2_V2.h"
 #include "strstrSumCmp.h"
 #include "strstr5bit.h"
+#include "strstr5bit_LH.h"
 
 int main()
 {

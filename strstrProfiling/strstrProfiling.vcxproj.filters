@@ -104,5 +104,8 @@
     <ClInclude Include="strstr5bit.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="strstr5bit_LH.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

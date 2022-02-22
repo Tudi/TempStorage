@@ -76,6 +76,9 @@ extern noPointerString** sInputNOPStrings;
 extern struct str5Bit* sInputStrings5Bit;
 extern struct str5Bit* sSearchedStrings5Bit;
 
+extern struct str5BitLH** sInputStrings5BitLH;
+extern struct str5BitLH** sSearchedStrings5BitLH;
+
 extern size_t uiSearchedStrCount;
 extern profiledStringStore* sSearchedStrings;
 
