@@ -3,5 +3,6 @@
 void main()
 {
 	int res;
-	res = calculate_boolean_expression("1|0");
+	char variables[256];
+	res = calculate_boolean_expression("1|0", variables);
 }
