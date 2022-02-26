@@ -30,8 +30,8 @@ int main()
 {
 	printf("Construct structure\n");
 	GenericSerializedStructure* prof1 = createGenericSerializableStruct(PPFN_MAX_FIELD_NAME, PROFILE_PERSISTENT_WRITER_VERSION);
-	appendGenericSerializableStructData(&prof1, PPFN_FIRST_NAME, SFT_NULL_STRING, "first name", strlen("first name") + 1);
-	appendGenericSerializableStructData(&prof1, PPFN_LAST_NAME, SFT_NULL_STRING, "last name", strlen("last name") + 1);
+	appendGenericSerializableStructDataSafe(&prof1, PPFN_FIRST_NAME, SFT_NULL_STRING, "first name", strlen("first name") + 1);
+	appendGenericSerializableStructDataSafe(&prof1, PPFN_LAST_NAME, SFT_NULL_STRING, "last name", strlen("last name") + 1);
 
 	printf("Serialize structure\n");
 	writeDataToFile(prof1);
@@ -43,9 +43,9 @@ int main()
 	printf("Check data content :\n");
 	char* tStr;
 	int tstrSize;
-	getGenericSerializableStructData(prof1, PPFN_FIRST_NAME, SFT_NULL_STRING, &tStr, &tstrSize);
+	getGenericSerializableStructDataSafe(prof1, PPFN_FIRST_NAME, SFT_NULL_STRING, &tStr, &tstrSize);
 	printf("\tfirst name : %s\n", tStr);
-	getGenericSerializableStructData(prof1, PPFN_LAST_NAME, SFT_NULL_STRING, &tStr, &tstrSize);
+	getGenericSerializableStructDataSafe(prof1, PPFN_LAST_NAME, SFT_NULL_STRING, &tStr, &tstrSize);
 	printf("\tlast name : %s\n", tStr);
 
 	printf("all done\n");
