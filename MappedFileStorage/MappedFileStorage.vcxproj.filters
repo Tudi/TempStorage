@@ -24,6 +24,9 @@
     <ClInclude Include="serialize_generic.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="crc.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="serialize_generic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="crc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

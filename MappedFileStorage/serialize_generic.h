@@ -5,10 +5,10 @@
 * Designed specifically for static storage data, or network data syncronization
 * Advantages :
 * - directly serializable into any storage format : HDD, RAM, Network
-* - does not need full deserialization for accessing specific fields
+* - does not need full deserialization for accessing specific fields(columnar database)
 * Disadvantages :
-* - can not update dynamic size fields. You need to rebuild the structure before store
-* - slightly larger size than simple struct
+* - can increase the size of dynamic size fields(strings). You need to rebuild the structure before store
+* - larger size than simple struct
 * - slower than a simple struct
 */
 
@@ -58,11 +58,19 @@ typedef struct GenericSerializedStructure
 
 void* createGenericSerializableStruct(int maxFieldNames, int version);
 int appendGenericSerializableStructData(GenericSerializedStructure** store, int fieldName, void* fieldData, int fieldSize);
-int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, char* fieldData, int fieldSize);
-void getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, char** out_data);
+int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, void* fieldData, int fieldSize);
+void *getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName);
+
+#ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
+void UpdateCRCGenericSerializableStruct(GenericSerializedStructure* store);
+int CheckCRCGenericSerializableStruct(GenericSerializedStructure* store);
+#else
+#define UpdateCRCGenericSerializableStruct(x)
+#define CheckCRCGenericSerializableStruct(x) 1
+#endif
 
 int appendGenericSerializableStructDataSafe(GenericSerializedStructure** store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
-int setGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char* fieldData, int fieldSize);
+int setGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
 int getGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size);
 
 void setInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int value);

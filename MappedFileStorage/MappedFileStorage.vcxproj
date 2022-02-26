@@ -139,11 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="crc.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="profile_persistent2.c" />
     <ClCompile Include="serialize_generic.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="crc.h" />
     <ClInclude Include="profile_persistent.h" />
     <ClInclude Include="profile_persistent2.h" />
     <ClInclude Include="serialize_generic.h" />

@@ -34,11 +34,16 @@ int main()
 	appendGenericSerializableStructDataSafe(&prof1, PPFN_LAST_NAME, SFT_NULL_STRING, "last name", strlen("last name") + 1);
 
 	printf("Serialize structure\n");
+	UpdateCRCGenericSerializableStruct(prof1);
 	writeDataToFile(prof1);
 	free(prof1);
 
 	printf("De serialize structure\n");
 	prof1 = readDataFromFile();
+	if (CheckCRCGenericSerializableStruct(prof1) != 0)
+	{
+		printf("CRC check failed on loaded data!\n");
+	}
 
 	printf("Check data content :\n");
 	char* tStr;
