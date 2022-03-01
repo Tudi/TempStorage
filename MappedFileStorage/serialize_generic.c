@@ -22,7 +22,21 @@ static void setInt32ArrayFieldValueNoChecks(GenericSerializedStructure* serializ
 	int* fieldStart = (int*)(dataStart + serializedStruct->fieldIndexes[fieldName]);
 	fieldStart[index] = value;
 }
+
+static void* getGenericSerializableStructData_(GenericSerializedStructure* store, int fieldName)
+{
+	return ((char*)store + store->fieldIndexes[fieldName]);
+}
 #endif
+
+static int setGenericSerializableStructData_(GenericSerializedStructure* store, int fieldName, void* fieldData, int fieldSize)
+{
+	char* dataStart = (char*)store;
+	char* fieldStart = (char*)(dataStart + store->fieldIndexes[fieldName]);
+	memcpy(fieldStart, fieldData, fieldSize);
+
+	return 0;
+}
 
 static void AppendUniqueFields(GenericSerializedStructure** store, int fieldName, int fieldSize)
 {
@@ -245,15 +259,6 @@ int appendGenericSerializableStructData(GenericSerializedStructure** store, int 
 	return 0;
 }
 
-static int setGenericSerializableStructData_(GenericSerializedStructure* store, int fieldName, void* fieldData, int fieldSize)
-{
-	char* dataStart = (char*)store;
-	char* fieldStart = (char*)(dataStart + store->fieldIndexes[fieldName]);
-	memcpy(fieldStart, fieldData, fieldSize);
-
-	return 0;
-}
-
 int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize)
 {
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
@@ -282,11 +287,10 @@ void setInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldN
 	setInt32ArrayFieldValue(serializedStruct, fieldName, 0, value);
 }
 
+#ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 int getInt32ArrayFieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int index)
 {
-#ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 	safetyChecksOnFieldOperation(serializedStruct, fieldName, SFT_NON_USED_UNKNOWN_VAUE, NULL, 0);
-#endif
 	char* dataStart = (char*)serializedStruct;
 	int* fieldStart = (int*)(dataStart + serializedStruct->fieldIndexes[fieldName]);
 	return fieldStart[index];
@@ -294,16 +298,8 @@ int getInt32ArrayFieldValue(GenericSerializedStructure* serializedStruct, int fi
 
 int getInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName)
 {
-#ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 	safetyChecksOnFieldOperation(serializedStruct, fieldName, SFT_4BYTE_FIXED, NULL, 0);
-#endif
 	return getInt32ArrayFieldValue(serializedStruct, fieldName, 0);
-}
-
-
-static void *getGenericSerializableStructData_(GenericSerializedStructure* store, int fieldName)
-{
-	return ((char*)store + store->fieldIndexes[fieldName]);
 }
 
 int getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size)
@@ -395,3 +391,4 @@ int getGenericSerializableStructData(GenericSerializedStructure* store, int fiel
 
 	return 0;
 }
+#endif

@@ -78,20 +78,23 @@ void* createGenericSerializableStruct(int maxFieldNames, int version);
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 void UpdateCRCGenericSerializableStruct(GenericSerializedStructure* store);
 int CheckCRCGenericSerializableStruct(GenericSerializedStructure* store);
+int getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size);
+int getInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName);
+int getInt32ArrayFieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int index);
 // adds a footer and header of 4 bytes before and after a field to check for data out of bounds writes
 #define ADD_BOUNCE_CHECK
 #else
 #define UpdateCRCGenericSerializableStruct(x)
 #define CheckCRCGenericSerializableStruct(x) 0
+#define getGenericSerializableStructData(store,fieldName,dataType,out_data,out_size) *out_data = ((char*)store + store->fieldIndexes[fieldName]);
+#define getInt32FieldValue(serializedStruct,fieldName) (*(int32_t*)((char*)store + store->fieldIndexes[fieldName])
+#define getInt32ArrayFieldValue(serializedStruct, fieldName, index) (*(int32_t*)((char*)store + store->fieldIndexes[fieldName] + index * sizeof(int32_t)))
 #endif
 
 int appendGenericSerializableStructData(GenericSerializedStructure** store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
 int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
-int getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size);
 
 void setInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int value);
-int getInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName);
 
 void setInt32ArrayFieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int index, int value);
-int getInt32ArrayFieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int index);
 #endif
