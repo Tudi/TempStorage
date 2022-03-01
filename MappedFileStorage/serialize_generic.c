@@ -11,6 +11,10 @@
 #define serialize_assert(x)
 #endif
 
+#define BOUNDS_CHECK_DATA_TYPE unsigned int
+#define BOUNDS_CHECK_HEADER 0x0BADBEEF
+#define BOUNDS_CHECK_FOOTER 0xFEEDFACE
+
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 static void setInt32ArrayFieldValueNoChecks(GenericSerializedStructure* serializedStruct, int fieldName, int index, int value)
 {
@@ -71,9 +75,9 @@ void* createGenericSerializableStruct(int maxFieldNames, int version)
 	setInt32ArrayFieldValueNoChecks(ret, GSSFN_FIELD_SIZES, GSSFN_FIELD_SIZES, maxFieldNames * sizeof(int));
 	AppendUniqueFields(&ret, GSSFN_FIELD_MAX_INDEX, sizeof(maxFieldNames));
 	setInt32ArrayFieldValueNoChecks(ret, GSSFN_FIELD_MAX_INDEX, 0, maxFieldNames);
-	appendGenericSerializableStructDataSafe(&ret, GSSFN_FIELD_VERSION, SFT_4BYTE_FIXED, &version, sizeof(version));
+	appendGenericSerializableStructData(&ret, GSSFN_FIELD_VERSION, SFT_4BYTE_FIXED, &version, sizeof(version));
 	uint64_t crc = 0;
-	appendGenericSerializableStructDataSafe(&ret, GSSFN_FIELD_CRC, SFT_8BYTE_FIXED , &crc, sizeof(crc));
+	appendGenericSerializableStructData(&ret, GSSFN_FIELD_CRC, SFT_8BYTE_FIXED , &crc, sizeof(crc));
 #endif
 	return ret;
 }
@@ -101,19 +105,19 @@ static int getGenericSerializableStructFieldCount(GenericSerializedStructure* st
 void UpdateCRCGenericSerializableStruct(GenericSerializedStructure* store)
 {
 	uint64_t newCRC = 0;
-	setGenericSerializableStructData(store, GSSFN_FIELD_CRC, &newCRC, sizeof(newCRC));
+	setGenericSerializableStructData_(store, GSSFN_FIELD_CRC, &newCRC, sizeof(newCRC));
 	newCRC = crc64(newCRC, store, store->size); // could use utils lib
-	setGenericSerializableStructData(store, GSSFN_FIELD_CRC, &newCRC, sizeof(newCRC));
+	setGenericSerializableStructData_(store, GSSFN_FIELD_CRC, &newCRC, sizeof(newCRC));
 }
 
 int CheckCRCGenericSerializableStruct(GenericSerializedStructure* store)
 {
-	uint64_t *oldCRC = getGenericSerializableStructData(store, GSSFN_FIELD_CRC);
+	uint64_t *oldCRC = getGenericSerializableStructData_(store, GSSFN_FIELD_CRC);
 	uint64_t oldCRCVal = *oldCRC;
 	UpdateCRCGenericSerializableStruct(store);
-	uint64_t*newCRC = getGenericSerializableStructData(store, GSSFN_FIELD_CRC);
+	uint64_t*newCRC = getGenericSerializableStructData_(store, GSSFN_FIELD_CRC);
 	uint64_t newCRCVal = *newCRC;
-	setGenericSerializableStructData(store, GSSFN_FIELD_CRC, oldCRC, sizeof(oldCRC));
+	setGenericSerializableStructData_(store, GSSFN_FIELD_CRC, oldCRC, sizeof(oldCRC));
 	return oldCRCVal != newCRCVal;
 }
 
@@ -166,7 +170,7 @@ static int safetyChecksOnFieldOperation(GenericSerializedStructure* store, int f
 }
 #endif
 
-int appendGenericSerializableStructData(GenericSerializedStructure** store, int fieldName, void* fieldData, int fieldSize)
+static int appendGenericSerializableStructData_(GenericSerializedStructure** store, int fieldName, void* fieldData, int fieldSize)
 {
 	void* newStore = realloc((*store), (*store)->size + fieldSize);
 	if (newStore == NULL)
@@ -177,17 +181,31 @@ int appendGenericSerializableStructData(GenericSerializedStructure** store, int 
 	*store = (GenericSerializedStructure*)newStore;
 
 	setInt32ArrayFieldValue((*store), GSSFN_FIELD_INDEXES, fieldName, (*store)->size);
+
 	// you can reserver memory that you will fill out later. This is for complicated inmplace arrays like k_vec
 	if (fieldData != NULL)
 	{
-		memcpy((char*)(*store) + (*store)->size, fieldData, fieldSize);
+		char* start = (char*)(*store) + (*store)->size;
+
+#ifdef ADD_BOUNCE_CHECK
+		*(BOUNDS_CHECK_DATA_TYPE*)start = BOUNDS_CHECK_HEADER;
+		start += sizeof(BOUNDS_CHECK_DATA_TYPE);
+
+		memcpy(start, fieldData, fieldSize - 2 * sizeof(BOUNDS_CHECK_DATA_TYPE));
+
+		start += fieldSize - 2 * sizeof(BOUNDS_CHECK_DATA_TYPE);
+		*(BOUNDS_CHECK_DATA_TYPE*)start = BOUNDS_CHECK_FOOTER;
+#else
+		memcpy(start, fieldData, fieldSize);
+#endif
 	}
+
 	(*store)->size += fieldSize;
 
 	return 0;
 }
 
-int appendGenericSerializableStructDataSafe(GenericSerializedStructure** store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize)
+int appendGenericSerializableStructData(GenericSerializedStructure** store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize)
 {
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 	// Sanity checks
@@ -215,14 +233,19 @@ int appendGenericSerializableStructDataSafe(GenericSerializedStructure** store, 
 	}
 
 	setInt32ArrayFieldValue((*store), GSSFN_FIELD_TYPES, fieldName, dataType);
+
+#ifdef ADD_BOUNCE_CHECK
+	fieldSize += 2 * sizeof(BOUNDS_CHECK_DATA_TYPE);
+#endif
 	setInt32ArrayFieldValue((*store), GSSFN_FIELD_SIZES, fieldName, fieldSize);
 #endif
-	appendGenericSerializableStructData(store, fieldName, fieldData, fieldSize);
+
+	appendGenericSerializableStructData_(store, fieldName, fieldData, fieldSize);
 
 	return 0;
 }
 
-int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, void* fieldData, int fieldSize)
+static int setGenericSerializableStructData_(GenericSerializedStructure* store, int fieldName, void* fieldData, int fieldSize)
 {
 	char* dataStart = (char*)store;
 	char* fieldStart = (char*)(dataStart + store->fieldIndexes[fieldName]);
@@ -231,12 +254,12 @@ int setGenericSerializableStructData(GenericSerializedStructure* store, int fiel
 	return 0;
 }
 
-int setGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize)
+int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize)
 {
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 	safetyChecksOnFieldOperation(store, fieldName, dataType, fieldData, fieldSize);
 #endif
-	setGenericSerializableStructData(store, fieldName, fieldData, fieldSize);
+	setGenericSerializableStructData_(store, fieldName, fieldData, fieldSize);
 
 	return 0;
 }
@@ -278,12 +301,12 @@ int getInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldNa
 }
 
 
-void *getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName)
+static void *getGenericSerializableStructData_(GenericSerializedStructure* store, int fieldName)
 {
 	return ((char*)store + store->fieldIndexes[fieldName]);
 }
 
-int getGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size)
+int getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size)
 {
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 	// Sanity checks
@@ -340,8 +363,35 @@ int getGenericSerializableStructDataSafe(GenericSerializedStructure* store, int 
 	}
 
 	*out_size = outSize;
+#else
+	*out_size = SFT_NON_USED_UNKNOWN_VAUE;
 #endif
+
 	// Retrieve the pointer to the data requested
-	*out_data = getGenericSerializableStructData(store, fieldName);
+	*out_data = getGenericSerializableStructData_(store, fieldName);
+
+#ifdef ADD_BOUNCE_CHECK
+	if (*out_data != NULL)
+	{
+		if(*(BOUNDS_CHECK_DATA_TYPE*)(*out_data) != BOUNDS_CHECK_HEADER)
+		{
+			*out_data = NULL;
+			*out_size = 0;
+			serialize_assert(0);
+			return 0;
+		}
+		char* pointerToFooter = (*out_data) + outSize - sizeof(BOUNDS_CHECK_DATA_TYPE);
+		if (*(BOUNDS_CHECK_DATA_TYPE*)pointerToFooter != BOUNDS_CHECK_FOOTER)
+		{
+			*out_data = NULL;
+			*out_size = 0;
+			serialize_assert(0);
+			return 0;
+		}
+		(*out_data) += sizeof(BOUNDS_CHECK_DATA_TYPE); // skip header
+		*out_size -= 2 * sizeof(BOUNDS_CHECK_DATA_TYPE);
+	}
+#endif
+
 	return 0;
 }

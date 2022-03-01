@@ -6,8 +6,10 @@
 * Advantages :
 * - directly serializable into any storage format : HDD, RAM, Network
 * - does not need full deserialization for accessing specific fields(columnar database)
+* - can copy / duplicate / move the content without the need of updates
 * Disadvantages :
-* - can increase the size of dynamic size fields(strings). You need to rebuild the structure before store
+* - can't increase the size of dynamic size fields(strings). You can append to the end, which leaves unused space gaps
+*		You need to rebuild the structure before store if you wish to avoid gaps
 * - larger size than simple struct
 * - slower than a simple struct
 */
@@ -29,6 +31,20 @@ typedef enum SerializableFieldTypes
 	SFT_1BYTE_ARRAY, // array of bytes
 	SFT_4BYTE_FIXED_ARRAY,
 	SFT_4BYTE_FLOAT_ARRAY,
+	SFT_8BYTE_FIXED_ARRAY,
+	SFT_8BYTE_FLOAT_ARRAY,
+	// project specific types
+	SFT_TIME_ID_KVECT,
+	SFT_ID_ID_KVECT,
+	SFT_ID_KVECT,
+	SFT_ID_STR_KVECT,
+	SFT_POSITION_KVECT,
+	SFT_EDUCATION_KVECT,
+	SFT_STR_KVECT,
+	SFT_EMAIL_KVECT,
+	SFT_SOCIAL_URL_KVECT,
+	SFT_PHONENUMBER_KVECT,
+	SFT_TAG_KVECT,
 	SFT_MAX_USED_VALUE_FOR_BOUNDS_CHECK
 }SerializableFieldTypes;
 
@@ -50,28 +66,28 @@ typedef enum GenericSerializedStructureFieldNames
 // generic header to store the inplace structure
 typedef struct GenericSerializedStructure
 {
-	// bytes needed to read to read this whole structure. Used by fread or network read
+	// bytes needed to read this whole structure. Used by fread or network read. 
+	// Includes self size
 	int size;
 	// data will be written here. Do not change size.
 	int fieldIndexes[0];
 }GenericSerializedStructure;
 
 void* createGenericSerializableStruct(int maxFieldNames, int version);
-int appendGenericSerializableStructData(GenericSerializedStructure** store, int fieldName, void* fieldData, int fieldSize);
-int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, void* fieldData, int fieldSize);
-void *getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName);
 
 #ifndef DISABLE_SERIALIZE_SAFETY_CHECKS
 void UpdateCRCGenericSerializableStruct(GenericSerializedStructure* store);
 int CheckCRCGenericSerializableStruct(GenericSerializedStructure* store);
+// adds a footer and header of 4 bytes before and after a field to check for data out of bounds writes
+#define ADD_BOUNCE_CHECK
 #else
 #define UpdateCRCGenericSerializableStruct(x)
-#define CheckCRCGenericSerializableStruct(x) 1
+#define CheckCRCGenericSerializableStruct(x) 0
 #endif
 
-int appendGenericSerializableStructDataSafe(GenericSerializedStructure** store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
-int setGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
-int getGenericSerializableStructDataSafe(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size);
+int appendGenericSerializableStructData(GenericSerializedStructure** store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
+int setGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, void* fieldData, int fieldSize);
+int getGenericSerializableStructData(GenericSerializedStructure* store, int fieldName, SerializableFieldTypes dataType, char** out_data, int* out_size);
 
 void setInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName, int value);
 int getInt32FieldValue(GenericSerializedStructure* serializedStruct, int fieldName);

@@ -18,13 +18,13 @@
     <ClInclude Include="profile_persistent.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="profile_persistent2.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="serialize_generic.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="crc.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profile_persistent_schema.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,13 +32,13 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="profile_persistent2.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="serialize_generic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="crc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profile_persistent_schema.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
