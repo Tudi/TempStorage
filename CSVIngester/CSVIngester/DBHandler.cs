@@ -1578,7 +1578,11 @@ namespace CSVIngester
 
         string GetNonNullDouble(SQLiteDataReader rdr, int col)
         {
-            double val = rdr.GetDouble(col);
+            if (rdr.IsDBNull(col))
+                return "";
+            object o = rdr.GetValue(col);
+            double val = Convert.ToDouble(o);
+
             if (val != (double)GlobalVariables.NULLValue)
                 return Math.Round(val, 2).ToString();
             return "";
