@@ -1,6 +1,7 @@
 <?php
 ini_set('display_errors', 1); ini_set('display_startup_errors', 1); error_reporting(E_ALL);
-$con=mysqli_connect("immazonaws.com", "asdf", "asdf.Rev3al", "imageinfo");
+require 'settings.cfg';
+$con=mysqli_connect($AWS_DB_URL, $AWS_DB_USER, $AWS_DB_PASSW, $AWS_DB_DB);
 // Check connection
 if (mysqli_connect_errno())
 {
@@ -11,17 +12,21 @@ if (mysqli_connect_errno())
 $try_create=0;
 if($try_create)
 {
-	$result = mysqli_query($con, "drop table RegisteredImages");
-	$create_sql = "CREATE TABLE `RegisteredImages` (
+	$result = mysqli_query($con, "drop table ".$AWS_DB_TABLE_REGISTERED."");
+	$create_sql = "CREATE TABLE `".$AWS_DB_TABLE_REGISTERED."` (
 		`Id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 		`FileName` VARCHAR(2000) NOT NULL DEFAULT '0',
 		`UserId` INT UNSIGNED NOT NULL DEFAULT 0,
 		`OriginalURL` VARCHAR(2000) NOT NULL DEFAULT '0',
+		`BlockChainHash` VARCHAR(2000) NOT NULL DEFAULT '0',
 		`AHash` BIGINT UNSIGNED NULL DEFAULT 0,
 		`PHash` BIGINT UNSIGNED NULL DEFAULT 0,
 		`MHash` BIGINT UNSIGNED NULL DEFAULT 0,
 		`CreatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		`PeerIp` VARCHAR(50) NULL DEFAULT NULL,
+		`FinishedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		`CallBackURL` VARCHAR(2000) NOT NULL DEFAULT '0',
+		`RowAccesToken` VARCHAR(2000),
 		INDEX `row lookup` (`Id`),
 		INDEX `searching` (`PHash`, `AHash`),
 		PRIMARY KEY (`Id`),
@@ -34,7 +39,7 @@ if($try_create)
 	}
 }
 
-$result = mysqli_query($con,"select * from RegisteredImages");
+$result = mysqli_query($con,"select * from ".$AWS_DB_TABLE_REGISTERED."");
 if($result != false)
 {
 	//while($row = mysqli_fetch_array($result))

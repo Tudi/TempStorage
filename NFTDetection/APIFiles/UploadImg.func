@@ -1,0 +1,123 @@
+<?php
+use Aws\S3\S3Client;
+
+function uploadImageToS3($srcFileName, $AWSFileName)
+{
+	global $AWS_SECRET, $AWS_KEY, $AWS_Bucket_ProcessImage, $AWS_REGION;
+	// Instantiate an Amazon S3 client.
+	$s3Client = new S3Client([
+		'version' => 'latest',
+		'region'  => $AWS_REGION,
+		'credentials' => [
+		'key'    => $AWS_KEY,
+		'secret' => $AWS_SECRET
+		]
+		]);
+	try 
+	{
+		$result = $s3Client->putObject([
+			'Bucket' => $AWS_Bucket_ProcessImage,
+			'Key'    => $AWSFileName,
+			'Body'   => fopen($srcFileName, 'r'),
+			'ACL'    => 'public-read', // make file 'public'
+			]);
+//		DebugPring("Image uploaded successfully. Image path is: ". $result->get('ObjectURL')."<br>" );
+		return 0;
+	} 
+	catch (Aws\S3\Exception\S3Exception $e) 
+	{
+		DebugPring( "There was an error uploading the file.\n<br>" );
+		DebugPring( $e->getResponse()->getBody()->getContents() );
+		DebugPring( "====\n<br>" );
+		DebugPring( $e->getMessage() );
+		return -1;
+	}
+	return 0;
+}
+
+function moveUploadedToLocalDir()
+{
+	// Check if the form was submitted
+	if($_SERVER["REQUEST_METHOD"] == "POST")
+	{
+		// Check if file was uploaded without errors
+		if(isset($_FILES["anyfile"]) && $_FILES["anyfile"]["error"] == 0)
+		{
+			$allowed = array("jpg" => "image/jpg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png");
+			$filename = $_FILES["anyfile"]["name"];
+			$filetype = $_FILES["anyfile"]["type"];
+			$filesize = $_FILES["anyfile"]["size"];
+			// Validate file extension
+			$ext = pathinfo($filename, PATHINFO_EXTENSION);
+			if(!array_key_exists($ext, $allowed)) 
+				die("Error: Please select a valid file format.");
+			// Validate file size - 10MB maximum
+			$maxsize = 10 * 1024 * 1024;
+			if($filesize > $maxsize) 
+				die("Error: File size is larger than the allowed limit.");
+			// Validate type of the file
+			if(in_array($filetype, $allowed))
+			{
+				// Check whether file exists before uploading it
+				$file_Path = "upload/" . $filename;
+	//			if(file_exists($file_Path))
+	//			{
+	//				echo $filename . " is already exists.";
+	//			} 
+	//			else
+				{
+					if(move_uploaded_file($_FILES["anyfile"]["tmp_name"], $file_Path))
+					{
+						return $file_Path;
+						DebugPring("Your file was uploaded successfully.");
+					}
+					else
+					{
+						DebugPring("File is not uploaded");
+					}
+				} 
+			} 
+			else
+			{
+				DebugPring("Error: There was a problem uploading your file. Please try again."); 
+			}
+		} 
+		else
+		{
+			DebugPring("Error: " . $_FILES["anyfile"]["error"]);
+		}
+	}
+	else
+	{
+		DebugPring("Error: expected to receive POST variables");
+	}
+	return "";
+}
+
+function checkThenUploadPostedFile()
+{
+	$uploadedFile = moveUploadedToLocalDir();
+	if( $uploadedFile == "" )
+		return "";
+	if( uploadImageToS3($uploadedFile) != 0)
+		return "";
+	return $uploadedFile;
+	$fileNameOnly = basename($file_Path);
+	$key = createDBRow(fileNameOnly);
+	if($key<0)
+	{
+		DebugPring("Failed to create entry in DB");
+		return -1;
+	}
+	$uploadRes = uploadImageToS3($file_Path, $key);
+	if(processImageFromS3($key)==0)
+	{
+		DebugPring("final result is : { RequestCallbackParams : \"\", Registered : True }");
+	}
+	else
+	{
+		DebugPring("final result is : { RequestCallbackParams : \"\", Registered : True }");
+	}
+}
+
+?>

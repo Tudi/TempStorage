@@ -1,0 +1,143 @@
+<?php
+
+function getIP()
+{
+	if(!empty($_SERVER['HTTP_CLIENT_IP'])) {  
+        return $_SERVER['HTTP_CLIENT_IP'];  
+    }  
+    //if user is from the proxy  
+    elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {  
+        return $_SERVER['HTTP_X_FORWARDED_FOR'];  
+    }  
+    //if user is from the remote address  
+    else{  
+        return $_SERVER['REMOTE_ADDR'];  
+    }
+	return "";
+}
+
+function createDBRowForRegister($filename, $OriginalImgUrl, $BlockChainHash, $CallbackUrl)
+{
+	global $AWS_DB_URL,$AWS_DB_USER,$AWS_DB_PASSW,$AWS_DB_DB, $AWS_DB_TABLE_REGISTERED;
+	$ret = -1;
+	$con=mysqli_connect($AWS_DB_URL, $AWS_DB_USER, $AWS_DB_PASSW, $AWS_DB_DB);
+	// Check connection
+	if (mysqli_connect_errno())
+	{
+		DebugPring("Failed to connect to MySQL: " . mysqli_connect_error() );
+		return -1;
+	}
+	
+	$sql = "insert into ".$AWS_DB_TABLE_REGISTERED." (FileName, PeerIp, OriginalURL, BlockChainHash, CallBackURL, RowAccesToken) values (
+	'".mysqli_real_escape_string($con, $filename)."',
+	'".mysqli_real_escape_string($con, getIP())."',
+	'".mysqli_real_escape_string($con, $OriginalImgUrl)."',
+	'".mysqli_real_escape_string($con, $BlockChainHash)."',
+	'".mysqli_real_escape_string($con, $CallbackUrl)."',
+	uuid()
+	)";
+	$result = mysqli_query($con, $sql);
+	if($result != false)
+	{
+		$ret = mysqli_insert_id($con);
+	}
+	else
+	{
+		DebugPring("There was an sql error :".mysqli_error($con));
+		$ret = -2;
+	}
+	
+	mysqli_close($con);
+	
+	return $ret;
+}
+
+function updateDBRowHashes($dbRowId, $AHash, $PHash)
+{
+	global $AWS_DB_URL,$AWS_DB_USER,$AWS_DB_PASSW,$AWS_DB_DB, $AWS_DB_TABLE_REGISTERED;
+	$ret = "";
+	$con=mysqli_connect($AWS_DB_URL, $AWS_DB_USER, $AWS_DB_PASSW, $AWS_DB_DB);
+	// Check connection
+	if (mysqli_connect_errno())
+	{
+		DebugPring("Failed to connect to MySQL: " . mysqli_connect_error() );
+		return "";
+	}
+	
+	$sql = "update ".$AWS_DB_TABLE_REGISTERED." set
+	AHash='".mysqli_real_escape_string($con, $AHash)."',
+	PHash='".mysqli_real_escape_string($con, $PHash)."',
+	FinishedAt=CURRENT_TIMESTAMP 
+	 where id=$dbRowId";
+	$result = mysqli_query($con, $sql);
+	if($result != false)
+	{
+		$ret = "updated";
+	}
+	else
+	{
+		DebugPring("There was an sql error :".mysqli_error($con));
+		$ret = "";
+	}
+	
+	// get the access token for the updated row
+	$sql = "select RowAccesToken from ".$AWS_DB_TABLE_REGISTERED." where id=$dbRowId limit 0,1";
+	$result = mysqli_query($con, $sql);
+	if($result != false)
+	{
+		$row = mysqli_fetch_array($result);
+		$ret = $row[0];
+	}
+	else
+	{
+		DebugPring("There was an sql error :".mysqli_error($con));
+		$ret = "";
+	}
+
+	mysqli_close($con);
+	
+	return $ret;
+}
+
+function checkRegistered($AHash, $PHash, $match_pct, $max_matches)
+{
+	global $AWS_DB_URL,$AWS_DB_USER,$AWS_DB_PASSW,$AWS_DB_DB, $AWS_DB_TABLE_REGISTERED;
+	$ret = "";
+	$con=mysqli_connect($AWS_DB_URL, $AWS_DB_USER, $AWS_DB_PASSW, $AWS_DB_DB);
+	// Check connection
+	if (mysqli_connect_errno())
+	{
+		DebugPring("Failed to connect to MySQL: " . mysqli_connect_error() );
+		return "";
+	}
+	
+	$match_cnt = 64 - (int)($match_pct * 64/100);
+//	$sql = "select FileName, BIT_COUNT(".$PHash."^PHash) from ".$AWS_DB_TABLE_REGISTERED." where BIT_COUNT(".$PHash."^PHash)>=$match_cnt order by BIT_COUNT(".$PHash."^PHash) asc limit 0,$max_matches";
+//	$sql = "select FileName, BIT_COUNT(".$PHash."^PHash) from ".$AWS_DB_TABLE_REGISTERED." where BIT_COUNT(".$PHash."^PHash)<=$match_cnt order by BIT_COUNT(".$PHash."^PHash) asc limit 0,$max_matches";
+	$sql = "select * from (select id, BIT_COUNT(".$PHash."^PHash) as pDist from ".$AWS_DB_TABLE_REGISTERED.") res where res.pDist<=$match_cnt order by res.pDist asc limit 0,$max_matches";
+//	echo "$sql<br>";
+	$result = mysqli_query($con, $sql);
+	if($result != false)
+	{
+		$ret = "[";
+		while($row = mysqli_fetch_row($result))
+		{
+			$MatchPCT = 100 - (int)($row[1] * 100 / 64);
+			$ret .= "{ \"file\":\"https://originalnftimages.s3.amazonaws.com/".$row[0]."\",\"MatchPCT\":$MatchPCT},";
+		}
+		if(strlen($ret) != 1 )
+			$ret = substr($ret,0,-1);
+		$ret .= "]";
+	}
+	else
+	{
+		DebugPring("There was an sql error :".mysqli_error($con)." <br> sql : $sql");
+		$ret = "";
+	}
+
+	mysqli_close($con);
+	
+	return $ret;
+}
+
+?>

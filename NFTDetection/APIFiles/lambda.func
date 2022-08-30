@@ -1,0 +1,61 @@
+<?php
+use Aws\Lambda\LambdaClient;
+
+function processImageFromS3($imgName)
+{
+	global $AWS_SECRET, $AWS_KEY, $AWS_Bucket_ProcessImage, $AWS_REGION;
+	$client = LambdaClient::factory(
+		array(
+			'credentials' => array(
+				'key' => $AWS_KEY,
+				'secret' => $AWS_SECRET
+			),
+			'version' => 'latest',
+			'region'  => $AWS_REGION
+		)
+	);
+		
+	$lambda_params = "{
+	  \"Records\": [
+		{
+		  \"s3\": {
+			\"bucket\": {
+			  \"name\": \"".$AWS_Bucket_ProcessImage."\"
+			},
+			\"object\": {
+			  \"key\": \"".$imgName."\"
+			}
+		  }
+		}
+	  ]
+	}";
+		
+	$result = $client->invoke([
+	  'FunctionName' => 'HashOriginalNFTImage',
+	  'InvocationType' => 'RequestResponse',
+	  'Payload' => $lambda_params,
+	]);
+
+	if($result['StatusCode'] == 200 && $result['FunctionError'] == "")
+	{
+		$res_payload = $result->get('Payload');
+		return $res_payload;
+	}
+	else
+	{
+		DebugPring("Lambda failed to execute<br>");
+		var_dump($result);
+	}
+//	echo "result is ".$result."<br>";
+	/*	
+	$result = $client->invokeAsync(array(
+		// FunctionName is required
+		'FunctionName' => 'HashOriginalNFTImage',
+		// InvokeArgs is required
+		'InvokeArgs' => $lambda_params,
+		'Payload' => $lambda_params,
+	));*/
+//	echo "all done<br>";
+	return "";
+}
+?>
