@@ -1,31 +1,39 @@
-Endpoint : http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/IsRegistered.php
-Description : Used to verify if an image is already registered at Rev3al
-Requires : 
-	- form data containing a file
-"headers": [{
-			"name": "Content-Type",
-			"value": "multipart/form-data;"
-		}]
+Endpoint : 
+	http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/IsRegistered.php
+Description : 
+	Used to verify if an image is already registered at Rev3al
+Requires POST HTTP request with params: 
+	- "ImgFile" type file. Binary content of the image file to be checked
 	- "APIAccessToken" type string. Not used in the MVP. Optional
-Returns : array of similarly registered images. If the image is not registered, it will return an empty array
+Returns : 
+	JSON struct with fields :
+		- "IsRegistered" type boolean
+		- "SimilarImages" type array of struct :
+			- "file" type string : url link to the registered image matching the verified one
+			- "MatchPCT" type numeric : percent match of the registerd image compared to the verified one
+	ex : { "IsRegistered":"True","SimilarImages":[{ "file":"https://originalnftimages.s3.amazonaws.com/1","MatchPCT":100},{ "file":"https://originalnftimages.s3.amazonaws.com/2","MatchPCT":100}] }
+Example form for the POST request:
+	http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/IsRegistered.html
 			
 ===========================================================================================
 			
-Endpoint : http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/registerImg.php
-Description : Used to register an image at Rev3al. Right now it does not check for double registering an image !
-Requires : 
-	- form data containing a file
-"headers": [{
-			"name": "Content-Type",
-			"value": "multipart/form-data;"
-		}]
+Endpoint : 
+	http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/registerImg.php
+Description : 
+	Used to register an image at Rev3al. Right now it does not check for double registering an image !
+Requires POST HTTP request with params: 
+	- "ImgFile" type file. Binary content of the image file to be checked
+	- "ImgArtist" type string. Not used in the MVP. Mandatory
+	- "ImgTitile" type string. Not used in the MVP. Mandatory
 	- "APIAccessToken" type string. Not used in the MVP. Mandatory
 	- "OriginalImgUrl" type string. Mandatory. Can have dummy value in MVP
 	- "BlockChainHash" type string. Mandatory. Can have dummy value in MVP
 	- "CallbackUrl" type string. Optional. Not implemented yet. Used for async API calls
 Returns : 
 	JSON struct with fields :
-		"Registered" - type string : "true" on success
-		"RequestCallbackParams" - type string : same values sent in the request. Used only when async calls will be implemented
-		"TransactionId" type string : unique identifier within Rev3al
+		- "Registered" - type string : "true" on success
+		- "RequestCallbackParams" - type string : same values sent in the request. Used only when async calls will be implemented
+		- "TransactionId" type string : unique identifier within Rev3al
 	ex : { "Registered":"True","RequestCallbackParams":8299","TransactionId":"c2ff4214-27d9-11ed-bcd8-022cd3f8af25"}
+Example form for the POST request:
+	http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/registerImg.html

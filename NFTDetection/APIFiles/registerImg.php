@@ -1,5 +1,6 @@
 <?php
 ini_set('display_errors', 1); ini_set('display_startup_errors', 1); error_reporting(E_ALL);
+header("Access-Control-Allow-Origin: *");
 require '../vendor/autoload.php';
 require 'DebugMsg.func';
 require 'settings.cfg';
@@ -11,6 +12,18 @@ require 'lambda.func';
 if(!isset($_REQUEST['OriginalImgUrl']) || strlen($_REQUEST['OriginalImgUrl'])==0)
 {
 	DebugPring("Expected OriginalImgUrl param is missing value.\n<br>" );
+	die();
+}
+
+if(!isset($_REQUEST['ImgArtist']) || strlen($_REQUEST['ImgArtist'])==0)
+{
+	DebugPring("Expected ImgArtist param is missing value.\n<br>" );
+	die();
+}
+
+if(!isset($_REQUEST['ImgTitile']) || strlen($_REQUEST['ImgTitile'])==0)
+{
+	DebugPring("Expected ImgTitile param is missing value.\n<br>" );
 	die();
 }
 
@@ -36,7 +49,7 @@ if( $uploadedFile == "" )
 $fileNameOnly = basename($uploadedFile);
 
 // create a register row in DB
-$dbRowId = createDBRowForRegister($fileNameOnly, $_REQUEST['OriginalImgUrl'], $_REQUEST['BlockChainHash'], $_REQUEST['APIAccessToken']);
+$dbRowId = createDBRowForRegister($fileNameOnly, $_REQUEST['OriginalImgUrl'], $_REQUEST['BlockChainHash'], $_REQUEST['APIAccessToken'], $_REQUEST['ImgArtist'], $_REQUEST['ImgTitile']);
 if($dbRowId <= 0)
 {
 	die();

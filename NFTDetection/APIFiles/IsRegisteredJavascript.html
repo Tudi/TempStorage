@@ -1,0 +1,27 @@
+<body>
+	When you select a file. There will be an automatic background check to see if it is registered
+    <form action="IsRegistered.php" method="post" enctype="multipart/form-data" id="ImgPostingForm">
+        <input type="file" name="ImgFile" id="ImgFile" onchange="CheckRegistered()" \>
+		<input type="hidden" value="NotImplementedYet" name="APIAccessToken" />
+    </form>
+</body>
+
+<script>
+function CheckRegistered()
+{
+	var xhr = new XMLHttpRequest();
+	
+	xhr.onreadystatechange = function() 
+	{
+		if (this.readyState == 4 && this.status == 200) 
+		{
+		   alert( xhr.responseText );
+		}
+	};	
+	xhr.open("POST", "http://ec2-44-197-175-153.compute-1.amazonaws.com/rev3al/IsRegistered.php"); 
+
+	var formData = new FormData(document.getElementById("ImgPostingForm")); 
+	xhr.send(formData);
+	alert("wait 21 seconds for the response to arrive !");
+}
+</script>

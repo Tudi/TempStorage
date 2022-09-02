@@ -16,7 +16,7 @@ function getIP()
 	return "";
 }
 
-function createDBRowForRegister($filename, $OriginalImgUrl, $BlockChainHash, $CallbackUrl)
+function createDBRowForRegister($filename, $OriginalImgUrl, $BlockChainHash, $CallbackUrl, $ImgArtist, $ImgTitle)
 {
 	global $AWS_DB_URL,$AWS_DB_USER,$AWS_DB_PASSW,$AWS_DB_DB, $AWS_DB_TABLE_REGISTERED;
 	$ret = -1;
@@ -28,12 +28,14 @@ function createDBRowForRegister($filename, $OriginalImgUrl, $BlockChainHash, $Ca
 		return -1;
 	}
 	
-	$sql = "insert into ".$AWS_DB_TABLE_REGISTERED." (FileName, PeerIp, OriginalURL, BlockChainHash, CallBackURL, RowAccesToken) values (
+	$sql = "insert into ".$AWS_DB_TABLE_REGISTERED." (FileName, PeerIp, OriginalURL, BlockChainHash, CallBackURL, Artist, ArtTitle, RowAccesToken) values (
 	'".mysqli_real_escape_string($con, $filename)."',
 	'".mysqli_real_escape_string($con, getIP())."',
 	'".mysqli_real_escape_string($con, $OriginalImgUrl)."',
 	'".mysqli_real_escape_string($con, $BlockChainHash)."',
 	'".mysqli_real_escape_string($con, $CallbackUrl)."',
+	'".mysqli_real_escape_string($con, $ImgArtist)."',
+	'".mysqli_real_escape_string($con, $ImgTitle)."',
 	uuid()
 	)";
 	$result = mysqli_query($con, $sql);
@@ -119,15 +121,21 @@ function checkRegistered($AHash, $PHash, $match_pct, $max_matches)
 	$result = mysqli_query($con, $sql);
 	if($result != false)
 	{
-		$ret = "[";
+		$ret = "";
 		while($row = mysqli_fetch_row($result))
 		{
 			$MatchPCT = 100 - (int)($row[1] * 100 / 64);
 			$ret .= "{ \"file\":\"https://originalnftimages.s3.amazonaws.com/".$row[0]."\",\"MatchPCT\":$MatchPCT},";
 		}
-		if(strlen($ret) != 1 )
+		if($ret != "" )
+		{
 			$ret = substr($ret,0,-1);
-		$ret .= "]";
+			$ret = "{ \"IsRegistered\":\"True\",\"SimilarImages\":[".$ret."] }";
+		}
+		else
+		{
+			$ret = "{ \"IsRegistered\":\"False\",\"SimilarImages\":[] }";
+		}
 	}
 	else
 	{

@@ -8,7 +8,8 @@
     <form action="IsRegistered.php" method="post" enctype="multipart/form-data">
         <h2>Check if an image is already registered</h2>
         <label for="file_name">Filename:</label>
-        <input type="file" name="anyfile" id="anyfile">
+        <input type="file" name="ImgFile" id="ImgFile"><br>
+		APIAccessToken : <input type="text" value="" name="APIAccessToken" /><br>
         <input type="submit" name="submit" value="Check">
         <p><strong>Note:</strong> Only .jpg, .jpeg, .gif, .png formats allowed to a max size of 5 MB.</p><br>
     </form>
