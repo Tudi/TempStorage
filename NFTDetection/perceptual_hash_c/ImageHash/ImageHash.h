@@ -28,6 +28,8 @@ typedef struct A_HASH_RGB_CompareResult
 
 void aHashInit(A_HASH_RGB* in, size_t hashBits);
 int genAHash(FIBITMAP* in_Img, A_HASH_RGB* out_hash);
+int genAHashGrayScale(FIBITMAP* in_Img, A_HASH_RGB* out_hash);
 int genPHash(FIBITMAP* in_Img, A_HASH_RGB* out_hash);
-void printAHash(A_HASH_RGB* in_hash);
+int genPHashGrayScale(FIBITMAP* in_Img, A_HASH_RGB* out_hash);
+void printAHash(A_HASH_RGB* in_hash, int isGrayScale);
 void compareHash(A_HASH_RGB* h1, A_HASH_RGB* h2, A_HASH_RGB_CompareResult *out);

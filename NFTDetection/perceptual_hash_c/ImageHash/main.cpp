@@ -6,7 +6,7 @@ FIBITMAP* openImage(const char* fileName)
 	// open and load the file using the default load option
 	const char* InputFileName = fileName;
 	if (InputFileName == NULL)
-		InputFileName = "../../page_fetcher/images/cryptopunks/8300.png";
+		InputFileName = "../../page_fetcher/images/cryptopunks/8314.png";
 	dib = LoadImage_(InputFileName);
 
 	if (dib == NULL)
@@ -34,14 +34,17 @@ int printHashesOf1Image(const char *fileName)
 
 	A_HASH_RGB aHash;
 	aHashInit(&aHash, 64);
-	genAHash(dib, &aHash);
-	printAHash(&aHash);
+	genAHashGrayScale(dib, &aHash);
 
 	A_HASH_RGB pHash;
 	aHashInit(&pHash, 64);
-	genPHash(dib, &pHash);
-	printf("\n");
-	printAHash(&pHash);
+	genPHashGrayScale(dib, &pHash);
+
+	printf("{\"AHASH\":\"");
+	printAHash(&aHash, 1);
+	printf("\",\"PHASH\":\"");
+	printAHash(&pHash, 1);
+	printf("\"}");
 
 	// free the dib
 	FreeImage_Unload(dib);
@@ -56,17 +59,17 @@ int printImageSimilarityScore(const char* fileName1, const char* fileName2)
 
 	A_HASH_RGB aHash1;
 	aHashInit(&aHash1, 64);
-	genAHash(dib1, &aHash1);
+	genAHashGrayScale(dib1, &aHash1);
 	A_HASH_RGB pHash1;
 	aHashInit(&pHash1, 64);
-	genPHash(dib1, &pHash1);
+	genPHashGrayScale(dib1, &pHash1);
 
 	A_HASH_RGB aHash2;
 	aHashInit(&aHash2, 64);
-	genAHash(dib2, &aHash2);
+	genAHashGrayScale(dib2, &aHash2);
 	A_HASH_RGB pHash2;
 	aHashInit(&pHash2, 64);
-	genPHash(dib2, &pHash2);
+	genPHashGrayScale(dib2, &pHash2);
 
 	A_HASH_RGB_CompareResult aHash, pHash;
 	compareHash(&aHash1, &aHash2, &aHash);

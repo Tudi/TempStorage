@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <list>
 #include <assert.h>
+#include <math.h>
 #include "FreeImage.h"
 #include "ImageHandler.h"
-#include "ImageFilters.h"
 #include "BitWriter.h"
 #include "DCTII.h"
 #include "ImageHash.h"
@@ -23,3 +23,4 @@
 
 #define Bytespp	3
 #define ColorChannelCount 3 // RGB
+#define INT_PRECISION_DIGITS	10000

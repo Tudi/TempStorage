@@ -85,16 +85,83 @@ int genAHash(FIBITMAP* in_Img, A_HASH_RGB* out_hash)
 	return 0;
 }
 
-void printAHash(A_HASH_RGB* in_hash)
+
+int genAHashGrayScale(FIBITMAP* in_Img, A_HASH_RGB* out_hash)
+{
+	BitWriter bw[1];
+	size_t hashBits = out_hash->hashBitsPerRow * out_hash->hashBitsPerRow;
+	bitWriterinit(&bw[0], out_hash->rHashBits, hashBits);
+
+	size_t pitch = FreeImage_GetPitch(in_Img);
+	BYTE* BITS = FreeImage_GetBits(in_Img);
+	size_t Width = FreeImage_GetWidth(in_Img);
+	size_t Height = FreeImage_GetHeight(in_Img);
+
+	// get the luminosity of each bit
+	size_t hashBitsPerRow = out_hash->hashBitsPerRow;
+	size_t rowCountPixelMat = (Height + hashBitsPerRow - 1) / hashBitsPerRow; 
+	size_t colCountPixelMat = (Width + hashBitsPerRow - 1) / hashBitsPerRow;
+	size_t rowCountPixelMatScaled = Height * INT_PRECISION_DIGITS / hashBitsPerRow;
+	size_t colCountPixelMatScaled = Width * INT_PRECISION_DIGITS / hashBitsPerRow;
+	size_t bytesNeededBitLuminosity = hashBitsPerRow * hashBitsPerRow * sizeof(size_t);
+	size_t* bitLuminosity = (size_t*)malloc(bytesNeededBitLuminosity);
+	if (bitLuminosity == NULL)
+	{
+		assert(bitLuminosity != NULL);
+		return 1;
+	}
+	memset(bitLuminosity, 0, bytesNeededBitLuminosity);
+	size_t bitLuminosityStride = hashBitsPerRow;
+	for (size_t row = 0; row < Height; row++)
+	{
+		size_t bitmatRow = row * INT_PRECISION_DIGITS / rowCountPixelMatScaled;
+		for (size_t col = 0; col < Width; col++)
+		{
+			size_t bitmatCol = col * INT_PRECISION_DIGITS / colCountPixelMatScaled;
+			bitLuminosity[bitmatRow * bitLuminosityStride + bitmatCol] += BITS[row * pitch + col * Bytespp + 0];
+			bitLuminosity[bitmatRow * bitLuminosityStride + bitmatCol] += BITS[row * pitch + col * Bytespp + 1];
+			bitLuminosity[bitmatRow * bitLuminosityStride + bitmatCol] += BITS[row * pitch + col * Bytespp + 2];
+		}
+	}
+
+	// get avg luminosity of each channel
+	size_t SumLum[1] = { 0 };
+	for (size_t index = 0; index < hashBitsPerRow * hashBitsPerRow; index++)
+	{
+		SumLum[0] += bitLuminosity[index];
+	}
+	size_t pixelsInBitMatSquare = rowCountPixelMat * colCountPixelMat;
+	// relative scale to the size of the small square of pixels
+///	SumLum[0] *= pixelsInBitMatSquare;
+	size_t imgAvgRGB = (SumLum[0] * pixelsInBitMatSquare) / (Height * Width); // between[0,765 * pixelsInBitMatSquare]
+
+	// get the actual bit value based on relative bitmat value
+	for (size_t index = 0; index < hashBitsPerRow * hashBitsPerRow; index++)
+	{
+//		size_t rgbBitVal = (bitLuminosity[index] * (Height * Width) >= SumLum[0]);
+		size_t rgbBitVal = (bitLuminosity[index] >= imgAvgRGB);
+		bitWriterWrite(&bw[0], rgbBitVal);
+	}
+
+	free(bitLuminosity);
+
+	return 0;
+}
+
+void printAHash(A_HASH_RGB* in_hash, int isGrayscale = 0)
 {
 	for (size_t i = 0; i < (in_hash->hashBitsPerRow + 7) / 8; i += 8)
 	{
-		printf("%zu,", *(size_t*)&in_hash->rHashBits[i]);
-		printf("%zu,", *(size_t*)&in_hash->gHashBits[i]);
-		printf("%zu,", *(size_t*)&in_hash->bHashBits[i]);
+		printf("%zu", *(size_t*)&in_hash->rHashBits[i]);
+		if (isGrayscale == 0)
+		{
+			printf(",%zu,", *(size_t*)&in_hash->gHashBits[i]);
+			printf("%zu,", *(size_t*)&in_hash->bHashBits[i]);
+		}
 	}
 }
 
+#if 0
 // it would be "prettier" if we extracted code and perform the operations 3 times, but sooner or later speed will start to matter
 int genPHash(FIBITMAP* in_Img, A_HASH_RGB* out_hash)
 {
@@ -180,6 +247,82 @@ int genPHash(FIBITMAP* in_Img, A_HASH_RGB* out_hash)
 			bitWriterWrite(&bw[1], gBitVal);
 			size_t bBitVal = (DCTMAT_B[row * PHASH_DCT_SIZE + col] >= AvgDCT[2]);
 			bitWriterWrite(&bw[2], bBitVal);
+		}
+	}
+
+	free(DCTMAT_Res);
+	free(DCTMAT);
+
+	return 0;
+}
+#endif
+
+int genPHashGrayScale(FIBITMAP* in_Img, A_HASH_RGB* out_hash)
+{
+	BitWriter bw[1];
+	const size_t hashBitsPerRow = out_hash->hashBitsPerRow;
+	const size_t hashBits = hashBitsPerRow * hashBitsPerRow;
+
+	assert(hashBitsPerRow <= PHASH_DCT_SIZE);
+
+	bitWriterinit(&bw[0], out_hash->rHashBits, hashBits);
+
+	size_t pitch = FreeImage_GetPitch(in_Img);
+	BYTE* BITS = FreeImage_GetBits(in_Img);
+	size_t Width = FreeImage_GetWidth(in_Img);
+	size_t Height = FreeImage_GetHeight(in_Img);
+
+	// scale down the image into 3 different 32x32 matrixes
+	size_t rowCountDCTMat = (Height + PHASH_DCT_SIZE - 1) / PHASH_DCT_SIZE;
+	size_t colCountDCTMat = (Width + PHASH_DCT_SIZE - 1) / PHASH_DCT_SIZE;
+	size_t bytesNeededDCT = PHASH_DCT_SIZE * PHASH_DCT_SIZE * sizeof(size_t);
+	size_t* DCTMAT = (size_t*)malloc(bytesNeededDCT);
+	double* DCTMAT_Res = (double*)malloc(bytesNeededDCT);
+	if (DCTMAT == NULL || DCTMAT_Res == NULL)
+	{
+		assert(DCTMAT != NULL);
+		assert(DCTMAT_Res != NULL);
+		return 1;
+	}
+	memset(DCTMAT, 0, bytesNeededDCT);
+	memset(DCTMAT_Res, 0, bytesNeededDCT);
+	size_t DCTMatRowStride = PHASH_DCT_SIZE;
+	size_t DCTMatStride = PHASH_DCT_SIZE * PHASH_DCT_SIZE;
+	size_t* DCTMAT_RGB = &DCTMAT[0 * DCTMatStride];
+	for (size_t row = 0; row < Height; row++)
+	{
+		size_t bitmatRow = row / rowCountDCTMat;
+		for (size_t col = 0; col < Width; col++)
+		{
+			size_t bitmatCol = col / colCountDCTMat;
+			DCTMAT_RGB[bitmatRow * DCTMatRowStride + bitmatCol] += BITS[row * pitch + col * Bytespp + 0];
+			DCTMAT_RGB[bitmatRow * DCTMatRowStride + bitmatCol] += BITS[row * pitch + col * Bytespp + 1];
+			DCTMAT_RGB[bitmatRow * DCTMatRowStride + bitmatCol] += BITS[row * pitch + col * Bytespp + 2];
+		}
+	}
+
+	// perform the DCT
+	dctII(DCTMAT_Res, DCTMAT_RGB, PHASH_DCT_SIZE, PHASH_DCT_SIZE);
+
+	// get avg DCT of each channel
+	double AvgDCT[1] = { 0 };
+	for (size_t row = 0; row < hashBitsPerRow; row++)
+	{
+		for (size_t col = 0; col < hashBitsPerRow; col++)
+		{
+			AvgDCT[0] += DCTMAT_Res[row * PHASH_DCT_SIZE + col];
+		}
+	}
+	double valueCountDCTHash = (double)(hashBits * hashBits);
+	AvgDCT[0] = AvgDCT[0] / valueCountDCTHash;
+
+	// get the actual bit value based on relative bitmat value
+	for (size_t row = 0; row < hashBitsPerRow; row++)
+	{
+		for (size_t col = 0; col < hashBitsPerRow; col++)
+		{
+			size_t rgbBitVal = (DCTMAT_Res[row * PHASH_DCT_SIZE + col] >= AvgDCT[0]);
+			bitWriterWrite(&bw[0], rgbBitVal);
 		}
 	}
 

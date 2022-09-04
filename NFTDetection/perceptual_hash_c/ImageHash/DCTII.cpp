@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-void dctII(double *out_Matrix, double *in_Matrix, size_t columns, size_t rows)
+void dctII(double *out_Matrix, size_t*in_Matrix, size_t columns, size_t rows)
 {
     for (size_t row = 0; row < columns; ++row) 
 	{
@@ -12,9 +12,9 @@ void dctII(double *out_Matrix, double *in_Matrix, size_t columns, size_t rows)
 			{
                 for (size_t row2 = 0; row2 < rows; row2++) 
 				{
-                    out_Matrix[row * columns + col] += in_Matrix[col2 * columns + row2] 
-                        * cos(M_PI / ((float)columns) * (col2 + 1. / 2.) * row) 
-                        * cos(M_PI / ((float)rows) * (row2 + 1. / 2.) * col);
+                    out_Matrix[row * columns + col] += (double)(in_Matrix[col2 * columns + row2]) 
+                        * cos(M_PI / ((double)columns) * (col2 + 1. / 2.) * row)
+                        * cos(M_PI / ((double)rows) * (row2 + 1. / 2.) * col);
                 }               
             }
         }
