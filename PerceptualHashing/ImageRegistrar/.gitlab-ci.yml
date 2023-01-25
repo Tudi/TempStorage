@@ -1,0 +1,17 @@
+stages:
+  - deploy-web-dev
+
+variables:
+  ROLE_ARN_DEV: arn:aws:iam::679247749344:role/ci-deployer
+  ROLE_ARN_STAGE: arn:aws:iam::215996390615:role/ci-deployer
+
+deploy-web-dev:
+  stage: deploy-web-dev
+  variables:
+    ROLE_ARN: $ROLE_ARN_DEV
+  script:
+    - curl -s -o assume-role.sh https://raw.githubusercontent.com/pragmaticcoders/terraform-modules/master/scripts/assume-role.sh && . assume-role.sh
+    - aws deploy push --application-name rev3al-dev-application --s3-location s3://rev3al-dev-codedeploy/dev.zip
+    - aws deploy create-deployment --application-name rev3al-dev-application --s3-location bucket=rev3al-dev-codedeploy,key=dev.zip,bundleType=zip --deployment-group-name rev3al-dev-deploy-image --deployment-config-name CodeDeployDefault.OneAtATime --description "push aplication"
+  only:
+    - development

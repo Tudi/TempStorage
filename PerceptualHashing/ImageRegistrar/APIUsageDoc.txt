@@ -1,0 +1,42 @@
+Endpoint : 
+	https://registrarapi.dev.rev3al.com/IsRegistered.php
+Description : 
+	Used to verify if an image is already registered at Rev3al
+Requires HTTP POST request with form params: 
+	- "ImgFile" type file. Binary content of the image file to be checked
+	- "APIAccessToken" type string. Required to have a valid token. Until user management is implemented, a "demo" token could be used.
+Returns : 
+	JSON struct with fields :
+		- "IsRegistered" type boolean
+		- "SimilarImages" type array of struct :
+			- "file" type string : url link to the registered image matching the verified one
+			- "MatchPCT" type numeric : percent match of the registerd image compared to the verified one
+	ex : { "IsRegistered":"True","SimilarImages":[{ "file":"https://originalnftimages.s3.amazonaws.com/1","MatchPCT":100},{ "file":"https://originalnftimages.s3.amazonaws.com/2","MatchPCT":100}] }
+Example form for the POST request:
+	https://registrarapi.dev.rev3al.com/IsRegistered.html
+			
+===========================================================================================
+			
+Endpoint : 
+	https://registrarapi.dev.rev3al.com/RegisterImg.php
+Description : 
+	Used to register an image at Rev3al.
+Requires HTTP POST request with form params: 
+	- "ImgFile" type file. Binary content of the image file to be checked
+	- "ArtistFullName" type string. Not used in the MVP. Mandatory
+	- "ArtistAlias" type string. Not used in the MVP. Mandatory
+	- "ArtTitle" type string. Not used in the MVP. Mandatory
+	- "APIAccessToken" type string. Required to have a valid token. Until user management is implemented, a "demo" token could be used.
+	- "UserWalletAddress" type string. Wallet TXN. Mandatory
+	- "UserCopyrightInfo" type string. Copyright related info. Mandatory
+	- "ReplyWithImage" type string. Optional. Value 1 makes the reply contain the field 'WaterMarkedImage' containing the watermarked image base64 encoded
+Returns : 
+	JSON struct with fields :
+		- "Registered" - type string : "true" on success
+		- "Rev3alId" type string : unique identifier within Rev3al
+		- "URL" : original image on IPFS. Required to generate Rev3alId
+		- "URLWatermark" : watermarked image on IPFS
+		- "WaterMarkedImage" : Optional. Watermarked image as base64 encoded string
+	ex : { "Registered":"True","Rev3alId":"98c2b8f92aa9130d26f6b68a25004989" ,"URL":"https://gateway.pinata.cloud/ipfs/bafkreieb36uxxsvxpve3lubk2f4y6xsyp3yzutp522jiza3ntkwjzegley","URLWatermark":"https://gateway.pinata.cloud/ipfs/bafkreicsz3xbly35jo3dbus6akkmbqx6s6olkkp5ybhoeqzfil2l55wfii", "WaterMarkedImage": "iVBORw0KGgoAAAAN.."}
+Example form for the POST request:
+	https://registrarapi.dev.rev3al.com/RegisterImg.html

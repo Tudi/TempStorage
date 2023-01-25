@@ -1,0 +1,1 @@
+RewriteRule .* - [e=HTTP_APIAccessToken:%1] # APIAccessToken will now be returned by getHeaders()

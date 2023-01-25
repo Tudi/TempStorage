@@ -1,0 +1,16 @@
+<body>
+    <form action="RegisterImg.php" method="post" enctype="multipart/form-data">
+        <h2>Upload image to register image at rev3al</h2>
+        <label for="file_name">Filename:</label>
+        <input type="file" name="ImgFile" id="ImgFile">
+        <p><strong>Note:</strong> Only .jpg, .jpeg, .gif, .png formats allowed to a max size of 5 MB.</p><br>
+		APIAccessToken : <input type="text" value="" name="APIAccessToken" /><br>
+		Artist Full Name: <input type="text" value="" name="ArtistFullName" /><br>
+		Artist Alias : <input type="text" value="" name="ArtistAlias" /><br>
+		Title : <input type="text" value="" name="ArtTitle" /><br>
+		Wallet TXN : <input type="text" value="" name="UserWalletAddress" /><br>
+		Copyright Info : <input type="text" value="" name="UserCopyrightInfo" /><br>
+		Reply should contain watermarked image ? : <input type="text" value="1" name="ReplyWithImage" /><br>
+        <input type="submit" name="submit" value="Upload">
+    </form>
+</body>
