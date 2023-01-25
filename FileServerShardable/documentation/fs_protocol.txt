@@ -1,0 +1,84 @@
+# Ferrari-C request / response protocol
+
+There are currently 2 requests supported by SimilarityScoreServer.
+
+Every sent or received packet will beging with a packet header defined as :
+1. The size field of 4 bytes indicating the total size of the data being transmitted, excluding the size field itself.
+2. The request code of 1 byte indicating the service requested in the server.
+
+Packet structures and packet types are defined in "request_response_definitions.h" file.
+
+## Save similarity score file
+Asks the server to save a similarity score file.
+
+Request Size (4 bytes). 
+Request type (1 byte).  Value = 2 (fixed)
+File type (1 byte)
+File id (4 bytes). 
+File content (variable size)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request data block size                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request type  |  file type    | file id                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                               | file content                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+Server will signal the client in case an error happened
+
+Response Size (4 bytes)
+Response type (1 byte)     Value = 5 ( fixed )
+Response error (4 bytes) Value 0 means no error
+Response error string (dynamic size) 0 terminated string
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response type |     Response error                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |     Error string                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## Request similarity scores
+Asks the server to merge similarity scores and return a ferrar-c compatible buffer
+
+### Request
+
+Request Size (4 bytes)
+Request type (1 byte).        Contents = 1 (fixed)
+File type    (1 byte)
+File id      (4 bytes)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request data block size                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request type  | File Type     |  File Id                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes)
+Response type (1 byte)        Contents = 1 (fixed)
+File type     (1 byte)
+File id       (4 bytes). 
+File content  (variable size)
+    
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response data block size                                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response type |  file type    | file id                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                               | file content                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

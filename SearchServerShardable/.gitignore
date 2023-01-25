@@ -1,0 +1,14 @@
+*.o
+*.a
+*.so
+*.d
+*.swp
+*.gcda
+*.gcno
+*.gcov
+*.info
+bin/
+obj/
+
+.idea
+.vscode

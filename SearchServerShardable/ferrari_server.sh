@@ -1,0 +1,30 @@
+#!/bin/bash
+
+LOG_LEVEL_ARG=${LOG_LEVEL:-"debug"}
+NUM_SERVERS_ARG=${NUM_EXTERNAL_SHARDS:-1}
+PROFILE_DIR_ARG=${PROFILE_DIR:-"/scoring-client/data/profiles"}
+NUM_PROFILE_CACHE_ENTRIES_ARG=${NUM_PROFILE_CACHE_ENTRIES:-5000000}
+NUM_PROFILES_PER_FILE_ARG=${NUM_PROFILES_PER_FILE:-128}
+COMPANY_DIR_ARG=${COMPANY_DIR:-"/scoring-client/data/companies"}
+NUM_COMPANY_CACHE_ENTRIES_ARG=${NUM_COMPANY_CACHE_ENTRIES:-3000000}
+NUM_COMPANIES_PER_FILE_ARG=${NUM_COMPANIES_PER_FILE:-128}
+PORT_ARG=${PORT:-3002}
+REQUEST_ARRIVAL_TIMEOUT_ARG=${REQUEST_ARRIVAL_TIMEOUT:-300000}
+CONNECTION_TIMEOUT_ARG=${CONNECTION_TIMEOUT:-2000}
+NUM_CONNECTIONS_ARG=${NUM_CONNECTIONS:-16}
+NUM_SEARCH_THREADS_ARG=${NUM_SEARCH_THREADS:-3}
+NUM_LOADING_THREADS_ARG=${NUM_LOADING_THREADS:-3}
+PROFILE_CACHE_UPDATE_ARG=${PROFILE_CACHE_UPDATE:-1}
+COMPANY_CACHE_UPDATE_ARG=${COMPANY_CACHE_UPDATE:-1}
+SEARCH_RESULTS_EXPIRATION_ARG=${SEARCH_RESULTS_EXPIRATION:-6}
+
+SERVER_ID_ARG=`echo $HOSTNAME | tr -dc 0-9` 
+
+if [ "${RUN_VALGRIND,,}" = "true" ]; then
+VALGRIND_CMD="valgrind --leak-check=full --track-origins=yes --max-threads=2000"
+fi
+
+mkdir -p /scoring-client/data/profiles
+mkdir -p /scoring-client/data/companies
+
+exec $VALGRIND_CMD ./profile_server_app/bin/profile_server_app --log_level $LOG_LEVEL_ARG --server_id $SERVER_ID_ARG --num_servers $NUM_SERVERS_ARG --profile_dir $PROFILE_DIR_ARG --num_profile_cache_entries $NUM_PROFILE_CACHE_ENTRIES_ARG --num_profiles_per_file $NUM_PROFILES_PER_FILE_ARG --company_dir $COMPANY_DIR_ARG --num_company_cache_entries $NUM_COMPANY_CACHE_ENTRIES_ARG --num_companies_per_file $NUM_COMPANIES_PER_FILE_ARG --port $PORT_ARG --num_connections $NUM_CONNECTIONS_ARG --request_arrival_timeout $REQUEST_ARRIVAL_TIMEOUT_ARG --connection_timeout $CONNECTION_TIMEOUT_ARG --num_connections $NUM_CONNECTIONS_ARG --num_search_threads $NUM_SEARCH_THREADS_ARG --num_loading_threads $NUM_LOADING_THREADS_ARG --profile_cache_update $PROFILE_CACHE_UPDATE_ARG --company_cache_update $COMPANY_CACHE_UPDATE_ARG --search_results_expiration $SEARCH_RESULTS_EXPIRATION_ARG

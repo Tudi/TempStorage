@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-pipeline-fileserver
+  labels:
+    app: data-pipeline-fileserver
+spec:
+  ports:
+    - port: 3002
+      name: data-pipeline-fileserver
+  clusterIP: None
+  selector:
+    app: data-pipeline-fileserver-${ENV}-server
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: data-pipeline-fileserver-${ENV}-server
+spec:
+  serviceName: data-pipeline-fileserver
+  podManagementPolicy: "Parallel"
+  replicas: ${NUM_EXTERNAL_SHARDS}
+  selector:
+    matchLabels:
+      app: data-pipeline-fileserver-${ENV}-server
+  template:
+    metadata:
+      labels:
+        app: data-pipeline-fileserver-${ENV}-server
+    spec:
+      containers:
+        - name: data-pipeline-fileserver-${ENV}-server
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${CIRCLE_SHA1}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "${KUBERNETES_CPU}"
+              memory: "${KUBERNETES_RAM}"
+              ephemeral-storage: 4Gi
+          command: [ "/bin/bash", "-c" ]
+          args:
+            - ./file_server.sh
+          envFrom:
+            - configMapRef:
+                name: data-pipeline-fileserver-${ENV}-config
+          ports:
+            - containerPort: ${PORT}
+          volumeMounts:
+            - name: www
+              mountPath: /data-pipeline-fileserver/data
+      terminationGracePeriodSeconds: 60
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: karpenter.sh/capacity-type
+                    operator: In
+                    values:
+                      - spot
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                      - us-east-1c
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: ${KUBERNETES_DISK}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-pipeline-fileserver-${ENV}-config
+data:
+  ENV: ${ENV}
+  KUBERNETES_CPU: "${KUBERNETES_CPU}"
+  PORT: "${PORT}"
+  NUM_EXTERNAL_SHARDS: "${NUM_EXTERNAL_SHARDS}"
+  LOG_LEVEL: ${LOG_LEVEL}
+  CONNECTION_TIMEOUT: "${CONNECTION_TIMEOUT}"
+  REQUEST_ARRIVAL_TIMEOUT: "${REQUEST_ARRIVAL_TIMEOUT}"
+  NUM_CONNECTIONS: "${NUM_CONNECTIONS}"
+  NUM_ENTRIES_PER_FILE: "${NUM_ENTRIES_PER_FILE}"
+  DIR_DEPTH: "${DIR_DEPTH}"
+  DIR_COUNT: "${DIR_COUNT}"
+  SENTRY_DSN: "${SENTRY_DSN}"
+  SENTRY_RELEASE: "${CIRCLE_SHA1}"
+  SENTRY_ENVIRONMENT: "${ENV}"
+  SENTRY_AUTH_TOKEN: "${SENTRY_AUTH_TOKEN}"

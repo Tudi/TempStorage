@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment  # couldn't get Service to work, errors on apiVersion
+metadata:
+  name: pipeline-fileserver-local-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipeline-fileserver-local-server
+  template:
+    metadata:
+      labels:
+        app: pipeline-fileserver-local-server
+    spec:
+      containers:
+        - name: pipeline-fileserver-local-server
+          image: localhost:32000/pipeline-file-server:local  # loc mk8s reg
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "4"
+              memory: "8Gi"
+              ephemeral-storage: "4Gi"
+          command: ["/bin/bash", "-c"]
+          args:
+            - ./file_server.sh;
+          envFrom:
+            - configMapRef:
+                name: data-pipeline-fileserver-local
+          ports:
+            - containerPort: ${PORT}
+          volumeMounts:
+            - name: pipeline-file-server-storage
+              mountPath: ${DATA_DIR}
+      volumes:
+        - name: pipeline-file-server-storage
+          hostPath:
+            path: "/data/pipeline_file_server_storage"
+            type: Directory
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-pipeline-fileserver-local
+data:
+  ENV: "${ENV}"
+  LOG_LEVEL: "${LOG_LEVEL}"
+  NUM_EXTERNAL_SHARDS: "${NUM_EXTERNAL_SHARDS}"
+  NUM_ENTRIES_PER_FILE: "${NUM_ENTRIES_PER_FILE}"
+  PORT: "${PORT}"
+  REQUEST_ARRIVAL_TIMEOUT: "${REQUEST_ARRIVAL_TIMEOUT}"
+  CONNECTION_TIMEOUT: "${CONNECTION_TIMEOUT}"
+  NUM_CONNECTIONS: "${NUM_CONNECTIONS}"
+  DATA_DIR: "${DATA_DIR}"
+  DIR_DEPTH: "${DIR_DEPTH}"
+  DIR_COUNT: "${DIR_COUNT}"

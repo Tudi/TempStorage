@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: similarity-server
+  labels:
+    app: similarity-server
+spec:
+  ports:
+    - port: 80
+      name: similarity-server
+  clusterIP: None
+  selector:
+    app: similarity-service-${ENV}-server
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: similarity-service-${ENV}-server
+spec:
+  serviceName: similarity-server
+  podManagementPolicy: "Parallel"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: similarity-service-${ENV}-server
+  template:
+    metadata:
+      labels:
+        app: similarity-service-${ENV}-server
+    spec:
+      containers:
+        - name: similarity-service-${ENV}-server
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${CIRCLE_SHA1}
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "${KUBERNETES_CPU}"
+              memory: "${KUBERNETES_RAM}"
+              ephemeral-storage: 4Gi
+          command: [ "/bin/bash", "-c" ]
+          args:
+            - ./SS_server.sh
+          envFrom:
+            - configMapRef:
+                name: similarity-service-${ENV}-config
+          ports:
+            - containerPort: ${PORT}
+          volumeMounts:
+            - name: www
+              mountPath: /scoring-similarity-service/data
+      terminationGracePeriodSeconds: 60
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: karpenter.sh/capacity-type
+                    operator: In
+                    values:
+                      - ${CAPACITY_TYPE}
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - ${INSTANCE_TYPE}
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: ${KUBERNETES_DISK}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: similarity-service-${ENV}-config
+data:
+  ENV: ${ENV}
+  KUBERNETES_CPU: "${KUBERNETES_CPU}"
+  PORT: "${PORT}"
+  LOG_LEVEL: ${LOG_LEVEL}
+  CONNECTION_TIMEOUT: "${CONNECTION_TIMEOUT}"
+  REQUEST_ARRIVAL_TIMEOUT: "${REQUEST_ARRIVAL_TIMEOUT}"
+  NUM_CONNECTIONS: "${NUM_CONNECTIONS}"
+  SENTRY_DSN: "${SENTRY_DSN}"
+  SENTRY_RELEASE: "${CIRCLE_SHA1}"
+  SENTRY_ENVIRONMENT: "${ENV}"

@@ -1,0 +1,570 @@
+# Ferrari-C request / response protocol
+
+There are currently 15 requests supported by Ferrari-C.
+
+All data must be sent in big endian order unless stated otherwise explicitly.
+The JSON data must be sent in an ASCII encoding.
+
+For all requests, the following fields are always present in this order:
+
+1. The size field of 4 bytes indicating the total size of the data being transmitted, excluding the size field itself.
+2. The request code of 1 byte indicating the service requested in the server.
+
+The maximum request size accepted currently is 30MB.
+
+For all responses, the following fields are always present in this order:
+
+1. The size field of 4 bytes indicating the total size of the data being transmitted, excluding the size field itself.
+2. The response code of 1 byte indicating the response to the service requested in the server. 0 indicates success. Any other value indicates an error, and no further data follows.
+
+## Get Profile
+
+Asks the server to return the profile data corresponding to the profile id sent.
+
+### Request
+
+Request Size (4 bytes). Contents = 5 (fixed)
+Request Code (1 byte).  Contents = 1 (fixed)
+Profile Id   (4 bytes). Contents = unsigned integer
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Profile Id                                    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes)
+Response Code (1 byte)
+Profile       (variable size). Contents = Profile data in JSON format.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Profile (variable size)                                       |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## Save Profile
+
+Asks the server to store a profile.
+
+### Request
+
+Request Size (4 bytes)
+Request Code (1 byte). Contents = 2 (fixed)
+Profile      (variable size). Contents = Profile data in JSON format. Maximum size = 256 kilobytes.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Profile (variable size, maximum 256KB)                        |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes). Contents = 1 (fixed)
+Response Code (1 byte)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |
++-+-+-+-+-+-+-+-+
+
+## Start Search
+
+Asks the server to start a search in the server based on the criteria sent.
+
+### Request
+
+Request Size        (4 bytes)
+Request Code        (1 byte). Contents = 3 (fixed)
+Max result count    (4 bytes)
+JSON string size    (4 bytes)
+Binary data size    (4 bytes)
+Search Criteria JSON data (variable size).   Contents = Search criteria data in JSON format.
+Search Criteria Binary data (variable size). Contents = Search criteria binary data in little endian order.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |      Max result count                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |      JSON string size                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Search Criteria JSON data (variable size)                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Binary data size                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+| Search Criteria binary data (variable size)                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes). Contents = 5 (fixed)
+Response Code (1 byte)
+Search Id     (4 bytes). Contents = Search id to be used to retrieve the search status and results.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code | Search Id                                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
++-+-+-+-+-+-+-+-+
+
+## Get Search Status
+
+Asks the server to return the status of a search previously started in the server using a Start Search request.
+
+### Request
+
+Request size (4 bytes). Contents = 5 (fixed)
+Request code (1 byte).  Contents = 4 (fixed)
+Search id    (4 bytes). Contents = unsigned integer
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Search Id                                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes). Contents = 2 (fixed)
+Response Code (1 byte)
+Search Status (1 byte). Contents = Search completion percentage, from 0 through 100 (no decimal places). A value of 100 indicates that the search has been completed and its results may be requested.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code | Search Status |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## Get Search Results
+
+Asks the server to return the results of a search previously started in the server using a Start Search request.
+
+### Request
+
+Request size (4 bytes). Contents = 5 (fixed)
+Request code (1 byte).  Contents = 5 (fixed)
+Search Id    (4 bytes). Contents = unsigned integer
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Search Id                                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size  (4 bytes)
+Response Code  (1 byte)
+Search Results (variable size). Contents = Search results in JSON format.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Search Results (variable size)                                |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## End Search
+
+Asks the server to remove the results of a search previously started in the server using a Start Search request.
+
+### Request
+
+Request size (4 bytes). Contents = 5 (fixed)
+Request code (1 byte).  Contents = 8 (fixed)
+Search id    (4 bytes). Contents = unsigned integer
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Search Id                                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response size (4 bytes). Contents = 1 (fixed)
+Response code (1 byte)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |
++-+-+-+-+-+-+-+-+
+
+## Get Company
+
+Asks the server to return the company data corresponding to the company id sent.
+
+### Request
+
+Request size (4 bytes). Contents = 5 (fixed)
+Request code (1 byte).  Contents = 6 (fixed)
+Company id   (4 bytes). Contents = unsigned integer
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Company Id                                    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes)
+Response Code (1 byte)
+Company       (variable size). Contents = Company data in JSON format.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Company (variable size)                                       |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## Save Company
+
+Asks the server to store a company.
+
+### Request
+
+Request Size (4 bytes)
+Request Code (1 byte).        Contents = 7 (fixed)
+Company      (variable size). Contents = Company data in JSON format. Maximum size = 256 kilobytes.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Company (variable size, maximum 256KB)                        |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response size (4 bytes). Contents = 1 (fixed)
+Response code (1 byte)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |
++-+-+-+-+-+-+-+-+
+
+## Get Multiple Profiles
+
+Asks the server to return the profiles data corresponding to a list of profile ids sent.
+
+### Request
+
+Request Size      (4 bytes).
+Request Code      (1 byte).       Contents = 9 (fixed)
+Profile Ids Count (4 bytes).      Contents = unsigned integer
+Profile Ids List (variable size). Contents = list of 1 or more profile ids (maximum 100). Each id size = 4 bytes.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Profile Ids Count                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Profile Ids List (variable size)                              |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes)
+Response Code (1 byte)
+Profiles      (variable size). Contents = Profiles data in JSON format.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Profiles List (variable size)                                 |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## End Connection
+
+Asks the server to end the client-server connection gracefully and release any resources.
+
+### Request
+
+Request Size (4 bytes). Contents = 5 (fixed)
+Request Code (1 byte).  Contents = 10 (fixed)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response size (4 bytes). Contents = 1 (fixed)
+Response Code (1 byte)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |
++-+-+-+-+-+-+-+-+
+
+## Ping
+
+Sends a no-data request to the server to confirm it is listening and keep an idle connection open.
+
+### Request
+
+Request Size (4 bytes). Contents = 5 (fixed)
+Request Code (1 byte).  Contents = 11 (fixed)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response size (4 bytes). Contents = 1 (fixed)
+Response Code (1 byte)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |
++-+-+-+-+-+-+-+-+
+
+## Get System Information
+
+Asks the server to return the system information.
+
+### Request
+
+Request Size (4 bytes). Contents = 1 (fixed)
+Request Code (1 byte).  Contents = 12 (fixed)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |
++-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes)
+Response Code (1 byte)
+System Info   (variable size). Contents = System information in JSON format.
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| System Information (variable size)                            |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## Set server log level
+
+Change the log level setting of the server
+
+### Request
+
+Request Size (4 bytes). Contents = 5 (fixed)
+Request Code (1 byte).  Contents = 13 (fixed)
+Log level    (1 byte).  Contents = unsigned integer
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  | Log Level     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response size (4 bytes). Contents = 1 (fixed)
+Response Code (1 byte)
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |
++-+-+-+-+-+-+-+-+
+
+## Save Multiple Profiles
+
+Asks the server to save a list of profiles sent in JSON format.
+A list of ids of the profiles which could not be saved is returned if the input JSON list can be processed first and no memory shortage errors occurred.
+
+### Request
+
+Request Size (4 bytes).
+Request Code (1 byte).    Contents = 14 (fixed)
+Profiles (variable size). Contents = List of profiles, formatted as a JSON array named "profiles".
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Profile List (variable size)                                  |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes).
+Response Code (1 byte).
+Profiles (variable size). Contents = List of ids of the profiles which could not be saved, formatted as a JSON array named "not_saved".
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Profile Ids List (variable size)                              |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+## Save Multiple Companies
+
+Asks the server to save a list of companies sent in JSON format.
+A list of ids of the companies which could not be saved is returned if the input JSON list can be processed first and no memory shortage errors occurred.
+
+### Request
+
+Request Size (4 bytes).
+Request Code (1 byte).     Contents = 15 (fixed)
+Companies (variable size). Contents = List of companies, formatted as a JSON array named "companies".
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Size                                                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Request Code  |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Companies List (variable size)                                |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+### Response
+
+Response Size (4 bytes).
+Response Code (1 byte).
+Companies (variable size). Contents = List of ids of the companies which could not be saved, formatted as a JSON array named "not_saved".
+
+0               1               2               3
+0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Size                                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Response Code |                                               |
++-+-+-+-+-+-+-+-+                                               |
+|                                                               |
+| Company Ids List (variable size)                              |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

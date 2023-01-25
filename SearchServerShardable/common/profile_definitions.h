@@ -1,0 +1,18 @@
+#ifndef PROFILE_DEFINITIONS_H
+#define PROFILE_DEFINITIONS_H
+
+#include <stdint.h>
+
+#define PROFILE_DAOS_VERSION 8
+
+#define PROFILE_FILE_PREFIX "profile_"
+#define PROFILE_FILE_EXTENSION "dat"
+#define PROFILE_NUM_ID_DIGITS 9
+
+#define PROFILE_ID_TO_NETWORK htonl
+#define NETWORK_TO_PROFILE_ID ntohl
+
+#define PROFILE_COUNT_TO_NETWORK htonl
+#define NETWORK_TO_PROFILE_COUNT ntohl
+
+#endif // PROFILE_DEFINITIONS_H

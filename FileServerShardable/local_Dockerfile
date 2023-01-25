@@ -1,0 +1,20 @@
+FROM debian:buster
+
+RUN apt-get update
+RUN apt-get install make
+RUN apt-get -y install cmake
+RUN apt-get -y install build-essential
+
+ADD . /pipeline-fileserver
+
+WORKDIR /pipeline-fileserver
+
+RUN make clean
+RUN make
+
+ENV TZ UTC
+
+RUN ./run_all_tests.sh
+
+# This should get run by kubernetes I think
+# CMD ["./file_server.sh"]

@@ -1,0 +1,176 @@
+Content
+===============================================================================
+1. Brief description
+2. Description
+3. Terms
+4. Filter field descriptions
+5. Filter types
+6. Examples
+
+
+
+1. Brief description.
+-------------------------------------------------------------------------------
+Search JSON contains all(except result limit) the setup parameters for scoring 
+and filtering module in order to obtain a result set.
+
+
+
+2. Description.
+-------------------------------------------------------------------------------
+The goal of a search is to obtain the top N scored profiles filtered based on 
+the search JSON.
+Filtering is a "deny" process. By default every profile is selected to be scored. 
+A filter can deny a profile to be part of the result set.
+There are 2 sets of filtering. First scoring checks for "actioned". After that 
+scoring will check for "locality" and only after that filtering will actually 
+check if profile can be used for scoring.
+Experience filter requires that scoring module to prepare the filter. Before 
+filtering happens, scoring will calculate relevant experience.
+If a profile passes the filtering test, the scoring will commence.
+Filters are frequently changing. In case something is not working, document might
+need updating !
+
+
+
+3. Terms.
+-------------------------------------------------------------------------------
+filter - set of rules a profile must meet in order to be part of the result set.
+score - value based (most of the time) on profile position durations.
+split token - sequence of characters that marks that a string should be split into
+            an array of substrings. Usually "#,#".
+contains - type of check a filter performs on a profile based on filter param.
+unordered words - filters will split filter terms into words. Word order does not
+            matter when the "contains" operation is performed.
+quote enclosed - filter term will not be split into words. Contains operation is
+            performed using the whole filter term.
+current - refers to active profile positions. Position does not have an end date.
+          Word can be found as prefix in filter type strings.
+previous - refers to closed profile positions. Position has an end date, duration
+           can be calculated. Word can be found as prefix in filter type strings.
+
+
+
+4. Filter field descriptions.
+-------------------------------------------------------------------------------
+role_code : integer type. Will be matched against profile 'actioned' array.
+localities : integer array type. Only score profiles if their locality ID is 
+             within the array.
+organization_id : integer type. Filters "messaged", "reply", "project", "group"
+                  will use the value as an additional parameter.
+filters : filter array type. See below for additional fields.
+filter.filter : string type. See section "5." for the value list.
+filter.modifier : string type. Mostly deprecated. Forces most filters to switch behavior 
+                  from exclusive to inclusive, or from inclusive to exclusive filtering.
+                  Example : a reply filter contains "less than" it will search for 
+                            old messages.
+                  Possible values :
+                     - "does not"
+                    - "less than"
+filter.text_value : string type. Almost all filters will work based on this value.
+filter.code_value : string type. For some filters, the value is in this field.
+filter.range_low : integer type. When selecting a range of values, it represents a lower bound.
+filter.range_high : integer type. When selecting a range of values, it represents the upper bound.
+
+
+
+5. Filter types.
+-------------------------------------------------------------------------------
+List of values, supported right now, for the field named 'filter' :
+name_include : profile name must contain "text_value".
+name_exclude : profile name must not contain "text_value"..
+current_title_include : profile.position must contain "text_value"
+                        if filter type "most_current_title" exists, only most current
+                        title is checked.
+current_title_exclude : profile.position must not contain "text_value".
+                        if filter type "most_current_title" exists, only most current
+                        title is checked.
+previous_title_include : profile.position must contain "text_value".
+previous_title_exclude : profile.position must not contain "text_value".
+current_previous_title_include : profile.position must contain "text_value".
+current_previous_title_exclude : profile.position must not contain "text_value".
+current_cmp_include : profile.position.companyname must contain "text_value".
+current_cmp_exclude : profile.position.companyname must not contain "text_value".
+previous_cmp_include : profile.position.companyname must contain "text_value".
+previous_cmp_exclude : profile.position.companyname must not contain "text_value".
+current_previous_cmp_include : profile.position.companyname must contain "text_value".
+current_previous_cmp_exclude : profile.position.companyname must not contain "text_value".
+keywords : profile.headline or profile.summary or profile.skill or 
+           profile.position.companyname or profile.position.description must 
+           contain "text_value".
+keywords_exclude : profile.headline or profile.summary or profile.skill or 
+                   profile.position.companyname or profile.position.description must 
+                   not contain "text_value".
+messaged : profile.lastmessaged is checked against "range_low", "range_high", 
+           "organization_id". Unless "modifier" contains "less than", all profiles
+           will pass this filter.
+replied : profile.lastreplied is checked against "range_low", "range_high", 
+          "organization_id". Unless "modifier" contains "less than", all profiles
+          will pass this filter.
+experience : profile.totalExperience is checked again "range_low", "range_high".
+current_industry : profile.position.company.industry must be in "code_value".
+current_industry_exclude : profile.position.company.industry must not be "code_value".
+previous_industry : profile.position.company.industry must be in "code_value".
+previous_industry_exclude : profile.position.company.industry must not be "code_value".
+industry : profile.position.company.industry must be in "code_value".
+industry_exclude : profile.position.company.industry must not be "code_value".
+current_tenure : profile.position[0] duration in months is checked against 
+                "range_low", "range_high".
+relevant_experience : relevant experience is checked against "range_low", "range_high".
+total_experience : profile.totalexperience is checked against  "range_low", 
+                   "range_high".
+projects_include : profile.projects must be in "code_value".
+projects_exclude : profile.projects must not be in "code_value".
+groups_include : profile.groups must be in "code_value".
+groups_exclude : profile.groups must not be in "code_value".
+reply_filter : profile.lastReplied is default input, if a filter named "positive_filter"
+               exists, and there is no modifier "does not", than input changes to
+               profile.lastPositiveReply else if modifier "does not" is specified,
+               lastreplied list if filtered using organization_id and profile.lastPositiveReply
+               "organization_id" and "replies_in_days" filters are used as filtering params.
+positive_filter : changes the behavior of the reply filter.
+replies_in_days : chnages the behavior of the reply filter.
+most_current_title : changes the behavior of current_title_include, current_title_exclude
+                     only the most active title is checked.
+ai_industry : enable score generation for industry.
+ai_experience : enable score generation for experience.
+ai_title : enable score generation for titles.
+ai_company : enable score generation for the company.
+keyword_boolean_filter : forces all keyword filters to become boolean keyword filters
+current_cmp_fn_include : current profile.position.company_parent.stage must be in "text_value"
+current_cmp_fn_exclude : current profile.position.company_parent.stage must not be in "text_value"
+previous_cmp_fn_include : previous profile.position.company_parent.stage must be in "text_value"
+previous_cmp_fn_exclude : previous profile.position.company_parent.stage must not be in "text_value"
+current_previous_cmp_fn_include : profile.position.company_parent.stage must be in "text_value"
+current_previous_cmp_fn_exclude : profile.position.company_parent.stage must not be in "text_value"
+current_cmp_nre_include : current profile.position.company_parent.numEmployees must be in "text_value"
+current_cmp_nre_exclude : current profile.position.company_parent.numEmployees must not be in "text_value"
+previous_cmp_nre_include : previous profile.position.company_parent.numEmployees must be in "text_value"
+previous_cmp_nre_exclude : previous profile.position.company_parent.numEmployees must not be in "text_value"
+current_previous_cmp_nre_include : profile.position.company_parent.numEmployees must be in "text_value"
+current_previous_cmp_nre_exclude : profile.position.company_parent.numEmployees must not be in "text_value"
+linkedin_include : profile.id must be in "code_value" array
+linkedin_exclude : profile.id must not be in "code_value" array
+country_include : profile.countryId must be in "code_value" array
+country_exclude : profile.countryId must not be in "code_value" array
+state_include : profile.stateId must be in "code_value" array
+state_exclude : profile.stateId must not be in "code_value" array
+        
+        
+        
+6. Examples.
+-------------------------------------------------------------------------------
+- score all profiles while using "name_exclude" filter
+{"role_code": 0,"localities":[],"organization_id": 0,"filters":[{"filter":"name_exclude","modifier":"","text_value":"123412434142342","code_value":"","range_low":0,"range_high":0}]}
+
+- select a specific profile (1) using name filter and location filter
+{ "role_code": 0, "localities": [ 140352 ], "organization_id": 0, "filters": [ { "filter": "name_include","modifier":"", "text_value": "Bryan Fucetola", "code_value": "", "range_low": 0, "range_high": 0 } ] }
+
+- select profiles that worked at specific companies :
+{ "role_code": 0, "localities": [ ], "organization_id":0, "filters": [ { "filter": "current_previous_cmp_include", "modifier":"", "text_value": "GS1 US#,#Ferrero", "code_value": "", "range_low": 0, "range_high": 0 } ] }
+
+- multiple filters at once
+{ "role_code": 0, "localities": [ ], "organization_id":0,"filters": [ { "filter": "name_include","modifier":"", "text_value": "a", "code_value": "", "range_low": 0, "range_high": 0 },{ "filter": "name_exclude","modifier":"", "text_value": "abcdef", "code_value": "", "range_low": 0, "range_high": 0 },{ "filter": "keywords","modifier":"", "text_value": "a", "code_value": "", "range_low": 0, "range_high": 0 },{ "filter": "messaged","modifier":"", "text_value": "b", "code_value": "", "range_low": 0, "range_high": 0 },{ "filter": "current_previous_title_include","modifier":"", "text_value": "Supply chain", "code_value": "", "range_low": 0, "range_high": 0 } ] }
+
+- profiles that worked at specific industries :
+{ "role_code": 0, "localities": [ 140352,124111,49430,119639,16,2,54703,49435,120263,119788,123683,42135,119646,120171,1633,124138,119918,3,120720,4174,119747,5,51,102800,124113,124104,122043,1142,51078,121382,120228,119699 ], "organization_id":0,"filters": [ { "filter": "industry","modifier":"", "text_value": "", "code_value": "62#,#284,#,#92", "range_low": 0, "range_high": 0 } ] }

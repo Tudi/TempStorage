@@ -1,0 +1,9 @@
+*.o
+*.a
+*.so
+*.d
+*.swp
+bin/
+obj/
+
+.idea

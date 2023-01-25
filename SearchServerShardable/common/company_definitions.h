@@ -1,0 +1,18 @@
+#ifndef COMPANY_DEFINITIONS_H
+#define COMPANY_DEFINITIONS_H
+
+#include <stdint.h>
+
+#define COMPANY_DAOS_VERSION 8
+
+#define COMPANY_FILE_PREFIX "company_"
+#define COMPANY_FILE_EXTENSION "dat"
+#define COMPANY_NUM_ID_DIGITS 9
+
+#define COMPANY_ID_TO_NETWORK htonl
+#define NETWORK_TO_COMPANY_ID ntohl
+
+#define COMPANY_COUNT_TO_NETWORK htonl
+#define NETWORK_TO_COMPANY_COUNT ntohl
+
+#endif // COMPANY_DEFINITIONS_H
