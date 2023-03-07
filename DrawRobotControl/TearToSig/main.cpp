@@ -119,11 +119,13 @@ int ScanImageNextRow(FIBITMAP* in_Img, int32_t& row, int32_t* cols)
 	return 1;
 }
 
+static float colOffset = 0;
+static float rowOffset = 0;
 void AddLineToSIGFile(FILE* f, float sx, float sy, float ex, float ey, float PixelsPerMM_X, float PixelsPerMM_Y)
 {
 	fprintf(f, "PLINESTART\n");
-	fprintf(f, "%.02f, %.02f\n", sx * PixelsPerMM_X, sy * PixelsPerMM_Y);
-	fprintf(f, "%.02f, %.02f\n", ex * PixelsPerMM_X, ey * PixelsPerMM_Y);
+	fprintf(f, "%.02f, %.02f\n", colOffset + sx * PixelsPerMM_X, rowOffset + sy * PixelsPerMM_Y);
+	fprintf(f, "%.02f, %.02f\n", colOffset + ex * PixelsPerMM_X, rowOffset + ey * PixelsPerMM_Y);
 	fprintf(f, "PLINEEND\n");
 }
 
@@ -230,14 +232,20 @@ int GenSigFileRowWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsP
 	return 0;
 }
 
+#define TEARDROP_MM_WIDTH 235.0f
+#define TEARDROP_MM_HEIGHT 220.0f
+
 int main()
 {
 	FIBITMAP* dib = LoadImage_("SA_2_Tear.bmp"); // initialize lib
 	int32_t Width = FreeImage_GetWidth(dib);
 	int32_t Height = FreeImage_GetHeight(dib);
 
-	float PixelsPerMM_X = Width / 235.0f;
-	float PixelsPerMM_Y = Height / 235.0f;
+	float PixelsPerMM_X = Width / TEARDROP_MM_WIDTH;
+	float PixelsPerMM_Y = Height / TEARDROP_MM_HEIGHT;
+
+	colOffset = -TEARDROP_MM_WIDTH / 2;
+	rowOffset = -TEARDROP_MM_HEIGHT / 2;
 
 	// largest line is 235 mm horizontally and 220 mm vertically
 	for (size_t break_to_pieces = 1; break_to_pieces <= 4; break_to_pieces += 1)
