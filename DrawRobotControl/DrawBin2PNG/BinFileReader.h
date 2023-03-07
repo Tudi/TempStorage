@@ -1,0 +1,37 @@
+#pragma once
+
+#define BIN_FOOTER_BYTE_COUNT 20
+
+typedef enum PenRobotMovementCodes
+{
+	Move_Up = 0x00,
+	Move_Left = 0x01,
+	Move_Right = 0x02,
+	Move_Down = 0x03,
+}PenRobotMovementCodes;
+
+typedef enum PenRobotPenPosition
+{
+	Pen_Down = 1,
+	Pen_Up = 0,
+}PenRobotPenPosition;
+
+#pragma pack(push, 1)
+typedef struct RobotCommand
+{
+	uint8_t motorDirection : 2; // up,down,left,right 
+	uint8_t Transition : 1; // raise pen, swap paper or reposition head. Seems to depend on the sequence
+	uint8_t penIsMoving : 1; // only zero when writing pauses ( transition )
+	uint8_t alwaysZero_2 : 1;
+	uint8_t penPosition : 1;
+	uint8_t motor1TriggerMovement : 1; // affects vertical movement of the pen
+	uint8_t motor2TriggerMovement : 1; // affects horizontal movement of the pen
+}RobotCommand;
+#pragma pack(pop)
+
+FILE* OpenBinFile(const char* name, uint32_t& readPos, size_t& fileSize);
+void ReadBinHeader(FILE* f, uint32_t& readPos);
+void ReadBinFooter(FILE* f, uint32_t& readPos);
+
+#define MAX_LINE_NODES 65535 // todo : should make this dynamic ...
+int ReadBinLine(FILE* f, uint32_t& readPos, size_t fileSize, int32_t** line);
