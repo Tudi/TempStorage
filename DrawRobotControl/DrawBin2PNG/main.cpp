@@ -36,19 +36,23 @@ int main()
 	LoadImage_("NONE"); // initialize lib
 
 	FIBITMAP* dib = CreateNewImage(2048 * ImageSizeMultiplier,2048 * ImageSizeMultiplier);
+	float x = 2048 * ImageSizeMultiplier / 2;
+	float y = 2048 * ImageSizeMultiplier / 2;
+
+	DrawCircleAt(dib, x, y, 300);
 
 	uint32_t readPos = 0;
 	size_t fileSize = 0;
-//	FILE* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
-	FILE* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
-//	FILE* f = OpenBinFile("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin", readPos, fileSize);
+//	char* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
+//	char* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
+	char* f = OpenBinFile("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin", readPos, fileSize);
+//	char* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
 	ReadBinHeader(f, readPos);
-	int32_t x = 2048 * ImageSizeMultiplier / 2;
-	int32_t y = 2048 * ImageSizeMultiplier / 2;
+//	ReadBinFooter(f, readPos);
 
-	for (size_t i = 0; i < 5000; i++)
+	for (size_t i = 0; i < 10; i++)
 	{
-		int32_t* line = NULL;
+		float* line = NULL;
 		int ret = ReadBinLine(f, readPos, fileSize, &line);
 		if (ret != 0)
 		{
@@ -62,8 +66,9 @@ int main()
 		free(line);
 	}
 	ReadBinFooter(f, readPos);
+//	ReadBinHeader(f, readPos);
 
-	fclose(f);
+	free(f);
 
 	SaveImagePNG(dib, "bin2PNG.png");
 	FreeImage_Unload(dib);

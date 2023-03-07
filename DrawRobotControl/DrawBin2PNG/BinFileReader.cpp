@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 
+static const int FileReadDirection = 1;
 int getFileSize(FILE* f, size_t* size)
 {
 	if (fseek(f, 0, SEEK_END) != 0)
@@ -17,7 +18,7 @@ int getFileSize(FILE* f, size_t* size)
 	return 0;
 }
 
-FILE* OpenBinFile(const char* fileName, uint32_t& readPos, size_t& fileSize)
+char* OpenBinFile(const char* fileName, uint32_t& readPos, size_t& fileSize)
 {
 	FILE* f = NULL;
 	errno_t openerr = fopen_s(&f, fileName, "rb");
@@ -27,76 +28,102 @@ FILE* OpenBinFile(const char* fileName, uint32_t& readPos, size_t& fileSize)
 	}
 	getFileSize(f, &fileSize);
 	printf("File %s has %d bytes\n", fileName, (int)fileSize);
-	readPos = 0;
+	char* ret = (char*)malloc(fileSize);
+	if (ret == NULL)
+	{
+		return ret;
+	}
+	fread(ret, 1, fileSize, f);
+	if (FileReadDirection < 0)
+	{
+		readPos = (uint32_t)fileSize - 1;
+	}
+	else
+	{
+		readPos = 0;
+	}
+	fclose(f);
 
-	return f;
+	return ret;
 }
 
-void ReadBinHeader(FILE* f, uint32_t& readPos)
+void ReadBinHeader(char* bytes, uint32_t& readPos)
 {
-	uint8_t byte[10];
-	fread(&byte, 1, 10, f);
-	readPos += 10;
-	for (size_t i = 0; i < sizeof(byte); i++)
+	for (size_t i = 0; i < 10; i++)
 	{
-		if (byte[i] != 0x08)
+		if (bytes[readPos] != 0x08)
 		{
-			printf("Was expecting header byte 0x08 at %d, got %d\n", (int)i, byte[i]);
+			printf("Was expecting header byte 0x08 at %d, got %d\n", (int)i, bytes[i]);
 		}
+		readPos += FileReadDirection;
 	}
 }
 
-void ReadBinFooter(FILE* f, uint32_t& readPos)
+void ReadBinFooter(char* bytes, uint32_t& readPos)
 {
-	uint8_t byte[10];
-	fread(&byte, 1, 10, f);
-	readPos += 10;
-	for (size_t i = 0; i < sizeof(byte); i++)
+	for (size_t i = 0; i < 10; i++)
 	{
-		if (byte[i] != 0x08)
+		if (bytes[readPos] != 0x08)
 		{
-			printf("Was expecting footer byte 0x08 at %d, got %02X\n", (int)i, byte[i]);
+			printf("Was expecting footer byte 0x08 at %d, got %02X\n", (int)i, bytes[i]);
 		}
+		readPos += FileReadDirection;
 	}
-	fread(&byte, 1, 10, f);
-	readPos += 10;
-	for (size_t i = 0; i < sizeof(byte); i++)
+	for (size_t i = 0; i < 10; i++)
 	{
-		if (byte[i] != 0x00)
+		if (bytes[readPos] != 0x00)
 		{
-			printf("Was expecting footer byte 0x00 at %d, got %02X\n", (int)i, byte[i]);
+			printf("Was expecting footer byte 0x00 at %d, got %02X\n", (int)i, bytes[i]);
 		}
+		readPos += FileReadDirection;
 	}
 }
 
 static int LinesParsedCounter = 0;
-int ReadBinLine(FILE* f, uint32_t& readPos, size_t fileSize, int32_t** line)
+int ReadBinLine(char* bytes, uint32_t& readPos, size_t fileSize, float** line)
 {
-	if (readPos >= fileSize - 20)
+	if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
+		|| (FileReadDirection > 0 && readPos >= fileSize - BIN_FOOTER_BYTE_COUNT))
 	{
 		return 1;
 	}
 
 	//read the line
-	uint8_t byte, prevByte;
+	uint8_t byte = 0, prevByte = 1, prevPrevByte = 2;
 	RobotCommand comm, prevComm;
 	uint32_t moveByteCount = 0;
 	uint8_t FollowMoveType = 0xFF;
 	uint8_t FollowPenPosition = 0;
 	uint32_t writePosition = 2; // first is counter, second is pen position
-	*line = (int32_t*)malloc(sizeof(int32_t) * MAX_LINE_NODES);
+	*line = (float*)malloc(sizeof(float) * MAX_LINE_NODES);
 	int32_t xInc = 0, yInc = 0;
-	memset(*line, 0, sizeof(int32_t) * MAX_LINE_NODES);
+	memset(*line, 0, sizeof(float) * MAX_LINE_NODES);
+	float motor_12_Move_total = 0;
+	float motor_1_Move_total = 0;
+	float motor_2_Move_total = 0;
+	float motor_12_NoMove_total = 0;
+	float motor_12_NoMove2_total = 0;
+	size_t prevValueAvailable = 0;
+	size_t secondaryDirection = 0xFF;
+
+	size_t directionChangeSignal = 0;
+	int prevSecondaryDirection = 0xFF;
+
 	if (*line == NULL)
 	{
 		return 1;
 	}
 
-	while ((FollowMoveType == 0xFF || comm.motorDirection == FollowMoveType)
-		&& readPos < fileSize - BIN_FOOTER_BYTE_COUNT) // 10*0x08 and 10*0x00
+	while ((FollowMoveType == 0xFF || comm.motorDirection == FollowMoveType))
 	{
-		fread(&byte, 1, 1, f);
-		readPos++;
+		if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
+			|| (FileReadDirection > 0 && readPos >= fileSize - BIN_FOOTER_BYTE_COUNT))
+		{
+			break;
+		}
+
+		byte = bytes[readPos];
+		readPos += FileReadDirection;
 		moveByteCount++;
 		*(uint8_t*)&comm = byte;
 
@@ -105,39 +132,13 @@ int ReadBinLine(FILE* f, uint32_t& readPos, size_t fileSize, int32_t** line)
 			FollowMoveType = comm.motorDirection;
 			FollowPenPosition = comm.penPosition;
 			(*line)[1] = comm.penPosition;
-			prevByte = ~byte;
-			*(uint8_t*)&prevComm = prevByte;
 			LinesParsedCounter++;
-			printf("%d) Will follow move type %d. Pen is %d\n", LinesParsedCounter, FollowMoveType, FollowPenPosition != 0);
-
-			if (comm.motorDirection == Move_Up)
-			{
-				yInc = -1;
-				xInc = 0; // would expect 0
-			}
-			if (comm.motorDirection == Move_Left)
-			{
-				yInc = 0; // would expect 0
-				xInc = -1;
-			}
-			if (comm.motorDirection == Move_Right)
-			{
-				yInc = 0; // would expect 0
-				xInc = 1;
-			}
-			if (comm.motorDirection == Move_Down)
-			{
-				yInc = 1;
-				xInc = 0; // would expect 0
-			}
+			printf("%d) Will follow move type %d-%s. Pen is %d\n", LinesParsedCounter, FollowMoveType,
+				GetDirectionString((PenRobotMovementCodes)FollowMoveType), FollowPenPosition != 0);
 		}
 		if (comm.motorDirection != FollowMoveType || comm.penPosition != FollowPenPosition)
 		{
-			if (fseek(f, -1, SEEK_CUR) != 0)
-			{
-				return 1;
-			}
-			readPos--;
+			readPos += (1 - FileReadDirection);
 			moveByteCount--;
 			break;
 		}
@@ -150,7 +151,7 @@ int ReadBinLine(FILE* f, uint32_t& readPos, size_t fileSize, int32_t** line)
 		{
 			printf("!!Always one is not always one at pos %d value %d ( pen move )\n", readPos, byte);
 		}
-		if (comm.alwaysZero_2 != 0)
+		if (comm.alwaysZero != 0)
 		{
 			printf("!!Always zero2 is not always one at pos %d value %d\n", readPos, byte);
 		}
@@ -159,28 +160,245 @@ int ReadBinLine(FILE* f, uint32_t& readPos, size_t fileSize, int32_t** line)
 			printf("!!Pen position was expected to be persistent during draw sequence. Pos %d value %d\n", readPos, byte);
 		}
 
-		int xChanged = comm.motor1TriggerMovement != prevComm.motor1TriggerMovement;
-		int yChanged = comm.motor2TriggerMovement != prevComm.motor2TriggerMovement;
-		if (xChanged || yChanged)
+		if (prevValueAvailable)
 		{
-			if (xChanged && yChanged)
+			int direction_relative_left = comm.motor1TriggerMovement != prevComm.motor1TriggerMovement;
+			int direction_relative_right = comm.motor2TriggerMovement != prevComm.motor2TriggerMovement;
+			int secondaryDirection = (direction_relative_right << 1 ) | direction_relative_left;
+			float penSpeedInertiaAdjustedPrimary = 1.0f;
+			float penSpeedInertiaAdjustedSecondary = 1.0f;
+
+			if (prevSecondaryDirection == secondaryDirection)
 			{
-				(*line)[writePosition + 0] = xInc;
-				(*line)[writePosition + 1] = yInc;
+				penSpeedInertiaAdjustedPrimary = 1.0f;
+				penSpeedInertiaAdjustedSecondary = 1.0f;
 			}
-			else
+			prevSecondaryDirection = secondaryDirection;
+
+			if (comm.motorDirection == Move_Down)
 			{
-				(*line)[writePosition + 0] = xChanged;
-				(*line)[writePosition + 1] = yChanged;
+				if (secondaryDirection == Move_Forward)
+				{
+					(*line)[writePosition + 0] += 0;
+					(*line)[writePosition + 1] += ((-1.0f) * penSpeedInertiaAdjustedPrimary);
+					motor_12_Move_total += penSpeedInertiaAdjustedPrimary;
+				}
+				if (secondaryDirection == Move_RelativeLeft)
+				{
+					(*line)[writePosition + 0] += penSpeedInertiaAdjustedSecondary;
+					(*line)[writePosition + 1] += 0;
+					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeRight)
+				{
+					(*line)[writePosition + 0] += ((-1) * penSpeedInertiaAdjustedSecondary);
+					(*line)[writePosition + 1] += 0;
+					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeUnknown)
+				{
+					// direction change sequence ?
+//						directionChangeSignal = 1;
+//						prevValueAvailable = 0;
+					if (prevPrevByte == prevByte)
+					{
+						motor_12_NoMove2_total++;
+					}
+					else
+					{
+						motor_12_NoMove_total++;
+					}
+				}
+			}
+			if (comm.motorDirection == Move_Up)
+			{
+				if (secondaryDirection == Move_Forward)
+				{
+//					if (LinesParsedCounter == 2)printf("0"); else printf("1\n");
+					(*line)[writePosition + 0] += 0;
+					(*line)[writePosition + 1] += penSpeedInertiaAdjustedPrimary;
+					motor_12_Move_total += penSpeedInertiaAdjustedPrimary;
+				}
+				if (secondaryDirection == Move_RelativeLeft)
+				{
+					(*line)[writePosition + 0] += ((-1) * penSpeedInertiaAdjustedSecondary);
+					(*line)[writePosition + 1] += 0;
+					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeRight)
+				{
+//					if (LinesParsedCounter == 2)printf("1\n"); else printf("0");
+					(*line)[writePosition + 0] += penSpeedInertiaAdjustedSecondary;
+					(*line)[writePosition + 1] += 0;
+					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeUnknown)
+				{
+					// direction change sequence ?
+//						directionChangeSignal = 1;
+//						prevValueAvailable = 0;
+					if (prevPrevByte == prevByte)
+					{
+						motor_12_NoMove2_total++;
+					}
+					else
+					{
+						motor_12_NoMove_total++;
+					}
+//					if (LinesParsedCounter == 2)printf("2"); else printf("2");
+				}
+			}
+			if (comm.motorDirection == Move_Left)
+			{
+				if (secondaryDirection == Move_Forward)
+				{
+					(*line)[writePosition + 0] += (( - 1)* penSpeedInertiaAdjustedPrimary);
+					(*line)[writePosition + 1] += 0;
+					motor_12_Move_total+= penSpeedInertiaAdjustedPrimary;
+				}
+				if (secondaryDirection == Move_RelativeLeft)
+				{
+					(*line)[writePosition + 0] += 0;
+					(*line)[writePosition + 1] += (( - 1)* penSpeedInertiaAdjustedSecondary);
+					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeRight)
+				{
+					(*line)[writePosition + 0] += 0;
+					(*line)[writePosition + 1] += penSpeedInertiaAdjustedSecondary;
+					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeUnknown)
+				{
+					if (prevPrevByte == prevByte)
+					{
+						motor_12_NoMove2_total++;
+					}
+					else
+					{
+						motor_12_NoMove_total++;
+					}
+				}
+			}
+			if (comm.motorDirection == Move_Right)
+			{
+				if (secondaryDirection == Move_Forward)
+				{
+					(*line)[writePosition + 0] += penSpeedInertiaAdjustedPrimary;
+					(*line)[writePosition + 1] += 0;
+					motor_12_Move_total+= penSpeedInertiaAdjustedPrimary;
+				}
+				if (secondaryDirection == Move_RelativeLeft)
+				{
+					(*line)[writePosition + 0] += 0;
+					(*line)[writePosition + 1] += penSpeedInertiaAdjustedSecondary;
+					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeRight)
+				{
+					(*line)[writePosition + 0] += 0;
+					(*line)[writePosition + 1] += ((- 1)* penSpeedInertiaAdjustedSecondary);
+					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
+				}
+				if (secondaryDirection == Move_RelativeUnknown)
+				{
+					if (prevPrevByte == prevByte)
+					{
+						motor_12_NoMove2_total++;
+					}
+					else
+					{
+						motor_12_NoMove_total++;
+					}
+				}
 			}
 			writePosition += 2;
 		}
 
+		prevPrevByte = prevByte;
 		prevByte = byte;
 		prevComm = comm;
+		prevValueAvailable = 1;
 	}
-	(*line)[0] = writePosition;
-	printf("\tDone reading line. Has %d moves\n", moveByteCount);
+	(*line)[0] = (float)moveByteCount;
+
+	double lineLen = sqrt(motor_1_Move_total * motor_1_Move_total + motor_2_Move_total * motor_2_Move_total + motor_12_Move_total * motor_12_Move_total);
+	printf("\tDone reading line. Has %d commands. %s %d, %s %d, %s %d. Dot len %.02f\n",
+		moveByteCount + 1, 
+		GetDirectionStringRelative((PenRobotMovementCodes)FollowMoveType, Move_RelativeLeft), (int)motor_1_Move_total,
+		GetDirectionStringRelative((PenRobotMovementCodes)FollowMoveType, Move_RelativeRight), (int)motor_2_Move_total,
+		GetDirectionString((PenRobotMovementCodes)FollowMoveType), (int)motor_12_Move_total, lineLen);
+	printf("\tNo move %d, float no move commands %d\n", (int)motor_12_NoMove_total, (int)motor_12_NoMove2_total);
 
 	return 0;
+}
+
+const char* GetDirectionString(PenRobotMovementCodes movementCode)
+{
+	if (movementCode == Move_Up)
+	{
+		return "up";
+	}
+	if (movementCode == Move_Left)
+	{
+		return "left";
+	}
+	if (movementCode == Move_Right)
+	{
+		return "right";
+	}
+	if (movementCode == Move_Down)
+	{
+		return "down";
+	}
+	return "unknown";
+}
+
+const char* GetDirectionStringRelative(PenRobotMovementCodes movementCode, PenRobotMovementCodesRelative relative)
+{
+	if (movementCode == Move_Up)
+	{
+		if (relative == Move_RelativeLeft)
+		{
+			return "left";
+		}
+		if (relative == Move_RelativeRight)
+		{
+			return "right";
+		}
+	}
+	if (movementCode == Move_Left)
+	{
+		if (relative == Move_RelativeLeft)
+		{
+			return "up";
+		}
+		if (relative == Move_RelativeRight)
+		{
+			return "down";
+		}
+	}
+	if (movementCode == Move_Right)
+	{
+		if (relative == Move_RelativeLeft)
+		{
+			return "down";
+		}
+		if (relative == Move_RelativeRight)
+		{
+			return "up";
+		}
+	}
+	if (movementCode == Move_Down)
+	{
+		if (relative == Move_RelativeLeft)
+		{
+			return "right";
+		}
+		if (relative == Move_RelativeRight)
+		{
+			return "left";
+		}
+	}
+	return "unknown";
 }
