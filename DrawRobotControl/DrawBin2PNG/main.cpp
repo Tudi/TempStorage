@@ -45,6 +45,7 @@ int main()
 	size_t fileSize = 0;
 	RobotCommand prevCommand;
 	RobotCommand_Constructor(&prevCommand);
+	PenRobotMovementCodesPrimary prevDirection = Move1_Down; // should be derived from header
 
 //	uint8_t* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
 //	uint8_t* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
@@ -52,10 +53,10 @@ int main()
 //	uint8_t* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
 	ReadBinHeader(f, readPos, &prevCommand);
 
-	for (size_t i = 0; i < 10; i++)
+	for (size_t i = 0; i < 6; i++)
 	{
 		float* line = NULL;
-		int ret = ReadBinLine(f, readPos, fileSize, &line, &prevCommand);
+		int ret = ReadBinLine(f, readPos, fileSize, &line, &prevCommand, &prevDirection);
 		if (ret != 0)
 		{
 			free(line);

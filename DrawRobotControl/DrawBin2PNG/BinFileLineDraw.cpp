@@ -27,6 +27,9 @@ void GetLineColor(BYTE& LineBaseR, BYTE& LineBaseG, BYTE& LineBaseB)
 	LineDrawCounter++;
 }
 
+#define FLIP_DRAW_VERTICALLY 0
+#define FLIP_DRAW_HORIZONTALLY 0
+
 void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, float* line)
 {
 	if (line == NULL || line[0] <= 0)
@@ -50,8 +53,16 @@ void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, float* line)
 #define LineSize 2
 	for (size_t i = 0; i < linePixels; i++)
 	{
+#if FLIP_DRAW_HORIZONTALLY == 0
 		x += line[0];
+#else
+		x -= line[0];
+#endif
+#if FLIP_DRAW_VERTICALLY == 0
 		y += line[1];
+#else
+		y -= line[1];
+#endif
 		size_t canDraw = 1;
 		if (x - LineSize < 0)
 		{
