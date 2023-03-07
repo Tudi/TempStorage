@@ -121,11 +121,11 @@ int ScanImageNextRow(FIBITMAP* in_Img, int32_t& row, int32_t* cols)
 
 static float colOffset = 0;
 static float rowOffset = 0;
-void AddLineToSIGFile(FILE* f, float sx, float sy, float ex, float ey, float PixelsPerMM_X, float PixelsPerMM_Y)
+void AddLineToSIGFile(FILE* f, float sx, float sy, float ex, float ey, float PixelsPerINCH_X, float PixelsPerINCH_Y)
 {
 	fprintf(f, "PLINESTART\n");
-	fprintf(f, "%.02f, %.02f\n", colOffset + sx * PixelsPerMM_X, rowOffset + sy * PixelsPerMM_Y);
-	fprintf(f, "%.02f, %.02f\n", colOffset + ex * PixelsPerMM_X, rowOffset + ey * PixelsPerMM_Y);
+	fprintf(f, "%.02f, %.02f\n", colOffset + sx / PixelsPerINCH_X, rowOffset + sy / PixelsPerINCH_Y);
+	fprintf(f, "%.02f, %.02f\n", colOffset + ex / PixelsPerINCH_X, rowOffset + ey / PixelsPerINCH_Y);
 	fprintf(f, "PLINEEND\n");
 }
 
@@ -137,18 +137,22 @@ void AddFooterToSIGFile(FILE* f)
 	fprintf(f, "34082,0,0,0,1\n");
 }
 
-float GetLineLenMM(int sx, int sy, int ex, int ey, float PixelsPerMM_X, float PixelsPerMM_Y)
+float GetLineLenINCH(int sx, int sy, int ex, int ey, float PixelsPerINCH_X, float PixelsPerINCH_Y)
 {
-	int dx = sx - ex;
-	int dy = sy - ey;
-	dx = (int)((float)dx * PixelsPerMM_X);
-	dy = (int)((float)dy * PixelsPerMM_Y);
+	float dx = (float)(sx - ex);
+	float dy = (float)(sy - ey);
+	dx = ((float)dx / PixelsPerINCH_X);
+	dy = ((float)dy / PixelsPerINCH_Y);
 	return (float)sqrt(dx * dx + dy * dy);
 }
 
-#define MIN_LINE_LEN_TO_DRAW_MM	1
+#define ORIGIN_X 281.0f // in pixels. Need to update this number if input image gets flipped !
+#define ORIGIN_Y 214.0f 
+#define TEARDROP_INCH_WIDTH 9.25f
+#define TEARDROP_INCH_HEIGHT 8.66f
+#define MIN_LINE_LEN_TO_DRAW_INCH	0.0393701f
 
-int GenSigFileColWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerMM_X, float PixelsPerMM_Y)
+int GenSigFileColWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerINCH_X, float PixelsPerINCH_Y)
 {
 	FILE* sigfile;
 	char fileName[500];
@@ -163,25 +167,19 @@ int GenSigFileColWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsP
 	int rows[2];
 	while (ScanImageNextCol(dib, col, rows) == 0)
 	{
-		float lenMM = GetLineLenMM(col, rows[0], col, rows[1], PixelsPerMM_X, PixelsPerMM_Y);
-		if (break_to_pieces == 1)
+		float lenINCH = GetLineLenINCH(col, rows[0], col, rows[1], PixelsPerINCH_X, PixelsPerINCH_Y);
+		float segmentLen = lenINCH / (float)break_to_pieces;
+		if (break_to_pieces == 2) // lots of very small lines
 		{
-			AddLineToSIGFile(sigfile, (float)col, (float)rows[0], (float)col, (float)rows[1], PixelsPerMM_X, PixelsPerMM_Y);
+			segmentLen = MIN_LINE_LEN_TO_DRAW_INCH;
 		}
-		else if (break_to_pieces == 2)
+		size_t segment_count = (size_t)(lenINCH / segmentLen);
+		float segment_len_pixel = (float)(rows[1] - rows[0]) / (float)segment_count;
+		for (size_t segment = 0; segment < segment_count; segment++)
 		{
-			for (size_t segment = 1; segment < rows[1] - rows[0]; segment++)
-			{
-				AddLineToSIGFile(sigfile, (float)col, (float)rows[0] + segment, (float)col, (float)rows[0] + segment + 1, PixelsPerMM_X, PixelsPerMM_Y);
-			}
-		}
-		else if (lenMM / break_to_pieces > MIN_LINE_LEN_TO_DRAW_MM)
-		{
-			float segmentLen = lenMM / break_to_pieces;
-			for (float segment = 0; segment < lenMM; segment += segmentLen)
-			{
-				AddLineToSIGFile(sigfile, col * PixelsPerMM_X, rows[0] * PixelsPerMM_Y + segment, col * PixelsPerMM_X, rows[0] + segment + segmentLen, 1, 1);
-			}
+			float start = rows[0] + segment_len_pixel * segment;
+			float end = rows[0] + segment_len_pixel * (segment + 1);
+			AddLineToSIGFile(sigfile, (float)col, (float)start, (float)col, (float)end, PixelsPerINCH_X, PixelsPerINCH_Y);
 		}
 		col++;
 	}
@@ -190,7 +188,7 @@ int GenSigFileColWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsP
 	return 0;
 }
 
-int GenSigFileRowWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerMM_X, float PixelsPerMM_Y)
+int GenSigFileRowWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerINCH_X, float PixelsPerINCH_Y)
 {
 	FILE* sigfile;
 	char fileName[500];
@@ -205,25 +203,19 @@ int GenSigFileRowWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsP
 	int cols[2];
 	while (ScanImageNextRow(dib, row, cols) == 0)
 	{
-		float lenMM = GetLineLenMM(cols[0], row, cols[1], row, PixelsPerMM_X, PixelsPerMM_Y);
-		if (break_to_pieces == 1)
+		float lenINCH = GetLineLenINCH(cols[0], row, cols[1], row, PixelsPerINCH_X, PixelsPerINCH_Y);
+		float segmentLen = lenINCH / (float)break_to_pieces;
+		if (break_to_pieces == 2) // lots of very small lines
 		{
-			AddLineToSIGFile(sigfile, (float)cols[0], (float)row, (float)cols[1], (float)row, PixelsPerMM_X, PixelsPerMM_Y);
+			segmentLen = MIN_LINE_LEN_TO_DRAW_INCH;
 		}
-		else if (break_to_pieces == 2)
+		size_t segment_count = (size_t)(lenINCH / segmentLen);
+		float segment_len_pixel = (float)(cols[1] - cols[0]) / (float)segment_count;
+		for (size_t segment = 0; segment < segment_count; segment++)
 		{
-			for (size_t segment = 1; segment < cols[1] - cols[0]; segment++)
-			{
-				AddLineToSIGFile(sigfile, (float)cols[0] + segment, (float)row, (float)cols[1] + segment + 1, (float)row, PixelsPerMM_X, PixelsPerMM_Y);
-			}
-		}
-		else if (lenMM / break_to_pieces > MIN_LINE_LEN_TO_DRAW_MM)
-		{
-			float segmentLen = lenMM / break_to_pieces;
-			for (float segment = 0; segment < lenMM; segment += segmentLen)
-			{
-				AddLineToSIGFile(sigfile, cols[0] * PixelsPerMM_X, row * PixelsPerMM_Y + segment, cols[1] * PixelsPerMM_X, row + segment + segmentLen, 1, 1);
-			}
+			float start = cols[0] + segment_len_pixel * segment;
+			float end = cols[0] + segment_len_pixel * (segment + 1);
+			AddLineToSIGFile(sigfile, (float)start, (float)row, (float)end, (float)row, PixelsPerINCH_X, PixelsPerINCH_Y);
 		}
 		row++;
 	}
@@ -232,26 +224,26 @@ int GenSigFileRowWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsP
 	return 0;
 }
 
-#define TEARDROP_MM_WIDTH 235.0f
-#define TEARDROP_MM_HEIGHT 220.0f
-
 int main()
 {
 	FIBITMAP* dib = LoadImage_("SA_2_Tear.bmp"); // initialize lib
 	int32_t Width = FreeImage_GetWidth(dib);
 	int32_t Height = FreeImage_GetHeight(dib);
 
-	float PixelsPerMM_X = Width / TEARDROP_MM_WIDTH;
-	float PixelsPerMM_Y = Height / TEARDROP_MM_HEIGHT;
+	float PixelsPerINCH_X = Width / TEARDROP_INCH_WIDTH;
+	float PixelsPerINCH_Y = Height / TEARDROP_INCH_HEIGHT;
 
-	colOffset = -TEARDROP_MM_WIDTH / 2;
-	rowOffset = -TEARDROP_MM_HEIGHT / 2;
+	float origin_x_pct = ORIGIN_X / Width;
+	float origin_y_pct = ORIGIN_Y / Height;
 
-	// largest line is 235 mm horizontally and 220 mm vertically
+	colOffset = -TEARDROP_INCH_WIDTH * origin_x_pct;
+	rowOffset = -TEARDROP_INCH_HEIGHT * origin_y_pct;
+
+	// largest line is 235 INCH horizontally and 220 INCH vertically
 	for (size_t break_to_pieces = 1; break_to_pieces <= 4; break_to_pieces += 1)
 	{
-		GenSigFileColWithBreaks(dib, break_to_pieces, PixelsPerMM_X, PixelsPerMM_Y);
-		GenSigFileRowWithBreaks(dib, break_to_pieces, PixelsPerMM_X, PixelsPerMM_Y);
+		GenSigFileColWithBreaks(dib, break_to_pieces, PixelsPerINCH_X, PixelsPerINCH_Y);
+		GenSigFileRowWithBreaks(dib, break_to_pieces, PixelsPerINCH_X, PixelsPerINCH_Y);
 	}
 	FreeImage_Unload(dib);
 
