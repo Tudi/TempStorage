@@ -13,10 +13,10 @@ typedef enum PenRobotMovementCodes
 
 typedef enum PenRobotMovementCodesRelative
 {
-	Move_Forward = 0x03,
+	Move_RelativeForward = 0x03,
 	Move_RelativeLeft = 0x01,
 	Move_RelativeRight = 0x02,
-	Move_RelativeUnknown = 0x00, // would not make sense to move backward
+	Move_RelativeBackwards = 0x00, // strange
 }PenRobotMovementCodesRelative;
 
 typedef enum PenRobotPenPosition
@@ -38,11 +38,12 @@ typedef struct RobotCommand
 }RobotCommand;
 #pragma pack(pop)
 
-char* OpenBinFile(const char* name, uint32_t& readPos, size_t& fileSize);
-void ReadBinHeader(char* f, uint32_t& readPos);
-void ReadBinFooter(char* f, uint32_t& readPos);
+void RobotCommand_Constructor(RobotCommand *comm);
+uint8_t* OpenBinFile(const char* name, uint32_t& readPos, size_t& fileSize);
+void ReadBinHeader(uint8_t* f, uint32_t& readPos, RobotCommand* comm);
+void ReadBinFooter(uint8_t* f, uint32_t& readPos, RobotCommand* comm);
 
 #define MAX_LINE_NODES 65535 // todo : should make this dynamic ...
-int ReadBinLine(char* f, uint32_t& readPos, size_t fileSize, float** line);
+int ReadBinLine(uint8_t* f, uint32_t& readPos, size_t fileSize, float** line, RobotCommand* comm);
 const char* GetDirectionString(PenRobotMovementCodes movementCode);
 const char* GetDirectionStringRelative(PenRobotMovementCodes movementCode, PenRobotMovementCodesRelative relative);

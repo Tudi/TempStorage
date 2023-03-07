@@ -43,17 +43,19 @@ int main()
 
 	uint32_t readPos = 0;
 	size_t fileSize = 0;
-//	char* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
-//	char* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
-	char* f = OpenBinFile("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin", readPos, fileSize);
-//	char* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
-	ReadBinHeader(f, readPos);
-//	ReadBinFooter(f, readPos);
+	RobotCommand prevCommand;
+	RobotCommand_Constructor(&prevCommand);
+
+//	uint8_t* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
+//	uint8_t* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
+	uint8_t* f = OpenBinFile("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin", readPos, fileSize);
+//	uint8_t* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
+	ReadBinHeader(f, readPos, &prevCommand);
 
 	for (size_t i = 0; i < 10; i++)
 	{
 		float* line = NULL;
-		int ret = ReadBinLine(f, readPos, fileSize, &line);
+		int ret = ReadBinLine(f, readPos, fileSize, &line, &prevCommand);
 		if (ret != 0)
 		{
 			free(line);
@@ -65,8 +67,7 @@ int main()
 
 		free(line);
 	}
-	ReadBinFooter(f, readPos);
-//	ReadBinHeader(f, readPos);
+	ReadBinFooter(f, readPos, &prevCommand);
 
 	free(f);
 
