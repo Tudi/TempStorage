@@ -79,6 +79,46 @@ int ScanImageNextCol(FIBITMAP* in_Img, int32_t& col, int32_t* rows)
 	return 1;
 }
 
+int ScanImageNextRow(FIBITMAP* in_Img, int32_t& row, int32_t* cols)
+{
+	size_t stride = FreeImage_GetPitch(in_Img);
+	BYTE* BITS = FreeImage_GetBits(in_Img);
+	int32_t Width = FreeImage_GetWidth(in_Img);
+	int32_t Height = FreeImage_GetHeight(in_Img);
+	//does this column have at least 2 red pixels ?
+	for (; row < Height; row++)
+	{
+		int RedsFound = 0;
+		int IsRed = 0;
+		for (size_t x = 0; x < Width; x++)
+		{
+			if (IsTearRed(&BITS[((int)row) * stride + ((int)x) * Bytespp + 0]))
+			{
+				IsRed = 1;
+			}
+			else if (IsRed)
+			{
+				IsRed = 0;
+				if (RedsFound < 2)
+				{
+					cols[RedsFound] = (int32_t)x;
+				}
+				else
+				{
+					break;
+				}
+				RedsFound++;
+			}
+		}
+		printf("At row %d found %d reds at %d, %d\n", row, RedsFound, cols[0], cols[1]);
+		if (RedsFound == 2)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
 void AddLineToSIGFile(FILE* f, float sx, float sy, float ex, float ey, float PixelsPerMM_X, float PixelsPerMM_Y)
 {
 	fprintf(f, "PLINESTART\n");
@@ -99,12 +139,96 @@ float GetLineLenMM(int sx, int sy, int ex, int ey, float PixelsPerMM_X, float Pi
 {
 	int dx = sx - ex;
 	int dy = sy - ey;
-	dx *= PixelsPerMM_X;
-	dy *= PixelsPerMM_Y;
-	return sqrt(dx * dx + dy * dy);
+	dx = (int)((float)dx * PixelsPerMM_X);
+	dy = (int)((float)dy * PixelsPerMM_Y);
+	return (float)sqrt(dx * dx + dy * dy);
 }
 
 #define MIN_LINE_LEN_TO_DRAW_MM	1
+
+int GenSigFileColWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerMM_X, float PixelsPerMM_Y)
+{
+	FILE* sigfile;
+	char fileName[500];
+	sprintf_s(fileName, sizeof(fileName), "vert_%d.sig", (int)break_to_pieces);
+	errno_t openErr = fopen_s(&sigfile, fileName, "wt");
+	if (sigfile == NULL)
+	{
+		printf("Failed to open output file\n");
+		return 1;
+	}
+	int col = 0;
+	int rows[2];
+	while (ScanImageNextCol(dib, col, rows) == 0)
+	{
+		float lenMM = GetLineLenMM(col, rows[0], col, rows[1], PixelsPerMM_X, PixelsPerMM_Y);
+		if (break_to_pieces == 1)
+		{
+			AddLineToSIGFile(sigfile, (float)col, (float)rows[0], (float)col, (float)rows[1], PixelsPerMM_X, PixelsPerMM_Y);
+		}
+		else if (break_to_pieces == 2)
+		{
+			for (size_t segment = 1; segment < rows[1] - rows[0]; segment++)
+			{
+				AddLineToSIGFile(sigfile, (float)col, (float)rows[0] + segment, (float)col, (float)rows[0] + segment + 1, PixelsPerMM_X, PixelsPerMM_Y);
+			}
+		}
+		else if (lenMM / break_to_pieces > MIN_LINE_LEN_TO_DRAW_MM)
+		{
+			float segmentLen = lenMM / break_to_pieces;
+			for (float segment = 0; segment < lenMM; segment += segmentLen)
+			{
+				AddLineToSIGFile(sigfile, col * PixelsPerMM_X, rows[0] * PixelsPerMM_Y + segment, col * PixelsPerMM_X, rows[0] + segment + segmentLen, 1, 1);
+			}
+		}
+		col++;
+	}
+	AddFooterToSIGFile(sigfile);
+	fclose(sigfile);
+	return 0;
+}
+
+int GenSigFileRowWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerMM_X, float PixelsPerMM_Y)
+{
+	FILE* sigfile;
+	char fileName[500];
+	sprintf_s(fileName, sizeof(fileName), "hor_%d.sig", (int)break_to_pieces);
+	errno_t openErr = fopen_s(&sigfile, fileName, "wt");
+	if (sigfile == NULL)
+	{
+		printf("Failed to open output file\n");
+		return 1;
+	}
+	int row = 0;
+	int cols[2];
+	while (ScanImageNextRow(dib, row, cols) == 0)
+	{
+		float lenMM = GetLineLenMM(cols[0], row, cols[1], row, PixelsPerMM_X, PixelsPerMM_Y);
+		if (break_to_pieces == 1)
+		{
+			AddLineToSIGFile(sigfile, (float)cols[0], (float)row, (float)cols[1], (float)row, PixelsPerMM_X, PixelsPerMM_Y);
+		}
+		else if (break_to_pieces == 2)
+		{
+			for (size_t segment = 1; segment < cols[1] - cols[0]; segment++)
+			{
+				AddLineToSIGFile(sigfile, (float)cols[0] + segment, (float)row, (float)cols[1] + segment + 1, (float)row, PixelsPerMM_X, PixelsPerMM_Y);
+			}
+		}
+		else if (lenMM / break_to_pieces > MIN_LINE_LEN_TO_DRAW_MM)
+		{
+			float segmentLen = lenMM / break_to_pieces;
+			for (float segment = 0; segment < lenMM; segment += segmentLen)
+			{
+				AddLineToSIGFile(sigfile, cols[0] * PixelsPerMM_X, row * PixelsPerMM_Y + segment, cols[1] * PixelsPerMM_X, row + segment + segmentLen, 1, 1);
+			}
+		}
+		row++;
+	}
+	AddFooterToSIGFile(sigfile);
+	fclose(sigfile);
+	return 0;
+}
 
 int main()
 {
@@ -112,49 +236,14 @@ int main()
 	int32_t Width = FreeImage_GetWidth(dib);
 	int32_t Height = FreeImage_GetHeight(dib);
 
-	float PixelsPerMM_X = Width / 235;
-	float PixelsPerMM_Y = Height / 235;
+	float PixelsPerMM_X = Width / 235.0f;
+	float PixelsPerMM_Y = Height / 235.0f;
 
 	// largest line is 235 mm horizontally and 220 mm vertically
 	for (size_t break_to_pieces = 1; break_to_pieces <= 4; break_to_pieces += 1)
 	{
-		FILE* sigfile;
-		char fileName[500];
-		sprintf_s(fileName, sizeof(fileName), "vert_%d.sig", break_to_pieces);
-		errno_t openErr = fopen_s(&sigfile, fileName, "wt");
-		if (sigfile == NULL)
-		{
-			printf("Failed to open output file\n");
-			return 1;
-		}
-		int col = 0;
-		int rows[2];
-		while (ScanImageNextCol(dib, col, rows) == 0)
-		{
-			float lenMM = GetLineLenMM(col, rows[0], col, rows[1], PixelsPerMM_X, PixelsPerMM_Y);
-			if (break_to_pieces == 1)
-			{
-				AddLineToSIGFile(sigfile, col, rows[0], col, rows[1], PixelsPerMM_X, PixelsPerMM_Y);
-			}
-			else if (break_to_pieces == 2)
-			{
-				for (size_t segment = 1; segment < rows[1] - rows[0]; segment++)
-				{
-					AddLineToSIGFile(sigfile, col, rows[0] + segment, col, rows[0] + segment + 1, PixelsPerMM_X, PixelsPerMM_Y);
-				}
-			}
-			else if (lenMM / break_to_pieces > MIN_LINE_LEN_TO_DRAW_MM)
-			{
-				float segmentLen = lenMM / break_to_pieces;
-				for (float segment = 0; segment < lenMM; segment += segmentLen)
-				{
-					AddLineToSIGFile(sigfile, col * PixelsPerMM_X, rows[0] * PixelsPerMM_Y + segment, col * PixelsPerMM_X, rows[0] + segment + segmentLen, 1, 1);
-				}
-			}
-			col++;
-		}
-		AddFooterToSIGFile(sigfile);
-		fclose(sigfile);
+		GenSigFileColWithBreaks(dib, break_to_pieces, PixelsPerMM_X, PixelsPerMM_Y);
+		GenSigFileRowWithBreaks(dib, break_to_pieces, PixelsPerMM_X, PixelsPerMM_Y);
 	}
 	FreeImage_Unload(dib);
 
