@@ -98,9 +98,14 @@ void ReadBinFooter(uint8_t* bytes, uint32_t& readPos, RobotCommand* comm)
 //#define TEST_BACKWARD_MOVE_REVERSES_MAIN_DIRECTION
 //#define TEST_SAME_MOVEMENT_ADDS_INERTIA
 //#define TEST_PRIMARY_DIRECTION_RELATIVE
+//#define TEST_SAME_COMMAND_HALF_SPEED //looks like some sort of 'arm' movement compensation
+//#define TEST_SAME_COMMAND_HALF_SPEED_EXCEPT_FORWARD
+//#define TEST_TRIPPLE_COMMAND_FORWARD_MOVE //looks like some sort of 'arm' movement compensation
+//#define		TEST_TRIPPLE_COMMAND_REVERTS_LAST_MOVE
+//#define		TEST_DOUBLE_ADDS_FORWARD_HALF
 
 static int LinesParsedCounter = 0;
-int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line, RobotCommand* prevComm, PenRobotMovementCodesPrimary *prevDirection)
+int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePointsLine** line, RobotCommand* prevComm, PenRobotMovementCodesPrimary *prevDirection)
 {
 	if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
 		|| (FileReadDirection > 0 && readPos >= fileSize - BIN_FOOTER_BYTE_COUNT))
@@ -115,10 +120,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 	uint8_t primaryRelativeDirection = Move1_RelativeNoChange;
 	uint8_t followPrimaryDirection = UNINITIALIZED_VALUE_8;
 	uint8_t followPenPosition = 0;
-	uint32_t writePosition = 2; // first is counter, second is pen position
-	*line = (float*)malloc(sizeof(float) * MAX_LINE_NODES);
-	int32_t xInc = 0, yInc = 0;
-	memset(*line, 0, sizeof(float) * MAX_LINE_NODES);
+
 	float motor_12_Move_total = 0;
 	float motor_1_Move_total = 0;
 	float motor_2_Move_total = 0;
@@ -128,11 +130,6 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 	size_t prevSecondaryDirection = UNINITIALIZED_VALUE_8;
 
 	size_t directionChangeSignal = 0;
-
-	if (*line == NULL)
-	{
-		return 1;
-	}
 
 	while (1)
 	{
@@ -153,8 +150,8 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 			followPenPosition = comm.penPosition;
 #ifndef TEST_PRIMARY_DIRECTION_RELATIVE
 			followPrimaryDirection = comm.primaryDirection;
-			if (LinesParsedCounter == 5 - 1)followPrimaryDirection = Move1_Left;
-			if (LinesParsedCounter == 6 - 1)followPrimaryDirection = Move1_Right;
+//			if (LinesParsedCounter == 3 - 1)followPrimaryDirection = Move1_Right;
+//			if (LinesParsedCounter == 6 - 1)followPrimaryDirection = Move1_Right;
 //			if (LinesParsedCounter == 7 - 1)followPrimaryDirection = Move1_Up;
 //			if (LinesParsedCounter == 8 - 1)followPrimaryDirection = Move1_Down;
 //			if (LinesParsedCounter == 11 - 1)followPrimaryDirection = Move1_Right;
@@ -230,14 +227,16 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 			}
 #endif
 			*prevDirection = (PenRobotMovementCodesPrimary)followPrimaryDirection;
-			(*line)[1] = comm.penPosition;
+			RelativePointsLine::setPenPosition(line, comm.penPosition);
 			LinesParsedCounter++;
-			printf("%d) Will follow move type %d-%s. Pen is %d\n", LinesParsedCounter, followPrimaryDirection,
-				GetDirectionString((PenRobotMovementCodesPrimary)followPrimaryDirection), followPenPosition != 0);
+			printf("%d) Will follow move type %d-%s. Pen is %d. start at pos %d, Prev byte %02X, cur byte %02X\n",
+				LinesParsedCounter, followPrimaryDirection,
+				GetDirectionString((PenRobotMovementCodesPrimary)followPrimaryDirection), 
+				followPenPosition != 0, readPos - 1, bytes[readPos - 2], bytes[readPos - 1]);
 		}
 		else if (primaryRelativeDirection != Move1_RelativeNoChange || comm.penPosition != followPenPosition)
 		{
-			readPos += (1 - FileReadDirection);
+			readPos -= FileReadDirection;
 			moveByteCount--;
 			break;
 		}
@@ -255,6 +254,11 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 			printf("!!Always zero2 is not always one at pos %d value %d\n", readPos, byte);
 		}
 
+		// interpret it as extra move for main direction
+		int isNext1Prev1CommandsSame = (bytes[readPos - 2] == bytes[readPos - 1]) && (bytes[readPos - 1] == bytes[readPos + 0]);
+		int isNext2CommandsSame = (bytes[readPos - 1] == bytes[readPos - 0]) && (bytes[readPos - 0] == bytes[readPos + 1]);
+		// interpret it as only half movement
+		int isNext1CommandSame = bytes[readPos - 1] == bytes[readPos];
 		if (
 			// need to confirm theory : robot is unable to sense commands that are exactly the same
 			// but multiple of these "useless" commands will trigger a robot response. Ex : paper swap, reposition pen to origin
@@ -264,17 +268,60 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 			if (prevPrevByte == prevByte)
 			{
 				motor_12_NoMove2_total++;
+//				if (LinesParsedCounter == 3)printf("6   \n");
+
+#if 0
+				if (LinesParsedCounter == 3 
+					|| LinesParsedCounter == 5
+					)
+				{
+					//reverse one right movement
+					(*line)[writePosition + 0] += 1;
+					(*line)[writePosition + 1] += 0;
+					motor_1_Move_total -= 1;
+					//and convert it to a down movement
+//					(*line)[writePosition + 0] += 0;
+//					(*line)[writePosition + 1] -= 1.0f;
+//					motor_12_Move_total += 1;
+					writePosition += 2;
+				}
+#endif
 			}
 			else
 			{
+//				if (LinesParsedCounter == 3)printf("5   ");
 				motor_12_NoMove_total++;
 			}
 		}
-		else
+//		else
 		{
 			int secondaryDirection = comm.secondaryDirection ^ prevComm->secondaryDirection;
+//			printf("%d%d ", secondaryDirection, comm.secondaryDirection);
 			float penSpeedInertiaAdjustedPrimary = 1.0f;
 			float penSpeedInertiaAdjustedSecondary = 1.0f;
+
+			if (comm.penPosition == Pen_Up)
+			{
+#ifdef TEST_TRIPPLE_COMMAND_FORWARD_MOVE
+				if (isNext1Prev1CommandsSame)
+				{
+					secondaryDirection = Move2_RelativeForward;
+					// or maybe it's adjust position of shorter / longer arm ?
+				}
+#endif
+#ifdef TEST_SAME_COMMAND_HALF_SPEED
+				else if (isNext1CommandSame)
+				{
+					penSpeedInertiaAdjustedPrimary = penSpeedInertiaAdjustedPrimary * 0.5;
+					penSpeedInertiaAdjustedSecondary = penSpeedInertiaAdjustedSecondary * 0.5;
+				}
+#elif defined(TEST_SAME_COMMAND_HALF_SPEED_EXCEPT_FORWARD)
+				else if (isNext1CommandSame && isNext2CommandsSame == 0)
+				{
+					penSpeedInertiaAdjustedSecondary = penSpeedInertiaAdjustedSecondary / 2;
+				}
+#endif
+			}
 
 #ifdef TEST_SAME_MOVEMENT_ADDS_INERTIA
 			if (prevSecondaryDirection == secondaryDirection)
@@ -301,23 +348,23 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 			{
 				if (secondaryDirection == Move2_RelativeForward)
 				{
-					(*line)[writePosition + 0] += 0;
-					(*line)[writePosition + 1] += ((-1.0f) * penSpeedInertiaAdjustedPrimary);
+//					if (LinesParsedCounter == 3)printf("3+3 ");
+					RelativePointsLine::storeNextPoint(line, 0, -penSpeedInertiaAdjustedPrimary);
 					motor_12_Move_total += penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft)
 				{
-					(*line)[writePosition + 0] += penSpeedInertiaAdjustedSecondary;
-					(*line)[writePosition + 1] += 0;
+//					if (LinesParsedCounter == 3)printf("3+1 ");
+					RelativePointsLine::storeNextPoint(line, penSpeedInertiaAdjustedSecondary, 0);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight)
 				{
-					(*line)[writePosition + 0] += ((-1) * penSpeedInertiaAdjustedSecondary);
-					(*line)[writePosition + 1] += 0;
+//					if (LinesParsedCounter == 3)printf("3+2 ");
+					RelativePointsLine::storeNextPoint(line, -penSpeedInertiaAdjustedSecondary, 0);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
-				if (secondaryDirection == Move2_RelativeNoChange)
+/*				if (secondaryDirection == Move2_RelativeNoChange)
 				{
 					// direction change sequence ?
 //						directionChangeSignal = 1;
@@ -335,31 +382,28 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 					(*line)[writePosition + 1] += penSpeedInertiaAdjustedPrimary;
 					motor_12_Move_total -= penSpeedInertiaAdjustedPrimary;
 #endif
-				}
+				}*/
 			}
 			if (followPrimaryDirection == Move1_Up)
 			{
 				if (secondaryDirection == Move2_RelativeForward)
 				{
 //					if (LinesParsedCounter == 2)printf("0"); else printf("1\n");
-					(*line)[writePosition + 0] += 0;
-					(*line)[writePosition + 1] += penSpeedInertiaAdjustedPrimary;
+					RelativePointsLine::storeNextPoint(line, 0, penSpeedInertiaAdjustedSecondary);
 					motor_12_Move_total += penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft)
 				{
-					(*line)[writePosition + 0] += ((-1) * penSpeedInertiaAdjustedSecondary);
-					(*line)[writePosition + 1] += 0;
+					RelativePointsLine::storeNextPoint(line, -penSpeedInertiaAdjustedSecondary, 0);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight)
 				{
 //					if (LinesParsedCounter == 2)printf("1\n"); else printf("0");
-					(*line)[writePosition + 0] += penSpeedInertiaAdjustedSecondary;
-					(*line)[writePosition + 1] += 0;
+					RelativePointsLine::storeNextPoint(line, penSpeedInertiaAdjustedSecondary, 0);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
-				if (secondaryDirection == Move2_RelativeNoChange)
+/*				if (secondaryDirection == Move2_RelativeNoChange)
 				{
 					// direction change sequence ?
 //						directionChangeSignal = 1;
@@ -378,29 +422,26 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 					(*line)[writePosition + 1] -= penSpeedInertiaAdjustedPrimary;
 					motor_12_Move_total -= penSpeedInertiaAdjustedPrimary;
 #endif
-				}
+				}*/
 			}
 			if (followPrimaryDirection == Move1_Left)
 			{
 				if (secondaryDirection == Move2_RelativeForward)
 				{
-					(*line)[writePosition + 0] += (( - 1)* penSpeedInertiaAdjustedPrimary);
-					(*line)[writePosition + 1] += 0;
+					RelativePointsLine::storeNextPoint(line, -penSpeedInertiaAdjustedSecondary, 0);
 					motor_12_Move_total+= penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft)
 				{
-					(*line)[writePosition + 0] += 0;
-					(*line)[writePosition + 1] += (( - 1)* penSpeedInertiaAdjustedSecondary);
+					RelativePointsLine::storeNextPoint(line, 0, -penSpeedInertiaAdjustedSecondary);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight)
 				{
-					(*line)[writePosition + 0] += 0;
-					(*line)[writePosition + 1] += penSpeedInertiaAdjustedSecondary;
+					RelativePointsLine::storeNextPoint(line, 0, penSpeedInertiaAdjustedSecondary);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
-				if (secondaryDirection == Move2_RelativeNoChange)
+/*				if (secondaryDirection == Move2_RelativeNoChange)
 				{
 					if (prevPrevByte == prevByte)
 					{
@@ -415,29 +456,26 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 					(*line)[writePosition + 1] -= 0;
 					motor_12_Move_total -= penSpeedInertiaAdjustedPrimary;
 #endif
-				}
+				}*/
 			}
 			if (followPrimaryDirection == Move1_Right)
 			{
 				if (secondaryDirection == Move2_RelativeForward)
 				{
-					(*line)[writePosition + 0] += penSpeedInertiaAdjustedPrimary;
-					(*line)[writePosition + 1] += 0;
+					RelativePointsLine::storeNextPoint(line, penSpeedInertiaAdjustedSecondary, 0);
 					motor_12_Move_total+= penSpeedInertiaAdjustedPrimary;
 				}
-				if (secondaryDirection == Move2_RelativeLeft)
+				if (secondaryDirection == Move2_RelativeLeft) // move up
 				{
-					(*line)[writePosition + 0] += 0;
-					(*line)[writePosition + 1] += penSpeedInertiaAdjustedSecondary;
+					RelativePointsLine::storeNextPoint(line, 0, penSpeedInertiaAdjustedSecondary);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
-				if (secondaryDirection == Move2_RelativeRight)
+				if (secondaryDirection == Move2_RelativeRight) // move down
 				{
-					(*line)[writePosition + 0] += 0;
-					(*line)[writePosition + 1] += ((- 1)* penSpeedInertiaAdjustedSecondary);
+					RelativePointsLine::storeNextPoint(line, 0, -penSpeedInertiaAdjustedSecondary);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
-				if (secondaryDirection == Move2_RelativeNoChange)
+/*				if (secondaryDirection == Move2_RelativeNoChange)
 				{
 					if (prevPrevByte == prevByte)
 					{
@@ -447,21 +485,19 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, float** line
 					{
 						motor_12_NoMove_total++;
 					}
-				}
 #ifdef TEST_BACKWARD_MOVE_REVERSES_MAIN_DIRECTION
 				(*line)[writePosition + 0] -= penSpeedInertiaAdjustedPrimary;
 				(*line)[writePosition + 1] += 0;
 				motor_12_Move_total -= penSpeedInertiaAdjustedPrimary;
 #endif
+				}*/
 			}
-			writePosition += 2;
 		}
 
 		prevPrevByte = prevByte;
 		prevByte = byte;
 		*prevComm = comm;
 	}
-	(*line)[0] = (float)moveByteCount;
 
 	double lineLen = sqrt(motor_1_Move_total * motor_1_Move_total + motor_2_Move_total * motor_2_Move_total + motor_12_Move_total * motor_12_Move_total);
 	printf("\tDone reading line. Has %d commands. %s %d, %s %d, %s %d. Dot len %.02f\n",
