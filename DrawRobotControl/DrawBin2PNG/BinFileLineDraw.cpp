@@ -148,27 +148,28 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 	RelativePointsLine::setStartingPosition(line, sx, sy);
 
 	// just to increase the draw accuracy. More points, more smoothness
-	if (dy > dx)
+	double lineDrawSteps;
+	if (abs(dy) > abs(dx))
 	{
-		double lineDrawSteps = dy;
-		double xIncForY = dx / lineDrawSteps;
-		for (double step = 0; step <= lineDrawSteps; step += 1)
-		{
-			double x_rel = step * xIncForY;
-			double y_rel = step;
-			RelativePointsLine::storeNextPoint(line, x_rel, y_rel);
-		}
+		lineDrawSteps = abs(dy);
 	}
-	else 
+	else
 	{
-		double lineDrawSteps = dx;
-		double yIncForx = dy / lineDrawSteps;
-		for (double step = 0; step <= lineDrawSteps; step += 1)
+		lineDrawSteps = abs(dx);
+	}
+	double xIncForStep = dx / lineDrawSteps;
+	double yIncForStep = dy / lineDrawSteps;
+	double prevWriteAtStep = 0;
+ 	for (double step = 1; step <= lineDrawSteps; step += 1)
+	{
+		double xdiff = (step - prevWriteAtStep) * xIncForStep;
+		double ydiff = (step - prevWriteAtStep) * yIncForStep;
+		if (abs(xdiff) < MIN_LINE_SEGMENT_LENGTH && abs(ydiff) < MIN_LINE_SEGMENT_LENGTH)
 		{
-			double x_rel = step;
-			double y_rel = step * yIncForx;
-			RelativePointsLine::storeNextPoint(line, x_rel, y_rel);
+			continue;
 		}
+		prevWriteAtStep = step;
+		RelativePointsLine::storeNextPoint(line, xIncForStep, yIncForStep);
 	}
 }
 

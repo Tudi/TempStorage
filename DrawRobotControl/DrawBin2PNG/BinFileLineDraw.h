@@ -1,6 +1,8 @@
 #pragma once
 
-#define MIN_POINTS_LINE_EXTEND	100
+#define MIN_POINTS_LINE_EXTEND		100
+#define PIXELS_IN_INCH				600.0
+#define MIN_LINE_SEGMENT_LENGTH		1
 
 #pragma pack(push, 1)
 typedef struct RelativeLinePoint

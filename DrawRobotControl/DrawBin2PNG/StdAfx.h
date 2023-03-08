@@ -8,7 +8,9 @@
 #include <math.h>
 #include "FreeImage.h"
 #include "ImageHandler.h"
+#include "BinFileCommon.h"
 #include "BinFileReader.h"
+#include "BinFileWriter.h"
 #include "BinFileLineDraw.h"
 
 

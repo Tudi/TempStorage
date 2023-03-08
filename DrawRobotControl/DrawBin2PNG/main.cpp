@@ -30,6 +30,81 @@ FIBITMAP* openImage(const char* fileName)
 	return dib;
 }
 
+void drawClock(FIBITMAP* dib, RobotDrawSession &robotSession)
+{
+	RelativePointsLine* line = NULL;
+	RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.5) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.433) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.25) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.5) * PIXELS_IN_INCH), robotSession.cury + (float)((0) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((0.433) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((0.25) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0) * PIXELS_IN_INCH), robotSession.cury + (float)((0.5) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((0.433) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((0.25) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.5) * PIXELS_IN_INCH), robotSession.cury + (float)((0) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.433) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+
+	robotSession.curx = robotSession.startx;
+	robotSession.cury = robotSession.starty;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.25) * PIXELS_IN_INCH), &line);
+	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
+	free(line); line = NULL;
+}
+
 #define ImageSizeMultiplier 2
 int main()
 {
@@ -41,6 +116,8 @@ int main()
 	robotSession.cury = robotSession.starty = 2048 * ImageSizeMultiplier / 2;
 
 	DrawCircleAt(dib, robotSession.curx, robotSession.cury, 300);
+	
+//	drawClock(dib, robotSession);
 
 	uint32_t readPos = 0;
 	size_t fileSize = 0;
@@ -53,7 +130,7 @@ int main()
 //	uint8_t* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
 	ReadBinHeader(f, readPos, &robotSession);
 
-	for (size_t i = 0; i < 60; i++)
+	for (size_t i = 0; i < 0; i++)
 	{
 		RelativePointsLine* line = NULL;
 		RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);
