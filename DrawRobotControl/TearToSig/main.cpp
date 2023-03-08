@@ -45,6 +45,7 @@ int ScanImageNextCol(FIBITMAP* in_Img, int32_t& col, int32_t* rows)
 	BYTE* BITS = FreeImage_GetBits(in_Img);
 	int32_t Width = FreeImage_GetWidth(in_Img);
 	int32_t Height = FreeImage_GetHeight(in_Img);
+	rows[0] = rows[1] = 0;
 	//does this column have at least 2 red pixels ?
 	for (; col < Width; col++)
 	{
@@ -52,7 +53,7 @@ int ScanImageNextCol(FIBITMAP* in_Img, int32_t& col, int32_t* rows)
 		int IsRed = 0;
 		for (size_t y = 0; y < Height; y++)
 		{
-			if (IsTearRed(&BITS[((int)y) * stride + ((int)col) * Bytespp + 0]))
+			if (IsTearRed(&BITS[((int)y) * stride + ((int)col) * Bytespp + 0]) && y < (Height - 1))
 			{
 				IsRed = 1;
 			}
@@ -70,10 +71,14 @@ int ScanImageNextCol(FIBITMAP* in_Img, int32_t& col, int32_t* rows)
 				RedsFound++;
 			}
 		}
-		printf("At col %d found %d reds at %d, %d\n", col, RedsFound, rows[0], rows[1]);
 		if (RedsFound == 2)
 		{
+//			printf("At col %d found %d reds at %d, %d\n", col, RedsFound, rows[0], rows[1]);
 			return 0;
+		}
+		else
+		{
+			printf("!!! At col %d only found %d reds at %d, %d. Needed 2\n", col, RedsFound, rows[0], rows[1]);
 		}
 	}
 	return 1;
@@ -85,6 +90,7 @@ int ScanImageNextRow(FIBITMAP* in_Img, int32_t& row, int32_t* cols)
 	BYTE* BITS = FreeImage_GetBits(in_Img);
 	int32_t Width = FreeImage_GetWidth(in_Img);
 	int32_t Height = FreeImage_GetHeight(in_Img);
+	cols[0] = cols[1] = 0;
 	//does this column have at least 2 red pixels ?
 	for (; row < Height; row++)
 	{
@@ -92,7 +98,7 @@ int ScanImageNextRow(FIBITMAP* in_Img, int32_t& row, int32_t* cols)
 		int IsRed = 0;
 		for (size_t x = 0; x < Width; x++)
 		{
-			if (IsTearRed(&BITS[((int)row) * stride + ((int)x) * Bytespp + 0]))
+			if (IsTearRed(&BITS[((int)row) * stride + ((int)x) * Bytespp + 0]) && x < (Width - 1))
 			{
 				IsRed = 1;
 			}
@@ -110,10 +116,14 @@ int ScanImageNextRow(FIBITMAP* in_Img, int32_t& row, int32_t* cols)
 				RedsFound++;
 			}
 		}
-		printf("At row %d found %d reds at %d, %d\n", row, RedsFound, cols[0], cols[1]);
 		if (RedsFound == 2)
 		{
+//			printf("At row %d found %d reds at %d, %d\n", row, RedsFound, cols[0], cols[1]);
 			return 0;
+		}
+		else
+		{
+			printf("!!! At row %d only found %d reds at %d, %d. Needed 2\n", row, RedsFound, cols[0], cols[1]);
 		}
 	}
 	return 1;
@@ -150,7 +160,7 @@ float GetLineLenINCH(int sx, int sy, int ex, int ey, float PixelsPerINCH_X, floa
 #define ORIGIN_Y 214.0f 
 #define TEARDROP_INCH_WIDTH 9.25f
 #define TEARDROP_INCH_HEIGHT 8.66f
-#define MIN_LINE_LEN_TO_DRAW_INCH	0.0393701f
+#define MIN_LINE_LEN_TO_DRAW_INCH	0.0393701f // around 1 mm
 
 int GenSigFileColWithBreaks(FIBITMAP* dib, size_t break_to_pieces, float PixelsPerINCH_X, float PixelsPerINCH_Y)
 {
