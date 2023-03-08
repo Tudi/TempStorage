@@ -145,6 +145,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 	}
 
 	RelativePointsLine::setPenPosition(line, 1);
+	RelativePointsLine::setStartingPosition(line, sx, sy);
 
 	// just to increase the draw accuracy. More points, more smoothness
 	if (dy > dx)
@@ -155,7 +156,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		{
 			double x_rel = step * xIncForY;
 			double y_rel = step;
-			RelativePointsLine::storeNextPoint(line, sx + x_rel, sy + y_rel);
+			RelativePointsLine::storeNextPoint(line, x_rel, y_rel);
 		}
 	}
 	else 
@@ -166,7 +167,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		{
 			double x_rel = step;
 			double y_rel = step * yIncForx;
-			RelativePointsLine::storeNextPoint(line, sx + x_rel, sy + y_rel);
+			RelativePointsLine::storeNextPoint(line, x_rel, y_rel);
 		}
 	}
 }
@@ -210,8 +211,8 @@ int RelativePointsLine::storeNextPoint(RelativePointsLine** line, double dx, dou
 	{
 		return err;
 	}
-	(*line)->moves[(*line)->numberOfPoints].dx = dx;
-	(*line)->moves[(*line)->numberOfPoints].dy = dy;
+	(*line)->moves[(*line)->numberOfPoints].dx = (float)dx;
+	(*line)->moves[(*line)->numberOfPoints].dy = (float)dy;
 	(*line)->numberOfPoints++;
 	return 0;
 }
@@ -223,5 +224,16 @@ int RelativePointsLine::setPenPosition(RelativePointsLine** line, int penPos)
 		return err;
 	}
 	(*line)->penPosition = penPos;
+	return 0;
+}
+
+int RelativePointsLine::setStartingPosition(RelativePointsLine** line, double sx, double sy)
+{
+	if (int err = ensureCanStoreLinePoint(line) != 0)
+	{
+		return err;
+	}
+	(*line)->startx = (float)sx;
+	(*line)->starty = (float)sy;
 	return 0;
 }

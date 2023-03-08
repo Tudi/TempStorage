@@ -12,6 +12,7 @@ typedef struct RelativePointsLine
 	static int ensureCanStoreLinePoint(RelativePointsLine** line, int count);
 	static int storeNextPoint(RelativePointsLine** line, double dx, double dy);
 	static int setPenPosition(RelativePointsLine** line, int penPos);
+	static int setStartingPosition(RelativePointsLine** line, double sx, double sy); // only makes sense if you wish to draw the line on screen without other relative lines
 	int numberOfPoints;
 	int numberOfPointsCanStore;
 	int penPosition;

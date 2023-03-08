@@ -36,16 +36,14 @@ int main()
 	LoadImage_("NONE"); // initialize lib
 
 	FIBITMAP* dib = CreateNewImage(2048 * ImageSizeMultiplier,2048 * ImageSizeMultiplier);
-	float x = 2048 * ImageSizeMultiplier / 2;
-	float y = 2048 * ImageSizeMultiplier / 2;
+	RobotDrawSession robotSession;
+	robotSession.curx = robotSession.startx = 2048 * ImageSizeMultiplier / 2;
+	robotSession.cury = robotSession.starty = 2048 * ImageSizeMultiplier / 2;
 
-	DrawCircleAt(dib, x, y, 300);
+	DrawCircleAt(dib, robotSession.curx, robotSession.cury, 300);
 
 	uint32_t readPos = 0;
 	size_t fileSize = 0;
-	RobotCommand prevCommand;
-	RobotCommand_Constructor(&prevCommand);
-	PenRobotMovementCodesPrimary prevDirection = Move1_Down; // should be derived from header
 
 //	uint8_t* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
 //	uint8_t* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
@@ -53,12 +51,13 @@ int main()
 //	uint8_t* f = OpenBinFile("../BinFiles/0009 One Inch Square Centered on 0,0.bin", readPos, fileSize);
 	uint8_t* f = OpenBinFile("../BinFiles/0011 Five One Inch Squares from 006.bin", readPos, fileSize);
 //	uint8_t* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
-	ReadBinHeader(f, readPos, &prevCommand);
+	ReadBinHeader(f, readPos, &robotSession);
 
 	for (size_t i = 0; i < 60; i++)
 	{
 		RelativePointsLine* line = NULL;
-		int ret = ReadBinLine(f, readPos, fileSize, &line, &prevCommand, &prevDirection);
+		RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);
+		int ret = ReadBinLine(f, readPos, fileSize, &line, &robotSession);
 		if (ret != 0)
 		{
 			free(line);
@@ -66,11 +65,11 @@ int main()
 		}
 
 		// draw line on PNG
-		DrawBinLineOnPNG(dib, x, y, line);
+		DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
 
 		free(line);
 	}
-	ReadBinFooter(f, readPos, &prevCommand);
+	ReadBinFooter(f, readPos, &robotSession);
 
 	free(f);
 

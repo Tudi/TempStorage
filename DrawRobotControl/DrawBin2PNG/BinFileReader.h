@@ -47,22 +47,25 @@ typedef struct RobotCommand
 	uint8_t secondaryDirection : 2; // up,down,left,right relative to main direction
 }RobotCommand;
 
+// lines move relatively, need to track pen position, reset pen position on specific commands
 typedef struct RobotDrawSession
 {
 	float startx, starty; // should be the same as origo ? 0,0 ?
 	float curx, cury;
 	int linesDrawn;
 	int linesNotDrawn; // line while the pen is in the air
+	RobotCommand prevCMD;
+	PenRobotMovementCodesPrimary prevMoveDir;
 }RobotDrawSession;
 #pragma pack(pop)
 
-void RobotCommand_Constructor(RobotCommand *comm);
+void RobotCommand_Constructor(RobotCommand *comm, BYTE fromByte);
 uint8_t* OpenBinFile(const char* name, uint32_t& readPos, size_t& fileSize);
-void ReadBinHeader(uint8_t* f, uint32_t& readPos, RobotCommand* comm);
-void ReadBinFooter(uint8_t* f, uint32_t& readPos, RobotCommand* comm);
+void ReadBinHeader(uint8_t* f, uint32_t& readPos, RobotDrawSession *robotSession);
+void ReadBinFooter(uint8_t* f, uint32_t& readPos, RobotDrawSession *robotSession);
 
 #define MAX_LINE_NODES 65535 // todo : should make this dynamic ...
 struct RelativePointsLine;
-int ReadBinLine(uint8_t* f, uint32_t& readPos, size_t fileSize, RelativePointsLine** line, RobotCommand* comm, PenRobotMovementCodesPrimary *prevDirection);
+int ReadBinLine(uint8_t* f, uint32_t& readPos, size_t fileSize, RelativePointsLine** line, RobotDrawSession *robotSession);
 const char* GetDirectionString(PenRobotMovementCodesPrimary movementCode);
 const char* GetDirectionStringRelative(PenRobotMovementCodesPrimary movementCode, PenRobotMovementCodesRelative relative);
