@@ -126,11 +126,12 @@ int main()
 //	uint8_t* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
 //	uint8_t* f = OpenBinFile("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin", readPos, fileSize);
 //	uint8_t* f = OpenBinFile("../BinFiles/0009 One Inch Square Centered on 0,0.bin", readPos, fileSize);
-	uint8_t* f = OpenBinFile("../BinFiles/0011 Five One Inch Squares from 006.bin", readPos, fileSize);
+//	uint8_t* f = OpenBinFile("../BinFiles/0011 Five One Inch Squares from 006.bin", readPos, fileSize);
+	uint8_t* f = OpenBinFile("../BinFiles/0010 Five One Inch Squares from 004.bin", readPos, fileSize);
 //	uint8_t* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
 	ReadBinHeader(f, readPos, &robotSession);
 
-	for (size_t i = 0; i < 0; i++)
+	for (size_t i = 0; i < 60; i++)
 	{
 		RelativePointsLine* line = NULL;
 		RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);

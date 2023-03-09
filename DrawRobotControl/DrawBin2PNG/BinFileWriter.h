@@ -1,7 +1,13 @@
 #pragma once
 
-void WriteBinHeader(uint8_t* f, uint32_t& readPos, RobotDrawSession* robotSession);
-void WriteBinFooter(uint8_t* f, uint32_t& readPos, RobotDrawSession* robotSession);
+// every BIN file starts with this 
+void WriteBinHeader(FILE* f, RobotDrawSession* robotSession);
+// every BIN file ends with this
+void WriteBinFooter(FILE* f, RobotDrawSession* robotSession);
+// pause the reading of the file
+// wait for the operator to reposition the pen
+// wait for the operator to resume reading the file
+void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperSwap);
 
 struct RelativePointsLine;
-int WriteBinLine(uint8_t* f, uint32_t& readPos, size_t fileSize, RelativePointsLine** line, RobotDrawSession* robotSession);
+int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession);

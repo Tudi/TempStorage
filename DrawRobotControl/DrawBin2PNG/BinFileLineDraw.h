@@ -19,6 +19,7 @@ typedef struct RelativePointsLine
 	int numberOfPointsCanStore;
 	int penPosition;
 	float startx, starty; // not yet used
+	float endx, endy; // not yet used
 	RelativeLinePoint moves[1]; // the size of this array is unknown. Though it says 1 elements, it's actually dynamic
 }RelativePointsLine;
 #pragma pack(pop)

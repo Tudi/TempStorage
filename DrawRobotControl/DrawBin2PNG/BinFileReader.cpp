@@ -70,36 +70,36 @@ uint8_t* OpenBinFile(const char* fileName, uint32_t& readPos, size_t& fileSize)
 
 void ReadBinHeader(uint8_t* bytes, uint32_t& readPos, RobotDrawSession* robotSession)
 {
-	for (size_t i = 0; i < 10; i++)
+	for (size_t i = 0; i < BIN_HEADER_BYTE_COUNT; i++)
 	{
-		if (bytes[readPos] != 0x08)
+		if (bytes[readPos] != BIN_HEADER_BYTE)
 		{
-			printf("Was expecting header byte 0x08 at %d, got %02X\n", (uint32_t)readPos, (uint32_t)bytes[readPos]);
+			printf("Was expecting header byte %d at %d, got %02X\n", BIN_HEADER_BYTE, (uint32_t)readPos, (uint32_t)bytes[readPos]);
 		}
 		readPos += FileReadDirection;
 	}
-	RobotCommand_Constructor(&robotSession->prevCMD, 0x08);
+	RobotCommand_Constructor(&robotSession->prevCMD, BIN_HEADER_BYTE);
 }
 
 void ReadBinFooter(uint8_t* bytes, uint32_t& readPos, RobotDrawSession* robotSession)
 {
-	for (size_t i = 0; i < 10; i++)
+	for (size_t i = 0; i < BIN_FOOTER_BYTE_COUNT1; i++)
 	{
-		if (bytes[readPos] != 0x08)
+		if (bytes[readPos] != BIN_FOOTER_BYTE1)
 		{
-			printf("Was expecting footer byte 0x08 at %d, got %02X\n", (uint32_t)readPos, (uint32_t)bytes[readPos]);
+			printf("Was expecting footer byte %d at %d, got %02X\n", BIN_FOOTER_BYTE1, (uint32_t)readPos, (uint32_t)bytes[readPos]);
 		}
 		readPos += FileReadDirection;
 	}
-	for (size_t i = 0; i < 10; i++)
+	for (size_t i = 0; i < BIN_FOOTER_BYTE_COUNT2; i++)
 	{
-		if (bytes[readPos] != 0x00)
+		if (bytes[readPos] != BIN_FOOTER_BYTE2)
 		{
-			printf("Was expecting footer byte 0x00 at %d, got %02X\n", (uint32_t)readPos, (uint32_t)bytes[readPos]);
+			printf("Was expecting footer byte %d at %d, got %02X\n", BIN_FOOTER_BYTE2, (uint32_t)readPos, (uint32_t)bytes[readPos]);
 		}
 		readPos += FileReadDirection;
 	}
-	RobotCommand_Constructor(&robotSession->prevCMD, 0x00);
+	RobotCommand_Constructor(&robotSession->prevCMD, BIN_FOOTER_BYTE2);
 }
 
 //#define TEST_BACKWARD_MOVE_REVERSES_MAIN_DIRECTION
@@ -115,7 +115,7 @@ static int LinesParsedCounter = 0;
 int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePointsLine** line, RobotDrawSession* robotSession)
 {
 	if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
-		|| (FileReadDirection > 0 && readPos >= fileSize - BIN_FOOTER_BYTE_COUNT))
+		|| (FileReadDirection > 0 && readPos >= fileSize - (BIN_FOOTER_BYTE_COUNT1 + BIN_FOOTER_BYTE_COUNT2)))
 	{
 		return 1;
 	}
@@ -140,7 +140,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 	while (1)
 	{
 		if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
-			|| (FileReadDirection > 0 && readPos >= fileSize - BIN_FOOTER_BYTE_COUNT))
+			|| (FileReadDirection > 0 && readPos >= fileSize - (BIN_FOOTER_BYTE_COUNT1 + BIN_FOOTER_BYTE_COUNT2)))
 		{
 			break;
 		}

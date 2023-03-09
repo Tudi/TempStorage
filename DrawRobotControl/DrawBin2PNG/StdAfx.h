@@ -25,3 +25,7 @@
 #define Bytespp	3
 #define ColorChannelCount 3 // RGB
 #define INT_PRECISION_DIGITS	10000
+#define SOFT_ASSERT(x,msg) do{ if(!(x)) { \
+	char remsg[5000];\
+	sprintf_s(remsg, sizeof(remsg), "%s:%s:%s", __FILE__,__LINE__,msg);\
+	printf(remsg);}}while(0);
