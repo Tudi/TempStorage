@@ -138,6 +138,7 @@ int GenRelativeMovementOpcode(int PrevCode, PenRobotMovementCodesRelative move)
 	return Move2_AssertError;
 }
 
+#if 0
 // we always move to the left of the main direction
 int WriteBinLineAlwaysLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession)
 {
@@ -219,10 +220,80 @@ int WriteBinLineAlwaysLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* 
 
 	return 0;
 }
+#endif
+
+
+// we always move to the left of the main direction
+int WriteBinLineRightOrLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession)
+{
+	// todo : convert this to static once ironed out the correct orientations
+	InitSignToMovementTranslationTable();
+
+	RobotCommand CMD = robotSession->prevCMD;
+
+	// get the direction of the line
+	line->endx = line->startx = robotSession->curx;
+	line->endy = line->starty = robotSession->cury;
+	// "play" the line to get to the end of it
+	for (size_t i = 0; i < line->numberOfPoints; i++)
+	{
+		line->endx += line->moves[i].dx;
+		line->endy += line->moves[i].dy;
+	}
+
+	// looks like an empty line
+	if (line->startx == line->endx && line->starty == line->endy)
+	{
+		SOFT_ASSERT(0, "Unexpected 0 length line");
+		return 1;
+	}
+
+	if (line->startx <= line->endx)
+	{
+		CMD.primaryDirection = Move1_Right;
+	}
+	else
+	{
+		CMD.primaryDirection = Move1_Left;
+	}
+
+	CMD.alwaysZero = 0;
+	CMD.penIsMoving = 1;
+	CMD.penPosition = line->penPosition;
+	CMD.Transition = 0;
+
+	for (int i = 0; i < line->numberOfPoints; i++)
+	{
+		int xSign = NumSign(line->moves[i].dx);
+		int ySign = NumSign(line->moves[i].dy);
+
+		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] != Move2_AssertError, "Unexpected x movement for main direction");
+		SOFT_ASSERT(Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] != Move2_AssertError, "Unexpected y movement for main direction");
+		SOFT_ASSERT((Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] + Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign]) <= Move2_Max_Value, "Unexpected movement combination");
+		SOFT_ASSERT((xSign == 0 && (ySign == 1 || ySign == -1)) || (ySign == 0 && (xSign == 1 || xSign == -1)), "Unexpected line movement");
+		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] == Move2_RelativeNoChange || Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] == Move2_RelativeNoChange, "Unexpected movement combination");
+
+		PenRobotMovementCodesRelative relativeMovementType = (PenRobotMovementCodesRelative)(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] | Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign]);
+		SOFT_ASSERT(relativeMovementType != Move2_RelativeNoChange, "Unexpected relative movement value : NoChange");
+
+		CMD.secondaryDirection = GenRelativeMovementOpcode(CMD.secondaryDirection, relativeMovementType);
+
+		SOFT_ASSERT(CMD.secondaryDirection != Move2_AssertError, "Unexpected relative movement value : Invalid");
+
+		fwrite(&CMD, 1, 1, f);
+	}
+
+	// update robot session as it arrived to the destination
+	robotSession->curx = line->endx;
+	robotSession->cury = line->endy;
+	robotSession->prevCMD = CMD;
+
+	return 0;
+}
 
 int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession)
 {
-	return WriteBinLineAlwaysLeft(f, line, robotSession);
+	return WriteBinLineRightOrLeft(f, line, robotSession);
 #if 0
 	RobotCommand CMD;
 

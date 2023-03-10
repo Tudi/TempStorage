@@ -68,10 +68,16 @@ void Test_DrawReadLine()
 	TestDrawReadLineSpecific(100, 100, 200, 100);
 	// vertical - from up to down
 	TestDrawReadLineSpecific(100, 100, 100, -100);
-	//diagonal - to right, up
-	TestDrawReadLineSpecific(100, 100, 200, 200);
-	// from right tp left
+	// from right to left
 	TestDrawReadLineSpecific(100, 100, -100, 100);
 	// from down to up
 	TestDrawReadLineSpecific(100, 100, 100, 200);
+	//diagonal - to right, up
+	TestDrawReadLineSpecific(100, 100, 200, 200);
+	//diagonal - to right, down
+	TestDrawReadLineSpecific(100, 100, 200, -200);
+	//diagonal - to left, up
+	TestDrawReadLineSpecific(100, 100, -200, 200);
+	//diagonal - to left, down
+	TestDrawReadLineSpecific(100, 100, -200, -200);
 }

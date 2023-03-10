@@ -137,6 +137,7 @@ void DrawCircleAt(FIBITMAP* in_Img, float x, float y, float radius)
 
 // relative negative y means to draw it downwards on paper
 // in memory, this would be a positive y
+// Movement units are measured in robot commands ! That means it's rounded to 1 or 0
 void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePointsLine** line)
 {
 	double dx = ex - sx;
@@ -169,19 +170,20 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 	{
 		double xdiff = (step - prevWriteAtStep) * xIncForStep;
 		double ydiff = (step - prevWriteAtStep) * yIncForStep;
-		if (abs(xdiff) < MIN_LINE_SEGMENT_LENGTH && abs(ydiff) < MIN_LINE_SEGMENT_LENGTH)
+//		if (abs(xdiff) < MIN_LINE_SEGMENT_LENGTH && abs(ydiff) < MIN_LINE_SEGMENT_LENGTH)
+		if ((int)abs(xdiff) == 0 && (int)abs(ydiff) == 0)
 		{
 			continue;
 		}
 		prevWriteAtStep = step;
-		if (xIncForStep != 0 && yIncForStep != 0)
+		if ((int)xdiff != 0 && (int)ydiff != 0)
 		{
-			RelativePointsLine::storeNextPoint(line, xIncForStep, 0);
-			RelativePointsLine::storeNextPoint(line, 0, yIncForStep);
+			RelativePointsLine::storeNextPoint(line, (int)xdiff, 0);
+			RelativePointsLine::storeNextPoint(line, 0, (int)ydiff);
 		}
 		else
 		{
-			RelativePointsLine::storeNextPoint(line, xIncForStep, yIncForStep);
+			RelativePointsLine::storeNextPoint(line, (int)xdiff, (int)ydiff);
 		}
 	}
 }
