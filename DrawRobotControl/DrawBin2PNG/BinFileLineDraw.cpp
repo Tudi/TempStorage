@@ -135,14 +135,19 @@ void DrawCircleAt(FIBITMAP* in_Img, float x, float y, float radius)
 	}
 }
 
+// relative negative y means to draw it downwards on paper
+// in memory, this would be a positive y
 void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePointsLine** line)
 {
-	double dx = sx - ex;
-	double dy = sy - ey;
+	double dx = ex - sx;
+	double dy = ey - sy;
 	if (dx == dy && dx == 0)
 	{
 		return;
 	}
+
+	// !! flip dy as robot head is actually up and not down
+//	dy = -dy;
 
 	RelativePointsLine::setPenPosition(line, 1);
 	RelativePointsLine::setStartingPosition(line, sx, sy);
@@ -169,7 +174,15 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 			continue;
 		}
 		prevWriteAtStep = step;
-		RelativePointsLine::storeNextPoint(line, xIncForStep, yIncForStep);
+		if (xIncForStep != 0 && yIncForStep != 0)
+		{
+			RelativePointsLine::storeNextPoint(line, xIncForStep, 0);
+			RelativePointsLine::storeNextPoint(line, 0, yIncForStep);
+		}
+		else
+		{
+			RelativePointsLine::storeNextPoint(line, xIncForStep, yIncForStep);
+		}
 	}
 }
 

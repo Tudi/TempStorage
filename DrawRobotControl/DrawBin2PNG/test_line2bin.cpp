@@ -8,8 +8,8 @@
 void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 {
 	RobotDrawSession robotSession;
-	robotSession.curx = 100;
-	robotSession.cury = 100;
+	robotSession.curx = 1000;
+	robotSession.cury = 1000;
 
 	RelativePointsLine* lineWritten = NULL;
 	RelativePointsLine* lineRead = NULL;
@@ -32,8 +32,8 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 	}
 
 	// reset robot after write
-	robotSession.curx = 100;
-	robotSession.cury = 100;
+	robotSession.curx = 1000;
+	robotSession.cury = 1000;
 
 	// now read it
 	{
@@ -64,14 +64,14 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 
 void Test_DrawReadLine()
 {
-	// horizontal - right
+	// horizontal - to right
 	TestDrawReadLineSpecific(100, 100, 200, 100);
-	// vertical - up
-	TestDrawReadLineSpecific(100, 100, 100, 200);
-	//diagonal
-	TestDrawReadLineSpecific(100, 100, 200, 200);
-	// left
-	TestDrawReadLineSpecific(100, 100, -100, 100);
-	// down
+	// vertical - from up to down
 	TestDrawReadLineSpecific(100, 100, 100, -100);
+	//diagonal - to right, up
+	TestDrawReadLineSpecific(100, 100, 200, 200);
+	// from right tp left
+	TestDrawReadLineSpecific(100, 100, -100, 100);
+	// from down to up
+	TestDrawReadLineSpecific(100, 100, 100, 200);
 }

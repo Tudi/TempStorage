@@ -1,17 +1,23 @@
 #include "StdAfx.h"
 
 // Should set it to 0x08
-void RobotCommand_Constructor(RobotCommand *comm, BYTE fromByte = 0)
+void RobotCommand_Constructor(RobotCommand *CMD, BYTE fromByte = 0)
 {
 	if (fromByte != 0)
 	{
-		*(BYTE*)comm = fromByte;
+		*(BYTE*)CMD = fromByte;
 	}
 	else
 	{
-		memset(comm, 0, sizeof(RobotCommand));
-		comm->penIsMoving = 1;
+		memset(CMD, 0, sizeof(RobotCommand));
+		CMD->penIsMoving = 1;
 	}
+}
+
+void RobotSession_Constructor(RobotDrawSession *robotSession)
+{
+	memset(robotSession, 0, sizeof(RobotDrawSession));
+	RobotCommand_Constructor(&robotSession->prevCMD);
 }
 
 // in theory, robot will not recognize commands that are exactly the same
@@ -122,9 +128,11 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 
 	//read the line
 	uint8_t byte = 0, prevByte = 1, prevPrevByte = 2;
-	RobotCommand comm;
+	RobotCommand CMD;
 	uint32_t moveByteCount = 0;
+#ifdef TEST_PRIMARY_DIRECTION_RELATIVE
 	uint8_t primaryRelativeDirection = Move1_RelativeNoChange;
+#endif
 	uint8_t followPrimaryDirection = UNINITIALIZED_VALUE_8;
 	uint8_t followPenPosition = 0;
 
@@ -148,14 +156,16 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 		byte = bytes[readPos];
 		readPos += FileReadDirection;
 		moveByteCount++;
-		*(uint8_t*)&comm = byte;
-		primaryRelativeDirection = comm.primaryDirection ^ robotSession->prevCMD.primaryDirection;
+		*(uint8_t*)&CMD = byte;
+#ifdef TEST_PRIMARY_DIRECTION_RELATIVE
+		primaryRelativeDirection = CMD.primaryDirection ^ robotSession->prevCMD.primaryDirection;
+#endif
 
 		if (followPrimaryDirection == UNINITIALIZED_VALUE_8)
 		{
-			followPenPosition = comm.penPosition;
+			followPenPosition = CMD.penPosition;
 #ifndef TEST_PRIMARY_DIRECTION_RELATIVE
-			followPrimaryDirection = comm.primaryDirection;
+			followPrimaryDirection = CMD.primaryDirection;
 //			if (LinesParsedCounter == 3 - 1)followPrimaryDirection = Move1_Right;
 //			if (LinesParsedCounter == 6 - 1)followPrimaryDirection = Move1_Right;
 //			if (LinesParsedCounter == 7 - 1)followPrimaryDirection = Move1_Up;
@@ -233,29 +243,35 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 			}
 #endif
 			robotSession->prevMoveDir = (PenRobotMovementCodesPrimary)followPrimaryDirection;
-			RelativePointsLine::setPenPosition(line, comm.penPosition);
+			RelativePointsLine::setPenPosition(line, CMD.penPosition);
 			LinesParsedCounter++;
 			printf("%d) Will follow move type %d-%s. Pen is %d. start at pos %d, Prev byte %02X, cur byte %02X\n",
 				LinesParsedCounter, followPrimaryDirection,
 				GetDirectionString((PenRobotMovementCodesPrimary)followPrimaryDirection), 
 				followPenPosition != 0, readPos - 1, bytes[readPos - 2], bytes[readPos - 1]);
 		}
-		else if (primaryRelativeDirection != Move1_RelativeNoChange || comm.penPosition != followPenPosition)
+		else if (
+#ifndef TEST_PRIMARY_DIRECTION_RELATIVE
+			followPrimaryDirection != CMD.primaryDirection
+#else
+			primaryRelativeDirection != Move1_RelativeNoChange
+#endif
+			|| CMD.penPosition != followPenPosition)
 		{
 			readPos -= FileReadDirection;
 			moveByteCount--;
 			break;
 		}
 
-		if (comm.Transition != 0)
+		if (CMD.Transition != 0)
 		{
 			printf("!!Always zero1 is not always one at pos %d value %d ( paper swap )\n", readPos, byte);
 		}
-		if (comm.penIsMoving != 1)
+		if (CMD.penIsMoving != 1)
 		{
 			printf("!!Always one is not always one at pos %d value %d ( pen move )\n", readPos, byte);
 		}
-		if (comm.alwaysZero != 0)
+		if (CMD.alwaysZero != 0)
 		{
 			printf("!!Always zero2 is not always one at pos %d value %d\n", readPos, byte);
 		}
@@ -268,7 +284,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 		if (
 			// need to confirm theory : robot is unable to sense commands that are exactly the same
 			// but multiple of these "useless" commands will trigger a robot response. Ex : paper swap, reposition pen to origin
-			IsSameCommand(&comm, &robotSession->prevCMD) == 1
+			IsSameCommand(&CMD, &robotSession->prevCMD) == 1
 			)
 		{
 			if (prevPrevByte == prevByte)
@@ -301,12 +317,12 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 		}
 //		else
 		{
-			int secondaryDirection = comm.secondaryDirection ^ robotSession->prevCMD.secondaryDirection;
-//			printf("%d%d ", secondaryDirection, comm.secondaryDirection);
+			int secondaryDirection = CMD.secondaryDirection ^ robotSession->prevCMD.secondaryDirection;
+//			printf("%d%d ", secondaryDirection, CMD.secondaryDirection);
 			float penSpeedInertiaAdjustedPrimary = 1.0f;
 			float penSpeedInertiaAdjustedSecondary = 1.0f;
 
-			if (comm.penPosition == Pen_Up)
+			if (CMD.penPosition == Pen_Up)
 			{
 #ifdef TEST_TRIPPLE_COMMAND_FORWARD_MOVE
 				if (isNext1Prev1CommandsSame)
@@ -502,7 +518,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 
 		prevPrevByte = prevByte;
 		prevByte = byte;
-		robotSession->prevCMD = comm;
+		robotSession->prevCMD = CMD;
 	}
 
 	double lineLen = sqrt(motor_1_Move_total * motor_1_Move_total + motor_2_Move_total * motor_2_Move_total + motor_12_Move_total * motor_12_Move_total);

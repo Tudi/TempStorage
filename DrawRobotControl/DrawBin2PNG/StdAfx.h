@@ -28,9 +28,7 @@
 #define INT_PRECISION_DIGITS	10000
 
 // should mvoe all these into some logger module
-#define SOFT_ASSERT(x,msg) do{ if(!(x)) { \
-	char remsg[5000];\
-	sprintf_s(remsg, sizeof(remsg), "%s:%d:%s", __FILE__,__LINE__,msg);\
-	printf(remsg);}}while(0);
+void LogMessage(const char* file, int line, const char* msg);
+#define SOFT_ASSERT(x,msg) if(!(x))LogMessage(__FILE__,__LINE__, msg)
 
 #define FreeAndNULL(x) { free(x); x = NULL; }

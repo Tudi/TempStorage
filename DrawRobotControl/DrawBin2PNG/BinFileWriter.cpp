@@ -7,6 +7,7 @@ void WriteBinHeader(FILE* f, RobotDrawSession* robotSession)
 		uint8_t byte = BIN_HEADER_BYTE;
 		fwrite(&byte, 1, 1, f);
 	}
+	RobotCommand_Constructor(&robotSession->prevCMD, BIN_HEADER_BYTE);
 }
 
 void WriteBinFooter(FILE* f, RobotDrawSession* robotSession)
@@ -21,6 +22,7 @@ void WriteBinFooter(FILE* f, RobotDrawSession* robotSession)
 		uint8_t byte = BIN_FOOTER_BYTE2;
 		fwrite(&byte, 1, 1, f);
 	}
+	RobotCommand_Constructor(&robotSession->prevCMD, BIN_FOOTER_BYTE2);
 }
 
 // Need to work on this. I sense some parts of this block is not required
@@ -41,6 +43,7 @@ void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperS
 		uint8_t byte = 0x04;
 		fwrite(&byte, 1, 1, f);
 	}
+	RobotCommand_Constructor(&robotSession->prevCMD, 0x04);
 	//seems like this part generates the paper swap
 	if (writePaperSwap)
 	{
@@ -49,6 +52,8 @@ void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperS
 			uint8_t byte = 0x08;
 			fwrite(&byte, 1, 1, f);
 		}
+		RobotCommand_Constructor(&robotSession->prevCMD, 0x08);
+
 	}
 }
 
@@ -67,17 +72,19 @@ static int NumSign(float x)
 }
 
 #define CoordMoveSignCount 3
-static int Coord_X_SignToMovementTransalationTable[Move1_Values_Count][CoordMoveSignCount];
-static int Coord_Y_SignToMovementTransalationTable[Move1_Values_Count][CoordMoveSignCount];
+static PenRobotMovementCodesRelative Coord_X_SignToMovementTransalationTable[Move1_Values_Count][CoordMoveSignCount];
+static PenRobotMovementCodesRelative Coord_Y_SignToMovementTransalationTable[Move1_Values_Count][CoordMoveSignCount];
+
+// !! up is ment as on a paper. When drawing in memory, up has -1 on row. Line(0,0,0,100)
 void InitSignToMovementTranslationTable()
 {
 	Coord_X_SignToMovementTransalationTable[Move1_Up][1 - 1] = Move2_RelativeLeft;
 	Coord_X_SignToMovementTransalationTable[Move1_Up][1 - 0] = Move2_RelativeNoChange;
 	Coord_X_SignToMovementTransalationTable[Move1_Up][1 + 1] = Move2_RelativeRight;
 
-	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 - 1] = Move2_RelativeForward;
+	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 - 1] = Move2_AssertError;
 	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 - 0] = Move2_RelativeNoChange;
-	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 + 1] = Move2_AssertError;
+	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 + 1] = Move2_RelativeForward; // positive is up
 
 	// ========================
 
@@ -85,9 +92,9 @@ void InitSignToMovementTranslationTable()
 	Coord_X_SignToMovementTransalationTable[Move1_Left][1 - 0] = Move2_RelativeNoChange;
 	Coord_X_SignToMovementTransalationTable[Move1_Left][1 + 1] = Move2_AssertError;
 
-	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 - 1] = Move2_RelativeRight;
+	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 - 1] = Move2_RelativeLeft;
 	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 - 0] = Move2_RelativeNoChange;
-	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 + 1] = Move2_RelativeLeft;
+	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 + 1] = Move2_RelativeRight;
 
 	// ========================
 
@@ -95,9 +102,9 @@ void InitSignToMovementTranslationTable()
 	Coord_X_SignToMovementTransalationTable[Move1_Right][1 - 0] = Move2_RelativeNoChange;
 	Coord_X_SignToMovementTransalationTable[Move1_Right][1 + 1] = Move2_RelativeForward;
 
-	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 - 1] = Move2_RelativeLeft;
+	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 - 1] = Move2_RelativeRight;
 	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 - 0] = Move2_RelativeNoChange;
-	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 + 1] = Move2_RelativeRight;
+	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 + 1] = Move2_RelativeLeft;
 
 	// ========================
 
@@ -105,9 +112,9 @@ void InitSignToMovementTranslationTable()
 	Coord_X_SignToMovementTransalationTable[Move1_Down][1 - 0] = Move2_RelativeNoChange;
 	Coord_X_SignToMovementTransalationTable[Move1_Down][1 + 1] = Move2_RelativeLeft;
 
-	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 - 1] = Move2_AssertError;
+	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 - 1] = Move2_RelativeForward; // negative is downwards
 	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 - 0] = Move2_RelativeNoChange;
-	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 + 1] = Move2_RelativeForward;
+	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 + 1] = Move2_AssertError;
 
 }
 
@@ -137,7 +144,7 @@ int WriteBinLineAlwaysLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* 
 	// todo : convert this to static once ironed out the correct orientations
 	InitSignToMovementTranslationTable();
 
-	RobotCommand CMD;
+	RobotCommand CMD = robotSession->prevCMD;
 
 	// get the direction of the line
 	line->endx = line->startx = robotSession->curx;
@@ -191,15 +198,16 @@ int WriteBinLineAlwaysLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* 
 
 		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] != Move2_AssertError, "Unexpected x movement for main direction");
 		SOFT_ASSERT(Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] != Move2_AssertError, "Unexpected y movement for main direction");
-		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] + Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] > Move2_Max_Value, "Unexpected combination combo");
+		SOFT_ASSERT((Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] + Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign]) <= Move2_Max_Value, "Unexpected movement combination");
 		SOFT_ASSERT((xSign == 0 && (ySign == 1 || ySign == -1)) || (ySign == 0 && (xSign == 1 || xSign == -1)), "Unexpected line movement");
+		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] == Move2_RelativeNoChange  || Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] == Move2_RelativeNoChange, "Unexpected movement combination");
 
-		int relativeMovementType = Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] | Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign];
+		PenRobotMovementCodesRelative relativeMovementType = (PenRobotMovementCodesRelative)(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] | Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign]);
+		SOFT_ASSERT(relativeMovementType != Move2_RelativeNoChange, "Unexpected relative movement value : NoChange");
 
-		CMD.secondaryDirection = GenRelativeMovementOpcode(CMD.secondaryDirection, (PenRobotMovementCodesRelative)relativeMovementType);
+		CMD.secondaryDirection = GenRelativeMovementOpcode(CMD.secondaryDirection, relativeMovementType);
 
-		SOFT_ASSERT(CMD.secondaryDirection != Move2_AssertError, "Unexpected relative movement value");
-		SOFT_ASSERT(CMD.secondaryDirection != Move2_RelativeNoChange, "Unexpected relative movement value");
+		SOFT_ASSERT(CMD.secondaryDirection != Move2_AssertError, "Unexpected relative movement value : Invalid");
 
 		fwrite(&CMD, 1, 1, f);
 	}
@@ -207,6 +215,7 @@ int WriteBinLineAlwaysLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* 
 	// update robot session as it arrived to the destination
 	robotSession->curx = line->endx;
 	robotSession->cury = line->endy;
+	robotSession->prevCMD = CMD;
 
 	return 0;
 }

@@ -136,6 +136,7 @@
     <ClCompile Include="test_DrawClock.cpp" />
     <ClCompile Include="test_line2bin.cpp" />
     <ClCompile Include="test_LoadBin.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BinFileCommon.h" />
