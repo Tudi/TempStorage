@@ -129,15 +129,23 @@
   <ItemGroup>
     <ClCompile Include="BinFileLineDraw.cpp" />
     <ClCompile Include="BinFileReader.cpp" />
+    <ClCompile Include="BinFileWriter.cpp" />
     <ClCompile Include="ImageHandler.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="tests.cpp" />
+    <ClCompile Include="test_DrawClock.cpp" />
+    <ClCompile Include="test_line2bin.cpp" />
+    <ClCompile Include="test_LoadBin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BinFileCommon.h" />
     <ClInclude Include="BinFileLineDraw.h" />
     <ClInclude Include="BinFileReader.h" />
+    <ClInclude Include="BinFileWriter.h" />
     <ClInclude Include="FreeImage.h" />
     <ClInclude Include="ImageHandler.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="tests.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="FreeImage.lib" />

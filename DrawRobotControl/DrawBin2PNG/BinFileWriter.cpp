@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-void WriteBinHeader(FILE *f, RobotDrawSession* robotSession)
+void WriteBinHeader(FILE* f, RobotDrawSession* robotSession)
 {
 	for (size_t i = 0; i < BIN_HEADER_BYTE_COUNT; i++)
 	{
@@ -53,7 +53,7 @@ void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperS
 }
 
 // I know there is a function for this, but for the sake of readability I added it
-static int NumSign(int x)
+static int NumSign(float x)
 {
 	if (x > 0)
 	{
@@ -66,8 +66,155 @@ static int NumSign(int x)
 	return 0;
 }
 
+#define CoordMoveSignCount 3
+static int Coord_X_SignToMovementTransalationTable[Move1_Values_Count][CoordMoveSignCount];
+static int Coord_Y_SignToMovementTransalationTable[Move1_Values_Count][CoordMoveSignCount];
+void InitSignToMovementTranslationTable()
+{
+	Coord_X_SignToMovementTransalationTable[Move1_Up][1 - 1] = Move2_RelativeLeft;
+	Coord_X_SignToMovementTransalationTable[Move1_Up][1 - 0] = Move2_RelativeNoChange;
+	Coord_X_SignToMovementTransalationTable[Move1_Up][1 + 1] = Move2_RelativeRight;
+
+	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 - 1] = Move2_RelativeForward;
+	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 - 0] = Move2_RelativeNoChange;
+	Coord_Y_SignToMovementTransalationTable[Move1_Up][1 + 1] = Move2_AssertError;
+
+	// ========================
+
+	Coord_X_SignToMovementTransalationTable[Move1_Left][1 - 1] = Move2_RelativeForward;
+	Coord_X_SignToMovementTransalationTable[Move1_Left][1 - 0] = Move2_RelativeNoChange;
+	Coord_X_SignToMovementTransalationTable[Move1_Left][1 + 1] = Move2_AssertError;
+
+	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 - 1] = Move2_RelativeRight;
+	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 - 0] = Move2_RelativeNoChange;
+	Coord_Y_SignToMovementTransalationTable[Move1_Left][1 + 1] = Move2_RelativeLeft;
+
+	// ========================
+
+	Coord_X_SignToMovementTransalationTable[Move1_Right][1 - 1] = Move2_AssertError;
+	Coord_X_SignToMovementTransalationTable[Move1_Right][1 - 0] = Move2_RelativeNoChange;
+	Coord_X_SignToMovementTransalationTable[Move1_Right][1 + 1] = Move2_RelativeForward;
+
+	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 - 1] = Move2_RelativeLeft;
+	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 - 0] = Move2_RelativeNoChange;
+	Coord_Y_SignToMovementTransalationTable[Move1_Right][1 + 1] = Move2_RelativeRight;
+
+	// ========================
+
+	Coord_X_SignToMovementTransalationTable[Move1_Down][1 - 1] = Move2_RelativeRight;
+	Coord_X_SignToMovementTransalationTable[Move1_Down][1 - 0] = Move2_RelativeNoChange;
+	Coord_X_SignToMovementTransalationTable[Move1_Down][1 + 1] = Move2_RelativeLeft;
+
+	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 - 1] = Move2_AssertError;
+	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 - 0] = Move2_RelativeNoChange;
+	Coord_Y_SignToMovementTransalationTable[Move1_Down][1 + 1] = Move2_RelativeForward;
+
+}
+
+int GenRelativeMovementOpcode(int PrevCode, PenRobotMovementCodesRelative move)
+{
+	int prevBitLeft = PrevCode & 1;
+	int prevBitRight = (PrevCode >> 1) & 1;
+
+	if (move == Move2_RelativeForward)
+	{
+		return (1 - prevBitLeft) | ((1 - prevBitRight) << 1);
+	}
+	else if (move == Move2_RelativeLeft)
+	{
+		return (1 - prevBitLeft) | (prevBitRight << 1);
+	}
+	else if (move == Move2_RelativeRight)
+	{
+		return (prevBitLeft) | ((1 - prevBitRight) << 1);
+	}
+	return Move2_AssertError;
+}
+
+// we always move to the left of the main direction
+int WriteBinLineAlwaysLeft(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession)
+{
+	// todo : convert this to static once ironed out the correct orientations
+	InitSignToMovementTranslationTable();
+
+	RobotCommand CMD;
+
+	// get the direction of the line
+	line->endx = line->startx = robotSession->curx;
+	line->endy = line->starty = robotSession->cury;
+	// "play" the line to get to the end of it
+	for (size_t i = 0; i < line->numberOfPoints; i++)
+	{
+		line->endx += line->moves[i].dx;
+		line->endy += line->moves[i].dy;
+	}
+
+	// looks like an empty line
+	if (line->startx == line->endx && line->starty == line->endy)
+	{
+		SOFT_ASSERT(0, "Unexpected 0 length line");
+		return 1;
+	}
+
+	if (line->startx <= line->endx)
+	{
+		if (line->starty <= line->endy)
+		{
+			CMD.primaryDirection = Move1_Right;
+		}
+		else
+		{
+			CMD.primaryDirection = Move1_Down;
+		}
+	}
+	else
+	{
+		if (line->starty <= line->endy)
+		{
+			CMD.primaryDirection = Move1_Up;
+		}
+		else
+		{
+			CMD.primaryDirection = Move1_Left;
+		}
+	}
+
+	CMD.alwaysZero = 0;
+	CMD.penIsMoving = 1;
+	CMD.penPosition = line->penPosition;
+	CMD.Transition = 0;
+
+	for (int i = 0; i < line->numberOfPoints; i++)
+	{
+		int xSign = NumSign(line->moves[i].dx);
+		int ySign = NumSign(line->moves[i].dy);
+
+		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] != Move2_AssertError, "Unexpected x movement for main direction");
+		SOFT_ASSERT(Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] != Move2_AssertError, "Unexpected y movement for main direction");
+		SOFT_ASSERT(Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] + Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign] > Move2_Max_Value, "Unexpected combination combo");
+		SOFT_ASSERT((xSign == 0 && (ySign == 1 || ySign == -1)) || (ySign == 0 && (xSign == 1 || xSign == -1)), "Unexpected line movement");
+
+		int relativeMovementType = Coord_X_SignToMovementTransalationTable[CMD.primaryDirection][1 + xSign] | Coord_Y_SignToMovementTransalationTable[CMD.primaryDirection][1 + ySign];
+
+		CMD.secondaryDirection = GenRelativeMovementOpcode(CMD.secondaryDirection, (PenRobotMovementCodesRelative)relativeMovementType);
+
+		SOFT_ASSERT(CMD.secondaryDirection != Move2_AssertError, "Unexpected relative movement value");
+		SOFT_ASSERT(CMD.secondaryDirection != Move2_RelativeNoChange, "Unexpected relative movement value");
+
+		fwrite(&CMD, 1, 1, f);
+	}
+
+	// update robot session as it arrived to the destination
+	robotSession->curx = line->endx;
+	robotSession->cury = line->endy;
+
+	return 0;
+}
+
 int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession)
 {
+	return WriteBinLineAlwaysLeft(f, line, robotSession);
+#if 0
 	RobotCommand CMD;
 
 	// get the direction of the line
@@ -91,20 +238,15 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 	float dx = line->endx - line->startx;
 	float dy = line->endy - line->starty;
 
-	// is it a dominant horizontal movement ?
-	int expectedXSign = 0;
-	int expectedYSign = 0;
 	if (abs(dx) >= abs(dy))
 	{
 		if (line->startx >= line->endx)
 		{
 			CMD.primaryDirection = Move1_Left;
-			expectedXSign = -1;
 		}
 		else
 		{
 			CMD.primaryDirection = Move1_Right;
-			expectedXSign = 1;
 		}
 	}
 	else
@@ -112,12 +254,10 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 		if (line->starty >= line->endy)
 		{
 			CMD.primaryDirection = Move1_Up;
-			expectedYSign = -1;
 		}
 		else
 		{
 			CMD.primaryDirection = Move1_Down;
-			expectedYSign = 1;
 		}
 	}
 
@@ -128,17 +268,9 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 
 	for (int i = 0; i < line->numberOfPoints; i++)
 	{
-		if (CMD.primaryDirection == Move1_Down || CMD.primaryDirection == Move1_Up)
-		{
-			SOFT_ASSERT(NumSign(line->moves[i].dy) != expectedYSign, "Unexpected backward moving line");
-		}
-		if (CMD.primaryDirection == Move1_Left || CMD.primaryDirection == Move1_Right)
-		{
-			SOFT_ASSERT(NumSign(line->moves[i].dx) != expectedXSign, "Unexpected backward moving line");
-		}
-
 		fwrite(&CMD, 1, 1, f);
 	}
 
 	return 0;
+#endif
 }

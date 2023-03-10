@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\tests">
+      <UniqueIdentifier>{ef379beb-c767-41b7-9d80-c71e8b30f9c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -26,6 +29,21 @@
     </ClCompile>
     <ClCompile Include="BinFileLineDraw.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BinFileWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_line2bin.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_LoadBin.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_DrawClock.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="tests.cpp">
+      <Filter>Source Files\tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +61,15 @@
     </ClInclude>
     <ClInclude Include="BinFileLineDraw.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BinFileCommon.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BinFileWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tests.h">
+      <Filter>Source Files\tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

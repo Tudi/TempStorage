@@ -17,7 +17,8 @@ typedef enum PenRobotMovementCodesPrimary
 	Move1_Left = 0x01, // negative value in SIG file
 	Move1_Right = 0x02, // positive value in SIG file
 	Move1_Up = 0x00, // positive value in a SIG file. Pen moves closer to head
-	Move1_Uninitialized,
+	Move1_Uninitialized = 4,
+	Move1_Values_Count = 4,
 }PenRobotMovementCodesPrimary;
 
 typedef enum PenRobotMovementCodesPrimaryRelative
@@ -34,6 +35,8 @@ typedef enum PenRobotMovementCodesRelative
 	Move2_RelativeLeft = 0x01,
 	Move2_RelativeRight = 0x02,
 	Move2_RelativeNoChange = 0x00,
+	Move2_Max_Value = 3,
+	Move2_AssertError = 4,
 }PenRobotMovementCodesRelative;
 
 typedef enum PenRobotPenPosition
