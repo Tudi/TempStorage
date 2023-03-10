@@ -3,6 +3,7 @@
 
 void RunAllTests()
 {
-//	Test_LoadBinFile();
-	Test_DrawReadLine();
+//	Test_DrawReadLine();
+	Test_DrawClock();
+	Test_LoadBinFile();
 }

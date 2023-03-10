@@ -163,29 +163,88 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 	{
 		lineDrawSteps = abs(dx);
 	}
+
+	int curx = (int)sx;
+	int cury = (int)sy;
+
 	double xIncForStep = dx / lineDrawSteps;
 	double yIncForStep = dy / lineDrawSteps;
-	double prevWriteAtStep = 0;
+	int writtenDiffX = 0;
+	int writtenDiffY = 0;
  	for (double step = 1; step <= lineDrawSteps; step += 1)
 	{
-		double xdiff = (step - prevWriteAtStep) * xIncForStep;
-		double ydiff = (step - prevWriteAtStep) * yIncForStep;
-//		if (abs(xdiff) < MIN_LINE_SEGMENT_LENGTH && abs(ydiff) < MIN_LINE_SEGMENT_LENGTH)
-		if ((int)abs(xdiff) == 0 && (int)abs(ydiff) == 0)
+		double curXPos = step * xIncForStep;
+		double curYPos = step * yIncForStep;
+		int xdiff = (int)curXPos - writtenDiffX;
+		int ydiff = (int)curYPos - writtenDiffY;
+
+		if (xdiff < -1)
 		{
-			continue;
+			xdiff = -1;
 		}
-		prevWriteAtStep = step;
-		if ((int)xdiff != 0 && (int)ydiff != 0)
+		else if(xdiff > 1)
 		{
-			RelativePointsLine::storeNextPoint(line, (int)xdiff, 0);
-			RelativePointsLine::storeNextPoint(line, 0, (int)ydiff);
+			xdiff = 1;
 		}
-		else
+		if (ydiff < -1)
 		{
-			RelativePointsLine::storeNextPoint(line, (int)xdiff, (int)ydiff);
+			ydiff = -1;
+		}
+		else if (ydiff > 1)
+		{
+			ydiff = 1;
+		}
+
+		if (xdiff != 0)
+		{
+			writtenDiffX += xdiff;
+			RelativePointsLine::storeNextPoint(line, xdiff, 0);
+			curx += xdiff;
+		}
+		if (ydiff != 0)
+		{
+			writtenDiffY += ydiff;
+			RelativePointsLine::storeNextPoint(line, 0, ydiff);
+			cury += ydiff;
 		}
 	}
+
+	// fix rounding errors
+	if (dx < 0)
+	{
+		while (writtenDiffX > (int)dx)
+		{
+			writtenDiffX--;
+			RelativePointsLine::storeNextPoint(line, -1, 0);
+		}
+	}
+	if (dx > 0)
+	{
+		while (writtenDiffX < (int)dx)
+		{
+			writtenDiffX++;
+			RelativePointsLine::storeNextPoint(line, 1, 0);
+		}
+	}
+	if (dy < 0)
+	{
+		while (writtenDiffY > (int)dy)
+		{
+			writtenDiffY--;
+			RelativePointsLine::storeNextPoint(line, 0, -1);
+		}
+	}
+	if (dy > 0)
+	{
+		while (writtenDiffY < (int)dy)
+		{
+			writtenDiffY++;
+			RelativePointsLine::storeNextPoint(line, 0, 1);
+		}
+	}
+
+	SOFT_ASSERT(writtenDiffX == (int)dx, "Did not arrive at destination X");
+	SOFT_ASSERT(writtenDiffY == (int)dy, "Did not arrive at destination y");
 }
 
 int RelativePointsLine::ensureCanStoreLinePoint(RelativePointsLine** line, int count = 1)

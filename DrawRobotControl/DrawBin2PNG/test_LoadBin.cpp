@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 
 #define ImageSizeMultiplier 2
-void Test_LoadBinFile()
+
+void Test_LoadBinFileGeneric(const char* fileName)
 {
 	FIBITMAP* dib = CreateNewImage(2048 * ImageSizeMultiplier, 2048 * ImageSizeMultiplier);
 	RobotDrawSession robotSession;
@@ -13,13 +14,7 @@ void Test_LoadBinFile()
 	uint32_t readPos = 0;
 	size_t fileSize = 0;
 
-	//	uint8_t* f = OpenBinFile("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin", readPos, fileSize);
-	//	uint8_t* f = OpenBinFile("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin", readPos, fileSize);
-	//	uint8_t* f = OpenBinFile("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin", readPos, fileSize);
-	//	uint8_t* f = OpenBinFile("../BinFiles/0009 One Inch Square Centered on 0,0.bin", readPos, fileSize);
-	//	uint8_t* f = OpenBinFile("../BinFiles/0011 Five One Inch Squares from 006.bin", readPos, fileSize);
-	uint8_t* f = OpenBinFile("../BinFiles/0010 Five One Inch Squares from 004.bin", readPos, fileSize);
-	//	uint8_t* f = OpenBinFile("../ConstructBinFiles/BinFiles/CheckArmAngle_11_0_20_40_60_80.bin", readPos, fileSize);
+	uint8_t* f = OpenBinFile(fileName, readPos, fileSize);
 	ReadBinHeader(f, readPos, &robotSession);
 
 	for (size_t i = 0; i < 60; i++)
@@ -44,4 +39,15 @@ void Test_LoadBinFile()
 
 	SaveImagePNG(dib, "bin2PNG.png");
 	FreeImage_Unload(dib);
+}
+
+void Test_LoadBinFile()
+{
+//	Test_LoadBinFileGeneric("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/0009 One Inch Square Centered on 0,0.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/0011 Five One Inch Squares from 006.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/0010 Five One Inch Squares from 004.bin");
+	Test_LoadBinFileGeneric("clock.bin");
 }
