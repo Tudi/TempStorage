@@ -51,6 +51,7 @@ typedef struct RobotCommand
 	uint8_t primaryDirection : 2; // up,down,left,right 
 	uint8_t Transition : 1; // raise pen, swap paper or reposition head. Seems to depend on the sequence
 	uint8_t penIsMoving : 1; // only zero when writing pauses ( transition )
+	// higher bits
 	uint8_t alwaysZero : 1; // have not seen anything else than 0
 	uint8_t penPosition : 1; // 0 is in the air. 1 is lowered on paper
 	uint8_t secondaryDirection : 2; // up,down,left,right relative to main direction

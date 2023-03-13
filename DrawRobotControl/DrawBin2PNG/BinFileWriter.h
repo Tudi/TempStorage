@@ -11,3 +11,4 @@ void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperS
 
 struct RelativePointsLine;
 int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession);
+void MovePenToLineStart_DrawLineInFile(FILE* f, RobotDrawSession* robotSession, float sx, float sy, float ex, float ey);

@@ -15,9 +15,13 @@ void Test_LoadBinFileGeneric(const char* fileName)
 	size_t fileSize = 0;
 
 	uint8_t* f = OpenBinFile(fileName, readPos, fileSize);
+	if (f == NULL)
+	{
+		return;
+	}
 	ReadBinHeader(f, readPos, &robotSession);
 
-	for (size_t i = 0; i < 60; i++)
+	for (size_t i = 0; i < 6000; i++)
 	{
 		RelativePointsLine* line = NULL;
 		RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);
@@ -49,5 +53,12 @@ void Test_LoadBinFile()
 //	Test_LoadBinFileGeneric("../BinFiles/0009 One Inch Square Centered on 0,0.bin");
 //	Test_LoadBinFileGeneric("../BinFiles/0011 Five One Inch Squares from 006.bin");
 //	Test_LoadBinFileGeneric("../BinFiles/0010 Five One Inch Squares from 004.bin");
-	Test_LoadBinFileGeneric("clock.bin");
+//	Test_LoadBinFileGeneric("clock.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/right_right.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/left_left.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/up_up.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/down_down.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/Left_then_clock.bin");
+//	Test_LoadBinFileGeneric("../BinFiles/right_then_clock.bin");
+	Test_LoadBinFileGeneric("clock_3.bin");
 }
