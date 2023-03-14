@@ -1,7 +1,8 @@
 #pragma once
 
-void RunAllTests();
+void RunAllTests(char** argv, int argc);
 
-void Test_LoadBinFile();
+void Test_LoadBinFile(char** argv, int argc);
 void Test_DrawReadLine();
 void Test_DrawClock();
+void Test_SigToBin(char** argv, int argc);

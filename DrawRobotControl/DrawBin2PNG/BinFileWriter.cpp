@@ -57,6 +57,85 @@ void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperS
 	}
 }
 
+BinFileWriter::BinFileWriter(const char* fileName)
+{
+	bHeaderWritten = false;
+	bFooterWritten = false;
+	RobotSession_Constructor(&robotSession);
+	sFileName = fileName;
+	fBinFile = NULL;
+}
+
+void BinFileWriter::OpenBinFile()
+{
+	if (fBinFile != NULL)
+	{
+		SOFT_ASSERT(false, "Bin file already open");
+		return;
+	}
+	errno_t openerr = fopen_s(&fBinFile, sFileName.c_str(), "wb");
+	if (fBinFile == NULL)
+	{
+		SOFT_ASSERT(false, "Failed to open bin file");
+		return;
+	}
+}
+
+void BinFileWriter::AddLine(float sx, float sy, float ex, float ey)
+{
+	if (fBinFile == NULL)
+	{
+		OpenBinFile();
+	}
+	if (bHeaderWritten == false)
+	{
+		WriteBinHeader(fBinFile, &robotSession);
+		bHeaderWritten = true;
+	}
+	RelativePointsLine* line = NULL;
+
+	if ((int)robotSession.curx != (int)sx || (int)robotSession.cury != (int)sy)
+	{
+		printf("Moving NODRAW pen from %.02f,%.02f to %.02f,%.02f\n", robotSession.curx, robotSession.cury, sx, sy);
+		DrawLineRelativeInMem(robotSession.curx, robotSession.cury, sx, sy, &line);
+		if (line->numberOfPoints > 0)
+		{
+			line->penPosition = Pen_Up;
+			WriteBinLine(fBinFile, line, &robotSession);
+		}
+		FreeAndNULL(line)
+	}
+	printf("Draw line from %.02f,%.02f to %.02f,%.02f\n", sx, sy, ex, ey);
+	RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, ex, ey, &line);
+	if (line->numberOfPoints > 0)
+	{
+		line->penPosition = Pen_Down;
+		WriteBinLine(fBinFile, line, &robotSession);
+	}
+	FreeAndNULL(line)
+}
+
+void BinFileWriter::CloseFile()
+{
+	if (fBinFile == NULL)
+	{
+		return;
+	}
+	if (bHeaderWritten == false)
+	{
+		return;
+	}
+	if (bFooterWritten == true)
+	{
+		return;
+	}
+	WriteBinFooter(fBinFile, &robotSession);
+	bFooterWritten = true;
+	fclose(fBinFile);
+	fBinFile = NULL;
+}
+
 // I know there is a function for this, but for the sake of readability I added it
 static int NumSign(float x)
 {

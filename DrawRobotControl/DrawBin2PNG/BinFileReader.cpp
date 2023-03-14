@@ -123,6 +123,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 	if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
 		|| (FileReadDirection > 0 && readPos >= fileSize - (BIN_FOOTER_BYTE_COUNT1 + BIN_FOOTER_BYTE_COUNT2)))
 	{
+		printf("Close to end of file. Refusing to read line\n");
 		return 1;
 	}
 
@@ -150,6 +151,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 		if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
 			|| (FileReadDirection > 0 && readPos >= fileSize - (BIN_FOOTER_BYTE_COUNT1 + BIN_FOOTER_BYTE_COUNT2)))
 		{
+			printf("Close to end of file. Breaking line read.\n");
 			break;
 		}
 

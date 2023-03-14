@@ -32,11 +32,11 @@ FIBITMAP* openImage(const char* fileName)
 }
 #endif
 
-int main()
+int main(int argc, char** argv)
 {
 	LoadImage_("NONE"); // initialize lib
 
-	RunAllTests();
+	RunAllTests(argv, argc);
 
 	FreeImage_DeInitialise();
 }

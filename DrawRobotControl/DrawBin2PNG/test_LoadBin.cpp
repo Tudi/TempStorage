@@ -9,7 +9,7 @@ void Test_LoadBinFileGeneric(const char* fileName)
 	robotSession.curx = robotSession.startx = 2048 * ImageSizeMultiplier / 2;
 	robotSession.cury = robotSession.starty = 2048 * ImageSizeMultiplier / 2;
 
-	DrawCircleAt(dib, robotSession.curx, robotSession.cury, 300);
+//	DrawCircleAt(dib, robotSession.curx, robotSession.cury, 300);
 
 	uint32_t readPos = 0;
 	size_t fileSize = 0;
@@ -41,11 +41,23 @@ void Test_LoadBinFileGeneric(const char* fileName)
 
 	free(f);
 
-	SaveImagePNG(dib, "bin2PNG.png");
+	char* sBinFileName = _strdup(fileName);
+	if (sBinFileName == NULL)
+	{
+		SOFT_ASSERT(false, "Failed to copy input SIG file name");
+		return;
+	}
+	size_t uiNameLen = strlen(fileName);
+	sBinFileName[uiNameLen - 3] = 'p';
+	sBinFileName[uiNameLen - 2] = 'n';
+	sBinFileName[uiNameLen - 1] = 'g';
+
+	SaveImagePNG(dib, sBinFileName);
+	free(sBinFileName);
 	FreeImage_Unload(dib);
 }
 
-void Test_LoadBinFile()
+void Test_LoadBinFile(char** argv, int argc)
 {
 //	Test_LoadBinFileGeneric("../BinFiles/0002 Three Half Inch Vertical Lines Half Inch Apart.bin");
 //	Test_LoadBinFileGeneric("../BinFiles/0004 Three Half Inch Horizontal Lines Half Inch Apart.bin");
@@ -60,5 +72,18 @@ void Test_LoadBinFile()
 //	Test_LoadBinFileGeneric("../BinFiles/down_down.bin");
 //	Test_LoadBinFileGeneric("../BinFiles/Left_then_clock.bin");
 //	Test_LoadBinFileGeneric("../BinFiles/right_then_clock.bin");
-	Test_LoadBinFileGeneric("clock_3.bin");
+//	Test_LoadBinFileGeneric("S005 Five One Inch Squares.bin");
+	if (argc < 3)
+	{
+		printf("expecting array of input SIG file names\n");
+		return;
+	}
+	if (strcmp(argv[1], "-b2i") != 0)
+	{
+		return;
+	}
+	for (size_t i = 2; i < argc; i++)
+	{
+		Test_LoadBinFileGeneric(argv[i]);
+	}
 }

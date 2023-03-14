@@ -1,5 +1,22 @@
 #pragma once
 
+#include <string>
+
+class BinFileWriter
+{
+public:
+	BinFileWriter(const char *fileName);
+	void AddLine(float sx, float sy, float ex, float ey);
+	void CloseFile();
+private:
+	void OpenBinFile();
+	bool bHeaderWritten;
+	bool bFooterWritten;
+	std::string sFileName;
+	RobotDrawSession robotSession;
+	FILE* fBinFile;
+};
+
 // every BIN file starts with this 
 void WriteBinHeader(FILE* f, RobotDrawSession* robotSession);
 // every BIN file ends with this

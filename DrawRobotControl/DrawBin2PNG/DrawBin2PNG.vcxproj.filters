@@ -48,6 +48,12 @@
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SigFileReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_LoadSigFile.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FreeImage.h">
@@ -73,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="tests.h">
       <Filter>Source Files\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="SigFileReader.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

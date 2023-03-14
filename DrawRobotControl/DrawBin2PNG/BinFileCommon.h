@@ -21,14 +21,6 @@ typedef enum PenRobotMovementCodesPrimary
 	Move1_Values_Count = 4,
 }PenRobotMovementCodesPrimary;
 
-typedef enum PenRobotMovementCodesPrimaryRelative
-{
-	Move1_RelativeNoChange = 0x00,
-	Move1_RelativeLeft = 0x01,
-	Move1_RelativeRight = 0x02,
-	Move1_RelativeReverse = 0x03,
-}PenRobotMovementCodesPrimaryRelative;
-
 typedef enum PenRobotMovementCodesRelative
 {
 	Move2_RelativeForward = 0x03,
