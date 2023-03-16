@@ -54,6 +54,12 @@
     <ClCompile Include="test_LoadSigFile.cpp">
       <Filter>Source Files\tests</Filter>
     </ClCompile>
+    <ClCompile Include="test_DrawUnitsOfMeasurement.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="LineAntiDistorsion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FreeImage.h">
@@ -81,6 +87,9 @@
       <Filter>Source Files\tests</Filter>
     </ClInclude>
     <ClInclude Include="SigFileReader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LineAntiDistorsion.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

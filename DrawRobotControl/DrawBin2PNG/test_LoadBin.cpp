@@ -21,21 +21,18 @@ void Test_LoadBinFileGeneric(const char* fileName)
 	}
 	ReadBinHeader(f, readPos, &robotSession);
 
-	for (size_t i = 0; i < 6000; i++)
+	for (size_t i = 0; i < 600000; i++)
 	{
-		RelativePointsLine* line = NULL;
-		RelativePointsLine::setStartingPosition(&line, robotSession.curx, robotSession.cury);
+		RelativePointsLine line;
+		line.setStartingPosition(robotSession.curx, robotSession.cury);
 		int ret = ReadBinLine(f, readPos, fileSize, &line, &robotSession);
 		if (ret != 0)
 		{
-			free(line);
 			break;
 		}
 
 		// draw line on PNG
-		DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, line);
-
-		free(line);
+		DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 	}
 	ReadBinFooter(f, readPos, &robotSession);
 
@@ -75,7 +72,7 @@ void Test_LoadBinFile(char** argv, int argc)
 //	Test_LoadBinFileGeneric("S005 Five One Inch Squares.bin");
 	if (argc < 3)
 	{
-		printf("expecting array of input SIG file names\n");
+		printf("expecting array of input BIN file names\n");
 		return;
 	}
 	if (strcmp(argv[1], "-b2i") != 0)

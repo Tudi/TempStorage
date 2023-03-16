@@ -11,9 +11,9 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 	robotSession.curx = 1000;
 	robotSession.cury = 1000;
 
-	RelativePointsLine* lineWritten = NULL;
-	RelativePointsLine* lineRead = NULL;
-	RelativePointsLine::setStartingPosition(&lineWritten, robotSession.curx, robotSession.cury);
+	RelativePointsLine lineWritten;
+	RelativePointsLine lineRead;
+	lineWritten.setStartingPosition(robotSession.curx, robotSession.cury);
 	DrawLineRelativeInMem(sx, sy, ex, ey, &lineWritten);
 
 	{
@@ -25,7 +25,7 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 		}
 
 		WriteBinHeader(f, &robotSession);
-		WriteBinLine(f, lineWritten, &robotSession);
+		WriteBinLine(f, &lineWritten, &robotSession);
 		WriteBinFooter(f, &robotSession);
 
 		fclose(f);
@@ -41,7 +41,7 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 		size_t fileSize = 0;
 		uint8_t* f = OpenBinFile("temp.bin", readPos, fileSize);
 		ReadBinHeader(f, readPos, &robotSession);
-		RelativePointsLine::setStartingPosition(&lineRead, robotSession.curx, robotSession.cury);
+		lineRead.setStartingPosition(robotSession.curx, robotSession.cury);
 		int ret = ReadBinLine(f, readPos, fileSize, &lineRead, &robotSession);
 		ReadBinFooter(f, readPos, &robotSession);
 
@@ -50,16 +50,12 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 	}
 
 	// compare the 2 lines
-	SOFT_ASSERT(lineWritten->numberOfPoints == lineRead->numberOfPoints, "written and read line move count not the same");
-	for (size_t i = 0; i < lineWritten->numberOfPoints; i++)
+	SOFT_ASSERT(lineWritten.GetPointsCount() == lineRead.GetPointsCount(), "written and read line move count not the same");
+	for (size_t i = 0; i < lineWritten.GetPointsCount(); i++)
 	{
-		SOFT_ASSERT((int)lineWritten->moves[i].dx == (int)lineRead->moves[i].dx, "Line move mismatch");
-		SOFT_ASSERT((int)lineWritten->moves[i].dy == (int)lineRead->moves[i].dy, "Line move mismatch");
+		SOFT_ASSERT((int)lineWritten.GetDX(i) == (int)lineRead.GetDX(i), "Line move mismatch");
+		SOFT_ASSERT((int)lineWritten.GetDY(i) == (int)lineRead.GetDY(i), "Line move mismatch");
 	}
-
-	// cleanup
-	FreeAndNULL(lineWritten); 
-	FreeAndNULL(lineRead);
 }
 
 void Test_DrawReadLine()

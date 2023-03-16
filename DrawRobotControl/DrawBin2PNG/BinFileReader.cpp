@@ -118,7 +118,7 @@ void ReadBinFooter(uint8_t* bytes, uint32_t& readPos, RobotDrawSession* robotSes
 //#define		TEST_DOUBLE_ADDS_FORWARD_HALF
 
 static int LinesParsedCounter = 0;
-int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePointsLine** line, RobotDrawSession* robotSession)
+int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePointsLine* line, RobotDrawSession* robotSession)
 {
 	if ((FileReadDirection < 0 && readPos <= BIN_HEADER_BYTE_COUNT)
 		|| (FileReadDirection > 0 && readPos >= fileSize - (BIN_FOOTER_BYTE_COUNT1 + BIN_FOOTER_BYTE_COUNT2)))
@@ -245,7 +245,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 			}
 #endif
 			robotSession->prevMoveDir = (PenRobotMovementCodesPrimary)followPrimaryDirection;
-			RelativePointsLine::setPenPosition(line, CMD.penPosition);
+			line->setPenPosition(CMD.penPosition);
 			LinesParsedCounter++;
 			printf("%d) Will follow move type %d-%s. Pen is %d. start at pos %d, Prev byte %02X, cur byte %02X\n",
 				LinesParsedCounter, followPrimaryDirection,
@@ -373,19 +373,19 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 				if (secondaryDirection == Move2_RelativeForward)
 				{
 //					if (LinesParsedCounter == 3)printf("3+3 ");
-					RelativePointsLine::storeNextPoint(line, 0, -penSpeedInertiaAdjustedPrimary);
+					line->storeNextPoint(0, -penSpeedInertiaAdjustedPrimary);
 					motor_12_Move_total += penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft)
 				{
 //					if (LinesParsedCounter == 3)printf("3+1 ");
-					RelativePointsLine::storeNextPoint(line, penSpeedInertiaAdjustedSecondary, 0);
+					line->storeNextPoint(penSpeedInertiaAdjustedSecondary, 0);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight)
 				{
 //					if (LinesParsedCounter == 3)printf("3+2 ");
-					RelativePointsLine::storeNextPoint(line, -penSpeedInertiaAdjustedSecondary, 0);
+					line->storeNextPoint( -penSpeedInertiaAdjustedSecondary, 0);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 /*				if (secondaryDirection == Move2_RelativeNoChange)
@@ -413,18 +413,18 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 				if (secondaryDirection == Move2_RelativeForward)
 				{
 //					if (LinesParsedCounter == 2)printf("0"); else printf("1\n");
-					RelativePointsLine::storeNextPoint(line, 0, penSpeedInertiaAdjustedSecondary);
+					line->storeNextPoint(0, penSpeedInertiaAdjustedSecondary);
 					motor_12_Move_total += penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft)
 				{
-					RelativePointsLine::storeNextPoint(line, -penSpeedInertiaAdjustedSecondary, 0);
+					line->storeNextPoint( -penSpeedInertiaAdjustedSecondary, 0);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight)
 				{
 //					if (LinesParsedCounter == 2)printf("1\n"); else printf("0");
-					RelativePointsLine::storeNextPoint(line, penSpeedInertiaAdjustedSecondary, 0);
+					line->storeNextPoint( penSpeedInertiaAdjustedSecondary, 0);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 /*				if (secondaryDirection == Move2_RelativeNoChange)
@@ -452,17 +452,17 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 			{
 				if (secondaryDirection == Move2_RelativeForward)
 				{
-					RelativePointsLine::storeNextPoint(line, -penSpeedInertiaAdjustedSecondary, 0);
+					line->storeNextPoint(-penSpeedInertiaAdjustedSecondary, 0);
 					motor_12_Move_total+= penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft)
 				{
-					RelativePointsLine::storeNextPoint(line, 0, -penSpeedInertiaAdjustedSecondary);
+					line->storeNextPoint( 0, -penSpeedInertiaAdjustedSecondary);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight)
 				{
-					RelativePointsLine::storeNextPoint(line, 0, penSpeedInertiaAdjustedSecondary);
+					line->storeNextPoint( 0, penSpeedInertiaAdjustedSecondary);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 /*				if (secondaryDirection == Move2_RelativeNoChange)
@@ -486,17 +486,17 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 			{
 				if (secondaryDirection == Move2_RelativeForward)
 				{
-					RelativePointsLine::storeNextPoint(line, penSpeedInertiaAdjustedSecondary, 0);
+					line->storeNextPoint( penSpeedInertiaAdjustedSecondary, 0);
 					motor_12_Move_total+= penSpeedInertiaAdjustedPrimary;
 				}
 				if (secondaryDirection == Move2_RelativeLeft) // move up
 				{
-					RelativePointsLine::storeNextPoint(line, 0, penSpeedInertiaAdjustedSecondary);
+					line->storeNextPoint( 0, penSpeedInertiaAdjustedSecondary);
 					motor_1_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 				if (secondaryDirection == Move2_RelativeRight) // move down
 				{
-					RelativePointsLine::storeNextPoint(line, 0, -penSpeedInertiaAdjustedSecondary);
+					line->storeNextPoint( 0, -penSpeedInertiaAdjustedSecondary);
 					motor_2_Move_total += penSpeedInertiaAdjustedSecondary;
 				}
 /*				if (secondaryDirection == Move2_RelativeNoChange)

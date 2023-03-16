@@ -26,6 +26,6 @@ void WriteBinFooter(FILE* f, RobotDrawSession* robotSession);
 // wait for the operator to resume reading the file
 void WriteBinTransition(FILE* f, RobotDrawSession* robotSession, int writePaperSwap);
 
-struct RelativePointsLine;
+class RelativePointsLine;
 int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession);
 void MovePenToLineStart_DrawLineInFile(FILE* f, RobotDrawSession* robotSession, float sx, float sy, float ex, float ey);

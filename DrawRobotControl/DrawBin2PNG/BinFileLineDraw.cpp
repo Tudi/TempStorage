@@ -29,10 +29,11 @@ void GetLineColor(BYTE& LineBaseR, BYTE& LineBaseG, BYTE& LineBaseB)
 
 #define FLIP_DRAW_VERTICALLY 0
 #define FLIP_DRAW_HORIZONTALLY 0
+#define ADDED_DRAW_LINE_WIDTH 1
 
 void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* line)
 {
-	if (line == NULL || line->numberOfPoints <= 0)
+	if (line == NULL || line->GetPointsCount() <= 0)
 	{
 		printf("Unexpected no length line\n");
 		return;
@@ -42,42 +43,41 @@ void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* 
 	BYTE* BITS = FreeImage_GetBits(in_Img);
 	int32_t Width = FreeImage_GetWidth(in_Img);
 	int32_t Height = FreeImage_GetHeight(in_Img);
-	size_t linePixels = (size_t)line->numberOfPoints;
-	size_t drawLine = (size_t)line->penPosition;
+	size_t linePixels = (size_t)line->GetPointsCount();
+	size_t drawLine = (size_t)line->getPenPosition();
 	BYTE LineBaseR = 64, LineBaseG = 64, LineBaseB = 64;
-	if (drawLine 
+	if (drawLine
 		&& linePixels > 4 // probably just position adjustment line
 		)
 	{
 		GetLineColor(LineBaseR, LineBaseG, LineBaseB);
 	}
-#define LineSize 2
 	for (size_t i = 0; i < linePixels; i++)
 	{
 #if FLIP_DRAW_HORIZONTALLY == 0
-		x += line->moves[i].dx;
+		x += line->GetDX(i);
 #else
 		x -= line->moves[i].dx;
 #endif
 #if FLIP_DRAW_VERTICALLY == 0
-		y += line->moves[i].dy;
+		y += line->GetDY(i);
 #else
-		y -= line->moves[i].dy;
+		y -= line->GetDY(i);
 #endif
 		size_t canDraw = 1;
-		if (x - LineSize < 0)
+		if (x - ADDED_DRAW_LINE_WIDTH < 0)
 		{
 			canDraw = 0;
 		}
-		if (x + LineSize >= Width)
+		if (x + ADDED_DRAW_LINE_WIDTH >= Width)
 		{
 			canDraw = 0;
 		}
-		if (y - LineSize < 0)
+		if (y - ADDED_DRAW_LINE_WIDTH < 0)
 		{
 			canDraw = 0;
 		}
-		if (y >= Height + LineSize)
+		if (y + ADDED_DRAW_LINE_WIDTH >= Height)
 		{
 			canDraw = 0;
 		}
@@ -87,13 +87,13 @@ void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* 
 			BYTE pixelR = (BYTE)((int)LineBaseR - ((double)i / (double)linePixels / 2.0 * LineBaseR));
 			BYTE pixelG = (BYTE)((int)LineBaseG - ((double)i / (double)linePixels / 2.0 * LineBaseG));
 			BYTE pixelB = (BYTE)((int)LineBaseB - ((double)i / (double)linePixels / 2.0 * LineBaseB));
-			for (int y2 = -2; y2 <= 2; y2++)
+			for (int y2 = -ADDED_DRAW_LINE_WIDTH; y2 <= ADDED_DRAW_LINE_WIDTH; y2++)
 			{
-				for (int x2 = -2; x2 <= 2; x2++)
+				for (int x2 = -ADDED_DRAW_LINE_WIDTH; x2 <= ADDED_DRAW_LINE_WIDTH; x2++)
 				{
-					if ( abs((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 0] - (int)pixelR ) > 1
-						&& abs((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 1] - (int)pixelG ) > 1
-						&& abs((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 2] - (int)pixelB ) > 1
+					if (abs((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 0] - (int)pixelR) > 1
+						&& abs((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 1] - (int)pixelG) > 1
+						&& abs((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 2] - (int)pixelB) > 1
 						)
 					{
 						BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 0] = MIN(255, ((int)BITS[((int)y + y2) * stride + ((int)x + x2) * Bytespp + 0] + (int)pixelR));
@@ -138,7 +138,7 @@ void DrawCircleAt(FIBITMAP* in_Img, float x, float y, float radius)
 // relative negative y means to draw it downwards on paper
 // in memory, this would be a positive y
 // Movement units are measured in robot commands ! That means it's rounded to 1 or 0
-void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePointsLine** line)
+void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePointsLine* line)
 {
 	double dx = ex - sx;
 	double dy = ey - sy;
@@ -147,11 +147,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		return;
 	}
 
-	// !! flip dy as robot head is actually up and not down
-//	dy = -dy;
-
-	RelativePointsLine::setPenPosition(line, 1);
-	RelativePointsLine::setStartingPosition(line, sx, sy);
+	line->setStartingPosition(sx, sy);
 
 	// just to increase the draw accuracy. More points, more smoothness
 	double lineDrawSteps;
@@ -171,7 +167,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 	double yIncForStep = dy / lineDrawSteps;
 	int writtenDiffX = 0;
 	int writtenDiffY = 0;
- 	for (double step = 1; step <= lineDrawSteps; step += 1)
+	for (double step = 1; step <= lineDrawSteps; step += 1)
 	{
 		double curXPos = step * xIncForStep;
 		double curYPos = step * yIncForStep;
@@ -182,7 +178,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		{
 			xdiff = -1;
 		}
-		else if(xdiff > 1)
+		else if (xdiff > 1)
 		{
 			xdiff = 1;
 		}
@@ -198,13 +194,13 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		if (xdiff != 0)
 		{
 			writtenDiffX += xdiff;
-			RelativePointsLine::storeNextPoint(line, xdiff, 0);
+			line->storeNextPoint(xdiff, 0);
 			curx += xdiff;
 		}
 		if (ydiff != 0)
 		{
 			writtenDiffY += ydiff;
-			RelativePointsLine::storeNextPoint(line, 0, ydiff);
+			line->storeNextPoint(0, ydiff);
 			cury += ydiff;
 		}
 	}
@@ -215,7 +211,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		while (writtenDiffX > (int)dx)
 		{
 			writtenDiffX--;
-			RelativePointsLine::storeNextPoint(line, -1, 0);
+			line->storeNextPoint(-1, 0);
 		}
 	}
 	if (dx > 0)
@@ -223,7 +219,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		while (writtenDiffX < (int)dx)
 		{
 			writtenDiffX++;
-			RelativePointsLine::storeNextPoint(line, 1, 0);
+			line->storeNextPoint(1, 0);
 		}
 	}
 	if (dy < 0)
@@ -231,7 +227,7 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		while (writtenDiffY > (int)dy)
 		{
 			writtenDiffY--;
-			RelativePointsLine::storeNextPoint(line, 0, -1);
+			line->storeNextPoint(0, -1);
 		}
 	}
 	if (dy > 0)
@@ -239,76 +235,44 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		while (writtenDiffY < (int)dy)
 		{
 			writtenDiffY++;
-			RelativePointsLine::storeNextPoint(line, 0, 1);
+			line->storeNextPoint(0, 1);
 		}
 	}
+
+	line->setEndPosition(sx + dx, sy + dy);
 
 	SOFT_ASSERT(writtenDiffX == (int)dx, "Did not arrive at destination X");
 	SOFT_ASSERT(writtenDiffY == (int)dy, "Did not arrive at destination y");
 }
 
-int RelativePointsLine::ensureCanStoreLinePoint(RelativePointsLine** line, int count = 1)
+int RelativePointsLine::ensureCanStoreLinePoint(int count = 1)
 {
 	// stop doing stupid things
 	if (count <= 0)
 	{
 		return 1;
 	}
-	if (*line == NULL)
+	if (numberOfPoints + count >= numberOfPointsCanStore)
 	{
-		*line = (RelativePointsLine*)malloc(sizeof(RelativePointsLine) + (count + MIN_POINTS_LINE_EXTEND) * sizeof(RelativeLinePoint));
-		if (*line == NULL)
-		{
-			// should report mem allocation error
-			return 1; 
-		}
-		(*line)->numberOfPointsCanStore = count + MIN_POINTS_LINE_EXTEND;
-		(*line)->numberOfPoints = 0;
-		(*line)->startx = 0;
-		(*line)->starty = 0;
-	}
-	else if((*line)->numberOfPoints + count >= (*line)->numberOfPointsCanStore)
-	{
-		(*line)->numberOfPointsCanStore += count + MIN_POINTS_LINE_EXTEND;
-		RelativePointsLine* newStore = (RelativePointsLine*)realloc((*line), sizeof(RelativePointsLine) + (*line)->numberOfPointsCanStore * sizeof(RelativeLinePoint));
+		numberOfPointsCanStore += count + MIN_POINTS_LINE_EXTEND;
+		RelativeLinePoint* newStore = (RelativeLinePoint*)realloc(moves, sizeof(RelativeLinePoint) + numberOfPointsCanStore * sizeof(RelativeLinePoint));
 		if (newStore == NULL)
 		{
 			return 1;
 		}
-		*line = newStore;
+		moves = newStore;
 	}
 	return 0;
 }
 
-int RelativePointsLine::storeNextPoint(RelativePointsLine** line, double dx, double dy)
+int RelativePointsLine::storeNextPoint(double dx, double dy)
 {
-	if (int err = ensureCanStoreLinePoint(line) != 0)
+	if (int err = ensureCanStoreLinePoint() != 0)
 	{
 		return err;
 	}
-	(*line)->moves[(*line)->numberOfPoints].dx = (float)dx;
-	(*line)->moves[(*line)->numberOfPoints].dy = (float)dy;
-	(*line)->numberOfPoints++;
-	return 0;
-}
-
-int RelativePointsLine::setPenPosition(RelativePointsLine** line, int penPos)
-{
-	if (int err = ensureCanStoreLinePoint(line) != 0)
-	{
-		return err;
-	}
-	(*line)->penPosition = penPos;
-	return 0;
-}
-
-int RelativePointsLine::setStartingPosition(RelativePointsLine** line, double sx, double sy)
-{
-	if (int err = ensureCanStoreLinePoint(line) != 0)
-	{
-		return err;
-	}
-	(*line)->startx = (float)sx;
-	(*line)->starty = (float)sy;
+	moves[numberOfPoints].dx = (float)dx;
+	moves[numberOfPoints].dy = (float)dy;
+	numberOfPoints++;
 	return 0;
 }

@@ -131,10 +131,12 @@
     <ClCompile Include="BinFileReader.cpp" />
     <ClCompile Include="BinFileWriter.cpp" />
     <ClCompile Include="ImageHandler.cpp" />
+    <ClCompile Include="LineAntiDistorsion.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SigFileReader.cpp" />
     <ClCompile Include="tests.cpp" />
     <ClCompile Include="test_DrawClock.cpp" />
+    <ClCompile Include="test_DrawUnitsOfMeasurement.cpp" />
     <ClCompile Include="test_line2bin.cpp" />
     <ClCompile Include="test_LoadBin.cpp" />
     <ClCompile Include="test_LoadSigFile.cpp" />
@@ -147,6 +149,7 @@
     <ClInclude Include="BinFileWriter.h" />
     <ClInclude Include="FreeImage.h" />
     <ClInclude Include="ImageHandler.h" />
+    <ClInclude Include="LineAntiDistorsion.h" />
     <ClInclude Include="SigFileReader.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="tests.h" />

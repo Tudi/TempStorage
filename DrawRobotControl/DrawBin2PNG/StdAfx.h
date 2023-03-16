@@ -13,6 +13,7 @@
 #include "BinFileWriter.h"
 #include "BinFileLineDraw.h"
 #include "SigFileReader.h"
+#include "LineAntiDistorsion.h"
 #include "tests.h"
 
 
@@ -34,15 +35,3 @@ void LogMessage(const char* file, int line, const char* msg);
 
 #define FreeAndNULL(x) { free(x); x = NULL; }
 
-
-//#define TEST_1
-//#define TEST_2
-//#define TEST_4
-//#define TEST_8
-//#define TEST_9
-//#define TEST_11
-//#define TEST_7
-#define TEST_12
-#define TEST_13
-//#define TEST_15
-//#define TEST_16
