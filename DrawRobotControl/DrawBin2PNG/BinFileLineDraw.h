@@ -33,10 +33,10 @@ public:
 	void setStartingPosition(double sx, double sy) { startx = (float)sx; starty = (float)sy;}
 	void setEndPosition(double ex, double ey) { endx = (float)ex; endy = (float)ey; }
 	int GetPointsCount() { return numberOfPoints; }
-	float GetDX(size_t at) { return moves[at].dx; }
-	float GetDY(size_t at) { return moves[at].dy; }
-	void SetDX(size_t at, float dx) { moves[at].dx = dx; }
-	void SetDY(size_t at, float dy) { moves[at].dy = dy; }
+	float GetDX(size_t at);
+	float GetDY(size_t at);
+	void SetDX(size_t at, float dx);
+	void SetDY(size_t at, float dy);
 	float GetStartX() { return startx; }
 	float GetStartY() { return starty; }
 	float GetEndX() { return endx; }

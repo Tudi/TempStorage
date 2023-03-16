@@ -7,6 +7,12 @@ void WriteBinHeader(FILE* f, RobotDrawSession* robotSession)
 		uint8_t byte = BIN_HEADER_BYTE;
 		fwrite(&byte, 1, 1, f);
 	}
+	// temp test to see if this caused the head to not move at all
+	for (size_t i = 0; i < 4; i++)
+	{
+		uint8_t byte = BIN_HEADER_BYTE;
+		fwrite(&byte, 1, 1, f);
+	}
 	RobotCommand_Constructor(&robotSession->prevCMD, BIN_HEADER_BYTE);
 }
 
@@ -153,22 +159,22 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 		while (shouldMoveAgain)
 		{
 			shouldMoveAgain = 0;
-			CMD.primaryDirection = Move1_Uninitialized;
+			PenRobotMovementCodesPrimary primaryDirection = Move1_Uninitialized;
 
 			if (line->GetDX(i) < 0)
 			{
 				if (line->GetDX(i) < xConsumed)
 				{
-					CMD.primaryDirection = Move1_Left;
+					primaryDirection = Move1_Left;
 					xConsumed += -1;
 					shouldMoveAgain = (line->GetDX(i) < xConsumed);
 				}
 			}
 			else if (line->GetDX(i) > 0)
 			{
-				if (line->GetDX(i) < xConsumed)
+				if (line->GetDX(i) > xConsumed)
 				{
-					CMD.primaryDirection = Move1_Right;
+					primaryDirection = Move1_Right;
 					xConsumed += 1;
 					shouldMoveAgain = (line->GetDX(i) > xConsumed);
 				}
@@ -177,23 +183,27 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 			{
 				if (line->GetDY(i) < yConsumed)
 				{
-					CMD.primaryDirection = Move1_Down;
+					primaryDirection = Move1_Down;
 					yConsumed += -1;
 					shouldMoveAgain = (line->GetDY(i) < yConsumed);
 				}
 			}
 			else if (line->GetDY(i) > 0)
 			{
-				if (line->GetDY(i) < yConsumed)
+				if (line->GetDY(i) > yConsumed)
 				{
-					CMD.primaryDirection = Move1_Up;
+					primaryDirection = Move1_Up;
 					yConsumed += 1;
 					shouldMoveAgain = (line->GetDY(i) > yConsumed);
 				}
 			}
 
-			if (CMD.primaryDirection != Move1_Uninitialized)
+			// this can happen after adjusting the line to be drawn correctly
+			SOFT_ASSERT((primaryDirection != Move1_Uninitialized) || (abs(xConsumed) + abs(yConsumed) > 0), "Empty line move segment");
+
+			if (primaryDirection != Move1_Uninitialized)
 			{
+				CMD.primaryDirection = primaryDirection;
 				CMD.secondaryDirection = ~CMD.secondaryDirection;
 
 				fwrite(&CMD, 1, 1, f);

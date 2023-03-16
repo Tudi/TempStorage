@@ -46,6 +46,7 @@ void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* 
 	size_t linePixels = (size_t)line->GetPointsCount();
 	size_t drawLine = (size_t)line->getPenPosition();
 	BYTE LineBaseR = 64, LineBaseG = 64, LineBaseB = 64;
+	float startx = x, starty = y;
 	if (drawLine
 		&& linePixels > 4 // probably just position adjustment line
 		)
@@ -110,6 +111,7 @@ void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* 
 			}
 		}
 	}
+	printf("Finished line draw from %.02f,%.02f to %.02f,%.02f\n", startx, starty, x, y);
 }
 
 void DrawCircleAt(FIBITMAP* in_Img, float x, float y, float radius)
@@ -254,12 +256,13 @@ int RelativePointsLine::ensureCanStoreLinePoint(int count = 1)
 	}
 	if (numberOfPoints + count >= numberOfPointsCanStore)
 	{
-		numberOfPointsCanStore += count + MIN_POINTS_LINE_EXTEND;
-		RelativeLinePoint* newStore = (RelativeLinePoint*)realloc(moves, sizeof(RelativeLinePoint) + numberOfPointsCanStore * sizeof(RelativeLinePoint));
+		int newCount = numberOfPointsCanStore + count + MIN_POINTS_LINE_EXTEND;
+		RelativeLinePoint* newStore = (RelativeLinePoint*)realloc(moves, newCount * sizeof(RelativeLinePoint));
 		if (newStore == NULL)
 		{
 			return 1;
 		}
+		numberOfPointsCanStore = newCount;
 		moves = newStore;
 	}
 	return 0;
@@ -267,12 +270,36 @@ int RelativePointsLine::ensureCanStoreLinePoint(int count = 1)
 
 int RelativePointsLine::storeNextPoint(double dx, double dy)
 {
-	if (int err = ensureCanStoreLinePoint() != 0)
+	int err = ensureCanStoreLinePoint();
+	if (err != 0)
 	{
 		return err;
 	}
+	SOFT_ASSERT(numberOfPoints < numberOfPointsCanStore, "Out of bounds index");
 	moves[numberOfPoints].dx = (float)dx;
 	moves[numberOfPoints].dy = (float)dy;
 	numberOfPoints++;
 	return 0;
+}
+
+float RelativePointsLine::GetDX(size_t at)
+{
+	SOFT_ASSERT(at < numberOfPointsCanStore, "Out of bounds index");
+	return moves[at].dx;
+}
+float RelativePointsLine::GetDY(size_t at)
+{
+	SOFT_ASSERT(at < numberOfPointsCanStore, "Out of bounds index");
+	return moves[at].dy;
+}
+void RelativePointsLine::SetDX(size_t at, float dx)
+{
+	SOFT_ASSERT(at < numberOfPointsCanStore, "Out of bounds index");
+	moves[at].dx = dx;
+}
+
+void RelativePointsLine::SetDY(size_t at, float dy)
+{
+	SOFT_ASSERT(at < numberOfPointsCanStore, "Out of bounds index");
+	moves[at].dy = dy;
 }

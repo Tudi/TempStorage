@@ -17,6 +17,7 @@ typedef struct PositionAdjustInfo
 	float relativeCommandMultiplierY; // based on the position of the pen, the same line might require more commands to be drawn
 	float adjustX; // add extra commands to compensate for the pen moving in different direction than we intend
 	float adjustY; // add extra commands to compensate for the pen moving in different direction than we intend
+	char isEstimated; // not every location will be adjusted. Locations between known adjustments are averaged
 }PositionAdjustInfo;
 #pragma pack(pop)
 

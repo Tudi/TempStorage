@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 
 #define NUM_COMMANDS_PER_UNIT	100
+#define NUM_PEN_POS_MARK_COMMANDS 10
 
 void drawMeasurementLines(int lines, int isHorizontal)
 {
@@ -15,9 +16,15 @@ void drawMeasurementLines(int lines, int isHorizontal)
 	}
 
 	BinFileWriter bfw(fileName);
+
+	// try to mark 0 position of the pen
+	bfw.AddLine(0, 0, NUM_PEN_POS_MARK_COMMANDS, 0);
+	bfw.AddLine(0, 0, 0, NUM_PEN_POS_MARK_COMMANDS);
+
+	// fill the tear with same distance, same length perfectly horrizontal or vertical lines
 	for (int line2 = -lines; line2 <= lines; line2++)
 	{
-		float startAt2 = (float)((line2 + 0) * NUM_COMMANDS_PER_UNIT);
+		float XorY = (float)((line2 + 0) * NUM_COMMANDS_PER_UNIT);
 		// horizontal line
 		for (int line = -lines; line <= lines; line++)
 		{
@@ -29,11 +36,11 @@ void drawMeasurementLines(int lines, int isHorizontal)
 			float endAt = (float)((line + 1) * NUM_COMMANDS_PER_UNIT);
 			if (isHorizontal)
 			{
-				bfw.AddLine(startAt, startAt2, endAt, startAt2);
+				bfw.AddLine(startAt, XorY, endAt, XorY);
 			}
 			else
 			{
-				bfw.AddLine(startAt2, startAt, startAt2, endAt);
+				bfw.AddLine(XorY, startAt, XorY, endAt);
 			}
 		}
 	}
@@ -44,8 +51,8 @@ void drawMeasurementLines(int lines, int isHorizontal)
 // 9 inches, about 600 moves / inch ... 
 void Test_DrawUnitsOfMeasurement()
 {
-	drawMeasurementLines(20, 1);
-	drawMeasurementLines(20, 0);
-	drawMeasurementLines(30, 1);
-	drawMeasurementLines(30, 0);
+	drawMeasurementLines(15, 1);
+	drawMeasurementLines(15, 0);
+//	drawMeasurementLines(30, 1);
+//	drawMeasurementLines(30, 0);
 }

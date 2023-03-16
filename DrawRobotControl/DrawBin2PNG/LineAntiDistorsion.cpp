@@ -73,16 +73,15 @@ void LineAntiDistorsionAdjuster::AdjustLine(RelativePointsLine** line)
 		(*line)->SetDY(i, (float)(int)(*line)->GetDY(i));
 
 		// we gathered enough "sub" movements that it's a full move
-		if (abs(unusedDX) >= 1)
+		if( unusedDX >= 1)
 		{
-			if (lineMovementX == Move1_Left)
-			{
-				// dx is 
-				if (unusedDX < 0)
-				{
-
-				}
-			}
+			(*line)->SetDX(i, (float)((*line)->GetDX(i) + 1));
+			unusedDX -= 1;
+		}
+		else if (unusedDX <= -1)
+		{
+			(*line)->SetDX(i, (float)((*line)->GetDX(i) - 1));
+			unusedDX += 1;
 		}
 		float nextX = curX + (*line)->GetDX(i);
 		float nextY = curY + (*line)->GetDY(i);
