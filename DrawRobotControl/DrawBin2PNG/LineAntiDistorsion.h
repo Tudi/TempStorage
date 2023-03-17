@@ -5,7 +5,8 @@ class RelativePointsLine;
 #pragma pack(push, 1)
 typedef struct PositionAdjustInfoHeader
 {
-	int version;
+	int version; // make sure it's always first so we can take a peak
+	int headerSize, infoSize; // sanity checkes in case you forgot to increase version number
 	int width, height;
 	int originX, originY;
 }PositionAdjustInfoHeader;
@@ -17,7 +18,7 @@ typedef struct PositionAdjustInfo
 	float relativeCommandMultiplierY; // based on the position of the pen, the same line might require more commands to be drawn
 	float adjustX; // add extra commands to compensate for the pen moving in different direction than we intend
 	float adjustY; // add extra commands to compensate for the pen moving in different direction than we intend
-	char isEstimated; // not every location will be adjusted. Locations between known adjustments are averaged
+	char isMeasured; // not every location will be adjusted. Locations between known adjustments are averaged
 }PositionAdjustInfo;
 #pragma pack(pop)
 
@@ -26,12 +27,14 @@ class LineAntiDistorsionAdjuster
 {
 public:
 	LineAntiDistorsionAdjuster();
-	void AdjustLine(RelativePointsLine** line);
+	~LineAntiDistorsionAdjuster();
+	void AdjustLine(RelativePointsLine* line);
+	void CreateNewMap(PositionAdjustInfoHeader* header);
 private:
 	void LoadAdjusterMap();
 	void SaveAdjusterMap();
 	PositionAdjustInfo* GetAdjustInfo(int x, int y);
-	PositionAdjustInfoHeader adjustinfoHeader;
+	PositionAdjustInfoHeader adjustInfoHeader;
 	PositionAdjustInfo* adjustInfoMap;
 };
 

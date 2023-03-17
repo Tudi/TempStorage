@@ -7,3 +7,4 @@ void Test_DrawReadLine();
 void Test_DrawClock();
 void Test_SigToBin(char** argv, int argc);
 void Test_DrawUnitsOfMeasurement();
+void Test_loadCallibrationImages();

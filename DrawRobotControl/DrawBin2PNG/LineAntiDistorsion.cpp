@@ -8,9 +8,15 @@ PositionAdjustInfo adjustInfoMissing;
 LineAntiDistorsionAdjuster::LineAntiDistorsionAdjuster()
 {
 	memset(&adjustInfoMissing, 0, sizeof(adjustInfoMissing));
-	memset(&adjustinfoHeader, 0, sizeof(adjustinfoHeader));
+	memset(&adjustInfoHeader, 0, sizeof(adjustInfoHeader));
 	adjustInfoMap = NULL;
 	// load static distorsion map
+}
+
+LineAntiDistorsionAdjuster::~LineAntiDistorsionAdjuster()
+{
+	free(adjustInfoMap);
+	adjustInfoMap = NULL;
 }
 
 PositionAdjustInfo* LineAntiDistorsionAdjuster::GetAdjustInfo(int x, int y)
@@ -19,38 +25,38 @@ PositionAdjustInfo* LineAntiDistorsionAdjuster::GetAdjustInfo(int x, int y)
 	{
 		return &adjustInfoMissing;
 	}
-	if (x < 0 || x >= adjustinfoHeader.width)
+	if (x < 0 || x >= adjustInfoHeader.width)
 	{
 		return &adjustInfoMissing;
 	}
-	if (y < 0 || y >= adjustinfoHeader.height)
+	if (y < 0 || y >= adjustInfoHeader.height)
 	{
 		return &adjustInfoMissing;
 	}
-	return &adjustInfoMap[adjustinfoHeader.width * y + x];
+	return &adjustInfoMap[adjustInfoHeader.width * y + x];
 }
 
 // walk the line, at every position, adjust the movement based on the adjuster map
 // do a second walk, coalesce half movement into rounded up / down movement
-void LineAntiDistorsionAdjuster::AdjustLine(RelativePointsLine** line)
+void LineAntiDistorsionAdjuster::AdjustLine(RelativePointsLine* line)
 {
-	if (*line == NULL)
+	if (line == NULL)
 	{
 		SOFT_ASSERT(false, "Unexpected NULL param");
 		return;
 	}
 
 	// adjust line movement based on the position of the pen( arm length changes)
-	float curX = (*line)->GetStartX();
-	float curY = (*line)->GetStartY();
-	for (int i = 0; i < (*line)->GetPointsCount(); i++)
+	float curX = line->GetStartX();
+	float curY = line->GetStartY();
+	for (int i = 0; i < line->GetPointsCount(); i++)
 	{
-		float nextX = curX + (*line)->GetDX(i);
-		float nextY = curY + (*line)->GetDY(i);
+		float nextX = curX + line->GetDX(i);
+		float nextY = curY + line->GetDY(i);
 		PositionAdjustInfo* adjustInfo = GetAdjustInfo((int)curX, (int)curY);
 
-		(*line)->SetDX(i, (*line)->GetDX(i) * adjustInfo->relativeCommandMultiplierX + adjustInfo->adjustX);
-		(*line)->SetDY(i, (*line)->GetDY(i) * adjustInfo->relativeCommandMultiplierY + adjustInfo->adjustY);
+		line->SetDX(i, line->GetDX(i) * adjustInfo->relativeCommandMultiplierX + adjustInfo->adjustX);
+		line->SetDY(i, line->GetDY(i) * adjustInfo->relativeCommandMultiplierY + adjustInfo->adjustY);
 
 		curX = nextX;
 		curY = nextY;
@@ -60,30 +66,74 @@ void LineAntiDistorsionAdjuster::AdjustLine(RelativePointsLine** line)
 	PenRobotMovementCodesPrimary lineMovementY = Move1_Up;
 
 	// walk the line again. Since we can't issue half commands, we need to group these up
-	curX = (*line)->GetStartX();
-	curY = (*line)->GetStartY();
+	curX = line->GetStartX();
+	curY = line->GetStartY();
 	float unusedDX = 0;
 	float unusedDY = 0;
-	for (int i = 0; i < (*line)->GetPointsCount(); i++)
+	for (int i = 0; i < line->GetPointsCount(); i++)
 	{
-		unusedDX += ((*line)->GetDX(i) - (int)(*line)->GetDX(i));
-		unusedDY += ((*line)->GetDY(i) - (int)(*line)->GetDY(i));
+		unusedDX += (line->GetDX(i) - (int)line->GetDX(i));
+		unusedDY += (line->GetDY(i) - (int)line->GetDY(i));
 
-		(*line)->SetDX(i, (float)(int)(*line)->GetDX(i));
-		(*line)->SetDY(i, (float)(int)(*line)->GetDY(i));
+		line->SetDX(i, (float)(int)line->GetDX(i));
+		line->SetDY(i, (float)(int)line->GetDY(i));
 
 		// we gathered enough "sub" movements that it's a full move
 		if( unusedDX >= 1)
 		{
-			(*line)->SetDX(i, (float)((*line)->GetDX(i) + 1));
+			line->SetDX(i, (float)(line->GetDX(i) + 1));
 			unusedDX -= 1;
 		}
 		else if (unusedDX <= -1)
 		{
-			(*line)->SetDX(i, (float)((*line)->GetDX(i) - 1));
+			line->SetDX(i, (float)(line->GetDX(i) - 1));
 			unusedDX += 1;
 		}
-		float nextX = curX + (*line)->GetDX(i);
-		float nextY = curY + (*line)->GetDY(i);
+
+		if (unusedDY >= 1)
+		{
+			line->SetDY(i, (float)(line->GetDY(i) + 1));
+			unusedDY -= 1;
+		}
+		else if (unusedDY <= -1)
+		{
+			line->SetDY(i, (float)(line->GetDY(i) - 1));
+			unusedDY += 1;
+		}
+
+		float nextX = curX + line->GetDX(i);
+		float nextY = curY + line->GetDY(i);
 	}
+}
+
+void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
+{
+	// sanity checks
+	if (header == NULL)
+	{
+		return;
+	}
+	if (header->height == 0 || header->width == 0)
+	{
+		return;
+	}
+
+	SOFT_ASSERT(header->originX >= 0 && header->originX < header->width, "Origin X should reside inside the input map");
+	SOFT_ASSERT(header->originY >= 0 && header->originY < header->height, "Origin Y should reside inside the input map");
+
+	//get rid of old info
+	free(adjustInfoMap);
+	adjustInfoMap = NULL;
+
+	adjustInfoHeader = *header;
+
+	adjustInfoMap = (PositionAdjustInfo*)calloc(1, adjustInfoHeader.width * adjustInfoHeader.height * sizeof(PositionAdjustInfo));
+}
+
+void LineAntiDistorsionAdjuster::SaveAdjusterMap()
+{
+	adjustInfoHeader.version = POSITION_ADJUST_FILE_VERSION;
+	adjustInfoHeader.headerSize = sizeof(PositionAdjustInfoHeader);
+	adjustInfoHeader.infoSize = sizeof(PositionAdjustInfo);
+//	fopen_s();
 }

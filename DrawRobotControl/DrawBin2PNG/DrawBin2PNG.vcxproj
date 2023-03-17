@@ -139,6 +139,7 @@
     <ClCompile Include="test_DrawUnitsOfMeasurement.cpp" />
     <ClCompile Include="test_line2bin.cpp" />
     <ClCompile Include="test_LoadBin.cpp" />
+    <ClCompile Include="test_LoadCallibrationImages.cpp" />
     <ClCompile Include="test_LoadSigFile.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>

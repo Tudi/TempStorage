@@ -60,6 +60,9 @@
     <ClCompile Include="LineAntiDistorsion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_LoadCallibrationImages.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FreeImage.h">
