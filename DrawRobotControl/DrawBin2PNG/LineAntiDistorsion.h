@@ -1,11 +1,15 @@
 #pragma once
 
+#define CALIBRATION_FILE_NAME "SA2.cal"
+#define CALIBRATION_4CC	"cal "
+
 class RelativePointsLine;
 
 #pragma pack(push, 1)
 typedef struct PositionAdjustInfoHeader
 {
 	int version; // make sure it's always first so we can take a peak
+	int fourCC;
 	int headerSize, infoSize; // sanity checkes in case you forgot to increase version number
 	int width, height;
 	int originX, originY;

@@ -133,7 +133,79 @@ void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
 void LineAntiDistorsionAdjuster::SaveAdjusterMap()
 {
 	adjustInfoHeader.version = POSITION_ADJUST_FILE_VERSION;
+	adjustInfoHeader.fourCC = *(int*)CALIBRATION_4CC;
 	adjustInfoHeader.headerSize = sizeof(PositionAdjustInfoHeader);
 	adjustInfoHeader.infoSize = sizeof(PositionAdjustInfo);
-//	fopen_s();
+
+	// nothing to save. create content first
+	if (adjustInfoMap == NULL)
+	{
+		return;
+	}
+
+	FILE* f;
+	errno_t err_open = fopen_s(&f, CALIBRATION_FILE_NAME,"wb");
+	if (f == NULL)
+	{
+		return;
+	}
+
+	// write header 
+	fwrite(&adjustInfoHeader, sizeof(adjustInfoHeader), 1, f);
+
+	//write the map
+	fwrite(adjustInfoMap, sizeof(PositionAdjustInfo), adjustInfoHeader.width * adjustInfoHeader.height, f);
+
+	// donw writing the map
+	fclose(f);
+}
+
+void LineAntiDistorsionAdjuster::LoadAdjusterMap()
+{
+	FILE* f;
+	errno_t err_open = fopen_s(&f, CALIBRATION_FILE_NAME, "rb");
+	if (f == NULL)
+	{
+		return;
+	}
+
+	PositionAdjustInfoHeader fHeader;
+	fread(&fHeader, sizeof(fHeader), 1, f);
+	if (fHeader.fourCC != *(int*)CALIBRATION_4CC)
+	{
+		printf("Invalid calibration file\n");
+		fclose(f);
+		return;
+	}
+	if (fHeader.version != POSITION_ADJUST_FILE_VERSION)
+	{
+		printf("Invalid calibration file version\n");
+		fclose(f);
+		return;
+	}
+	if (fHeader.headerSize != sizeof(PositionAdjustInfoHeader))
+	{
+		printf("Invalid calibration file header size\n");
+		fclose(f);
+		return;
+	}
+	if (fHeader.infoSize != sizeof(PositionAdjustInfo))
+	{
+		printf("Invalid calibration file content size\n");
+		fclose(f);
+		return;
+	}
+
+	CreateNewMap(&fHeader);
+
+	if (adjustInfoMap == NULL)
+	{
+		printf("Failed to load calibration file content\n");
+		fclose(f);
+		return;
+	}
+
+	fread(adjustInfoMap, sizeof(PositionAdjustInfo), adjustInfoHeader.width * adjustInfoHeader.height, f);
+
+	fclose(f);
 }
