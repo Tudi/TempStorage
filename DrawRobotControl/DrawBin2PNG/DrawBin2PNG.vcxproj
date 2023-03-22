@@ -154,6 +154,7 @@
     <ClInclude Include="SigFileReader.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="tests.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="FreeImage.lib" />

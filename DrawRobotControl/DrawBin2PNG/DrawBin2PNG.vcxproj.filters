@@ -95,6 +95,9 @@
     <ClInclude Include="LineAntiDistorsion.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="FreeImage.lib">
