@@ -691,7 +691,8 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 void Test_loadCallibrationImages()
 {
 	LoadSpecificFull_V_LineCallibrationImage("../ver_30_50_FL_03_17.bmp", 1, 50);
+	LoadSpecificFull_V_LineCallibrationImage("../hor_30_50_FL_03_17.bmp", 1, 50);
 //	LoadSpecificCallibrationImage("../ver_30_50_03_17.bmp", 1, 50);
-	//	LoadSpecificCallibrationImage("../hor_15_03_16.bmp", 1, 100);
+//	LoadSpecificCallibrationImage("../hor_15_03_16.bmp", 1, 100);
 }
 

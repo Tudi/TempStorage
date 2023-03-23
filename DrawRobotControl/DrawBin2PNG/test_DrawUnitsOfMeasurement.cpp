@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
 // managed to draw max, non stretched, 2900 commands. Non adjusted that is about 5 inches
-#define NUM_COMMANDS_PER_UNIT	50
+#define NUM_COMMANDS_PER_UNIT	25
 #define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*0.7f) // try to not full fill tear
 
 int isLineWithinTear(int sx, int sy, int ex, int ey)
@@ -138,10 +138,119 @@ void drawMeasurementLines(int lines, int isHorizontal)
 	bfw.CloseFile();
 }
 
+#define USE_LINE_DRAW_FUNC bfw.AddLineAntiDistorted
+//#define USE_LINE_DRAW_FUNC bfw.AddLine
+
+void drawMeasurementFullLines(int lines, int isHorizontal)
+{
+	SOFT_ASSERT((lines % 2) == 0, "There needs to be a reference line at the origin");
+
+	char fileName[500];
+	if (isHorizontal == 1)
+	{
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_03_23.bin", lines, NUM_COMMANDS_PER_UNIT);
+	}
+	else if (isHorizontal == 0)
+	{
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_03_23.bin", lines, NUM_COMMANDS_PER_UNIT);
+	}
+	else if (isHorizontal == 3)
+	{
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_03_23.bin", lines, NUM_COMMANDS_PER_UNIT);
+	}
+
+	BinFileWriter bfw(fileName);
+
+	// in a horizontal file, draw a vertical line to outline the position of origin
+	if (isHorizontal == 1)
+	{
+		USE_LINE_DRAW_FUNC(0, 0, 0, NUM_COMMANDS_PER_UNIT);
+	}
+	else if (isHorizontal == 0)
+	{
+		USE_LINE_DRAW_FUNC(0, 0, NUM_COMMANDS_PER_UNIT, 0);
+	}
+	else if (isHorizontal == 3)
+	{
+		USE_LINE_DRAW_FUNC(0, 0, NUM_COMMANDS_PER_UNIT, NUM_COMMANDS_PER_UNIT);
+	}
+
+	// fill the tear with same distance, same length perfectly horrizontal or vertical lines
+	for (int line2 = -lines; line2 <= lines; line2 += 2)
+	{
+		float XorY = (float)((line2 + 0) * NUM_COMMANDS_PER_UNIT);
+		// horizontal line
+		float minStart = 100000;
+		float maxEnd = -1000000;
+		for (int line = -lines; line <= lines; line += 2)
+		{
+			float startAt = (float)((line + 0) * NUM_COMMANDS_PER_UNIT);
+			float endAt = (float)((line + 1) * NUM_COMMANDS_PER_UNIT);
+			int canUseValues = 0;
+			if (isHorizontal == 1)
+			{
+				if (isLineWithinTear((int)startAt, (int)XorY, (int)endAt, (int)XorY))
+				{
+					canUseValues = 1;
+				}
+			}
+			else if (isHorizontal == 0)
+			{
+				if (isLineWithinTear((int)XorY, (int)startAt, (int)XorY, (int)endAt))
+				{
+					canUseValues = 1;
+				}
+			}
+			else if (isHorizontal == 3)
+			{
+				if (isLineWithinTear((int)XorY, (int)startAt, (int)XorY, (int)startAt + NUM_COMMANDS_PER_UNIT) &&
+					isLineWithinTear((int)XorY, (int)startAt, (int)XorY + NUM_COMMANDS_PER_UNIT, (int)startAt) &&
+					isLineWithinTear((int)XorY, (int)startAt, (int)XorY + NUM_COMMANDS_PER_UNIT, (int)startAt + NUM_COMMANDS_PER_UNIT))
+				{
+					canUseValues = 1;
+				}
+			}
+			if (canUseValues)
+			{
+				if (startAt < minStart)
+				{
+					minStart = startAt;
+				}
+				if (endAt > maxEnd)
+				{
+					maxEnd = endAt;
+				}
+			}
+		}
+		if (minStart != 100000)
+		{
+			if (isHorizontal == 1)
+			{
+				USE_LINE_DRAW_FUNC(minStart, XorY, maxEnd, XorY);
+			}
+			else if (isHorizontal == 0)
+			{
+				USE_LINE_DRAW_FUNC(XorY, minStart, XorY, maxEnd);
+			}
+			else if (isHorizontal == 3)
+			{
+				USE_LINE_DRAW_FUNC(XorY, minStart, XorY, minStart + NUM_COMMANDS_PER_UNIT);
+				USE_LINE_DRAW_FUNC(XorY, minStart, XorY + NUM_COMMANDS_PER_UNIT, minStart);
+				USE_LINE_DRAW_FUNC(XorY, minStart, XorY + NUM_COMMANDS_PER_UNIT, minStart + NUM_COMMANDS_PER_UNIT);
+			}
+		}
+	}
+
+	bfw.CloseFile();
+}
+
 // 9 inches, about 600 moves / inch ... 
 void Test_DrawUnitsOfMeasurement()
 {
-	drawMeasurementLines(30, 1);
-	drawMeasurementLines(30, 0);
-	drawMeasurementLines(30, 3);
+//	drawMeasurementLines(30, 1);
+//	drawMeasurementLines(30, 0);
+//	drawMeasurementLines(30, 3);
+
+	drawMeasurementFullLines(60, 1);
+	drawMeasurementFullLines(60, 0);
 }

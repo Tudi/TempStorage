@@ -10,7 +10,7 @@ void RunAllTests(char** argv, int argc)
 	// basically me testing stuff
 	if (argc == 1)
 	{
-//		Test_DrawUnitsOfMeasurement();
-		Test_loadCallibrationImages();
+		Test_DrawUnitsOfMeasurement();
+//		Test_loadCallibrationImages();
 	}
 }

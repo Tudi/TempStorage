@@ -348,37 +348,51 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		out_lineDrawSteps = abs(dx);
 	}
 
-	int curx = (int)sx;
-	int cury = (int)sy;
-
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
-	double prevAddedX = 0x7FFFFFFF;
-	double prevAddedY = 0x7FFFFFFF;
+	double prevAddedX = sx;
+	double prevAddedY = sy;
 
 	PositionAdjustInfo* ai = sLineAdjuster.GetAdjustInfo((int)sx, (int)sy);
-	if (ai != NULL && ai->shouldBeX != 0 && ai->shouldBeY != 0)
+	if (ai != NULL)
 	{
-		prevAddedX = ai->shouldBeX;
-		prevAddedY = ai->shouldBeY;
+		if (ai->shouldBeX != 0)
+		{
+			prevAddedX = ai->shouldBeX;
+		}
+		if (ai->shouldBeY != 0)
+		{
+			prevAddedY = ai->shouldBeY;
+		}
 	}
 
 	for (double step = 1; step <= out_lineDrawSteps; step += 1)
 	{
-		double curXPos = step * xIncForStep;
-		double curYPos = step * yIncForStep;
+		double curXPos = sx + step * xIncForStep;
+		double curYPos = sy + step * yIncForStep;
 		double curXPos2 = 0, curYPos2 = 0;
 
 		PositionAdjustInfo* ai = sLineAdjuster.GetAdjustInfo((int)curXPos, (int)curYPos);
-		if (ai != NULL && ai->shouldBeX != 0 && ai->shouldBeY != 0)
+		if (ai == NULL || (ai->shouldBeX == 0 && ai->shouldBeY == 0))
+		{
+			printf("missing info in callibration map at %f %f. Should have not happened\n", curXPos, curYPos);
+			continue;
+		}
+		if (ai->shouldBeX != 0)
 		{
 			curXPos2 = ai->shouldBeX;
+		}
+		else
+		{
+			curXPos2 = curXPos;
+		}
+		if (ai->shouldBeY != 0)
+		{
 			curYPos2 = ai->shouldBeY;
 		}
 		else
 		{
-			printf("missing info in callibration map at %f %f. Should have not happened\n", curXPos, curYPos);
-			continue;
+			curYPos2 = curYPos;
 		}
 
 		int xdiff = (int)(curXPos2 - prevAddedX);

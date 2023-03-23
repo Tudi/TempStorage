@@ -7,6 +7,7 @@ class BinFileWriter
 public:
 	BinFileWriter(const char *fileName);
 	void AddLine(float sx, float sy, float ex, float ey);
+	void AddLineAntiDistorted(float sx, float sy, float ex, float ey);
 	void CloseFile();
 private:
 	void OpenBinFile();
