@@ -10,6 +10,7 @@ typedef struct ShapeStore
 	int lineId;
 	int checkedNeighbours;
 	//	int shapeRelativX, shapeRelativY; // relativ to center, where is this shape located ?
+	int HasValues() { return (minX != maxX); }
 }ShapeStore;
 
 // extract a shape from an image

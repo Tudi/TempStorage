@@ -1,8 +1,11 @@
 #include "StdAfx.h"
 
 #define POSITION_ADJUST_FILE_VERSION 1
-#define ADJUST_MAP_DEFAULT_WIDTH 4096
-#define ADJUST_MAP_DEFAULT_HEIGHT 4096
+#define ADJUST_MAP_DEFAULT_WIDTH 6000
+#define ADJUST_MAP_DEFAULT_HEIGHT 6000
+#define DEFAULT_WIDTH_SCALER 0.1f
+#define DEFAULT_HEIGHT_SCALER 0.1f
+#define LINE_GAP_CONSIDERED_BUG	20 // measured in movement units
 
 LineAntiDistorsionAdjuster sLineAdjuster;
 PositionAdjustInfo adjustInfoMissing;
@@ -13,7 +16,7 @@ LineAntiDistorsionAdjuster::LineAntiDistorsionAdjuster()
 	memset(&adjustInfoHeader, 0, sizeof(adjustInfoHeader));
 	adjustInfoMap = NULL;
 	hasUnsavedAdjustments = 0;
-	needsBleed = 0;
+	needsBleedX = needsBleedY = 0;
 	// load static distorsion map
 	LoadAdjusterMap();
 }
@@ -36,94 +39,21 @@ PositionAdjustInfo* LineAntiDistorsionAdjuster::GetAdjustInfo(int x, int y)
 	}
 	if (adjustInfoMap == NULL)
 	{
-		memset(&adjustInfoMissing, 0, sizeof(adjustInfoMissing));
-		return &adjustInfoMissing;
+		return NULL;
 	}
+	x = (int)(x * adjustInfoHeader.scaleX);
+	x += adjustInfoHeader.originX;
 	if (x < 0 || x >= adjustInfoHeader.width)
 	{
-		printf("Requesting out of bounds adjust info\n");
-		memset(&adjustInfoMissing, 0, sizeof(adjustInfoMissing));
-		return &adjustInfoMissing;
+		return NULL;
 	}
+	y = (int)(y * adjustInfoHeader.scaleY);
+	y += adjustInfoHeader.originY;
 	if (y < 0 || y >= adjustInfoHeader.height)
 	{
-		printf("Requesting out of bounds adjust info\n");
-		memset(&adjustInfoMissing, 0, sizeof(adjustInfoMissing));
-		return &adjustInfoMissing;
+		return NULL;
 	}
 	return &adjustInfoMap[adjustInfoHeader.width * y + x];
-}
-
-// walk the line, at every position, adjust the movement based on the adjuster map
-// do a second walk, coalesce half movement into rounded up / down movement
-void LineAntiDistorsionAdjuster::AdjustLine(RelativePointsLine* line)
-{
-#if 0
-	if (line == NULL)
-	{
-		SOFT_ASSERT(false, "Unexpected NULL param");
-		return;
-	}
-
-	// adjust line movement based on the position of the pen( arm length changes)
-	float curX = line->GetStartX();
-	float curY = line->GetStartY();
-	for (int i = 0; i < line->GetPointsCount(); i++)
-	{
-		float nextX = curX + line->GetDX(i);
-		float nextY = curY + line->GetDY(i);
-		PositionAdjustInfo* adjustInfo = GetAdjustInfo((int)curX, (int)curY);
-
-		line->SetDX(i, line->GetDX(i) * adjustInfo->relativeCommandMultiplierX + adjustInfo->adjustX);
-		line->SetDY(i, line->GetDY(i) * adjustInfo->relativeCommandMultiplierY + adjustInfo->adjustY);
-
-		curX = nextX;
-		curY = nextY;
-	}
-
-	PenRobotMovementCodesPrimary lineMovementX = Move1_Left;
-	PenRobotMovementCodesPrimary lineMovementY = Move1_Up;
-
-	// walk the line again. Since we can't issue half commands, we need to group these up
-	curX = line->GetStartX();
-	curY = line->GetStartY();
-	float unusedDX = 0;
-	float unusedDY = 0;
-	for (int i = 0; i < line->GetPointsCount(); i++)
-	{
-		unusedDX += (line->GetDX(i) - (int)line->GetDX(i));
-		unusedDY += (line->GetDY(i) - (int)line->GetDY(i));
-
-		line->SetDX(i, (float)(int)line->GetDX(i));
-		line->SetDY(i, (float)(int)line->GetDY(i));
-
-		// we gathered enough "sub" movements that it's a full move
-		if( unusedDX >= 1)
-		{
-			line->SetDX(i, (float)(line->GetDX(i) + 1));
-			unusedDX -= 1;
-		}
-		else if (unusedDX <= -1)
-		{
-			line->SetDX(i, (float)(line->GetDX(i) - 1));
-			unusedDX += 1;
-		}
-
-		if (unusedDY >= 1)
-		{
-			line->SetDY(i, (float)(line->GetDY(i) + 1));
-			unusedDY -= 1;
-		}
-		else if (unusedDY <= -1)
-		{
-			line->SetDY(i, (float)(line->GetDY(i) - 1));
-			unusedDY += 1;
-		}
-
-		float nextX = curX + line->GetDX(i);
-		float nextY = curY + line->GetDY(i);
-	}
-#endif
 }
 
 void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
@@ -132,13 +62,14 @@ void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
 	// sanity checks
 	if (header == NULL)
 	{
+		memset(&tempHeader, 0, sizeof(tempHeader));
 		header = &tempHeader;
-		header->width = ADJUST_MAP_DEFAULT_WIDTH;
-		header->height = ADJUST_MAP_DEFAULT_HEIGHT;
+		header->scaleX = DEFAULT_WIDTH_SCALER;
+		header->scaleY = DEFAULT_HEIGHT_SCALER;
+		header->width = (int)(ADJUST_MAP_DEFAULT_WIDTH * header->scaleX);
+		header->height = (int)(ADJUST_MAP_DEFAULT_HEIGHT * header->scaleY);
 		header->originX = header->width / 2;
 		header->originY = header->height / 2;
-		header->scaleX = 1;
-		header->scaleY = 1;
 	}
 	if (header->height == 0 || header->width == 0)
 	{
@@ -160,7 +91,7 @@ void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
 void LineAntiDistorsionAdjuster::SaveAdjusterMap()
 {
 	hasUnsavedAdjustments = 0;
-	if (needsBleed)
+	if (needsBleedX || needsBleedY)
 	{
 		BleedAdjustmentsToNeighbours();
 	}
@@ -246,7 +177,8 @@ void LineAntiDistorsionAdjuster::LoadAdjusterMap()
 void LineAntiDistorsionAdjuster::FindClosestKnown(int x, int y, int flag, PositionAdjustInfo** out_ai, int &atx, int &aty)
 {
 	*out_ai = NULL;
-	for (int radius = 1; radius < adjustInfoHeader.width; radius++)
+	int maxRadius = MAX(adjustInfoHeader.width, adjustInfoHeader.height) / 2;
+	for (int radius = 1; radius < maxRadius; radius++)
 	{
 		PositionAdjustInfo* ai;
 		int atx2, aty2;
@@ -254,8 +186,8 @@ void LineAntiDistorsionAdjuster::FindClosestKnown(int x, int y, int flag, Positi
 		{
 			atx2 = x - radius;
 			aty2 = y2;
-			ai = GetAdjustInfo(atx2, aty2);
-			if (ai->flags & flag)
+			ai = GetAdjustInfoNoChange(atx2, aty2);
+			if (ai && (ai->flags & flag))
 			{
 				*out_ai = ai;
 				atx = atx2;
@@ -264,8 +196,8 @@ void LineAntiDistorsionAdjuster::FindClosestKnown(int x, int y, int flag, Positi
 			}
 			atx2 = x + radius;
 			aty2 = y2;
-			ai = GetAdjustInfo(x + radius, y2);
-			if (ai->flags & flag)
+			ai = GetAdjustInfoNoChange(x + radius, y2);
+			if (ai && (ai->flags & flag))
 			{
 				*out_ai = ai;
 				atx = atx2;
@@ -277,8 +209,8 @@ void LineAntiDistorsionAdjuster::FindClosestKnown(int x, int y, int flag, Positi
 		{
 			atx2 = x2;
 			aty2 = y - radius;
-			ai = GetAdjustInfo(x2, y - radius);
-			if (ai->flags & flag)
+			ai = GetAdjustInfoNoChange(x2, y - radius);
+			if (ai && (ai->flags & flag))
 			{
 				*out_ai = ai;
 				atx = atx2;
@@ -287,8 +219,8 @@ void LineAntiDistorsionAdjuster::FindClosestKnown(int x, int y, int flag, Positi
 			}
 			atx2 = x2;
 			aty2 = y + radius;
-			ai = GetAdjustInfo(x2, y + radius);
-			if (ai->flags & flag)
+			ai = GetAdjustInfoNoChange(x2, y + radius);
+			if (ai && (ai->flags & flag))
 			{
 				*out_ai = ai;
 				atx = atx2;
@@ -299,44 +231,87 @@ void LineAntiDistorsionAdjuster::FindClosestKnown(int x, int y, int flag, Positi
 	}
 }
 
+PositionAdjustInfo* LineAntiDistorsionAdjuster::GetAdjustInfoNoChange(int x, int y)
+{
+	if (x < 0 || x >= adjustInfoHeader.width)
+	{
+		return NULL;
+	}
+	if (y < 0 || y >= adjustInfoHeader.height)
+	{
+		return NULL;
+	}
+	return &adjustInfoMap[adjustInfoHeader.width * y + x];
+
+}
+
+// There is most probably a faster way to do this, but I do not expect this function to be executed many times
 void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 {
-	needsBleed = 0;
-	for (int y = 0; y < adjustInfoHeader.height; y++)
+	if (needsBleedX)
 	{
-		PositionAdjustInfo* aig;
-		int atx, aty;
-		for (int x = 0; x < adjustInfoHeader.width; x++)
+		needsBleedX = 0;
+		uint32_t startStamp = GetTickCount();
+		for (int y = 0; y < adjustInfoHeader.height; y++)
 		{
-			PositionAdjustInfo* ai = GetAdjustInfo(x, y);
-			// this position relocation is estimated
-			// based on nearby neighbours, try to make a guess where it should be
-			if ((ai->flags & X_IS_MEASURED) == 0)
+			PositionAdjustInfo* aig;
+			int atx, aty;
+			for (int x = 0; x < adjustInfoHeader.width; x++)
 			{
-				FindClosestKnown(x, y, X_IS_MEASURED, &aig, atx, aty);
-				if (aig != NULL)
+				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+				// this position relocation is estimated
+				// based on nearby neighbours, try to make a guess where it should be
+				if ((ai->flags & X_IS_MEASURED) == 0)
 				{
-					ai->shouldBeX = aig->shouldBeX + x - atx;
-				}
-			}
-			if ((ai->flags & Y_IS_MEASURED) == 0)
-			{
-				FindClosestKnown(x, y, Y_IS_MEASURED, &aig, atx, aty);
-				if (aig != NULL)
-				{
-					ai->shouldBeY = aig->shouldBeY + y - aty;
+					FindClosestKnown(x, y, X_IS_MEASURED, &aig, atx, aty);
+					if (aig != NULL)
+					{
+						ai->shouldBeX = aig->shouldBeX + (x - atx) / adjustInfoHeader.scaleX;
+					}
 				}
 			}
 		}
+		uint32_t endStamp = GetTickCount();
+		printf("Took %f minutes to propagate calibration changes on X axis\n", (endStamp - startStamp) / 1000.0f / 60.0f);
+	}
+	if (needsBleedY)
+	{
+		needsBleedY = 0;
+		uint32_t startStamp = GetTickCount();
+		for (int y = 0; y < adjustInfoHeader.height; y++)
+		{
+			PositionAdjustInfo* aig;
+			int atx, aty;
+			for (int x = 0; x < adjustInfoHeader.width; x++)
+			{
+				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+				// this position relocation is estimated
+				// based on nearby neighbours, try to make a guess where it should be
+				if ((ai->flags & Y_IS_MEASURED) == 0)
+				{
+					FindClosestKnown(x, y, Y_IS_MEASURED, &aig, atx, aty);
+					if (aig != NULL)
+					{
+						ai->shouldBeY = aig->shouldBeY - aty + y;
+					}
+				}
+			}
+		}
+		uint32_t endStamp = GetTickCount();
+		printf("Took %f minutes to propagate calibration changes on Y axis\n", (endStamp - startStamp) / 1000.0f / 60.0f);
 	}
 }
 
 void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 {
-	needsBleed = 1;
+	needsBleedX = 1;
 	PositionAdjustInfo* ai = GetAdjustInfo(x, y);
-	ai->shouldBeX = shouldBeX;
-	ai->flags = (PositionAdjustInfoFlags)(ai->flags | X_IS_MEASURED);
+	if (ai->shouldBeX != shouldBeX || (ai->flags & X_IS_MEASURED) == 0)
+	{
+		ai->shouldBeX = (float)shouldBeX;
+		ai->flags = (PositionAdjustInfoFlags)(ai->flags | X_IS_MEASURED);
+		hasUnsavedAdjustments = 1;
+	}
 }
 /*
 void LineAntiDistorsionAdjuster::MarkAdjustmentsOutdated()
@@ -350,3 +325,80 @@ void LineAntiDistorsionAdjuster::MarkAdjustmentsOutdated()
 		}
 	}
 }*/
+
+void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
+{
+	double dx = ex - sx;
+	double dy = ey - sy;
+	if (dx == dy && dx == 0)
+	{
+		return;
+	}
+
+	out_line->setStartingPosition(sx, sy);
+
+	// just to increase the draw accuracy. More points, more smoothness
+	double out_lineDrawSteps;
+	if (abs(dy) > abs(dx))
+	{
+		out_lineDrawSteps = abs(dy);
+	}
+	else
+	{
+		out_lineDrawSteps = abs(dx);
+	}
+
+	int curx = (int)sx;
+	int cury = (int)sy;
+
+	double xIncForStep = dx / out_lineDrawSteps;
+	double yIncForStep = dy / out_lineDrawSteps;
+	double prevAddedX = 0x7FFFFFFF;
+	double prevAddedY = 0x7FFFFFFF;
+
+	PositionAdjustInfo* ai = sLineAdjuster.GetAdjustInfo((int)sx, (int)sy);
+	if (ai != NULL && ai->shouldBeX != 0 && ai->shouldBeY != 0)
+	{
+		prevAddedX = ai->shouldBeX;
+		prevAddedY = ai->shouldBeY;
+	}
+
+	for (double step = 1; step <= out_lineDrawSteps; step += 1)
+	{
+		double curXPos = step * xIncForStep;
+		double curYPos = step * yIncForStep;
+		double curXPos2 = 0, curYPos2 = 0;
+
+		PositionAdjustInfo* ai = sLineAdjuster.GetAdjustInfo((int)curXPos, (int)curYPos);
+		if (ai != NULL && ai->shouldBeX != 0 && ai->shouldBeY != 0)
+		{
+			curXPos2 = ai->shouldBeX;
+			curYPos2 = ai->shouldBeY;
+		}
+		else
+		{
+			printf("missing info in callibration map at %f %f. Should have not happened\n", curXPos, curYPos);
+			continue;
+		}
+
+		int xdiff = (int)(curXPos2 - prevAddedX);
+		int ydiff = (int)(curYPos2 - prevAddedY);
+
+		if (xdiff == 0 && ydiff == 0)
+		{
+			continue;
+		}
+
+		prevAddedX = curXPos2;
+		prevAddedY = curYPos2;
+		if (abs(xdiff) > LINE_GAP_CONSIDERED_BUG || abs(ydiff) > LINE_GAP_CONSIDERED_BUG)
+		{
+			printf("Line gap at %f,%f is too large to continue drawing\n", curXPos, curYPos);
+			continue;
+		}
+
+		out_line->storeNextPoint(xdiff, ydiff);
+	}
+
+	out_line->setEndPosition(sx + dx, sy + dy);
+}

@@ -6,6 +6,7 @@
 #include <list>
 #include <assert.h>
 #include <math.h>
+#include <Windows.h>
 #include "FreeImage.h"
 #include "ImageHandler.h"
 #include "BinFileCommon.h"

@@ -11,12 +11,12 @@ typedef struct PositionAdjustInfoHeader
 	int version; // make sure it's always first so we can take a peak
 	int fourCC;
 	int headerSize, infoSize; // sanity checkes in case you forgot to increase version number
-	int width, height;
+	int width, height; // given in commands. Tear size was 10x10. We can squeeze less than 600 commands in an inch. Would need 6000x6000 map (that is too large !)
 	int originX, originY;
-	float scaleX, scaleY; // not yet implemented. MapFile might get large unless scaled down
+	float scaleX, scaleY; // MapFile might get large unless scaled down
 }PositionAdjustInfoHeader;
 
-enum PositionAdjustInfoFlags
+enum PositionAdjustInfoFlags : char
 {
 	X_IS_MEASURED = 1 << 0,
 	Y_IS_MEASURED = 1 << 1,
@@ -37,7 +37,14 @@ class LineAntiDistorsionAdjuster
 public:
 	LineAntiDistorsionAdjuster();
 	~LineAntiDistorsionAdjuster();
-	void AdjustLine(RelativePointsLine* line);
+	/// <summary>
+	/// Center (0,0) is in the middle
+	/// Units of measurement are expected to be inches
+	/// Anti distortion map was generated expecting an inch to have 600 commands
+	/// </summary>
+	/// <param name="header"></param>
+	void DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line);
+//	void AdjustLine(RelativePointsLine* line);
 	void CreateNewMap(PositionAdjustInfoHeader* header);
 	void AdjustPositionX(int x, int y, int shouldBeX);
 //	void MarkAdjustmentsOutdated();
@@ -46,11 +53,12 @@ private:
 	void SaveAdjusterMap();
 	void BleedAdjustmentsToNeighbours();
 	PositionAdjustInfo* GetAdjustInfo(int x, int y);
+	PositionAdjustInfo* GetAdjustInfoNoChange(int x, int y);
 	void FindClosestKnown(int x, int y, int flag, PositionAdjustInfo** out_ai, int& atx, int& aty);
 	PositionAdjustInfoHeader adjustInfoHeader;
 	PositionAdjustInfo* adjustInfoMap;
 	int hasUnsavedAdjustments;
-	int needsBleed;
+	int needsBleedX, needsBleedY;
 };
 
 // global resource with static initialization
