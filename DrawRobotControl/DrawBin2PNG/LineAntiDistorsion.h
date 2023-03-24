@@ -81,6 +81,7 @@ public:
 	void AdjustPositionX(int x, int y, int shouldBeX);
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	PositionAdjustInfo* GetAdjustInfo(int x, int y);
+	void DebugDumpMapToImage(int col);
 private:
 	void CreateNewMap(PositionAdjustInfoHeader* header);
 	void LoadAdjusterMap();

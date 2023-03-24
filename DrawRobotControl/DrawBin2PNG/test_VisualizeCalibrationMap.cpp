@@ -6,6 +6,11 @@
 
 void Test_VisualizeCallibrationMap()
 {
+	for (int i = 0; i < 800; i += 50)
+	{
+		sLineAdjuster.DebugDumpMapToImage(i);
+	}
+
 	FIBITMAP* dib = CreateNewImage(IMG_SIZE, IMG_SIZE);
 	for (int y = 0; y < TEAR_MAX_COMMANDS_QAURTER * 2; y++)
 	{

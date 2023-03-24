@@ -503,16 +503,19 @@ void SetExpectedXForVerticalLinesAtY0(int Width, ShapeStore* ss, int avgGapSize,
 // incomming coordinates are in pixels. We need to translate pixels into commands. Commands into inches
 void UpdateCallibrationAtSpecificLocationX(int centerX, int centerY, int atx, int aty, int shouldBeX, int gapSizePixels, int commandsIn1Gap)
 {
+	int dist_atx_shouldbeX = atx - shouldBeX; // need to add this value to "shouldbeX" in order to actually arive to it
 	// coordinates are given in pixels
 	int xRelPicOrigin = atx - centerX;
 	int yRelPicOrigin = aty - centerY; // as normally read from file
 //	int yRelPicOrigin = centerY - aty; // vertical flip
 	int xRelPicOriginShouldBe = shouldBeX - centerX;
+	int xRelPicOriginShouldBeCorrected = shouldBeX - (atx - shouldBeX) - centerX;
 	// scale the coordinates from the image to size of the calibration map
 	float commandsIn1Pixel = (float)commandsIn1Gap / (float)gapSizePixels;
 	float xRelPicOriginComm = (xRelPicOrigin * commandsIn1Pixel);
 	float yRelPicOriginComm = (yRelPicOrigin * commandsIn1Pixel);
 	float xRelPicOriginShouldBeComm = (xRelPicOriginShouldBe * commandsIn1Pixel);
+	float xRelPicOriginShouldBeCorrectedComm = (xRelPicOriginShouldBeCorrected * commandsIn1Pixel);
 	double xRelPicOriginInch = (xRelPicOriginComm / PIXELS_IN_INCH);
 	double yRelPicOriginInch = (yRelPicOriginComm / PIXELS_IN_INCH);
 	double xRelPicOriginShouldBeInch = (xRelPicOriginShouldBeComm / PIXELS_IN_INCH);
@@ -522,7 +525,8 @@ void UpdateCallibrationAtSpecificLocationX(int centerX, int centerY, int atx, in
 		adjustmentsMade, atx, aty, shouldBeX, aty, xRelPicOrigin, yRelPicOrigin, xRelPicOriginInch, yRelPicOriginInch, xRelPicOriginShouldBeInch);
 	adjustmentsMade++;
 
-	sLineAdjuster.AdjustPositionX((int)xRelPicOriginComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeComm);
+//	sLineAdjuster.AdjustPositionX((int)xRelPicOriginComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeComm);
+	sLineAdjuster.AdjustPositionX((int)xRelPicOriginShouldBeComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeCorrectedComm);
 //	sLineAdjuster.AdjustPositionX(xRelPicOriginInch, yRelPicOriginInch, xRelPicOriginShouldBeInch);
 }
 
