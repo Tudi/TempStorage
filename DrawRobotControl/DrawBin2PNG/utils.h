@@ -9,6 +9,7 @@ typedef struct ShapeStore
 	int expectedx, expectedy;
 	int lineId;
 	int checkedNeighbours;
+	int lineIndex; // temp store
 	//	int shapeRelativX, shapeRelativY; // relativ to center, where is this shape located ?
 	int HasValues() { return (minX != maxX); }
 }ShapeStore;
@@ -18,3 +19,4 @@ typedef struct ShapeStore
 // if the shape is a line, you can specify a "gap" in the line, so it will be considered a continuous line
 ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY);
 int IsCallibrationLinePixel(FIBITMAP* Img, int x, int y);
+void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B);

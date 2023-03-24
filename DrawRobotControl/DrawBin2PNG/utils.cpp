@@ -69,7 +69,7 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 
 	// mark starting position
 	short lineId = LineExtractUsedID;
-	LineExtractUsedID = LineExtractUsedID * 2 + 97;
+	LineExtractUsedID = LineExtractUsedID + 1;
 	*(short*)(&Bytes[y * Stride + x * Bytespp]) = lineId;
 
 	// search nearby as long as we find a pixel
@@ -154,4 +154,37 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 	ss.lineId = lineId;
 
 	return ss;
+}
+
+void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B)
+{
+	float dx = ex - sx;
+	float dy = ey - sy;
+	float steps;
+	if (abs(dx) > abs(dy))
+	{
+		steps = abs(dx);
+	}
+	else
+	{
+		steps = abs(dy);
+	}
+	float xinc = dx / steps;
+	float yinc = dy / steps;
+	BYTE* Bytes = FreeImage_GetBits(Img);
+	int Stride = FreeImage_GetPitch(Img);
+	int Width = FreeImage_GetWidth(Img);
+	int Height = FreeImage_GetHeight(Img);
+	for (float step = 0; step < steps; step += 1.0f)
+	{
+		int x = (int)(sx + xinc * step);
+		int y = (int)(sy + yinc * step);
+		if (x<0 || y<0 || x>=Width || y>=Height)
+		{
+			continue;
+		}
+		Bytes[y * Stride + x * Bytespp + 0] = B;
+		Bytes[y * Stride + x * Bytespp + 1] = G;
+		Bytes[y * Stride + x * Bytespp + 2] = R;
+	}
 }

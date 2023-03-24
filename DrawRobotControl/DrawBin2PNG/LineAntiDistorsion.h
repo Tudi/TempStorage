@@ -2,6 +2,7 @@
 
 #define CALIBRATION_FILE_NAME "SA2.cal"
 #define CALIBRATION_4CC	"cal "
+#define POSITION_TO_SHORT_SCALER (65000.0f/10.0f) // map 10 inches into 65 values
 
 class RelativePointsLine;
 
@@ -20,14 +21,46 @@ enum PositionAdjustInfoFlags : char
 {
 	X_IS_MEASURED = 1 << 0,
 	Y_IS_MEASURED = 1 << 1,
+	X_IS_SET = 1 << 2,
+	Y_IS_SET = 1 << 3,
 };
 
 // all the info required to make a line draw straight
 typedef struct PositionAdjustInfo
 {
-	float shouldBeX; // line needs to be moved to this new specific location in order to look straight
-	float shouldBeY; // line needs to be moved to this new specific location in order to look straight
+public:
+	int HasX() 
+	{ 
+		return (flags & X_IS_SET); 
+	}
+	void SetNewX(int newX) 
+	{ 
+		flags = (PositionAdjustInfoFlags)(flags | X_IS_SET);
+		shouldBeX = (short)(newX); 
+	}
+	int GetNewX() 
+	{ 
+		return shouldBeX; 
+	}
+
+	int HasY() 
+	{ 
+		return (flags & Y_IS_SET); 
+	}
+	void SetNewY(int newY) 
+	{ 
+		flags = (PositionAdjustInfoFlags)(flags | Y_IS_SET);
+		shouldBeY = (short)(newY); 
+	}
+	int GetNewY() 
+	{ 
+		return shouldBeY; 
+	}
 	PositionAdjustInfoFlags flags; // not every location will be adjusted. Locations between known adjustments are averaged
+private:
+	// using shorts instead floats to avoid very large map file size. If speed is more important than size, use floats
+	short shouldBeX; // line needs to be moved to this new specific location in order to look straight
+	short shouldBeY; // line needs to be moved to this new specific location in order to look straight
 }PositionAdjustInfo;
 #pragma pack(pop)
 
@@ -39,22 +72,24 @@ public:
 	~LineAntiDistorsionAdjuster();
 	/// <summary>
 	/// Center (0,0) is in the middle
-	/// Units of measurement are expected to be inches
+	/// Units of measurement are expected to be in robot commands = inches * PIXELS_IN_INCH
 	/// Anti distortion map was generated expecting an inch to have 600 commands
 	/// </summary>
 	/// <param name="header"></param>
 	void DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line);
-//	void AdjustLine(RelativePointsLine* line);
-	void CreateNewMap(PositionAdjustInfoHeader* header);
+	/// position is in robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	void AdjustPositionX(int x, int y, int shouldBeX);
-//	void MarkAdjustmentsOutdated();
+	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
+	PositionAdjustInfo* GetAdjustInfo(int x, int y);
 private:
+	void CreateNewMap(PositionAdjustInfoHeader* header);
 	void LoadAdjusterMap();
 	void SaveAdjusterMap();
 	void BleedAdjustmentsToNeighbours();
-	PositionAdjustInfo* GetAdjustInfo(int x, int y);
+	// position is non adjusted memory map position
 	PositionAdjustInfo* GetAdjustInfoNoChange(int x, int y);
 	void FindClosestKnown(int x, int y, int flag, PositionAdjustInfo** out_ai, int& atx, int& aty);
+	void FindClosestKnownRight(int sx, int sy, PositionAdjustInfo** out_right, int& atx_right);
 	PositionAdjustInfoHeader adjustInfoHeader;
 	PositionAdjustInfo* adjustInfoMap;
 	int hasUnsavedAdjustments;

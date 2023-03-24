@@ -202,7 +202,7 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 				{
 					primaryDirection = Move1_Left;
 					xConsumed += -1;
-					shouldMoveAgain = (line->GetDX(i) < xConsumed);
+					shouldMoveAgain += (line->GetDX(i) < xConsumed);
 				}
 			}
 			else if (line->GetDX(i) > 0)
@@ -211,16 +211,26 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 				{
 					primaryDirection = Move1_Right;
 					xConsumed += 1;
-					shouldMoveAgain = (line->GetDX(i) > xConsumed);
+					shouldMoveAgain += (line->GetDX(i) > xConsumed);
 				}
 			}
-			else if (line->GetDY(i) < 0)
+
+			if (primaryDirection != Move1_Uninitialized)
+			{
+				CMD.primaryDirection = primaryDirection;
+				CMD.secondaryDirection = ~CMD.secondaryDirection;
+
+				fwrite(&CMD, 1, 1, f);
+				primaryDirection = Move1_Uninitialized;
+			}
+
+			if (line->GetDY(i) < 0)
 			{
 				if (line->GetDY(i) < yConsumed)
 				{
 					primaryDirection = Move1_Down;
 					yConsumed += -1;
-					shouldMoveAgain = (line->GetDY(i) < yConsumed);
+					shouldMoveAgain += (line->GetDY(i) < yConsumed);
 				}
 			}
 			else if (line->GetDY(i) > 0)
@@ -229,12 +239,12 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 				{
 					primaryDirection = Move1_Up;
 					yConsumed += 1;
-					shouldMoveAgain = (line->GetDY(i) > yConsumed);
+					shouldMoveAgain += (line->GetDY(i) > yConsumed);
 				}
 			}
 
 			// this can happen after adjusting the line to be drawn correctly
-			SOFT_ASSERT((primaryDirection != Move1_Uninitialized) || (abs(xConsumed) + abs(yConsumed) > 0), "Empty line move segment");
+//			SOFT_ASSERT((primaryDirection != Move1_Uninitialized) || (abs(xConsumed) + abs(yConsumed) > 0), "Empty line move segment");
 
 			if (primaryDirection != Move1_Uninitialized)
 			{

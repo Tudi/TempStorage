@@ -164,39 +164,6 @@ void FindManuallyMarkedOrigin(FIBITMAP* Img, int& manualMarkedOriginX, int& manu
 	}
 }
 
-void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B)
-{
-	float dx = ex - sx;
-	float dy = ey - sy;
-	float steps;
-	if (abs(dx) > abs(dy))
-	{
-		steps = abs(dx);
-	}
-	else
-	{
-		steps = abs(dy);
-	}
-	float xinc = dx / steps;
-	float yinc = dy / steps;
-	BYTE* Bytes = FreeImage_GetBits(Img);
-	int Stride = FreeImage_GetPitch(Img);
-	int Width = FreeImage_GetWidth(Img);
-	int Height = FreeImage_GetHeight(Img);
-	for (float step = 0; step < steps; step += 1.0f)
-	{
-		int x = (int)(sx + xinc * step);
-		int y = (int)(sy + yinc * step);
-		if (x<0 || y<0 || x>Width || y>Height)
-		{
-			continue;
-		}
-		Bytes[y * Stride + x * Bytespp + 0] = B;
-		Bytes[y * Stride + x * Bytespp + 1] = G;
-		Bytes[y * Stride + x * Bytespp + 2] = R;
-	}
-}
-
 void MarkCalibrationChangesOnImg(FIBITMAP* Img, ShapeStore *s)
 {
 	// sanity check. Should not happen
@@ -513,44 +480,50 @@ void GetGapSizePixelsAtOrigin_V(int Width, ShapeStore*ss, int manualMarkedOrigin
 
 void SetExpectedXForVerticalLinesAtY0(int Width, ShapeStore* ss, int avgGapSize, int centerStartX)
 {
-	int lineCounter = 1;
-	lineCounter = 1;
-	for (int x = centerStartX - 1; x > 0; x--)
+	for (int moveDirection : {-1, 1})
 	{
-		if (!ss[x].HasValues())
+		int lineCounter = 1;
+		for (int x = centerStartX + moveDirection; x != 0 && x != Width; x = x + moveDirection )
 		{
-			continue;
+			if (!ss[x].HasValues())
+			{
+				continue;
+			}
+			ss[x].expectedx = centerStartX + moveDirection * lineCounter * avgGapSize;
+			ss[x].lineIndex = moveDirection * lineCounter;
+			printf("Should move vertical line %d to %d from %d\n", moveDirection * lineCounter, ss[x].expectedx, ss[x].startX);
+			lineCounter++;
 		}
-		ss[x].expectedx = centerStartX - lineCounter * avgGapSize;
-		printf("Should move vertical line %d to %d from %d\n", -lineCounter, ss[x].expectedx, ss[x].startX);
-		lineCounter++;
 	}
-	lineCounter = 1;
-	for (int x = centerStartX + 1; x < Width; x++)
-	{
-		if (!ss[x].HasValues())
-		{
-			continue;
-		}
-		ss[x].expectedx = centerStartX + lineCounter * avgGapSize;
-		printf("Should move vertical line %d to %d from %d\n", lineCounter, ss[x].expectedx, ss[x].startX);
-		lineCounter++;
-	}
+	// line at the center is getting skipped
+	ss[centerStartX].expectedx = centerStartX;
+	ss[centerStartX].lineIndex = 0;
 }
 
+// incomming coordinates are in pixels. We need to translate pixels into commands. Commands into inches
 void UpdateCallibrationAtSpecificLocationX(int centerX, int centerY, int atx, int aty, int shouldBeX, int gapSizePixels, int commandsIn1Gap)
 {
-	printf("X correction at %d,%d. Reposition to %d,%d\n", atx, aty, shouldBeX, aty);
 	// coordinates are given in pixels
 	int xRelPicOrigin = atx - centerX;
-	int yRelPicOrigin = aty - centerY;
+	int yRelPicOrigin = aty - centerY; // as normally read from file
+//	int yRelPicOrigin = centerY - aty; // vertical flip
 	int xRelPicOriginShouldBe = shouldBeX - centerX;
 	// scale the coordinates from the image to size of the calibration map
 	float commandsIn1Pixel = (float)commandsIn1Gap / (float)gapSizePixels;
-	int xRelPicOriginComm = (int)(xRelPicOrigin * commandsIn1Pixel);
-	int yRelPicOriginComm = (int)(yRelPicOrigin * commandsIn1Pixel);
-	int xRelPicOriginShouldBeComm = (int)(xRelPicOriginShouldBe * commandsIn1Pixel);
-	sLineAdjuster.AdjustPositionX(xRelPicOriginComm, yRelPicOriginComm, xRelPicOriginShouldBeComm);
+	float xRelPicOriginComm = (xRelPicOrigin * commandsIn1Pixel);
+	float yRelPicOriginComm = (yRelPicOrigin * commandsIn1Pixel);
+	float xRelPicOriginShouldBeComm = (xRelPicOriginShouldBe * commandsIn1Pixel);
+	double xRelPicOriginInch = (xRelPicOriginComm / PIXELS_IN_INCH);
+	double yRelPicOriginInch = (yRelPicOriginComm / PIXELS_IN_INCH);
+	double xRelPicOriginShouldBeInch = (xRelPicOriginShouldBeComm / PIXELS_IN_INCH);
+
+	static int adjustmentsMade = 0;
+	printf("%d) X correction at %d,%d. Reposition to %d,%d. Rel %d, %d. In inches %0.2f,%.02f to %.02f\n", 
+		adjustmentsMade, atx, aty, shouldBeX, aty, xRelPicOrigin, yRelPicOrigin, xRelPicOriginInch, yRelPicOriginInch, xRelPicOriginShouldBeInch);
+	adjustmentsMade++;
+
+	sLineAdjuster.AdjustPositionX((int)xRelPicOriginComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeComm);
+//	sLineAdjuster.AdjustPositionX(xRelPicOriginInch, yRelPicOriginInch, xRelPicOriginShouldBeInch);
 }
 
 void UpdateCallibrationForEveryVerticalLineEveryRow(FIBITMAP* Img, ShapeStore* ss, int centerStartX, int gapSizePixels, int commandsIn1Gap, int centerX, int centerY)
@@ -560,41 +533,48 @@ void UpdateCallibrationForEveryVerticalLineEveryRow(FIBITMAP* Img, ShapeStore* s
 	int Width = FreeImage_GetWidth(Img);
 	int Height = FreeImage_GetHeight(Img);
 
-	for (int x = centerStartX - 1; x > 0; x--)
+#define LINE_CONTINUATION_SEARCH_RANGE 50
+	for (int x = 0; x < Width; x++) // iterate through every vertical line starting left, going right
 	{
 		if (!ss[x].HasValues())
 		{
 			continue;
 		}
-		// for every row above the current row
-		int prevStartX = ss[x].startX;
-		for (int y = ss[x].starty - 1; y > 0; y--)
-		{
-			// find the startX on this row for this specific line
-			for (int x2 = prevStartX - 10; x2 < prevStartX + 10; x2++)
-			{
-				int lineIdAt = *(short*)&Bytes[y * Stride + x2 * Bytespp];
-				if (lineIdAt == ss[x].lineId)
-				{
-					prevStartX = x2;
-					UpdateCallibrationAtSpecificLocationX(centerX, centerY, x2, y, ss[x].expectedx, gapSizePixels, commandsIn1Gap);
-					break;
-				}
 
-			}
-		}
-		// for every row below the current row
-		prevStartX = ss[x].startX;
-		for (int y = ss[x].starty + 1; y < Height; y++)
+//		if (ss[x].lineIndex != 15) continue;
+
+		// for every row above the current row
+		for (int progressDirection : {-1, 1})
 		{
-			// find the startX on this row for this specific line
-			for (int x2 = prevStartX - 10; x2 < prevStartX + 10; x2++)
+			int prevStartX = ss[x].startX;
+			// from middle, go up and down
+			for (int y = ss[x].starty; y != 0 && y != Height; y = y + progressDirection)
 			{
-				int lineIdAt = *(short*)&Bytes[y * Stride + x2 * Bytespp];
-				if (lineIdAt == ss[x].lineId)
+				// find the startX on this row for this specific line
+				int foundLine = 0;
+				for (int sr = 0; sr < LINE_CONTINUATION_SEARCH_RANGE; sr++)
 				{
-					prevStartX = x2;
-					UpdateCallibrationAtSpecificLocationX(centerX, centerY, x2, y, ss[x].expectedx, gapSizePixels, commandsIn1Gap);
+					for (int x2 : {prevStartX - sr, prevStartX + sr} )
+					{
+						short lineIdAt = *(short*)&Bytes[y * Stride + x2 * Bytespp];
+						if (lineIdAt == *(short*)&ss[x].lineId)
+						{
+							prevStartX = x2;
+							UpdateCallibrationAtSpecificLocationX(centerX, centerY, x2, y, ss[x].expectedx, gapSizePixels, commandsIn1Gap);
+							// debug set expected location
+//							if(x2< ss[x].expectedx)	DrawLineColor(Img, x2 + 1, y, ss[x].expectedx, y, 255, 0, 0);
+//							else DrawLineColor(Img, x2 - 1, y, ss[x].expectedx, y, 255, 0, 0);
+// 							// temp swap orientation. Should be bad
+//							UpdateCallibrationAtSpecificLocationX(centerX, centerY, ss[x].expectedx, y, x2, gapSizePixels, commandsIn1Gap);
+							foundLine = 1;
+							goto found_line;
+						}
+					}
+				}
+found_line:
+				if (foundLine == 0)
+				{
+					printf("line continuation not found at x=%d y=%d\n", ss[x].startX, y); // happens at every end of line
 					break;
 				}
 			}
@@ -682,7 +662,7 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 	SetExpectedXForVerticalLinesAtY0(Width, ss, avgGapSize, centerStartX);
 
 	// follow up every shape and at every row, calculate how far off are we from expected
-	UpdateCallibrationForEveryVerticalLineEveryRow(Img, ss, centerStartX, avgGapSize, commandCountRef, manualMarkedOriginX, manualMarkedOriginY);
+	UpdateCallibrationForEveryVerticalLineEveryRow(Img, ss, centerStartX, avgGapSize, commandCountRef * 2, manualMarkedOriginX, manualMarkedOriginY);
 
 	free(ss);
 	SaveImagePNG(Img, "t.png");
@@ -691,7 +671,7 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 void Test_loadCallibrationImages()
 {
 	LoadSpecificFull_V_LineCallibrationImage("../ver_30_50_FL_03_17.bmp", 1, 50);
-	LoadSpecificFull_V_LineCallibrationImage("../hor_30_50_FL_03_17.bmp", 1, 50);
+//	LoadSpecificFull_H_LineCallibrationImage("../hor_30_50_FL_03_17.bmp", 1, 50);
 //	LoadSpecificCallibrationImage("../ver_30_50_03_17.bmp", 1, 50);
 //	LoadSpecificCallibrationImage("../hor_15_03_16.bmp", 1, 100);
 }

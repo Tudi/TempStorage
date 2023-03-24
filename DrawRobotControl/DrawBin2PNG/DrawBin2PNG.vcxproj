@@ -141,6 +141,7 @@
     <ClCompile Include="test_LoadBin.cpp" />
     <ClCompile Include="test_LoadCallibrationImages.cpp" />
     <ClCompile Include="test_LoadSigFile.cpp" />
+    <ClCompile Include="test_VisualizeCalibrationMap.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>

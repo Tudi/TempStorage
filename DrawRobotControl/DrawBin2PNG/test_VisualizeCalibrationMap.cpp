@@ -1,0 +1,29 @@
+#include "StdAfx.h"
+
+#define TEAR_MAX_COMMANDS_QAURTER 2000
+#define IMG_SIZE 4000
+#define IMG_CENTER ( IMG_SIZE/2)
+
+void Test_VisualizeCallibrationMap()
+{
+	FIBITMAP* dib = CreateNewImage(IMG_SIZE, IMG_SIZE);
+	for (int y = 0; y < TEAR_MAX_COMMANDS_QAURTER * 2; y++)
+	{
+		int xMiddleCentered = y - TEAR_MAX_COMMANDS_QAURTER;
+		int yMiddleCentered = y - TEAR_MAX_COMMANDS_QAURTER;
+		PositionAdjustInfo* ai = sLineAdjuster.GetAdjustInfo(xMiddleCentered, yMiddleCentered);
+		if (ai == NULL || ai->HasX() == 0)
+		{
+			continue;
+		}
+		int correctedX = ai->GetNewX(); // should be middle centered with range between -6000,6000
+		printf("Corrected x=%d to %d at row %d\n", xMiddleCentered, correctedX, yMiddleCentered);
+		int correctedY = yMiddleCentered;
+		int xImgCentered1 = IMG_CENTER + correctedX;
+		int xImgCentered2 = IMG_CENTER + xMiddleCentered;
+		int yImgCentered = IMG_CENTER + y;
+		DrawLineColor(dib, xImgCentered1, yImgCentered, xImgCentered2, yImgCentered, 255, 255, 255);
+	}
+	SaveImagePNG(dib, "MapVisualized.png");
+	FreeImage_Unload(dib);
+}

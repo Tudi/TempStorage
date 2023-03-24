@@ -138,8 +138,9 @@ void drawMeasurementLines(int lines, int isHorizontal)
 	bfw.CloseFile();
 }
 
-#define USE_LINE_DRAW_FUNC bfw.AddLineAntiDistorted
-//#define USE_LINE_DRAW_FUNC bfw.AddLine
+//#define USE_LINE_DRAW_FUNC(sx,sy,ex,ey) bfw.AddLineAntiDistorted(sx/PIXELS_IN_INCH,sy/PIXELS_IN_INCH,ex/PIXELS_IN_INCH,ey/PIXELS_IN_INCH)
+#define USE_LINE_DRAW_FUNC(sx,sy,ex,ey) bfw.AddLineAntiDistorted(sx,sy,ex,ey)
+//#define USE_LINE_DRAW_FUNC(sx,sy,ex,ey) bfw.AddLine(sx,sy,ex,ey)
 
 void drawMeasurementFullLines(int lines, int isHorizontal)
 {
