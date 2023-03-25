@@ -666,7 +666,9 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 	SetExpectedXForVerticalLinesAtY0(Width, ss, avgGapSize, centerStartX);
 
 	// follow up every shape and at every row, calculate how far off are we from expected
-	UpdateCallibrationForEveryVerticalLineEveryRow(Img, ss, centerStartX, avgGapSize, commandCountRef * 2, manualMarkedOriginX, manualMarkedOriginY);
+	int commandsIn1Gap = commandCountRef * 2;
+	commandsIn1Gap -= (int)((float)commandsIn1Gap / (float)avgGapSize * 4.0f);// should add line width to this, which could be anything. maybe 4 pixels ?
+	UpdateCallibrationForEveryVerticalLineEveryRow(Img, ss, centerStartX, avgGapSize, commandsIn1Gap, manualMarkedOriginX, manualMarkedOriginY);
 
 	free(ss);
 	SaveImagePNG(Img, "t.png");
@@ -674,7 +676,8 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 
 void Test_loadCallibrationImages()
 {
-	LoadSpecificFull_V_LineCallibrationImage("../ver_30_50_FL_03_17.bmp", 1, 50);
+	LoadSpecificFull_V_LineCallibrationImage("../ver_60_25_FL_03_23.bmp", 1, 25);
+//	LoadSpecificFull_V_LineCallibrationImage("../ver_30_50_FL_03_17.bmp", 1, 50);
 //	LoadSpecificFull_H_LineCallibrationImage("../hor_30_50_FL_03_17.bmp", 1, 50);
 //	LoadSpecificCallibrationImage("../ver_30_50_03_17.bmp", 1, 50);
 //	LoadSpecificCallibrationImage("../hor_15_03_16.bmp", 1, 100);

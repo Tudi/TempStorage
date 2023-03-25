@@ -33,6 +33,10 @@ public:
 	{ 
 		return (flags & X_IS_SET); 
 	}
+	int HasXMeasured()
+	{
+		return (flags & X_IS_MEASURED);
+	}
 	void SetNewX(int newX) 
 	{ 
 		flags = (PositionAdjustInfoFlags)(flags | X_IS_SET);

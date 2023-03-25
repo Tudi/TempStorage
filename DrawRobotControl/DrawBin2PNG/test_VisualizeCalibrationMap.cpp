@@ -6,7 +6,8 @@
 
 void Test_VisualizeCallibrationMap()
 {
-	for (int i = 0; i < 800; i += 50)
+	// tear is [-4.5,4.5] inches in size or [-2700,2700] in commands
+	for (int i = 0; i < 1600; i += 100)
 	{
 		sLineAdjuster.DebugDumpMapToImage(i);
 	}

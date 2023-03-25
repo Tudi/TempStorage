@@ -4,11 +4,11 @@
 // the physical tear size is around 10x10 inches
 // we need around 600 commands to draw 1 inch => we would need 6000x6000 map to represent every command
 // the map in the file would be [-3000,3000]x[-3000,3000]
-#define ADJUST_MAP_DEFAULT_WIDTH 800
-#define ADJUST_MAP_DEFAULT_HEIGHT 800
+#define ADJUST_MAP_DEFAULT_WIDTH 1600
+#define ADJUST_MAP_DEFAULT_HEIGHT 1600
 // we can adjust every 10th command. Inbetween values should be smoothed by line draw
-#define DEFAULT_WIDTH_SCALER 0.20f 
-#define DEFAULT_HEIGHT_SCALER 0.20f
+#define DEFAULT_WIDTH_SCALER 0.70f 
+#define DEFAULT_HEIGHT_SCALER 0.70f
 #define LINE_GAP_CONSIDERED_BUG	100 // measured in movement units. 600 movements = 1 inch
 
 LineAntiDistorsionAdjuster sLineAdjuster;
@@ -71,7 +71,7 @@ void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
 		header->width = (int)(ADJUST_MAP_DEFAULT_WIDTH);
 		header->height = (int)(ADJUST_MAP_DEFAULT_HEIGHT);
 		header->originX = header->width / 2;
-		header->originY = header->height / 2;
+		header->originY = header->height / 2 * 90 / 100;
 	}
 	if (header->height == 0 || header->width == 0)
 	{
@@ -376,6 +376,17 @@ void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 		ai->flags = (PositionAdjustInfoFlags)(ai->flags | X_IS_MEASURED);
 		hasUnsavedAdjustments = 1;
 	}
+	// in case the resolution of the input image is lower then of our internal storage, there will be gaps between the lines
+#define SPREAD_SAME_MEASURE_VALUE_RADIUS 4
+	for (int y2 = y - SPREAD_SAME_MEASURE_VALUE_RADIUS; y2 <= y + SPREAD_SAME_MEASURE_VALUE_RADIUS; y2++)
+	{
+		PositionAdjustInfo* ai3 = GetAdjustInfo(x, y2);
+		if (ai3 != NULL && ai3->HasXMeasured() == 0)
+		{
+			ai3->SetNewX(shouldBeX);
+			ai3->flags = (PositionAdjustInfoFlags)(ai3->flags | X_IS_MEASURED);
+		}
+	}
 }
 /*
 void LineAntiDistorsionAdjuster::MarkAdjustmentsOutdated()
@@ -390,6 +401,7 @@ void LineAntiDistorsionAdjuster::MarkAdjustmentsOutdated()
 	}
 }*/
 
+// try to draw a line normally. If there is correction info at a specific location, use that instead
 void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
 {
 	double dx = ex - sx;
@@ -414,47 +426,88 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
-	double prevAddedX = sx;
-	double prevAddedY = sy;
+	double prevAddedXNonAdjusted = sx;
+	double prevAddedYNonAdjusted = sy;
+	double prevAddedXAdjusted = 0;
+	double prevAddedYAdjusted = 0;
+	int adjustedPrevAvailableX = 0;
+	int adjustedPrevAvailableY = 0;
+
 #if 1
 	PositionAdjustInfo* ai = GetAdjustInfo((int)sx, (int)sy);
 	if (ai != NULL)
 	{
 		if (ai->HasX())
 		{
-			prevAddedX = ai->GetNewX();
+			prevAddedXAdjusted = ai->GetNewX();
+			adjustedPrevAvailableX = 1;
 		}
 		if (ai->HasY())
 		{
-			prevAddedY = ai->GetNewY();
+			prevAddedYAdjusted = ai->GetNewY();
+			adjustedPrevAvailableY = 1;
 		}
 	}
 #endif
+
 	for (double step = 1; step <= out_lineDrawSteps; step += 1)
 	{
 		double curXPos = sx + step * xIncForStep;
 		double curYPos = sy + step * yIncForStep;
-		double curXPos2 = curXPos, curYPos2 = curYPos;
+		double curXPosAdjusted = 0, curYPosAdjusted = 0;
+		int adjustedCurXAvailable = 0, adjustedCurYAvailable = 0;
 
 #if 1
 		PositionAdjustInfo* ai = GetAdjustInfo((int)curXPos, (int)curYPos);
-		if (ai == NULL || (ai->HasX() == 0 && ai->HasY() == 0))
+		if (ai)
 		{
-			printf("missing info in callibration map at %f %f. Should have not happened\n", curXPos, curYPos);
-			continue;
-		}
-		if (ai->HasX())
-		{
-			curXPos2 = ai->GetNewX();
-		}
-		if (ai->HasY())
-		{
-			curYPos2 = ai->GetNewY();
+			if (ai->HasX())
+			{
+				if (adjustedPrevAvailableX == 0)
+				{
+					prevAddedXAdjusted = ai->GetNewX();
+					adjustedPrevAvailableX = 1;
+				}
+				else
+				{
+					curXPosAdjusted = ai->GetNewX();
+					adjustedCurXAvailable = 1;
+				}
+			}
+			if (ai->HasY())
+			{
+				if (adjustedPrevAvailableY == 0)
+				{
+					prevAddedYAdjusted = ai->GetNewY();
+					adjustedPrevAvailableY = 1;
+				}
+				else
+				{
+					curYPosAdjusted = ai->GetNewY();
+					adjustedCurYAvailable = 1;
+				}
+			}
 		}
 #endif
 
-		int xdiff = (int)((curXPos2 - prevAddedX));
-		int ydiff = (int)((curYPos2 - prevAddedY));
+		int xdiff, ydiff;
+		if (adjustedCurXAvailable && adjustedPrevAvailableX)
+		{
+			xdiff = curXPosAdjusted - prevAddedXAdjusted;
+		}
+		else
+		{
+			xdiff = (int)((curXPos - prevAddedXNonAdjusted));
+		}
+
+		if (adjustedCurYAvailable && adjustedPrevAvailableY)
+		{
+			ydiff = curYPosAdjusted - prevAddedYAdjusted;
+		}
+		else
+		{
+			ydiff = (int)((curYPos - prevAddedYNonAdjusted));
+		}
 
 		if (xdiff == 0 && ydiff == 0)
 		{
@@ -464,10 +517,14 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		if (abs(xdiff) > LINE_GAP_CONSIDERED_BUG || abs(ydiff) > LINE_GAP_CONSIDERED_BUG)
 		{
 			printf("Step %f ) Line gap %d %d at %f,%f is too large to continue drawing\n", step, abs(xdiff), abs(ydiff), curXPos, curYPos);
-//			continue;
+			//			continue;
 		}
-		prevAddedX = prevAddedX + xdiff;
-		prevAddedY = prevAddedY + ydiff;
+
+		//really hope that once we have adjusted info, we will be able to use adjusted info. Else this might become imprecise
+		prevAddedXNonAdjusted = prevAddedXNonAdjusted + xdiff;
+		prevAddedYNonAdjusted = prevAddedYNonAdjusted + ydiff;
+		prevAddedXAdjusted = prevAddedXAdjusted + xdiff;
+		prevAddedYAdjusted = prevAddedYAdjusted + ydiff;
 
 		out_line->storeNextPoint(xdiff, ydiff);
 	}
@@ -488,7 +545,9 @@ void LineAntiDistorsionAdjuster::DebugDumpMapToImage(int col)
 			DrawLineColor(dib, 1000 + 0, 500 + y, 1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X, 500 + y, 0, 255, 0);
 			continue;
 		}
-		DrawLineColor(dib, 1000 + x / SCALE_DOWN_X, 500 + y, 1000 + ai->GetNewX() * adjustInfoHeader.scaleX / SCALE_DOWN_X, 500 + y, 255, 255, 255);
+		int x2 = adjustInfoHeader.originX + ai->GetNewX() * adjustInfoHeader.scaleX; // newx comes in the range of [-2700,2700]
+		DrawLineColor(dib, 1000 + x / SCALE_DOWN_X, 500 + y, 
+						   1000 + x2 / SCALE_DOWN_X, 500 + y, 255, 255, 255);
 	}
 	//draw a line at the center
 	DrawLineColor(dib, 1000 + 0, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 1000 + ADJUST_MAP_DEFAULT_WIDTH / 4, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 255, 0, 0);
