@@ -667,7 +667,6 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 
 	// follow up every shape and at every row, calculate how far off are we from expected
 	int commandsIn1Gap = commandCountRef * 2;
-	commandsIn1Gap -= (int)((float)commandsIn1Gap / (float)avgGapSize * 4.0f);// should add line width to this, which could be anything. maybe 4 pixels ?
 	UpdateCallibrationForEveryVerticalLineEveryRow(Img, ss, centerStartX, avgGapSize, commandsIn1Gap, manualMarkedOriginX, manualMarkedOriginY);
 
 	free(ss);

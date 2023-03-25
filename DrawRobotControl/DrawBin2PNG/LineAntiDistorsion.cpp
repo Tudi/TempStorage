@@ -7,8 +7,8 @@
 #define ADJUST_MAP_DEFAULT_WIDTH 1600
 #define ADJUST_MAP_DEFAULT_HEIGHT 1600
 // we can adjust every 10th command. Inbetween values should be smoothed by line draw
-#define DEFAULT_WIDTH_SCALER 0.70f 
-#define DEFAULT_HEIGHT_SCALER 0.70f
+#define DEFAULT_WIDTH_SCALER 0.50f 
+#define DEFAULT_HEIGHT_SCALER 0.50f
 #define LINE_GAP_CONSIDERED_BUG	100 // measured in movement units. 600 movements = 1 inch
 
 LineAntiDistorsionAdjuster sLineAdjuster;
@@ -426,107 +426,58 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
-	double prevAddedXNonAdjusted = sx;
-	double prevAddedYNonAdjusted = sy;
-	double prevAddedXAdjusted = 0;
-	double prevAddedYAdjusted = 0;
-	int adjustedPrevAvailableX = 0;
-	int adjustedPrevAvailableY = 0;
 
-#if 1
-	PositionAdjustInfo* ai = GetAdjustInfo((int)sx, (int)sy);
-	if (ai != NULL)
-	{
-		if (ai->HasX())
-		{
-			prevAddedXAdjusted = ai->GetNewX();
-			adjustedPrevAvailableX = 1;
-		}
-		if (ai->HasY())
-		{
-			prevAddedYAdjusted = ai->GetNewY();
-			adjustedPrevAvailableY = 1;
-		}
-	}
-#endif
-
+	double leftoverXDiff = 0;
+	double leftoverYDiff = 0;
 	for (double step = 1; step <= out_lineDrawSteps; step += 1)
 	{
+		double prevXPos = sx + (step-1) * xIncForStep;
+		double prevYPos = sy + (step-1) * yIncForStep;
 		double curXPos = sx + step * xIncForStep;
 		double curYPos = sy + step * yIncForStep;
-		double curXPosAdjusted = 0, curYPosAdjusted = 0;
-		int adjustedCurXAvailable = 0, adjustedCurYAvailable = 0;
 
+		double xDiff = curXPos - prevXPos;
+		double yDiff = curYPos - prevYPos;
 #if 1
-		PositionAdjustInfo* ai = GetAdjustInfo((int)curXPos, (int)curYPos);
-		if (ai)
+		PositionAdjustInfo* aiPrev = GetAdjustInfo((int)prevXPos, (int)prevYPos);
+		PositionAdjustInfo* aiCur = GetAdjustInfo((int)curXPos, (int)curYPos);
+		if (aiCur && aiPrev)
 		{
-			if (ai->HasX())
+			if (aiCur->HasX() && aiPrev->HasX())
 			{
-				if (adjustedPrevAvailableX == 0)
-				{
-					prevAddedXAdjusted = ai->GetNewX();
-					adjustedPrevAvailableX = 1;
-				}
-				else
-				{
-					curXPosAdjusted = ai->GetNewX();
-					adjustedCurXAvailable = 1;
-				}
+				xDiff = aiCur->GetNewX() - aiPrev->GetNewX();
 			}
-			if (ai->HasY())
+			if (aiCur->HasY() && aiPrev->HasY())
 			{
-				if (adjustedPrevAvailableY == 0)
-				{
-					prevAddedYAdjusted = ai->GetNewY();
-					adjustedPrevAvailableY = 1;
-				}
-				else
-				{
-					curYPosAdjusted = ai->GetNewY();
-					adjustedCurYAvailable = 1;
-				}
+				yDiff = aiCur->GetNewY() - aiPrev->GetNewY();
 			}
 		}
 #endif
 
-		int xdiff, ydiff;
-		if (adjustedCurXAvailable && adjustedPrevAvailableX)
-		{
-			xdiff = curXPosAdjusted - prevAddedXAdjusted;
-		}
-		else
-		{
-			xdiff = (int)((curXPos - prevAddedXNonAdjusted));
-		}
-
-		if (adjustedCurYAvailable && adjustedPrevAvailableY)
-		{
-			ydiff = curYPosAdjusted - prevAddedYAdjusted;
-		}
-		else
-		{
-			ydiff = (int)((curYPos - prevAddedYNonAdjusted));
-		}
-
-		if (xdiff == 0 && ydiff == 0)
+		if (xDiff == 0 && yDiff == 0)
 		{
 			continue;
 		}
 
-		if (abs(xdiff) > LINE_GAP_CONSIDERED_BUG || abs(ydiff) > LINE_GAP_CONSIDERED_BUG)
+		xDiff += leftoverXDiff;
+		yDiff += leftoverYDiff;
+		if (abs(xDiff) < 1.0 && abs(yDiff) < 1.0)
 		{
-			printf("Step %f ) Line gap %d %d at %f,%f is too large to continue drawing\n", step, abs(xdiff), abs(ydiff), curXPos, curYPos);
+			leftoverXDiff = xDiff - (int)xDiff;
+			leftoverYDiff = yDiff - (int)yDiff;
+			continue;
+		}
+
+		if (abs(xDiff) > LINE_GAP_CONSIDERED_BUG || abs(yDiff) > LINE_GAP_CONSIDERED_BUG)
+		{
+			printf("Step %f ) Line gap %f %f at %f,%f is too large to continue drawing\n", step, abs(xDiff), abs(yDiff), curXPos, curYPos);
 			//			continue;
 		}
 
-		//really hope that once we have adjusted info, we will be able to use adjusted info. Else this might become imprecise
-		prevAddedXNonAdjusted = prevAddedXNonAdjusted + xdiff;
-		prevAddedYNonAdjusted = prevAddedYNonAdjusted + ydiff;
-		prevAddedXAdjusted = prevAddedXAdjusted + xdiff;
-		prevAddedYAdjusted = prevAddedYAdjusted + ydiff;
+		leftoverXDiff = xDiff - (int)xDiff;
+		leftoverYDiff = yDiff - (int)yDiff;
 
-		out_line->storeNextPoint(xdiff, ydiff);
+		out_line->storeNextPoint((int)xDiff, (int)yDiff);
 	}
 
 	out_line->setEndPosition(ex, ey);
@@ -542,12 +493,12 @@ void LineAntiDistorsionAdjuster::DebugDumpMapToImage(int col)
 		PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
 		if (ai == NULL || ai->HasX() == 0)
 		{
-			DrawLineColor(dib, 1000 + 0, 500 + y, 1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X, 500 + y, 0, 255, 0);
+			DrawLineColor(dib, (float)(1000), (float)(500 + y), (float)(1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X), (float)(500 + y), 0, 255, 0);
 			continue;
 		}
-		int x2 = adjustInfoHeader.originX + ai->GetNewX() * adjustInfoHeader.scaleX; // newx comes in the range of [-2700,2700]
-		DrawLineColor(dib, 1000 + x / SCALE_DOWN_X, 500 + y, 
-						   1000 + x2 / SCALE_DOWN_X, 500 + y, 255, 255, 255);
+		int x2 = (int)(adjustInfoHeader.originX + ai->GetNewX() * adjustInfoHeader.scaleX); // newx comes in the range of [-2700,2700]
+		DrawLineColor(dib, (float)(1000 + x / SCALE_DOWN_X), (float)(500 + y),
+						   (float)(1000 + x2 / SCALE_DOWN_X), (float)(500 + y), 255, 255, 255);
 	}
 	//draw a line at the center
 	DrawLineColor(dib, 1000 + 0, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 1000 + ADJUST_MAP_DEFAULT_WIDTH / 4, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 255, 0, 0);
