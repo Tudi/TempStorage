@@ -429,6 +429,7 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 
 	double leftoverXDiff = 0;
 	double leftoverYDiff = 0;
+	RelativePointsLine tempLine;
 	for (double step = 1; step <= out_lineDrawSteps; step += 1)
 	{
 		double prevXPos = sx + (step-1) * xIncForStep;
@@ -477,8 +478,33 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		leftoverXDiff = xDiff - (int)xDiff;
 		leftoverYDiff = yDiff - (int)yDiff;
 
-		out_line->storeNextPoint((int)xDiff, (int)yDiff);
+		tempLine.storeNextPoint((int)xDiff, (int)yDiff);
 	}
+
+#define PEN_MOVEMENT_SPEED_SMOOTHING 10
+#ifdef PEN_MOVEMENT_SPEED_SMOOTHING
+	for (int i = 0; i < tempLine.GetPointsCount(); i+= PEN_MOVEMENT_SPEED_SMOOTHING)
+	{
+		float xDiffs = 0;
+		float yDiffs = 0;
+		for (int j = i; j < MIN(i + PEN_MOVEMENT_SPEED_SMOOTHING, tempLine.GetPointsCount()); j++)
+		{
+			xDiffs += tempLine.GetDX(j);
+			yDiffs += tempLine.GetDY(j);
+		}
+		// first write xDiffs so that the motors do not need to turn on and off too often
+		int xSign = xDiffs < 0 ? -1 : 1;
+		int ySign = yDiffs < 0 ? -1 : 1;
+		for (int j = 0; j < abs(xDiffs); j++)
+		{
+			out_line->storeNextPoint(xSign, 0);
+		}
+		for (int j = 0; j < abs(yDiffs); j++)
+		{
+			out_line->storeNextPoint(0, ySign);
+		}
+	}
+#endif
 
 	out_line->setEndPosition(ex, ey);
 }
