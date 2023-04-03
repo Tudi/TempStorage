@@ -308,9 +308,17 @@ void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 		printf("Took %f minutes to propagate calibration changes on Y axis\n", (endStamp - startStamp) / 1000.0f / 60.0f);
 	}
 #endif
+#define APPLY_SMOOTHING_ON_MAP
 #ifdef APPLY_SMOOTHING_ON_MAP
 	if (applySmoothing)
 	{
+		PositionAdjustInfo* adjustInfoMapOld = (PositionAdjustInfo*)malloc(adjustInfoHeader.width * adjustInfoHeader.height * sizeof(PositionAdjustInfo));
+		if (adjustInfoMapOld == NULL)
+		{
+			return;
+		}
+		memcpy(adjustInfoMapOld, adjustInfoMap, adjustInfoHeader.width* adjustInfoHeader.height * sizeof(PositionAdjustInfo));
+
 		uint32_t startStamp = GetTickCount();
 		for (int y = 0; y < adjustInfoHeader.height; y++)
 		{
@@ -318,24 +326,25 @@ void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 			{
 				// only process locations that do not have real values
 				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
-				if ((ai->flags & (X_IS_MEASURED | Y_IS_MEASURED)) == (X_IS_MEASURED | Y_IS_MEASURED))
-				{
-					continue;
-				}
-				double sumX = 0;
-				double sumY = 0;
-				double sumCountX = 0;
-				double sumCountY = 0;
+				int sumX = 0;
+				int sumY = 0;
+				int sumCountX = 0;
+				int sumCountY = 0;
 #define SMOOTH_RADIUS 3
 				for (int y2 = y - SMOOTH_RADIUS; y2 <= y + SMOOTH_RADIUS; y2++)
 				{
 					for (int x2 = x - SMOOTH_RADIUS; x2 <= x + SMOOTH_RADIUS; x2++)
 					{
-						PositionAdjustInfo* ai2 = GetAdjustInfoNoChange(x2, y2);
-						if (ai2 == NULL)
+						PositionAdjustInfo* ai2 = NULL;
+						if (x2 < 0 || x2 >= adjustInfoHeader.width)
 						{
 							continue;
 						}
+						if (y2 < 0 || y2 >= adjustInfoHeader.height)
+						{
+							continue;
+						}
+						ai2 = &adjustInfoMapOld[adjustInfoHeader.width * y2 + x2];
 						if (ai2->HasX())
 						{
 							sumX += ai2->GetNewX();
@@ -348,18 +357,21 @@ void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 						}
 					}
 				}
-				if (sumCountX > 0 && (ai->flags & (X_IS_MEASURED)) == 0)
+				if (sumCountX > 1)
 				{
-					ai->SetNewX(sumX / sumCountX);
+					int newX = (int)(sumX / sumCountX);
+					ai->SetNewX(newX);
 				}
-				if (sumCountY > 0 && (ai->flags & (Y_IS_MEASURED)) == 0)
+				if (sumCountY > 1)
 				{
-					ai->SetNewY(sumY / sumCountY);
+					int newY = (int)(sumY / sumCountY);
+					ai->SetNewY(newY);
 				}
 			}
 		}
 		uint32_t endStamp = GetTickCount();
 		printf("Took %f minutes to smooth calibration transitions\n", (endStamp - startStamp) / 1000.0f / 60.0f);
+		free(adjustInfoMapOld);
 	}
 #endif
 }
@@ -377,7 +389,8 @@ void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 		hasUnsavedAdjustments = 1;
 	}
 	// in case the resolution of the input image is lower then of our internal storage, there will be gaps between the lines
-#define SPREAD_SAME_MEASURE_VALUE_RADIUS 4
+	// around 24 values per 1 mm
+#define SPREAD_SAME_MEASURE_VALUE_RADIUS 30
 	for (int y2 = y - SPREAD_SAME_MEASURE_VALUE_RADIUS; y2 <= y + SPREAD_SAME_MEASURE_VALUE_RADIUS; y2++)
 	{
 		PositionAdjustInfo* ai3 = GetAdjustInfo(x, y2);
@@ -388,18 +401,6 @@ void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 		}
 	}
 }
-/*
-void LineAntiDistorsionAdjuster::MarkAdjustmentsOutdated()
-{
-	for (size_t y = 0; y < adjustInfoHeader.height; y++)
-	{
-		for (size_t x = 0; x < adjustInfoHeader.width; x++)
-		{
-			PositionAdjustInfo* ai = GetAdjustInfo(x, y);
-			ai->isMeasured = 0;
-		}
-	}
-}*/
 
 // try to draw a line normally. If there is correction info at a specific location, use that instead
 void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
@@ -439,7 +440,6 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 
 		double xDiff = curXPos - prevXPos;
 		double yDiff = curYPos - prevYPos;
-#if 1
 		PositionAdjustInfo* aiPrev = GetAdjustInfo((int)prevXPos, (int)prevYPos);
 		PositionAdjustInfo* aiCur = GetAdjustInfo((int)curXPos, (int)curYPos);
 		if (aiCur && aiPrev)
@@ -453,7 +453,6 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 				yDiff = aiCur->GetNewY() - aiPrev->GetNewY();
 			}
 		}
-#endif
 
 		if (xDiff == 0 && yDiff == 0)
 		{
@@ -481,7 +480,8 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		tempLine.storeNextPoint((int)xDiff, (int)yDiff);
 	}
 
-#define PEN_MOVEMENT_SPEED_SMOOTHING 10
+// around 24 actions per mm
+#define PEN_MOVEMENT_SPEED_SMOOTHING 24
 #ifdef PEN_MOVEMENT_SPEED_SMOOTHING
 	for (int i = 0; i < tempLine.GetPointsCount(); i+= PEN_MOVEMENT_SPEED_SMOOTHING)
 	{

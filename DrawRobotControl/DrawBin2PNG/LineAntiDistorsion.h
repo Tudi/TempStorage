@@ -56,7 +56,11 @@ public:
 		flags = (PositionAdjustInfoFlags)(flags | Y_IS_SET);
 		shouldBeY = (short)(newY); 
 	}
-	int GetNewY() 
+	int HasYMeasured()
+	{
+		return (flags & Y_IS_MEASURED);
+	}
+	int GetNewY()
 	{ 
 		return shouldBeY; 
 	}

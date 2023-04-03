@@ -28,7 +28,7 @@ void Test_VisualizeCallibrationMap()
 		int xImgCentered1 = IMG_CENTER + correctedX;
 		int xImgCentered2 = IMG_CENTER + xMiddleCentered;
 		int yImgCentered = IMG_CENTER + y;
-		DrawLineColor(dib, xImgCentered1, yImgCentered, xImgCentered2, yImgCentered, 255, 255, 255);
+		DrawLineColor(dib, (float)xImgCentered1, (float)yImgCentered, (float)xImgCentered2, (float)yImgCentered, 255, 255, 255);
 	}
 	SaveImagePNG(dib, "MapVisualized.png");
 	FreeImage_Unload(dib);
