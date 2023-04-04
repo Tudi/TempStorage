@@ -71,7 +71,7 @@ void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
 		header->width = (int)(ADJUST_MAP_DEFAULT_WIDTH);
 		header->height = (int)(ADJUST_MAP_DEFAULT_HEIGHT);
 		header->originX = header->width / 2;
-		header->originY = header->height / 2 * 90 / 100;
+		header->originY = header->height / 2;
 	}
 	if (header->height == 0 || header->width == 0)
 	{
@@ -390,7 +390,7 @@ void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 	}
 	// in case the resolution of the input image is lower then of our internal storage, there will be gaps between the lines
 	// around 24 values per 1 mm
-#define SPREAD_SAME_MEASURE_VALUE_RADIUS 30
+#define SPREAD_SAME_MEASURE_VALUE_RADIUS 6
 	for (int y2 = y - SPREAD_SAME_MEASURE_VALUE_RADIUS; y2 <= y + SPREAD_SAME_MEASURE_VALUE_RADIUS; y2++)
 	{
 		PositionAdjustInfo* ai3 = GetAdjustInfo(x, y2);
@@ -403,7 +403,8 @@ void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 }
 
 // try to draw a line normally. If there is correction info at a specific location, use that instead
-void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
+#if 0
+void LineAntiDistorsionAdjuster::DrawLineEveryPoint(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
 {
 	double dx = ex - sx;
 	double dy = ey - sy;
@@ -431,6 +432,11 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 	double leftoverXDiff = 0;
 	double leftoverYDiff = 0;
 	RelativePointsLine tempLine;
+#ifdef _DEBUG
+	int xsign = 0;
+	int acx, apx, acy, apy;
+	int ysign = 0;
+#endif
 	for (double step = 1; step <= out_lineDrawSteps; step += 1)
 	{
 		double prevXPos = sx + (step-1) * xIncForStep;
@@ -442,15 +448,20 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		double yDiff = curYPos - prevYPos;
 		PositionAdjustInfo* aiPrev = GetAdjustInfo((int)prevXPos, (int)prevYPos);
 		PositionAdjustInfo* aiCur = GetAdjustInfo((int)curXPos, (int)curYPos);
+		acx = apx = 0;
 		if (aiCur && aiPrev)
 		{
 			if (aiCur->HasX() && aiPrev->HasX())
 			{
 				xDiff = aiCur->GetNewX() - aiPrev->GetNewX();
+				acx = aiCur->GetNewX();
+				apx = aiPrev->GetNewX();
 			}
 			if (aiCur->HasY() && aiPrev->HasY())
 			{
 				yDiff = aiCur->GetNewY() - aiPrev->GetNewY();
+				acy = aiCur->GetNewY();
+				apy = aiPrev->GetNewY();
 			}
 		}
 
@@ -477,11 +488,32 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		leftoverXDiff = xDiff - (int)xDiff;
 		leftoverYDiff = yDiff - (int)yDiff;
 
+#ifdef _DEBUG
+		if (xsign == 0)
+		{
+			xsign = getSign(xDiff);
+		}
+		else if(xDiff != 0)
+		{
+			if (xsign != getSign(xDiff))
+				printf("%f/%f)Line changed x orientation prev %f,%f cur %f,%f, acx, apx %d, %d\n", step, out_lineDrawSteps, prevXPos, prevYPos, curXPos, curYPos, acx, apx);
+		}
+		if (ysign == 0)
+		{
+			ysign = getSign(yDiff);
+		}
+		else if(yDiff != 0)
+		{
+			if (ysign != getSign(yDiff)) 
+				printf("%f/%f)Line changed y orientation prev %f,%f cur %f,%f, acx, apx %d, %d\n", step, out_lineDrawSteps, prevXPos, prevYPos, curXPos, curYPos, acx, apx);
+		}
+#endif
+
 		tempLine.storeNextPoint((int)xDiff, (int)yDiff);
 	}
 
 // around 24 actions per mm
-#define PEN_MOVEMENT_SPEED_SMOOTHING 24
+//#define PEN_MOVEMENT_SPEED_SMOOTHING 20
 #ifdef PEN_MOVEMENT_SPEED_SMOOTHING
 	for (int i = 0; i < tempLine.GetPointsCount(); i+= PEN_MOVEMENT_SPEED_SMOOTHING)
 	{
@@ -493,8 +525,8 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 			yDiffs += tempLine.GetDY(j);
 		}
 		// first write xDiffs so that the motors do not need to turn on and off too often
-		int xSign = xDiffs < 0 ? -1 : 1;
-		int ySign = yDiffs < 0 ? -1 : 1;
+		int xSign = getSign(xDiffs);
+		int ySign = getSign(yDiffs);
 		for (int j = 0; j < abs(xDiffs); j++)
 		{
 			out_line->storeNextPoint(xSign, 0);
@@ -504,7 +536,173 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 			out_line->storeNextPoint(0, ySign);
 		}
 	}
+#else
+	for (int i = 0; i < tempLine.GetPointsCount(); i++)
+	{
+		out_line->storeNextPoint(tempLine.GetDX(i), tempLine.GetDY(i));
+	}
 #endif
+
+	out_line->setEndPosition(ex, ey);
+}
+#endif
+
+void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
+{
+	double dx = ex - sx;
+	double dy = ey - sy;
+	if (dx == dy && dx == 0)
+	{
+		return;
+	}
+
+	// just to increase the draw accuracy. More points, more smoothness
+	double lineDrawSteps;
+	if (abs(dy) > abs(dx))
+	{
+		lineDrawSteps = abs(dy);
+	}
+	else
+	{
+		lineDrawSteps = abs(dx);
+	}
+
+	int curx = (int)sx;
+	int cury = (int)sy;
+
+	double xIncForStep = dx / lineDrawSteps;
+	double yIncForStep = dy / lineDrawSteps;
+	int writtenDiffX = 0;
+	int writtenDiffY = 0;
+	for (double step = 1; step <= lineDrawSteps; step += 1)
+	{
+		double curXPos = step * xIncForStep;
+		double curYPos = step * yIncForStep;
+		int xdiff = (int)curXPos - writtenDiffX;
+		int ydiff = (int)curYPos - writtenDiffY;
+
+		if (xdiff < -1)
+		{
+			xdiff = -1;
+		}
+		else if (xdiff > 1)
+		{
+			xdiff = 1;
+		}
+		if (ydiff < -1)
+		{
+			ydiff = -1;
+		}
+		else if (ydiff > 1)
+		{
+			ydiff = 1;
+		}
+
+		if (xdiff != 0)
+		{
+			writtenDiffX += xdiff;
+			out_line->storeNextPoint(xdiff, 0);
+			curx += xdiff;
+		}
+		if (ydiff != 0)
+		{
+			writtenDiffY += ydiff;
+			out_line->storeNextPoint(0, ydiff);
+			cury += ydiff;
+		}
+	}
+
+	// fix rounding errors
+	if (dx < 0)
+	{
+		while (writtenDiffX > (int)dx)
+		{
+			writtenDiffX--;
+			out_line->storeNextPoint(-1, 0);
+		}
+	}
+	if (dx > 0)
+	{
+		while (writtenDiffX < (int)dx)
+		{
+			writtenDiffX++;
+			out_line->storeNextPoint(1, 0);
+		}
+	}
+	if (dy < 0)
+	{
+		while (writtenDiffY > (int)dy)
+		{
+			writtenDiffY--;
+			out_line->storeNextPoint(0, -1);
+		}
+	}
+	if (dy > 0)
+	{
+		while (writtenDiffY < (int)dy)
+		{
+			writtenDiffY++;
+			out_line->storeNextPoint(0, 1);
+		}
+	}
+}
+
+void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
+{
+	double dx = ex - sx;
+	double dy = ey - sy;
+	if (dx == dy && dx == 0)
+	{
+		return;
+	}
+
+	out_line->setStartingPosition(sx, sy);
+
+	// just to increase the draw accuracy. More points, more smoothness
+	double out_lineDrawSteps;
+	if (abs(dy) > abs(dx))
+	{
+		out_lineDrawSteps = abs(dy);
+	}
+	else
+	{
+		out_lineDrawSteps = abs(dx);
+	}
+
+	double xIncForStep = dx / out_lineDrawSteps;
+	double yIncForStep = dy / out_lineDrawSteps;
+
+#define SUB_LINE_LEN 300
+	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
+	{
+		double sx2 = sx + step * xIncForStep;
+		double sy2 = sy + step * yIncForStep;
+		double stepsEnd = (step + SUB_LINE_LEN);
+		if (stepsEnd > out_lineDrawSteps)
+		{
+			stepsEnd = out_lineDrawSteps;
+		}
+		double ex2 = sx + stepsEnd * xIncForStep;
+		double ey2 = sy + stepsEnd * yIncForStep;
+
+		PositionAdjustInfo* aiStart = GetAdjustInfo((int)sx2, (int)sy2);
+		PositionAdjustInfo* aiEnd = GetAdjustInfo((int)ex2, (int)ey2);
+		if (aiStart && aiEnd)
+		{
+			if (aiStart->HasX() && aiEnd->HasX())
+			{
+				sx2 = aiStart->GetNewX();
+				ex2 = aiEnd->GetNewX();
+			}
+			if (aiStart->HasY() && aiEnd->HasY())
+			{
+				sy2 = aiStart->GetNewY();
+				ey2 = aiEnd->GetNewY();
+			}
+		}
+
+		AppendLineSegment((float)sx2, (float)sy2, (float)ex2, (float)ey2, out_line);
+	}
 
 	out_line->setEndPosition(ex, ey);
 }

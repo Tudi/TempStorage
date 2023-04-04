@@ -127,7 +127,32 @@ void drawClockBin()
 	fclose(f);
 }
 
+void DrawClockAnyRadius(double R_inches, double lineCount)
+{
+	char fileName[500];
+	sprintf_s(fileName, sizeof(fileName), "clock_%.02f_%d.bin", R_inches, (int)lineCount);
+
+	BinFileWriter bfw(fileName);
+
+	double angleIncrement = 360 / lineCount;
+	double originX = 0;
+	double originY = 0;
+	// angle speed should depend on radius, but we do not have time for that now
+	for (double angle = 0; angle <= 360; angle += angleIncrement)
+	{
+		double radians = 3.14 / 180.0 * angle;
+		int ex = (int)(originX + (double)R_inches * PIXELS_IN_INCH * cos(radians));
+		int ey = (int)(originY + (double)R_inches * PIXELS_IN_INCH * sin(radians));
+		bfw.AddLine(0, 0, (float)ex, (float)ey);
+	}
+	bfw.CloseFile();
+}
+
 void Test_DrawClock()
 {
 	drawClockBin();
+	DrawClockAnyRadius(1, 10);
+	DrawClockAnyRadius(2, 20);
+	DrawClockAnyRadius(2.5, 60);
+	DrawClockAnyRadius(3, 30);
 }

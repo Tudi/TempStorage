@@ -180,7 +180,9 @@ void BinFileWriter::CloseFile()
 int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSession)
 {
 	RobotCommand CMD = robotSession->prevCMD;
+#ifdef INSERT_PAUSE_ON_DIRECTION_CHANGE
 	uint8_t prevPrimaryDirection = Move1_Uninitialized;
+#endif
 
 	CMD.alwaysZero = 0;
 	CMD.penIsMoving = 1;
@@ -218,13 +220,14 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 
 			if (primaryDirection != Move1_Uninitialized)
 			{
+#ifdef INSERT_PAUSE_ON_DIRECTION_CHANGE
 				// write the same command as a delay. Allow the robot to stop the pen movement and head into a new direction without shaking
 				if (prevPrimaryDirection != Move1_Uninitialized && prevPrimaryDirection != primaryDirection)
 				{
 					fwrite(&CMD, 1, 1, f);
 				}
 				prevPrimaryDirection = primaryDirection;
-
+#endif
 				CMD.primaryDirection = primaryDirection;
 				CMD.secondaryDirection = ~CMD.secondaryDirection;
 
@@ -256,13 +259,14 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 
 			if (primaryDirection != Move1_Uninitialized)
 			{
+#ifdef INSERT_PAUSE_ON_DIRECTION_CHANGE
 				// write the same command as a delay. Allow the robot to stop the pen movement and head into a new direction without shaking
 				if (prevPrimaryDirection != Move1_Uninitialized && prevPrimaryDirection != primaryDirection)
 				{
 					fwrite(&CMD, 1, 1, f);
 				}
 				prevPrimaryDirection = primaryDirection;
-
+#endif
 				CMD.primaryDirection = primaryDirection;
 				CMD.secondaryDirection = ~CMD.secondaryDirection;
 

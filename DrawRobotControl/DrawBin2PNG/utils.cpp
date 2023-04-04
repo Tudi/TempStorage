@@ -188,3 +188,10 @@ void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R
 		Bytes[y * Stride + x * Bytespp + 2] = R;
 	}
 }
+
+int getSign(double a)
+{
+	if (a == 0) return 0;
+	if (a < 0) return -1;
+	return 1;
+}

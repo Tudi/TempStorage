@@ -636,10 +636,7 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 		printf("Expecting 24 bpp image %s\n", fileName);
 		return;
 	}
-	BYTE* Bytes = FreeImage_GetBits(Img);
-	int Stride = FreeImage_GetPitch(Img);
 	int Width = FreeImage_GetWidth(Img);
-	int Height = FreeImage_GetHeight(Img);
 
 	int manualMarkedOriginX = 0;
 	int manualMarkedOriginY = 0;
@@ -675,7 +672,8 @@ void LoadSpecificFull_V_LineCallibrationImage(const char* fileName, int isInitia
 
 void Test_loadCallibrationImages()
 {
-	LoadSpecificFull_V_LineCallibrationImage("../ver_60_25_FL_03_23.bmp", 1, 25);
+	LoadSpecificFull_V_LineCallibrationImage("../ver_60_25_FL_03_23_stretched.bmp", 1, 25);
+//	LoadSpecificFull_V_LineCallibrationImage("../ver_60_25_FL_03_23.bmp", 1, 25);
 //	LoadSpecificFull_V_LineCallibrationImage("../ver_30_50_FL_03_17.bmp", 1, 50);
 //	LoadSpecificFull_H_LineCallibrationImage("../hor_30_50_FL_03_17.bmp", 1, 50);
 //	LoadSpecificCallibrationImage("../ver_30_50_03_17.bmp", 1, 50);
