@@ -45,7 +45,7 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 	ShapeStore ss;
 	memset(&ss, 0, sizeof(ss));
 	ss.startX = x;
-	ss.starty = y;
+	ss.startY = y;
 	ss.minX = x;
 	ss.maxX = x;
 	ss.minY = y;

@@ -87,6 +87,7 @@ public:
 	void DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line);
 	/// position is in robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	void AdjustPositionX(int x, int y, int shouldBeX);
+	void AdjustPositionY(int x, int y, int shouldBeY);
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	PositionAdjustInfo* GetAdjustInfo(int x, int y);
 	void DebugDumpMapToImage(int col);
@@ -99,6 +100,7 @@ private:
 	PositionAdjustInfo* GetAdjustInfoNoChange(int x, int y);
 	void FindClosestKnown(int x, int y, int flag, PositionAdjustInfo** out_ai, int& atx, int& aty);
 	void FindClosestKnownRight(int sx, int sy, PositionAdjustInfo** out_right, int& atx_right);
+	void FindClosestKnownDown(int sx, int sy, PositionAdjustInfo** out_down, int& aty_right);
 	PositionAdjustInfoHeader adjustInfoHeader;
 	PositionAdjustInfo* adjustInfoMap;
 	int hasUnsavedAdjustments;

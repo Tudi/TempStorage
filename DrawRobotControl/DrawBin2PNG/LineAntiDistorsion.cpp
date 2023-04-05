@@ -7,8 +7,8 @@
 #define ADJUST_MAP_DEFAULT_WIDTH 1600
 #define ADJUST_MAP_DEFAULT_HEIGHT 1600
 // we can adjust every 10th command. Inbetween values should be smoothed by line draw
-#define DEFAULT_WIDTH_SCALER 0.50f 
-#define DEFAULT_HEIGHT_SCALER 0.50f
+#define DEFAULT_WIDTH_SCALER 0.30f 
+#define DEFAULT_HEIGHT_SCALER 0.30f
 #define LINE_GAP_CONSIDERED_BUG	100 // measured in movement units. 600 movements = 1 inch
 
 LineAntiDistorsionAdjuster sLineAdjuster;
@@ -210,10 +210,99 @@ void LineAntiDistorsionAdjuster::FindClosestKnownRight(int sx, int sy, PositionA
 		}
 	}
 }
+
+void LineAntiDistorsionAdjuster::FindClosestKnownDown(int sx, int sy, PositionAdjustInfo** out_down, int& aty_down)
+{
+	*out_down = NULL;
+	for (int y = sy + 1; y < sy + PROPAGATE_SEARCH_RADIUS; y++)
+	{
+		PositionAdjustInfo* ai = GetAdjustInfoNoChange(sx, y);
+		if (ai && ai->HasYMeasured())
+		{
+			*out_down = ai;
+			aty_down = y;
+			return;
+		}
+	}
+}
+
 // There is most probably a faster way to do this, but I do not expect this function to be executed many times
 void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 {
 	int applySmoothing = needsBleedX | needsBleedY;
+
+#define APPLY_SMOOTHING_OF_MEASURED_VALUES_ON_MAP // due to scanner precision, values will oscilate. Blend these oscilations
+#ifdef APPLY_SMOOTHING_OF_MEASURED_VALUES_ON_MAP
+	if (applySmoothing)
+	{
+		PositionAdjustInfo* adjustInfoMapOld = (PositionAdjustInfo*)malloc(adjustInfoHeader.width * adjustInfoHeader.height * sizeof(PositionAdjustInfo));
+		if (adjustInfoMapOld == NULL)
+		{
+			return;
+		}
+		memcpy(adjustInfoMapOld, adjustInfoMap, adjustInfoHeader.width * adjustInfoHeader.height * sizeof(PositionAdjustInfo));
+
+		uint32_t startStamp = GetTickCount();
+		for (int y = 0; y < adjustInfoHeader.height; y++)
+		{
+			for (int x = 0; x < adjustInfoHeader.width; x++)
+			{
+				// only process locations that do not have real values
+				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+				// only smooth positions that have a measured value set
+				if (ai->HasXMeasured() == 0 && ai->HasYMeasured() == 0)
+				{
+					continue;
+				}
+				int sumX = 0;
+				int sumY = 0;
+				int sumCountX = 0;
+				int sumCountY = 0;
+#define SMOOTH_RADIUS 3
+				for (int y2 = y - SMOOTH_RADIUS; y2 <= y + SMOOTH_RADIUS; y2++)
+				{
+					for (int x2 = x - SMOOTH_RADIUS; x2 <= x + SMOOTH_RADIUS; x2++)
+					{
+						PositionAdjustInfo* ai2 = NULL;
+						if (x2 < 0 || x2 >= adjustInfoHeader.width)
+						{
+							continue;
+						}
+						if (y2 < 0 || y2 >= adjustInfoHeader.height)
+						{
+							continue;
+						}
+						ai2 = &adjustInfoMapOld[adjustInfoHeader.width * y2 + x2];
+						if (ai2->HasXMeasured())
+						{
+							sumX += ai2->GetNewX();
+							sumCountX += 1;
+						}
+						if (ai2->HasYMeasured())
+						{
+							sumY += ai2->GetNewY();
+							sumCountY += 1;
+						}
+					}
+				}
+				if (sumCountX > 1 && ai->HasXMeasured())
+				{
+					int newX = (int)(sumX / sumCountX);
+					ai->SetNewX(newX);
+				}
+				if (sumCountY > 1 && ai->HasYMeasured())
+				{
+					int newY = (int)(sumY / sumCountY);
+					ai->SetNewY(newY);
+				}
+			}
+		}
+		uint32_t endStamp = GetTickCount();
+		printf("Took %f minutes to smooth calibration transitions\n", (endStamp - startStamp) / 1000.0f / 60.0f);
+		free(adjustInfoMapOld);
+	}
+#endif
+
 	if (needsBleedX)
 	{
 		needsBleedX = 0;
@@ -226,7 +315,7 @@ void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 			for (int firstX = 0; firstX < adjustInfoHeader.width; firstX++)
 			{
 				PositionAdjustInfo* ai = GetAdjustInfoNoChange(firstX, y);
-				if (ai && (ai->flags & X_IS_MEASURED))
+				if (ai && ai->HasXMeasured())
 				{
 					atx_prev = firstX;
 					prev_ai = ai;
@@ -280,35 +369,73 @@ void LineAntiDistorsionAdjuster::BleedAdjustmentsToNeighbours()
 		uint32_t endStamp = GetTickCount();
 		printf("Took %f minutes to propagate calibration changes on X axis\n", (endStamp - startStamp) / 1000.0f / 60.0f);
 	}
-#if 0
+
 	if (needsBleedY)
 	{
 		needsBleedY = 0;
 		uint32_t startStamp = GetTickCount();
-		for (int y = 0; y < adjustInfoHeader.height; y++)
+		for (int x = 0; x < adjustInfoHeader.width; x++)
 		{
-			PositionAdjustInfo* aig;
-			int atx, aty;
-			for (int x = 0; x < adjustInfoHeader.width; x++)
+			PositionAdjustInfo* prev_ai = NULL, * next_ai = NULL;
+			int aty_prev = 0, aty_next = 0;
+			// find first value that we will propagate to the left
+			for (int firstY = 0; firstY < adjustInfoHeader.height; firstY++)
+			{
+				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, firstY);
+				if (ai && ai->HasYMeasured())
+				{
+					aty_prev = firstY;
+					prev_ai = ai;
+					break;
+				}
+			}
+			// this col does not contain any calibration info
+			if (prev_ai == NULL)
+			{
+				continue;
+			}
+			// propagate first value to the start of the col
+			for (int y = MAX(0, aty_prev - PROPAGATE_SEARCH_RADIUS); y < aty_prev; y++)
 			{
 				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
-				// this position relocation is estimated
-				// based on nearby neighbours, try to make a guess where it should be
-				if ((ai->flags & Y_IS_MEASURED) == 0)
+				int distanceMapUnits = (int)((y - aty_prev) / adjustInfoHeader.scaleY);
+				ai->SetNewY(prev_ai->GetNewY() + distanceMapUnits);
+			}
+			// while we can find a next
+			FindClosestKnownDown(x, aty_prev, &next_ai, aty_next);
+			while (next_ai != NULL)
+			{
+				// blend values from start to end
+				int correctionStartVal = prev_ai->GetNewY();
+				int correctionEndVal = next_ai->GetNewY();
+				double valuesToSplit = correctionEndVal - correctionStartVal;
+				double stepsThatSplit = aty_next - aty_prev + 1;
+				double correctionPerStep = valuesToSplit / stepsThatSplit;
+				double correctionToAdd = correctionPerStep;
+				//spread out the values between the 2 known points
+				for (int y = aty_prev + 1; y < aty_next; y++)
 				{
-					FindClosestKnown(x, y, Y_IS_MEASURED, &aig, atx, aty);
-					if (aig != NULL)
-					{
-						ai->SetNewY(aig->GetNewY() + (y - aty) / adjustInfoHeader.scaleY);
-					}
+					PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+					ai->SetNewY((int)(correctionStartVal + correctionToAdd));
+					correctionToAdd += correctionPerStep;
 				}
+				// jump to next values
+				prev_ai = next_ai;
+				aty_prev = aty_next;
+				FindClosestKnownDown(x, aty_prev, &next_ai, aty_next);
+			}
+			// No more next, spread the last known value until the end of the line
+			for (int y = aty_prev + 1; y < MIN(aty_prev + PROPAGATE_SEARCH_RADIUS, adjustInfoHeader.height); y++)
+			{
+				PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+				int distanceMapUnits = (int)((y - aty_prev) / adjustInfoHeader.scaleY);
+				ai->SetNewY(prev_ai->GetNewY() + distanceMapUnits);
 			}
 		}
 		uint32_t endStamp = GetTickCount();
 		printf("Took %f minutes to propagate calibration changes on Y axis\n", (endStamp - startStamp) / 1000.0f / 60.0f);
 	}
-#endif
-#define APPLY_SMOOTHING_ON_MAP
+//#define APPLY_SMOOTHING_ON_MAP
 #ifdef APPLY_SMOOTHING_ON_MAP
 	if (applySmoothing)
 	{
@@ -398,6 +525,31 @@ void LineAntiDistorsionAdjuster::AdjustPositionX(int x, int y, int shouldBeX)
 		{
 			ai3->SetNewX(shouldBeX);
 			ai3->flags = (PositionAdjustInfoFlags)(ai3->flags | X_IS_MEASURED);
+		}
+	}
+}
+
+void LineAntiDistorsionAdjuster::AdjustPositionY(int x, int y, int shouldBeY)
+{
+	needsBleedY = 1;
+	PositionAdjustInfo* ai = GetAdjustInfo(x, y);
+	SOFT_ASSERT(ai != NULL, "Calibration map should always be larger than calibration image size");
+	if (ai->GetNewY() != shouldBeY || ai->HasYMeasured() == 0)
+	{
+		ai->SetNewY(shouldBeY);
+		SOFT_ASSERT((int)(ai->GetNewY() * 1000) == (int)(shouldBeY * 1000), "Precision loss error");
+		ai->flags = (PositionAdjustInfoFlags)(ai->flags | Y_IS_MEASURED);
+		hasUnsavedAdjustments = 1;
+	}
+	// in case the resolution of the input image is lower then of our internal storage, there will be gaps between the lines
+	// around 24 values per 1 mm
+	for (int x2 = x - SPREAD_SAME_MEASURE_VALUE_RADIUS; x2 <= x + SPREAD_SAME_MEASURE_VALUE_RADIUS; x2++)
+	{
+		PositionAdjustInfo* ai3 = GetAdjustInfo(x2, y);
+		if (ai3 != NULL && ai3->HasYMeasured() == 0)
+		{
+			ai3->SetNewY(shouldBeY);
+			ai3->flags = (PositionAdjustInfoFlags)(ai3->flags | Y_IS_MEASURED);
 		}
 	}
 }
@@ -672,7 +824,7 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
 
-#define SUB_LINE_LEN 300
+#define SUB_LINE_LEN 50
 	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
 	{
 		double sx2 = sx + step * xIncForStep;
@@ -707,28 +859,61 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 	out_line->setEndPosition(ex, ey);
 }
 
+// visualize the callibration map itself. Scale correction values to calibration map size
 void LineAntiDistorsionAdjuster::DebugDumpMapToImage(int col)
 {
-#define SCALE_DOWN_X 2
-	FIBITMAP* dib = CreateNewImage(ADJUST_MAP_DEFAULT_WIDTH + 1000, ADJUST_MAP_DEFAULT_HEIGHT + 1000);
-	int x = col;
-	for (int y = 0; y < adjustInfoHeader.height; y++)
 	{
-		PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
-		if (ai == NULL || ai->HasX() == 0)
+#define SCALE_DOWN_X 2
+		FIBITMAP* dib = CreateNewImage(ADJUST_MAP_DEFAULT_WIDTH + 1000, ADJUST_MAP_DEFAULT_HEIGHT + 1000);
+		int x = col;
+		for (int y = 0; y < adjustInfoHeader.height; y++)
 		{
-			DrawLineColor(dib, (float)(1000), (float)(500 + y), (float)(1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X), (float)(500 + y), 0, 255, 0);
-			continue;
+			PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+			if (ai == NULL || ai->HasX() == 0)
+			{
+				DrawLineColor(dib, (float)(1000), (float)(500 + y), (float)(1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X), (float)(500 + y), 0, 255, 0);
+				continue;
+			}
+			int x2 = (int)(adjustInfoHeader.originX + ai->GetNewX() * adjustInfoHeader.scaleX); // newx comes in the range of [-2700,2700]
+			DrawLineColor(dib, (float)(1000 + x / SCALE_DOWN_X), (float)(500 + y),
+				(float)(1000 + x2 / SCALE_DOWN_X), (float)(500 + y), 255, 255, 255);
 		}
-		int x2 = (int)(adjustInfoHeader.originX + ai->GetNewX() * adjustInfoHeader.scaleX); // newx comes in the range of [-2700,2700]
-		DrawLineColor(dib, (float)(1000 + x / SCALE_DOWN_X), (float)(500 + y),
-						   (float)(1000 + x2 / SCALE_DOWN_X), (float)(500 + y), 255, 255, 255);
+		//draw a line at the center
+		DrawLineColor(dib, 1000 + 0, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 1000 + ADJUST_MAP_DEFAULT_WIDTH / 4, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 255, 0, 0);
+		DrawLineColor(dib, 1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X / 2, 500 + 0, 1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X / 2, 500 + ADJUST_MAP_DEFAULT_HEIGHT, 255, 0, 0);
+		char fileName[500];
+		sprintf_s(fileName, sizeof(fileName), "map_col_%d.png", col);
+		SaveImagePNG(dib, fileName);
+		FreeImage_Unload(dib);
 	}
-	//draw a line at the center
-	DrawLineColor(dib, 1000 + 0, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 1000 + ADJUST_MAP_DEFAULT_WIDTH / 4, 500 + ADJUST_MAP_DEFAULT_HEIGHT / 2, 255, 0, 0);
-	DrawLineColor(dib, 1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X / 2, 500 + 0, 1000 + ADJUST_MAP_DEFAULT_WIDTH / SCALE_DOWN_X / 2, 500 + ADJUST_MAP_DEFAULT_HEIGHT, 255, 0, 0);
-	char fileName[500];
-	sprintf_s(fileName, sizeof(fileName), "map_col_%d.png", col);
-	SaveImagePNG(dib, fileName);
-	FreeImage_Unload(dib);
+	{
+#define SCALE_DOWN_Y 3.0f
+		int Width = 10 + (int)(adjustInfoHeader.width / SCALE_DOWN_Y);
+		int Height = 10 + (int)(adjustInfoHeader.height / SCALE_DOWN_Y);
+		FIBITMAP* dib = CreateNewImage(Width + 10, Height + 10);
+		int y = col;
+		float cx = 5.0f + adjustInfoHeader.originX / SCALE_DOWN_Y;
+		float cy = 5.0f + adjustInfoHeader.originY / SCALE_DOWN_Y;
+		for (int x = 0; x < adjustInfoHeader.width; x++)
+		{
+			PositionAdjustInfo* ai = GetAdjustInfoNoChange(x, y);
+			float x2 = (x - adjustInfoHeader.originX) / SCALE_DOWN_Y;
+			if (ai == NULL || ai->HasY() == 0)
+			{
+				DrawLineColor(dib, (float)(cx+x2), (float)(0), (float)(cx+x2), (float)(Height), 0, 255, 0);
+				continue;
+			}
+			float y1 = (y - adjustInfoHeader.originY) / SCALE_DOWN_Y;
+			float y2 = ai->GetNewY() * adjustInfoHeader.scaleY  / SCALE_DOWN_Y; // newx comes in the range of [-2700,2700]
+			DrawLineColor(dib, (float)(cx+x2), (float)(cy + y1),
+				(float)(cx + x2), (float)(cy + y2), 255, 255, 255);
+		}
+		//draw a line at the center
+		DrawLineColor(dib, cx, 0, cx, (float)Height, 255, 0, 0);
+		DrawLineColor(dib, 0, cy, (float)Width, cy, 255, 0, 0);
+		char fileName[500];
+		sprintf_s(fileName, sizeof(fileName), "map_row_%d.png", col);
+		SaveImagePNG(dib, fileName);
+		FreeImage_Unload(dib);
+	}
 }

@@ -2,7 +2,7 @@
 
 typedef struct ShapeStore
 {
-	int startX, starty;					// position where we started scanning the whole shape
+	int startX, startY;					// position where we started scanning the whole shape
 	int minX, maxX, minY, maxY;			// bound boxing the shape. Not expecting the shape to have box size though
 	int centerx, centery;				// based on bounding box, the center is ...
 	int centerx2, centery2;				// based on pixels present, the center is ...
