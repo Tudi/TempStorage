@@ -51,7 +51,13 @@ void ResetFileReadStatus()
 	key2Len = 16; // 128 bits
 }
 
-int GetNextKeyBuffs(unsigned char* out1_buf, unsigned char* out2_buf, unsigned char* out3_buf, unsigned char* out4_buf)
+void SetKeySizes(int k1, int k2)
+{
+	key1Len = k1; // this is actual key
+	key2Len = k2; // this is salt key aka. IV
+}
+
+int AES_GetNextKeyBuffs(unsigned char* out1_buf, unsigned char* out2_buf, unsigned char* out3_buf, unsigned char* out4_buf)
 {
 	key1Start++;
 	// try all key positions first
@@ -64,28 +70,13 @@ int GetNextKeyBuffs(unsigned char* out1_buf, unsigned char* out2_buf, unsigned c
 	{
 		return 1;
 	}
-	static int prevReportedProgress = 0;
-	int progress = (int)(key2Start * 100 / FirmWareFileSize);
+	static __int64 prevReportedProgress = 0;
+	__int64 progress = (__int64)key2Start * (__int64)100 / FirmWareFileSize;
 	if (progress != prevReportedProgress)
 	{
 		prevReportedProgress = progress;
-		printf("Progress : %d\r", progress);
+		printf("Progress : %lld   \r", progress);
 	}
-	// out of ideas for key2 starts
-/*	if (key2Start == 0xE8)
-	{
-		key2Start = 0x08;
-		key1Len++;
-		if (key1Len == (0xE8 - 0x08))
-		{
-			key1Len = 16;
-			key2Len++;
-			if (key2Len == (0xE8 - 0x08))
-			{
-				return 1;
-			}
-		}
-	} */
 
 	for (int i = 0; i < key1Len; i++)
 	{
@@ -93,10 +84,51 @@ int GetNextKeyBuffs(unsigned char* out1_buf, unsigned char* out2_buf, unsigned c
 		out3_buf[i] = bf2[key1Start + i];
 	}
 
-	for (int i = 0; i < key2Len; i++)
+	int allEmpty = 1;
+	do {
+		allEmpty = 1;
+		for (int i = 0; i < key2Len; i++)
+		{
+			out2_buf[i] = FirmWareFile[(key2Start + i) * 2];
+			out4_buf[i] = FirmWareFile[(key2Start + i) * 2];
+			if (out2_buf[i] != 0xFF)
+			{
+				allEmpty = 0;
+			}
+		}
+		if (allEmpty == 1)
+		{
+			key2Start++;
+			if (key2Start >= FirmWareFileSize)
+			{
+				return 1;
+			}
+		}
+	} while (allEmpty == 1);
+
+	return 0;
+}
+
+int RSA_GetNextKeyBuffs(unsigned char* out1_buf, unsigned char* out2_buf)
+{
+	key1Start++;
+	// try all key positions first
+	if (key1Start >= 0xE8)
 	{
-		out2_buf[i] = FirmWareFile[(key2Start + i) * 2];
-		out4_buf[i] = FirmWareFile[(key2Start + i) * 2];
+		return 1;
+	}
+	static __int64 prevReportedProgress = 0;
+	__int64 progress = (__int64)key1Start * (__int64)100 / 0xE8;
+	if (progress != prevReportedProgress)
+	{
+		prevReportedProgress = progress;
+		printf("Progress : %lld   \r", progress);
+	}
+
+	for (int i = 0; i < key1Len; i++)
+	{
+		out1_buf[i] = bf1[key1Start + i];
+		out2_buf[i] = bf2[key1Start + i];
 	}
 
 	return 0;

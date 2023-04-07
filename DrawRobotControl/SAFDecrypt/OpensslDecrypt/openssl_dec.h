@@ -2,7 +2,14 @@
 
 typedef enum OpenSSLDecrypts
 {
-	AES_128,
+	DEC_AES_CBC, // requires IV block
+	DEC_AES_CTR, // can encrypt independent blocks
+	DEC_AES_GCM, // cheap version of CTR
+	DEC_AES_CCM8, // with 8 bit tag and counter function support
+	DEC_RSA,
+	DEC_DES,
+	DEC_TriDES,
+	DEC_ECC,
 }OpenSSLDecrypts;
 
 int decrypt_with(OpenSSLDecrypts type, 
