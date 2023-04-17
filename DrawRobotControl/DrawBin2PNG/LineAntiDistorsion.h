@@ -25,6 +25,12 @@ enum PositionAdjustInfoFlags : char
 	Y_IS_SET = 1 << 3,
 };
 
+typedef struct Adjusted2DPos
+{
+	float x, y;
+	char HasValues;
+}Adjusted2DPos;
+
 // all the info required to make a line draw straight
 typedef struct PositionAdjustInfo
 {
@@ -91,6 +97,8 @@ public:
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	PositionAdjustInfo* GetAdjustInfo(int x, int y);
 	void DebugDumpMapToImage(int col);
+	// to support sub pixel accuracy. Required to avoid accumulating positioning error on lots of small segments
+	Adjusted2DPos GetAdjustedPos(float x, float y);
 private:
 	void CreateNewMap(PositionAdjustInfoHeader* header);
 	void LoadAdjusterMap();

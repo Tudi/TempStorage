@@ -143,16 +143,17 @@ void DrawClockAnyRadius(double R_inches, double lineCount)
 		double radians = 3.14 / 180.0 * angle;
 		int ex = (int)(originX + (double)R_inches * PIXELS_IN_INCH * cos(radians));
 		int ey = (int)(originY + (double)R_inches * PIXELS_IN_INCH * sin(radians));
-		bfw.AddLine(0, 0, (float)ex, (float)ey);
+//		bfw.AddLine(0, 0, (float)ex, (float)ey);
+		bfw.AddLineAntiDistorted(0, 0, (float)ex, (float)ey);
 	}
 	bfw.CloseFile();
 }
 
 void Test_DrawClock()
 {
-	drawClockBin();
+//	drawClockBin();
 	DrawClockAnyRadius(1, 10);
 	DrawClockAnyRadius(2, 20);
-	DrawClockAnyRadius(2.5, 60);
+//	DrawClockAnyRadius(2.5, 60);
 	DrawClockAnyRadius(3, 30);
 }

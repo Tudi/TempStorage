@@ -58,6 +58,97 @@ PositionAdjustInfo* LineAntiDistorsionAdjuster::GetAdjustInfo(int x, int y)
 	return &adjustInfoMap[adjustInfoHeader.width * y2 + x2];
 }
 
+double interpolate(double q11, double q12, double q21, double q22, double x, double y) 
+{
+	double r1 = (q21 - q11) * x + q11;
+	double r2 = (q22 - q12) * x + q12;
+	return (r2 - r1) * y + r1;
+}
+
+// sub pixel accuracy to not accumulate rounding errors when drawing a long line
+Adjusted2DPos LineAntiDistorsionAdjuster::GetAdjustedPos(float x, float y)
+{
+	Adjusted2DPos ret = { 0 };
+
+	float x2 = ((float)x * adjustInfoHeader.scaleX + adjustInfoHeader.originX);
+	float y2 = ((float)y * adjustInfoHeader.scaleY + adjustInfoHeader.originY);
+
+	if ((int)floor(x2) == (int)ceil(x2) && (int)floor(y2) == (int)ceil(y2))
+	{
+		PositionAdjustInfo* poi = GetAdjustInfoNoChange((int)x2, (int)y2);
+		if (poi)
+		{
+			if (poi->HasX())
+			{
+				ret.x = (float)poi->GetNewX();
+			}
+			else
+			{
+				return ret;
+			}
+			if (poi->HasY())
+			{
+				ret.y = (float)poi->GetNewY();
+			}
+			else
+			{
+				return ret;
+			}
+		}
+		ret.HasValues = 1;
+		return ret;
+	}
+
+	float ax[2][2];
+	float ay[2][2];
+
+	int valuesX = 0;
+	int valuesY = 0;
+	for (int x3 : {(int)floor(x2), (int)ceil(x2)})
+	{
+		valuesX = 0;
+		for (int y3 : {(int)floor(y2), (int)ceil(y2)})
+		{
+			PositionAdjustInfo *poi = GetAdjustInfoNoChange(x3, y3);
+			if (poi)
+			{
+				if (poi->HasX())
+				{
+					ax[valuesX][valuesY] = (float)poi->GetNewX();
+				}
+				else
+				{
+					return ret;
+				}
+				if (poi->HasY())
+				{
+					ay[valuesX][valuesY] = (float)poi->GetNewY();
+				}
+				else
+				{
+					return ret;
+				}
+			}
+			valuesX++;
+		}
+		valuesY++;
+	}
+
+	ret.x = (float)interpolate(ax[0][0], ax[0][1], ax[1][0], ax[1][1], x - floor(x), y - floor(y));
+	ret.y = (float)interpolate(ay[0][0], ay[0][1], ay[1][0], ay[1][1], x - floor(x), y - floor(y));
+	ret.HasValues = 1;
+
+	SOFT_ASSERT(ret.x > -3000, "Return value is unexpectedly small");
+	SOFT_ASSERT(ret.x < 3000, "Return value is unexpectedly large");
+	SOFT_ASSERT(ret.y > -3000, "Return value is unexpectedly small");
+	SOFT_ASSERT(ret.y < 3000, "Return value is unexpectedly large");
+
+//	SOFT_ASSERT(abs(ret.x - x) < 200, "Return value is unexpectedly large");
+//	SOFT_ASSERT(abs(ret.y - y) < 200, "Return value is unexpectedly large");
+
+	return ret;
+}
+
 void LineAntiDistorsionAdjuster::CreateNewMap(PositionAdjustInfoHeader* header)
 {
 	PositionAdjustInfoHeader tempHeader;
@@ -699,7 +790,7 @@ void LineAntiDistorsionAdjuster::DrawLineEveryPoint(float sx, float sy, float ex
 }
 #endif
 
-void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
+void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLine* out_line, float &leftOverX, float& leftOverY)
 {
 	double dx = ex - sx;
 	double dy = ey - sy;
@@ -764,6 +855,9 @@ void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLin
 		}
 	}
 
+	dx += leftOverX;
+	dy += leftOverY;
+
 	// fix rounding errors
 	if (dx < 0)
 	{
@@ -797,12 +891,17 @@ void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLin
 			out_line->storeNextPoint(0, 1);
 		}
 	}
+
+	leftOverX = (float)(dx - writtenDiffX);
+	leftOverY = (float)(dy - writtenDiffY);
 }
 
 void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
 {
 	double dx = ex - sx;
 	double dy = ey - sy;
+	float leftOverX = 0;
+	float leftOverY = 0;
 	if (dx == dy && dx == 0)
 	{
 		return;
@@ -837,26 +936,39 @@ void LineAntiDistorsionAdjuster::DrawLine(float sx, float sy, float ex, float ey
 		double ex2 = sx + stepsEnd * xIncForStep;
 		double ey2 = sy + stepsEnd * yIncForStep;
 
-		PositionAdjustInfo* aiStart = GetAdjustInfo((int)sx2, (int)sy2);
-		PositionAdjustInfo* aiEnd = GetAdjustInfo((int)ex2, (int)ey2);
-		if (aiStart && aiEnd)
+		// try sub pixel accuracy adjusting
+		Adjusted2DPos aiStart = GetAdjustedPos((float)sx2, (float)sy2);
+		Adjusted2DPos aiEnd = GetAdjustedPos((float)ex2, (float)ey2);
+		if (aiStart.HasValues && aiEnd.HasValues)
 		{
-			if (aiStart->HasX() && aiEnd->HasX())
+			sx2 = aiStart.x;
+			ex2 = aiEnd.x;
+			sy2 = aiStart.y;
+			ey2 = aiEnd.y;
+		}
+		else
+		{
+			PositionAdjustInfo* aiStart = GetAdjustInfo((int)sx2, (int)sy2);
+			PositionAdjustInfo* aiEnd = GetAdjustInfo((int)ex2, (int)ey2);
+			if (aiStart && aiEnd)
 			{
-				sx2 = aiStart->GetNewX();
-				ex2 = aiEnd->GetNewX();
-			}
-			if (aiStart->HasY() && aiEnd->HasY())
-			{
-				sy2 = aiStart->GetNewY();
-				ey2 = aiEnd->GetNewY();
+				if (aiStart->HasX() && aiEnd->HasX())
+				{
+					sx2 = aiStart->GetNewX();
+					ex2 = aiEnd->GetNewX();
+				}
+				if (aiStart->HasY() && aiEnd->HasY())
+				{
+					sy2 = aiStart->GetNewY();
+					ey2 = aiEnd->GetNewY();
+				}
 			}
 		}
 
-		AppendLineSegment((float)sx2, (float)sy2, (float)ex2, (float)ey2, out_line);
+		AppendLineSegment((float)sx2, (float)sy2, (float)ex2, (float)ey2, out_line, leftOverX, leftOverY);
 	}
 
-	out_line->setEndPosition(ex, ey);
+	out_line->setEndPosition(ex - leftOverX, ey - leftOverY);
 }
 
 // visualize the callibration map itself. Scale correction values to calibration map size
