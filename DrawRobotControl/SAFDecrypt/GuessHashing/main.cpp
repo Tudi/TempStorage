@@ -180,18 +180,15 @@ void TryHash(unsigned char* bf1, int startAt, int dataBlockSize, int algo)
 	}
 }
 
-int main()
+void guessHash(unsigned char *bf1)
 {
-	unsigned char bf1[1000];
-	GetFileContent(bf1, sizeof(bf1));
-
-//	for (int dbSize = 120 - 32; dbSize <= 120 + 32; dbSize++)
+	//	for (int dbSize = 120 - 32; dbSize <= 120 + 32; dbSize++)
 	for (int dbSize = 32; dbSize <= 250; dbSize++)
 	{
-//		for (int i = 0xE8 - 0xE0; i <= 0xE8 + 32; i++)
+		//		for (int i = 0xE8 - 0xE0; i <= 0xE8 + 32; i++)
 		for (int i = 0x08; i <= 0x250; i++)
 		{
-//			printf("Try : startat %x , DBsize %d\n", i, dbSize);
+			//			printf("Try : startat %x , DBsize %d\n", i, dbSize);
 			TryHash(bf1, i, dbSize, sha1);
 			TryHash(bf1, i, dbSize, sha224);
 			TryHash(bf1, i, dbSize, sha256);
@@ -205,6 +202,68 @@ int main()
 			TryHash(bf1, i, dbSize, sha3_512);
 		}
 	}
+}
+
+void TestHashDB2(unsigned char* bf1)
+{
+	int offset = 0xE8;
+	int totalSize = 0x158;
+	int hashSize = 32;
+	unsigned char* input1 = &bf1[offset];
+	int input1Size = totalSize - offset - hashSize;
+	unsigned char hash[CryptoPP::SHA256::DIGESTSIZE];
+	int outputHashSize = 0;
+
+	CryptoPP::SHA256 sha256;
+	sha256.Update(input1, input1Size); // Hash the first block of data
+	sha256.Final(hash); // Finalize the hash
+	outputHashSize = sha256.DIGESTSIZE;
+
+	if (memcmp(hash, &bf1[totalSize - hashSize], outputHashSize) != 0)
+	{
+		printf("DB2 hash check failed\n");
+	}
+	else
+	{
+		printf("Hashing of DB2 was a success\n");
+	}
+}
+
+void TestHashDB1(unsigned char* bf1)
+{
+	int offset = 8;
+	int totalSize = 0xE8;
+	int hashSize = 32;
+	unsigned char* input1 = &bf1[offset];
+	int input1Size = 16;
+	unsigned char* input2 = &bf1[offset + input1Size];
+	int input2Size = totalSize - offset - input1Size - hashSize; // total - 4CC - IV - hash
+	unsigned char hash[CryptoPP::SHA256::DIGESTSIZE];
+	int outputHashSize = 0;
+
+	CryptoPP::SHA256 sha256;
+	sha256.Update(input1, input1Size); // Hash the first block of data
+	sha256.Update(input2, input2Size); // Hash the second block of data
+	sha256.Final(hash); // Finalize the hash
+	outputHashSize = sha256.DIGESTSIZE;
+
+	if (memcmp(hash, &bf1[totalSize - hashSize], outputHashSize) != 0)
+	{
+		printf("DB1 hash check failed\n");
+	}
+	else
+	{
+		printf("Hashing of DB1 was a success\n");
+	}
+}
+
+int main()
+{
+	unsigned char bf1[1000];
+	GetFileContent(bf1, sizeof(bf1));
+	//guessHash(bf1);
+	TestHashDB1(bf1);
+	TestHashDB2(bf1);
 
     return 0;
 }
