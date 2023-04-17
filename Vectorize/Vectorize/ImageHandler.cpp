@@ -90,3 +90,9 @@ void SaveImagePNG(BYTE* Pixels, int Width, int Height, int pitch, const char* Fi
 		}
 	FreeImage_Save(FIF_PNG, dib2, FileName, 0);
 }
+
+FIBITMAP* CreateNewImage(int width, int height)
+{
+	FIBITMAP* dib = FreeImage_Allocate(width, height, Bytespp * 8);
+	return dib;
+}

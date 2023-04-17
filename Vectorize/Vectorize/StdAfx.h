@@ -4,14 +4,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include <list>
+#include <assert.h>
+#include <math.h>
 #include "FreeImage.h"
 #include "ImageHandler.h"
-#include "ImageFilters.h"
-#include "ShapeStore.h"
-#include "DetectSquare.h"
-#include "DetectLine.h"
-#include "ExtractionStatusStore.h"
-#include "FileWriter.h"
+#include "BinFileCommon.h"
+#include "BinFileReader.h"
+#include "BinFileWriter.h"
+#include "BinFileLineDraw.h"
+#include "SigFileReader.h"
+#include "LineAntiDistorsion.h"
+#include "tests.h"
 
 
 #ifndef MIN
@@ -22,5 +25,13 @@
 	#define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
-#define SHP_FILE_VERSION_STRING "ver1"
 #define Bytespp	3
+#define ColorChannelCount 3 // RGB
+#define INT_PRECISION_DIGITS	10000
+
+// should mvoe all these into some logger module
+void LogMessage(const char* file, int line, const char* msg);
+#define SOFT_ASSERT(x,msg) if(!(x))LogMessage(__FILE__,__LINE__, msg)
+
+#define FreeAndNULL(x) { free(x); x = NULL; }
+
