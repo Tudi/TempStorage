@@ -28,8 +28,7 @@ DWORD GetProcId(const char* pn, unsigned short int fi = 0b1101)
                     std::cout << pE.szExeFile << u8"\x9\x9\x9" << pE.th32ProcessID << std::endl;
                 if (!_stricmp(pE.szExeFile, pn))
                 {
-                    procId = pE.th32ProcessID;
-                    print("Process : 0x%lX\n", pE);
+                    printf("Process : 0x%lX\n", pE.th32ProcessID);
                     break;
                 }
             } while (Process32Next(hSnap, &pE));
@@ -39,6 +38,41 @@ DWORD GetProcId(const char* pn, unsigned short int fi = 0b1101)
     return procId;
 }
 
+void EnableDebugPriv(void)
+{
+    HANDLE              hToken;
+    LUID                SeDebugNameValue;
+    TOKEN_PRIVILEGES    TokenPrivileges;
+
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+    {
+        if (LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &SeDebugNameValue))
+        {
+            TokenPrivileges.PrivilegeCount = 1;
+            TokenPrivileges.Privileges[0].Luid = SeDebugNameValue;
+            TokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+            if (AdjustTokenPrivileges(hToken, FALSE, &TokenPrivileges, sizeof(TOKEN_PRIVILEGES), NULL, NULL))
+            {
+                CloseHandle(hToken);
+            }
+            else
+            {
+                CloseHandle(hToken);
+                throw std::exception("Couldn't adjust token privileges!");
+            }
+        }
+        else
+        {
+            CloseHandle(hToken);
+            throw std::exception("Couldn't look up privilege value!");
+        }
+    }
+    else
+    {
+        throw std::exception("Couldn't open process token!");
+    }
+}
 
 BOOL InjectDLL(DWORD procID, const char* dllPath)
 {
@@ -64,7 +98,7 @@ BOOL InjectDLL(DWORD procID, const char* dllPath)
         CloseHandle(hProc);
         return -1;
     }
-    print("Thread Created Succesfully 0x%lX\n", hThread);
+    print("Thread Created Succesfully 0x%llX\n", (unsigned __int64)hThread);
     WaitForSingleObject(hThread, INFINITE);
     CloseHandle(hProc);
     VirtualFree(loc, strlen(dllPath) + 1, MEM_RELEASE);
@@ -83,12 +117,6 @@ int main(int argc, const char **argv)
     pname = argv[1];
     dllpath = argv[2];
 
-//    print("process name (The name of process to inject ) :");
-//    std::cin >> pname;
-//    print("dll path (Full path to the desired dll ) : ");
-//    std::cin >> dllpath;
-//    system("cls");
-
     if (PathFileExists(dllpath.c_str()) == FALSE)
     {
         print("DLL '%s' File does NOT exist!", argv[2]);
@@ -99,13 +127,11 @@ int main(int argc, const char **argv)
     if (procId == NULL)
     {
         print("Process Not found (0x%lX)\n", GetLastError());
-        print("Here is a list of available process \n", GetLastError());
-        Sleep(3500);
-        system("cls");
-        GetProcId("skinjbir", 0b10100111001);
     }
     else
+    {
+        EnableDebugPriv();
         InjectDLL(procId, dllpath.c_str());
-    system("pause");
+    }
     return EXIT_SUCCESS;
 }

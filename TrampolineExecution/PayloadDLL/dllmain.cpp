@@ -14,7 +14,6 @@ FUNCTION fpFunction = NULL;
 
 char* HookedAddress = (char*)(0x0000000140011532 - 0x0000000140000000); // got this from IDA, need to readdress based on loaded module address
 // second value comes from : Imagebase   : 140000000
-// ghidra is similar to ida
 //char* HookedAddress = (char*)(0x7FF668191532 - 0x7FF668191000); // got this from x64dbg while debugging it. 
 		// Base address is copied from the start of the actual first line address inside debugger(not the load address 00007FF668180000 )
 
@@ -22,6 +21,23 @@ char* HookedAddress = (char*)(0x0000000140011532 - 0x0000000140000000); // got t
 __declspec(noinline) void __stdcall DetourFunctionForDummyTargetAppIncreaseValue(int *val)
 {
 	*val = *val + 2;
+	unsigned char* BasePointerVal = (unsigned char*)val;
+	LogMessage("Encrypt DB4 got called with RCX=%p\n", BasePointerVal);
+	FILE* f;
+	errno_t er = fopen_s(&f, "d:\\temp\\MaybeEncKey.txt", "at");
+	if (f)
+	{
+		fprintf(f, "=====================================\n");
+		fprintf(f, "Maybe Hashing algo : %d\n", BasePointerVal[0x100]);
+		fprintf(f, "Maybe estimated SAF file size : %d\n", *(int*)&BasePointerVal[0x4c]);
+		fprintf(f, "MaybeKey : ");
+		for (int i = 0; i < 32; i++)
+		{
+			fprintf(f, "%02x ", BasePointerVal[0x140 + i]);
+		}
+		fprintf(f, "\n");
+		fclose(f);
+	}
 }
 
 void* DetouredToFunction = &DetourFunctionForDummyTargetAppIncreaseValue;
@@ -34,23 +50,25 @@ char* HookedAddress = (char*)(0x7FF75E20E290 - 0x7FF75DE10000);
 // needs to have the same calling convention and parameters at the original function !
 __declspec(noinline) void __stdcall DetourFunctionForEncryptData(long long a, long long*b)
 {
-	char* BasePointerVal = (char*)a;
-	LogMessage("Encrypt DB4 got called with RCX=%p", BasePointerVal);
+	unsigned char* BasePointerVal = (unsigned char*)a;
+	LogMessage("Encrypt DB4 got called with RCX=%p\n", BasePointerVal);
 	FILE* f;
-	errno_t er = fopen_s(&f, "MaybeEncKey.txt", "at");
+	errno_t er = fopen_s(&f, "d:\\temp\\MaybeEncKey.txt", "at");
 	if (f)
 	{
+		fprintf(f, "=====================================\n");
 		fprintf(f, "Maybe Hashing algo : %d\n", BasePointerVal[0x100]);
 		fprintf(f, "Maybe estimated SAF file size : %d\n", *(int*)&BasePointerVal[0x4c]);
 		fprintf(f, "MaybeKey : ");
 		for (int i = 0; i < 32; i++)
 		{
-			fprintf(f, "%02X ", BasePointerVal[0x140+i]);
+			fprintf(f, "%02x ", BasePointerVal[0x140 + i]);
 		}
 		fprintf(f, "\n");
 		fclose(f);
 	}
-	fpFunction(a,b);
+
+//	fpFunction(a,b);
 }
 
 void* DetouredToFunction = &DetourFunctionForEncryptData;
