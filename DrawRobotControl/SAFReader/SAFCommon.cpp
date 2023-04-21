@@ -162,6 +162,18 @@ void SAFFile::PrintContent()
 		printf("\t totalLineLen : %f (actually measured %f)\n", (*itr)->transitionInfo.totalLineLen, lineLen);
 		printf("\t pointCount : %d\n", (*itr)->transitionInfo.pointCount);
 		printf("\t lineCount : %d\n", (*itr)->transitionInfo.lineCount);
+		int lineIndex = 1;
+		for (auto itr2 = (*itr)->lines.begin(); itr2 != (*itr)->lines.end() && lineIndex < 4; itr2++, lineIndex++)
+		{
+			printf("\t Some points from line %d :", lineIndex);
+			int pointIndex = 1;
+			for (auto itr3 = (*itr2)->points.begin(); itr3 != (*itr2)->points.end() && pointIndex <= 4; itr3++, pointIndex++)
+			{
+				printf("(%.02f,%.02f)", (*itr3)->x, (*itr3)->y);
+			}
+			printf(" .. \n");
+		}
+		printf("\t .. \n");
 	}
 }
 

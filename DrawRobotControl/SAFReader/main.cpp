@@ -16,8 +16,8 @@ int main(int argc, char **argv)
 		//SAFReader.ReadFile("0008 Vertical Half Inch Line followed by Horizontal Half Inch Line without Transition.saf");
 		//SAFReader.ReadFile("0007 Vertical Half Inch Line followed by Horizontal Half Inch Line with Transition.saf");
 		//SAFReader.ReadFile("0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.saf");
-//		SAFReader.ReadFile("0018 Names From Excel in Block.saf");
-		SAFReader.ReadFile("two lines with transition.saf");
+		SAFReader.ReadFile("0018 Names From Excel in Block.saf");
+//		SAFReader.ReadFile("two lines with transition.saf");
 	}
 
 	SAFReader.PrintContent();
