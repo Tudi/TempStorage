@@ -10,8 +10,8 @@ typedef struct Point2DF
 
 typedef struct SAF_File_Info
 {
-	char title[8];
-	char unk64[64];
+	char sigFileName[8];
+	char alwaysemptystring[64];
 	int transitionCount1;
 	int val2;
 	int transitionCount2;
@@ -41,13 +41,13 @@ typedef struct RectF
 
 typedef struct SAF_TransitionInfo
 {
-	int someFileOffset; // Seen it take the value of block end offset
+	int prevSectionStartOffset; // Seen it take the value of block end offset
 	int sectionEndOffset;
 	char always0_1[8]; // should always be 0
 	char always0_2[64]; // should always be 0 
 	// unsure about the start of the structure
 	RectF val5;
-	float val6; // seems to be rect right + bottom
+	float totalLineLen;
 	int pointCount; // maybe point count
 	int lineCount; // maybe line count
 	// needed for the size of the structure to be dividable by 16

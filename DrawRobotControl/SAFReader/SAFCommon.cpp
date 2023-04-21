@@ -109,11 +109,12 @@ int SAFFile::ReadFile(const char* fileName)
 void SAFFile::PrintContent()
 {
 	printf("File info section :\n");
-	printf("\t title : %s\n", fileInfo.title);
+	printf("\t sigFileName : %s\n", fileInfo.sigFileName);
+	printf("\t alwaysemptystring : %s\n", fileInfo.alwaysemptystring);
 	printf("\t transitionCount1 : %d\n", fileInfo.transitionCount1);
-	printf("\t val2 : %d\n", fileInfo.val2);
+	printf("\t val2 : %d (always 0)\n", fileInfo.val2);
 	printf("\t transitionCount2 : %d\n", fileInfo.transitionCount2);
-	printf("\t val4 : %d\n", fileInfo.val4);
+	printf("\t val4 : %d (always 0)\n", fileInfo.val4);
 	printf("\t points : ");
 	for (size_t i = 0; i < _countof(fileInfo.points); i++)
 	{
@@ -123,25 +124,42 @@ void SAFFile::PrintContent()
 	printf("\t flags1 : %d\n", fileInfo.flags1);
 
 	printf("File info 2 section :\n");
-	printf("\t val0 : %d\n", fileInfo2.val0);
-	printf("\t val1 : %d\n", fileInfo2.val1);
-	printf("\t val2 : %d\n", fileInfo2.val2);
+	printf("\t val0 : %d (always 15)\n", fileInfo2.val0);
+	printf("\t val1 : %d (always 0)\n", fileInfo2.val1);
+	printf("\t val2 : %d (always 4)\n", fileInfo2.val2);
 	printf("\t points : ");
 	for (size_t i = 0; i < _countof(fileInfo2.val3); i++)
 	{
 		printf("%.02f, ", fileInfo2.val3[i]);
 	}
 	printf("\t \n");
-	printf("\t flags1 : %d\n", fileInfo2.flags);
+	printf("\t flags1 : %d (val=3 => file has transitions, else flags=2)\n", fileInfo2.flags);
 
 	int i = 0;
 	for (auto itr = sections.begin(); itr != sections.end(); itr++, i++)
 	{
+		// get the total line len
+		double lineLen = 0;
+		for (auto itr2 = (*itr)->lines.begin(); itr2 != (*itr)->lines.end(); itr2++)
+		{
+			float prevX = (*(*itr2)->points.begin())->x;
+			float prevY = (*(*itr2)->points.begin())->y;
+			for (auto itr3 = (*itr2)->points.begin(); itr3 != (*itr2)->points.end(); itr3++)
+			{
+				double dx = prevX - (*itr3)->x;
+				double dy = prevY - (*itr3)->y;
+				lineLen += sqrt(dx * dx + dy * dy);
+
+				prevX = (*itr3)->x;
+				prevY = (*itr3)->y;
+			}
+		}
+
 		printf("File transition section %d :\n", i);
-		printf("\t someFileOffset : %d\n", (*itr)->transitionInfo.someFileOffset);
+		printf("\t prevSectionStartOffset : %d\n", (*itr)->transitionInfo.prevSectionStartOffset);
 		printf("\t sectionEndOffset : %d\n", (*itr)->transitionInfo.sectionEndOffset);
 		printf("\t somerect : %f, %f, %f, %f\n", (*itr)->transitionInfo.val5.top, (*itr)->transitionInfo.val5.left, (*itr)->transitionInfo.val5.right, (*itr)->transitionInfo.val5.bottom);
-		printf("\t sum edge : %f\n", (*itr)->transitionInfo.val6);
+		printf("\t totalLineLen : %f (actually measured %f)\n", (*itr)->transitionInfo.totalLineLen, lineLen);
 		printf("\t pointCount : %d\n", (*itr)->transitionInfo.pointCount);
 		printf("\t lineCount : %d\n", (*itr)->transitionInfo.lineCount);
 	}
