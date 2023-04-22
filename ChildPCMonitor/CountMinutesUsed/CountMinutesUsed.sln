@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32922.545
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CountMinutesUsed", "CountMinutesUsed.csproj", "{84F9B02C-0D12-4C62-81DF-094A960DCD79}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Debug|x64.ActiveCfg = Debug|x64
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Debug|x64.Build.0 = Debug|x64
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Release|x64.ActiveCfg = Release|x64
+		{84F9B02C-0D12-4C62-81DF-094A960DCD79}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86716E98-3E7E-4728-8BF2-0165A5E89CA4}
+	EndGlobalSection
+EndGlobal
