@@ -140,11 +140,15 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SAFCommon.cpp" />
     <ClCompile Include="SAFCrypto.cpp" />
+    <ClCompile Include="SigFileReader.cpp" />
+    <ClCompile Include="test_ReadWrite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SAFCommon.h" />
     <ClInclude Include="SAFCrypto.h" />
+    <ClInclude Include="SigFileReader.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="tests.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

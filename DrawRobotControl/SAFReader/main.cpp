@@ -1,24 +1,42 @@
 #include "stdafx.h"
 
+void LogMessage(const char* file, int line, const char* msg)
+{
+	char remsg[5000];
+	sprintf_s(remsg, sizeof(remsg), "%s:%d:%s\n", __FILE__, __LINE__, msg);
+	printf(remsg);
+}
+
 int main(int argc, char **argv)
 {
-	SAFFile SAFReader;
-
-	if (argc > 1)
+	if (argc == 2)
 	{
-		printf("Reading file content : %s\n", argv[1]);
+		printf("Reading file content to verify header generation: %s\n", argv[1]);
+		SAFFile SAFReader;
 		SAFReader.ReadFile(argv[1]);
+		SAFReader.PrintContent();
+
+		SAFFile SAFReader2;
+		SAFReader2.ReadFile(argv[1]);
+		SAFReader2.UpdateFileInfo();
+		SAFReader2.IsEqual(&SAFReader);
+
+	}
+	else if (argc == 3 && strcmp(argv[1], "-s2i") == 0)
+	{
+		SAFFile SAFReader;
+		SAFReader.ReadFile(argv[2]);
+		SAFReader.PrintContent();
+	}
+	else if (argc == 3 && strcmp(argv[1], "-s2s") == 0)
+	{
+		ReadSigFile(argv[2]);
 	}
 	else
 	{
-//		SAFReader.ReadFile("1.saf");
-		//SAFReader.ReadFile("0006 Three Vertical Two Inch Lines From -1 to 1 Two Inches Apart.saf");
-		//SAFReader.ReadFile("0008 Vertical Half Inch Line followed by Horizontal Half Inch Line without Transition.saf");
-		//SAFReader.ReadFile("0007 Vertical Half Inch Line followed by Horizontal Half Inch Line with Transition.saf");
-		//SAFReader.ReadFile("0012 Half Inch Lines Angles beginning from top_30_60_90_120_150_180_21_240_270_300_330.saf");
-		SAFReader.ReadFile("0018 Names From Excel in Block.saf");
-//		SAFReader.ReadFile("two lines with transition.saf");
+		printf("Execute debug code\n");
+//		TestGenClockSAF(); return 0;
+		TestWriterProperCalc();
 	}
-
-	SAFReader.PrintContent();
+	return 0;
 }

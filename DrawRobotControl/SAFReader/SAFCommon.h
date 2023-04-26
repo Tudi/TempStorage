@@ -1,6 +1,9 @@
 #pragma once
 
-#define SAF_4CC_SIZE 8
+#define SAF_4CC_SIZE		8
+#define SAF_4CC_VAL			0x01464153
+#define SAF_INCH_MULTIPLIER	25.4f
+#define SAF_16BYTE_ALLIGN(x) (((x+15)/16)*16)
 
 #pragma pack(push,1)
 typedef struct Point2DF
@@ -10,7 +13,7 @@ typedef struct Point2DF
 
 typedef struct SAF_File_Info
 {
-	char sigFileName[8];
+	char LCDName[8]; // shown on the robot preview screen
 	char alwaysemptystring[64];
 	int transitionCount1;
 	int val2;
@@ -34,19 +37,15 @@ typedef struct SAF_File_Info2
 	char padding16[32]; // always 16
 }SAF_File_Info2;
 
-typedef struct RectF
-{
-	float top,left,right,bottom;
-}RectF;
-
 typedef struct SAF_TransitionInfo
 {
+	static size_t GetSize() { return sizeof(SAF_TransitionInfo); }
 	int prevSectionStartOffset; // Seen it take the value of block end offset
 	int sectionEndOffset;
 	char always0_1[8]; // should always be 0
 	char always0_2[64]; // should always be 0 
 	// unsure about the start of the structure
-	RectF val5;
+	float minX, minY, width, height;
 	float totalLineLen;
 	int pointCount; // maybe point count
 	int lineCount; // maybe line count
@@ -59,6 +58,9 @@ typedef struct SAF_TransitionInfo
 class SAF_PolylinePoint
 {
 public:
+	static size_t GetSize() { return sizeof(x) + sizeof(y); }
+	void ReadFromRaw(const unsigned char* buff, size_t bufSize, size_t& index);
+	void WriteToRaw(unsigned char* buff, size_t bufSize, size_t& index);
 	float x, y;
 	int pointFlags;
 	char unk1; // only present if *(char *)(param_1 + 0x40) != '\0'
@@ -70,6 +72,8 @@ class SAF_Polyline
 public:
 	~SAF_Polyline();
 	void ParseFromRawBuffer(const unsigned char* buff, size_t bufSize, size_t& index);
+	void WriteToRawBuffer(unsigned char* buff, size_t bufSize, size_t& index);
+	size_t GetSize() { return sizeof(short) + points.size() * SAF_PolylinePoint::GetSize(); }
 	std::list<SAF_PolylinePoint*> points;
 };
 
@@ -85,12 +89,24 @@ public:
 
 class SAFFile
 {
+	friend class SAFFile;
 public:
 	SAFFile();
 	~SAFFile();
+	// read and verify content
 	int ReadFile(const char* fileName);
 	void PrintContent();
-private:
+	// create and write content
+	void SetDisplayName(const char* newName);
+	void AddNewLine();
+	void AddNewLine(float firstX, float firstY);
+	void AppendToLine(float nextX, float nextY);
+	void AppendTransition();
+	int WriteFile(const char* fileName);
+	// based on sections, update file info that needs to be written to file
+	void UpdateFileInfo();
+	void IsEqual(SAFFile* t);
+//private:
 	char Header4CC[SAF_4CC_SIZE];
 	SAF_File_Info fileInfo;
 	SAF_File_Info2 fileInfo2;

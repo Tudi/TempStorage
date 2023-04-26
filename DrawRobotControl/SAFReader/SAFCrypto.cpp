@@ -6,7 +6,7 @@ const unsigned char* GetSAFEncryptionKey()
 	return gEncryptionKey;
 }
 
-void Decrypt1Block_CBC_AES_256_NOAUTH(const byte* iv, const byte* data, int dataLen, byte* out_data)
+void Decrypt1Block_CBC_AES_256_NOAUTH(const byte* iv, const byte* data, size_t dataLen, byte* out_data)
 {
 	// Create the decryption object
 	CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption decryptor;
@@ -14,14 +14,7 @@ void Decrypt1Block_CBC_AES_256_NOAUTH(const byte* iv, const byte* data, int data
 	decryptor.ProcessData(out_data, data, dataLen);
 }
 
-/// <summary>
-/// Used only for DB1, DB3, DB4
-/// </summary>
-/// <param name="iv"></param>
-/// <param name="data"></param>
-/// <param name="dataSize"></param>
-/// <param name="hash"></param>
-void GetDataBlockHash(byte* iv, byte* data, int dataSize, byte* hash)
+void GetDataBlockHash(byte* iv, byte* data, size_t dataSize, byte* hash)
 {
 	CryptoPP::HMAC<CryptoPP::SHA256> hmac(GetSAFEncryptionKey(), CryptoPP::AES::MAX_KEYLENGTH);
 	hmac.Update(iv, CryptoPP::AES::BLOCKSIZE); // Hash the first block of data
@@ -110,4 +103,52 @@ int ReadGenericBlock(FILE* f, size_t blockSize, byte* out_dec)
 	}
 
 	return 0;
+}
+
+int GetIVSize()
+{
+	return CryptoPP::AES::BLOCKSIZE;
+}
+
+int GetHashSize()
+{
+	return CryptoPP::SHA256::DIGESTSIZE;
+}
+
+void WriteGenericEncryptedBlock(FILE* f, byte* buff, size_t bufferSize)
+{
+	byte iv[CryptoPP::AES::BLOCKSIZE];
+	AutoSeededRandomPool rng;
+	rng.GenerateBlock(iv, sizeof(iv));
+
+	CryptoPP::AES::Encryption aesEncryption(GetSAFEncryptionKey(), CryptoPP::AES::MAX_KEYLENGTH);
+	CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv);
+
+	byte* ciphertext = new byte[bufferSize];
+	CryptoPP::ArraySink arraySink(ciphertext, bufferSize); // write to a byte buffer
+
+	CryptoPP::StreamTransformationFilter filter(cbcEncryption);
+	filter.Attach(new CryptoPP::Redirector(arraySink)); // attach the ArraySink to write to the buffer
+	filter.Put(buff, bufferSize);
+	filter.MessageEnd();
+
+	byte hash[CryptoPP::SHA256::DIGESTSIZE];
+	GetDataBlockHash(iv, ciphertext, bufferSize, hash);
+
+	fwrite(iv, 1, sizeof(iv), f);
+	fwrite(ciphertext, 1, bufferSize, f);
+	fwrite(hash, 1, sizeof(hash), f);
+
+	delete[] ciphertext;
+}
+
+void WriteGenericBlock(FILE* f, byte* buff, size_t bufferSize)
+{
+	byte hash[CryptoPP::SHA256::DIGESTSIZE];
+	CryptoPP::SHA256 sha256;
+	sha256.Update(buff, bufferSize); // Hash the first block of data
+	sha256.Final(hash); // Finalize the hash 
+
+	fwrite(buff, 1, bufferSize, f);
+	fwrite(hash, 1, sizeof(hash), f);
 }
