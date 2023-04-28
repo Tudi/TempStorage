@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.IO;
 
 namespace SAFFileHandler
 {
@@ -522,6 +523,9 @@ namespace SAFFileHandler
 
             fileInfo.transitionCount1 = fileInfo.transitionCount2 = sections.Count;
 
+//            for (int i = 0; i < 16; i++)
+//                fileInfo.points[i] = i + 1;
+
             fileInfo2.flags = 2;
             if (fileInfo.transitionCount1 > 1)
                 fileInfo2.flags |= 1;
@@ -653,17 +657,19 @@ namespace SAFFileHandler
         public void AppendSigFile(string[] fileLines)
         {
             //read until the end of file
+            bool insideALine = false;
             foreach (string line in fileLines)
             {
                 if (line == "PLINESTART")
                 {
+                    insideALine = true;
                     AddNewLine();
                 }
-                else if (line == "Setting")
+                if (line == "PLINEEND")
                 {
-                    break;
+                    insideALine = false;
                 }
-                else if(line.IndexOf(",") > 0)
+                else if(insideALine == true && line.IndexOf(",") > 0)
                 {
                     float curX, curY;
                     bool prase_ret1 = float.TryParse(line.Substring(0, line.IndexOf(",")), out curX);

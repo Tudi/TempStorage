@@ -12,6 +12,16 @@
     myFile.WriteFile("out.saf");
 }
 
+// example SAF file to show names on the LCD screeen
+{
+    SAFFileHandler.ISAFFile myFile = new SAFFileHandler.SAFFile();
+    myFile.SetDisplayName("MySAF"); // limited to 8 characters
+    myFile.SetDisplayDescription("SAF File Name"); // limited to 64 characters
+    myFile.AddNewLine(-1, -1);
+    myFile.AppendToLine(-2, -2);
+    myFile.WriteFile("out.saf");
+}
+
 // example to create a SAF file and put 1 SIG into a single transition segment
 {
     SAFFileHandler.ISAFFile myFile = new SAFFileHandler.SAFFile();
