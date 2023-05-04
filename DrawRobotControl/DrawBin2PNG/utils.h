@@ -20,4 +20,5 @@ typedef struct ShapeStore
 ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY);
 int IsCallibrationLinePixel(FIBITMAP* Img, int x, int y);
 void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B);
+void DrawLineColorFade(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B);
 int getSign(double a);

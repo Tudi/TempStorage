@@ -9,7 +9,7 @@ void Test_VisualizeCallibrationMap()
 	// tear is [-4.5,4.5] inches in size or [-2700,2700] in commands
 	for (int i = 0; i < 1600; i += 100)
 	{
-		sLineAdjuster.DebugDumpMapToImage(i);
+		sLineAdjuster2.DebugDumpMapToImage(i);
 	}
 
 	FIBITMAP* dib = CreateNewImage(IMG_SIZE, IMG_SIZE);
@@ -17,7 +17,7 @@ void Test_VisualizeCallibrationMap()
 	{
 		int xMiddleCentered = y - TEAR_MAX_COMMANDS_QAURTER;
 		int yMiddleCentered = y - TEAR_MAX_COMMANDS_QAURTER;
-		PositionAdjustInfo* ai = sLineAdjuster.GetAdjustInfo(xMiddleCentered, yMiddleCentered);
+		PositionAdjustInfo2* ai = sLineAdjuster2.GetAdjustInfo(xMiddleCentered, yMiddleCentered);
 		if (ai == NULL || ai->HasX() == 0)
 		{
 			continue;

@@ -189,6 +189,42 @@ void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R
 	}
 }
 
+void DrawLineColorFade(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B)
+{
+	float dx = ex - sx;
+	float dy = ey - sy;
+	float steps;
+	if (abs(dx) > abs(dy))
+	{
+		steps = abs(dx);
+	}
+	else
+	{
+		steps = abs(dy);
+	}
+	float xinc = dx / steps;
+	float yinc = dy / steps;
+	float colorStep = 0.5 / steps;
+
+	BYTE* Bytes = FreeImage_GetBits(Img);
+	int Stride = FreeImage_GetPitch(Img);
+	int Width = FreeImage_GetWidth(Img);
+	int Height = FreeImage_GetHeight(Img);
+	for (float step = 0; step < steps; step += 1.0f)
+	{
+		int x = (int)(sx + xinc * step);
+		int y = (int)(sy + yinc * step);
+		if (x < 0 || y < 0 || x >= Width || y >= Height)
+		{
+			continue;
+		}
+		float colorMul = colorStep * step;
+		Bytes[y * Stride + x * Bytespp + 0] = B / 2 + B * colorMul;
+		Bytes[y * Stride + x * Bytespp + 1] = G / 2 + G * colorMul;
+		Bytes[y * Stride + x * Bytespp + 2] = R / 2 + R * colorMul;
+	}
+}
+
 int getSign(double a)
 {
 	if (a == 0) return 0;

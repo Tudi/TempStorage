@@ -143,7 +143,7 @@ int FindNeighbourShapes(FIBITMAP* Img, ShapeStore out_neighbours[3][3])
 	return neiborsFound;
 }
 
-void FindManuallyMarkedOrigin(FIBITMAP* Img, int& manualMarkedOriginX, int& manualMarkedOriginY)
+static void FindManuallyMarkedOrigin(FIBITMAP* Img, int& manualMarkedOriginX, int& manualMarkedOriginY)
 {
 	BYTE* Bytes = FreeImage_GetBits(Img);
 	int Stride = FreeImage_GetPitch(Img);
@@ -247,7 +247,7 @@ void SearchAndMarkAllNeighbours(FIBITMAP* Img, ShapeStore * ssCenter, ShapeStore
 	free(ssQueue);
 }
 
-void RemoveManuallyMarkedOrigin(FIBITMAP* Img, int manualMarkedOriginX, int manualMarkedOriginY)
+static void RemoveManuallyMarkedOrigin(FIBITMAP* Img, int manualMarkedOriginX, int manualMarkedOriginY)
 {
 	BYTE* Bytes = FreeImage_GetBits(Img);
 	int Stride = FreeImage_GetPitch(Img);
@@ -591,7 +591,7 @@ void UpdateCallibrationAtSpecificLocationX(int centerX, int centerY, int atx, in
 	adjustmentsMade++;
 
 //	sLineAdjuster.AdjustPositionX((int)xRelPicOriginComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeComm);
-	sLineAdjuster.AdjustPositionX((int)xRelPicOriginShouldBeComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeCorrectedComm);
+	sLineAdjuster2.AdjustPositionX((int)xRelPicOriginShouldBeComm, (int)yRelPicOriginComm, (int)xRelPicOriginShouldBeCorrectedComm);
 //	sLineAdjuster.AdjustPositionX(xRelPicOriginInch, yRelPicOriginInch, xRelPicOriginShouldBeInch);
 }
 

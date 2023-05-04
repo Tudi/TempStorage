@@ -13,5 +13,6 @@ void RunAllTests(char** argv, int argc)
 //		Test_DrawUnitsOfMeasurement();
 //		Test_loadCallibrationImages();
 //		Test_VisualizeCallibrationMap();
+//		Test_loadCallibrationImages2();
 	}
 }

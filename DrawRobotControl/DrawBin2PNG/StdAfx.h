@@ -14,7 +14,7 @@
 #include "BinFileWriter.h"
 #include "BinFileLineDraw.h"
 #include "SigFileReader.h"
-#include "LineAntiDistorsion.h"
+#include "LineAntiDistorsion2.h"
 #include "utils.h"
 #include "tests.h"
 
