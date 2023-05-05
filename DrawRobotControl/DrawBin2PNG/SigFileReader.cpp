@@ -105,8 +105,8 @@ void ReadSigFile(const char* fileName)
 //#define apply_specific_correction curX = curX - (3.6f + 1.1334f) / 2; curY = curY - (9.81374f + 9.79107f) / 2; curX *= 1.3f;curY *= 1.3f;
 #define apply_specific_correction ;
 			apply_specific_correction
-			bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
-//			bfw.AddLineAntiDistorted(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
+//			bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
+			bfw.AddLineAntiDistorted(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
 		}
 		else if (curX != INVALID_VALUE && curY != INVALID_VALUE)
 		{

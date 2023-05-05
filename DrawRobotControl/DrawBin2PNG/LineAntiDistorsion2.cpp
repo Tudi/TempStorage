@@ -57,14 +57,6 @@ PositionAdjustInfo2* LineAntiDistorsionAdjuster2::GetAdjustInfo(int x, int y)
 	return &adjustInfoMap[adjustInfoHeader.width * y2 + x2];
 }
 
-double interpolate(double q11, double q12, double q21, double q22, double x, double y) 
-{
-	double r1 = (q21 - q11) * x + q11;
-	double r2 = (q22 - q12) * x + q12;
-	return (r2 - r1) * y + r1;
-}
-
-// sub pixel accuracy to not accumulate rounding errors when drawing a long line
 Adjusted2DPos2 LineAntiDistorsionAdjuster2::GetAdjustedPos(double x, double y)
 {
 	Adjusted2DPos2 ret = { 0 };
@@ -97,70 +89,6 @@ Adjusted2DPos2 LineAntiDistorsionAdjuster2::GetAdjustedPos(double x, double y)
 		ret.HasValues = 1;
 		return ret;
 	}
-	else if ((int)floor(x2) == (int)ceil(x2))
-	{
-		double valy[2];
-		int indy = 0;
-		for (int y3 : {(int)floor(y2), (int)ceil(y2)})
-		{
-			PositionAdjustInfo2* poi = GetAdjustInfoNoChange((int)x2, y3);
-			if (poi)
-			{
-				if (poi->HasX())
-				{
-					ret.x = (float)poi->GetNewX();
-				}
-				else
-				{
-					return ret;
-				}
-				if (poi->HasY())
-				{
-					valy[indy++] = (float)poi->GetNewY();
-				}
-				else
-				{
-					return ret;
-				}
-			}
-		}
-		double coef = y2 - floor(y2);
-		ret.y = valy[0] * coef + valy[1] * (1 - coef);
-		ret.HasValues = 1;
-		return ret;
-	}
-	else if ((int)floor(y2) == (int)ceil(y2))
-	{
-		double valy[2];
-		int indy = 0;
-		for (int x3 : {(int)floor(x2), (int)ceil(x2)})
-		{
-			PositionAdjustInfo2* poi = GetAdjustInfoNoChange(x3, (int)y2);
-			if (poi)
-			{
-				if (poi->HasX())
-				{
-					valy[indy++] = (float)poi->GetNewX();
-				}
-				else
-				{
-					return ret;
-				}
-				if (poi->HasY())
-				{
-					ret.y = (float)poi->GetNewY();
-				}
-				else
-				{
-					return ret;
-				}
-			}
-		}
-		double coef = x2 - floor(x2);
-		ret.x = valy[0] * coef + valy[1] * (1 - coef);
-		ret.HasValues = 1;
-		return ret;
-	}
 
 	double ax[2][2] = { 0 };
 	double ay[2][2] = { 0 };
@@ -172,12 +100,12 @@ Adjusted2DPos2 LineAntiDistorsionAdjuster2::GetAdjustedPos(double x, double y)
 		valuesX = 0;
 		for (int y3 : {(int)floor(y2), (int)ceil(y2)})
 		{
-			PositionAdjustInfo2 *poi = GetAdjustInfoNoChange(x3, y3);
+			PositionAdjustInfo2* poi = GetAdjustInfoNoChange(x3, y3);
 			if (poi)
 			{
 				if (poi->HasX())
 				{
-					ax[valuesY][valuesX] = (float)poi->GetNewX();
+					ax[valuesX][valuesY] = (float)poi->GetNewX();
 				}
 				else
 				{
@@ -185,7 +113,7 @@ Adjusted2DPos2 LineAntiDistorsionAdjuster2::GetAdjustedPos(double x, double y)
 				}
 				if (poi->HasY())
 				{
-					ay[valuesY][valuesX] = (float)poi->GetNewY();
+					ay[valuesX][valuesY] = (float)poi->GetNewY();
 				}
 				else
 				{
@@ -197,17 +125,18 @@ Adjusted2DPos2 LineAntiDistorsionAdjuster2::GetAdjustedPos(double x, double y)
 		valuesY++;
 	}
 
-	ret.x = (float)interpolate(ax[0][0], ax[0][1], ax[1][0], ax[1][1], x2 - floor(x2), y2 - floor(y2));
-	ret.y = (float)interpolate(ay[0][0], ay[0][1], ay[1][0], ay[1][1], x2 - floor(x2), y2 - floor(y2));
+	double xCoef = x2 - floor(x2);
+	double yCoef = y2 - floor(y2);
+	double coef00 = (1 - xCoef) * (1 - yCoef);
+	double coef10 = (1 - xCoef) * yCoef;
+	double coef01 = xCoef * (1 - yCoef);
+	double coef11 = xCoef * yCoef;
+	double x_out = coef00 * ax[0][0] + coef10 * ax[1][0] + coef01 * ax[0][1] + coef11 * ax[1][1];
+	double y_out = coef00 * ay[0][0] + coef10 * ay[1][0] + coef01 * ay[0][1] + coef11 * ay[1][1];
+
+	ret.x = x_out;
+	ret.y = y_out;
 	ret.HasValues = 1;
-
-	SOFT_ASSERT(ret.x > -3000, "Return value is unexpectedly small");
-	SOFT_ASSERT(ret.x < 3000, "Return value is unexpectedly large");
-	SOFT_ASSERT(ret.y > -3000, "Return value is unexpectedly small");
-	SOFT_ASSERT(ret.y < 3000, "Return value is unexpectedly large");
-
-//	SOFT_ASSERT(abs(ret.x - x) < 200, "Return value is unexpectedly large");
-//	SOFT_ASSERT(abs(ret.y - y) < 200, "Return value is unexpectedly large");
 
 	return ret;
 }
@@ -344,38 +273,6 @@ PositionAdjustInfo2* LineAntiDistorsionAdjuster2::GetAdjustInfoNoChange(int x, i
 
 }
 
-void LineAntiDistorsionAdjuster2::FindClosestKnownRight(int sx, int sy, PositionAdjustInfo2** out_right, int& atx_right)
-{
-//#define PROPAGATE_SEARCH_RADIUS (adjustInfoHeader.width * 10 / 100)
-#define PROPAGATE_SEARCH_RADIUS 100
-	*out_right = NULL;
-	for (int x = sx + 1; x < sx + PROPAGATE_SEARCH_RADIUS; x++)
-	{
-		PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, sy);
-		if (ai && (ai->flags & X_IS_MEASURED))
-		{
-			*out_right = ai;
-			atx_right = x;
-			return;
-		}
-	}
-}
-
-void LineAntiDistorsionAdjuster2::FindClosestKnownDown(int sx, int sy, PositionAdjustInfo2** out_down, int& aty_down)
-{
-	*out_down = NULL;
-	for (int y = sy + 1; y < sy + PROPAGATE_SEARCH_RADIUS; y++)
-	{
-		PositionAdjustInfo2* ai = GetAdjustInfoNoChange(sx, y);
-		if (ai && ai->HasYMeasured())
-		{
-			*out_down = ai;
-			aty_down = y;
-			return;
-		}
-	}
-}
-
 void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX, double shouldBeY)
 {
 	PositionAdjustInfo2* ai = GetAdjustInfo(x, y);
@@ -497,6 +394,13 @@ void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLin
 	leftOverY = (float)(dy - writtenDiffY);
 }
 
+double angleBetweenPoints(double x1, double y1, double x2, double y2) 
+{
+	double deltaX = x2 - x1;
+	double deltaY = y2 - y1;
+	return atan2(deltaY, deltaX) * (180 / 3.14);
+}
+
 void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
 {
 	double dx = ex - sx;
@@ -524,7 +428,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
 
-#define SUB_LINE_LEN 50
+#define SUB_LINE_LEN 15
 	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
 	{
 		double sx2 = sx + step * xIncForStep;
@@ -533,6 +437,8 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 		if (stepsEnd > out_lineDrawSteps)
 		{
 			stepsEnd = out_lineDrawSteps;
+			SOFT_ASSERT((int)((sx + stepsEnd * xIncForStep) * 1) == (int)(ex * 1), "Precision loss error");
+			SOFT_ASSERT((int)((sy + stepsEnd * yIncForStep) * 1) == (int)(ey * 1), "Precision loss error");
 		}
 		double ex2 = sx + stepsEnd * xIncForStep;
 		double ey2 = sy + stepsEnd * yIncForStep;
@@ -543,8 +449,8 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 		if (aiStart.HasValues && aiEnd.HasValues)
 		{
 			sx2 = aiStart.x;
-			ex2 = aiEnd.x;
 			sy2 = aiStart.y;
+			ex2 = aiEnd.x;
 			ey2 = aiEnd.y;
 		}
 		else
@@ -570,10 +476,60 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 			}
 		}
 
+//#define DEBUG_LINE_CONTINUITY
+#ifdef DEBUG_LINE_CONTINUITY
+		{
+			static double prevEXsrc = 0, prevEYsrc = 0;
+			static double prevEX = 0, prevEY = 0;
+			static double anglePrev = 0;
+			static int firstInit = 1;
+			double sx22 = sx + step * xIncForStep;
+			double sy22 = sy + step * yIncForStep;
+			double ex22 = sx + stepsEnd * xIncForStep;
+			double ey22 = sy + stepsEnd * yIncForStep;
+			printf("\t Draw subline from %f,%f - %f,%f\n", 
+				(float)sx2, (float)sy2, (float)ex2, (float)ey2);
+			if (firstInit)
+			{
+				firstInit = 0;
+			}
+			// check if the ending of the previous line is the start of this line
+			else
+			{
+				double dx = sx2 - prevEX;
+				double dy = sy2 - prevEY;
+				if (dx >= 1 || dy >= 1)
+				{
+					printf("\t Cought discontinuity : %f - %f\n", dx, dy);
+					printf("\t from prev end to cur start %f,%f - %f,%f\n",
+						(float)prevEX, (float)prevEY, (float)sx2, (float)sy2);
+					Adjusted2DPos2 aiStart2 = GetAdjustedPos((float)sx22, (float)sy22);
+					Adjusted2DPos2 aiEnd2 = GetAdjustedPos((float)ex22, (float)ey22);
+				}
+			}
+			// check if the angle of this line is similar to the main line. We do expect deviation, but not a large one
+			double angleMain = angleBetweenPoints(sx, sy, ex, ey);
+			double angleNow = angleBetweenPoints(sx2, sy2, ex2, ey2);
+			if ((step != 0 && abs(angleNow - anglePrev) > 40) 
+//				|| (abs(angleMain-angleNow) > 40)
+				)
+			{
+				printf("\t Angle of the line is very divergent compared to previous angle : %f - %f\n", angleNow, anglePrev);
+				Adjusted2DPos2 aiStart2 = GetAdjustedPos((float)sx22, (float)sy22);
+				Adjusted2DPos2 aiEnd2 = GetAdjustedPos((float)ex22, (float)ey22);
+			}
+
+			prevEX = ex2;
+			prevEY = ey2;
+			prevEXsrc = sx + stepsEnd * xIncForStep;
+			prevEYsrc = sy + stepsEnd * yIncForStep;
+			anglePrev = angleNow;
+		}
+#endif
 		AppendLineSegment((float)sx2, (float)sy2, (float)ex2, (float)ey2, out_line, leftOverX, leftOverY);
 	}
 
-	out_line->setEndPosition(ex - leftOverX, ey - leftOverY);
+	out_line->setEndPosition(ex, ey);
 }
 
 // visualize the callibration map itself. Scale correction values to calibration map size
