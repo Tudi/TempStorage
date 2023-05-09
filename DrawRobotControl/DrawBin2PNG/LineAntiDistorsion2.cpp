@@ -282,6 +282,14 @@ void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX,
 	{
 		ai->SetNewX(shouldBeX);
 		ai->SetNewY(shouldBeY);
+		if (shouldBeX != 0)
+		{
+			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | X_IS_MEASURED);
+		}
+		if (shouldBeY != 0)
+		{
+			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | Y_IS_MEASURED);
+		}
 		SOFT_ASSERT((int)(ai->GetNewX() * 100) == (int)(shouldBeX * 100), "Precision loss error");
 		SOFT_ASSERT((int)(ai->GetNewY() * 100) == (int)(shouldBeY * 100), "Precision loss error");
 		hasUnsavedAdjustments = 1;
@@ -428,7 +436,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
 
-#define SUB_LINE_LEN 15
+#define SUB_LINE_LEN 25
 	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
 	{
 		double sx2 = sx + step * xIncForStep;
@@ -453,29 +461,6 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 			ex2 = aiEnd.x;
 			ey2 = aiEnd.y;
 		}
-		else
-		{
-			PositionAdjustInfo2* aiStart = GetAdjustInfo((int)sx2, (int)sy2);
-			PositionAdjustInfo2* aiEnd = GetAdjustInfo((int)ex2, (int)ey2);
-			if (aiStart && aiEnd)
-			{
-				if (aiStart->HasX() && aiEnd->HasX())
-				{
-					sx2 = aiStart->GetNewX();
-					ex2 = aiEnd->GetNewX();
-				}
-				if (aiStart->HasY() && aiEnd->HasY())
-				{
-					sy2 = aiStart->GetNewY();
-					ey2 = aiEnd->GetNewY();
-				}
-			}
-			else
-			{
-				printf("Failed to find adjustment info. Sad case");
-			}
-		}
-
 //#define DEBUG_LINE_CONTINUITY
 #ifdef DEBUG_LINE_CONTINUITY
 		{
@@ -589,4 +574,495 @@ void LineAntiDistorsionAdjuster2::DebugDumpMapToImage(int col)
 		SaveImagePNG(dib, fileName);
 		FreeImage_Unload(dib);
 	}
+}
+
+#define ESTIMATOR_COUNT 5
+double *getEstimatedValAt(int startPos, int endPos, int *srcVals, double *vals)
+{
+	char cmd[6400];
+//	sprintf_s(cmd, sizeof(cmd), "python curve_fit/fit5.py %d %d %d %d %d %d %f %f %f %f", 
+//		startPos, endPos, srcVals[0], srcVals[1], srcVals[2], srcVals[3], vals[0], vals[1], vals[2], vals[3]);
+	sprintf_s(cmd, sizeof(cmd), "python curve_fit/fit6.py %d %d %d %d %d %d %d %f %f %f %f %f",
+		startPos, endPos, srcVals[0], srcVals[1], srcVals[2], srcVals[3], srcVals[4], vals[0], vals[1], vals[2], vals[3], vals[4]);
+	char *cmd_ret = exec(cmd);
+	double *ret = (double* )malloc(4000 * sizeof(double));
+	memset(ret, 0, 4000 * sizeof(double));
+	if (cmd_ret != NULL && ret != NULL)
+	{
+		char* cmd_ret2 = cmd_ret;
+		int i = 0;
+		while (1)
+		{
+			char* nextScan;
+			ret[i] = strtod(cmd_ret2, &nextScan);
+			i++;
+			if (cmd_ret2 == nextScan)
+			{
+				break;
+			}
+			cmd_ret2 = nextScan;
+		}
+		printf("Executed %s\n", cmd);
+		printf("Received %s\n", cmd_ret);
+		free(cmd_ret);
+	}
+	return ret;
+}
+
+void LineAntiDistorsionAdjuster2::ScanMatFillMissingValues(int sx, int sy, int dirX, int dirY, int checkFlags)
+{
+	int ex, ey;
+	if (dirX < 0)
+	{
+		ex = 0;
+	}
+	else if (dirX == 0)
+	{
+		ex = sx;
+	}
+	else
+	{
+		ex = adjustInfoHeader.width;
+	}
+	if (dirY < 0)
+	{
+		ey = 0;
+	}
+	else if (dirY == 0)
+	{
+		ey = sy;
+	}
+	else
+	{
+		ey = adjustInfoHeader.height;
+	}
+
+	SOFT_ASSERT((ex - sx) * dirX >= 0, "Function will deadlock");
+	SOFT_ASSERT((ey - sy) * dirY >= 0, "Function will deadlock");
+
+	// search for the first available cell
+	int sx2 = sx, sy2 = sy;
+	int metX = 0, metY = 0;
+	while (metX == 0 || metY == 0)
+	{
+		if (sx2 == ex)
+		{
+			metX = 1;
+		}
+		if (sy2 == ey)
+		{
+			metY = 1;
+		}
+		PositionAdjustInfo2* ai = GetAdjustInfoNoChange(sx2, sy2);
+		if (ai == NULL)
+		{
+			// move forward in the search
+			sx2 += dirX;
+			sy2 += dirY;
+			continue;
+		}
+		// found a cell with values we are looking for ?
+		if ((ai->flags & checkFlags) == checkFlags)
+		{
+			break;
+		}
+		// move forward in the search
+		sx2 += dirX;
+		sy2 += dirY;
+	}
+	// fill in estimator values
+	int needsX = (checkFlags & (X_IS_MEASURED | X_IS_SET)) != 0;
+	int needsY = (checkFlags & (Y_IS_MEASURED | Y_IS_SET)) != 0;
+	double estimatorsX_out[ESTIMATOR_COUNT] = { 0 };
+	double estimatorsY_out[ESTIMATOR_COUNT] = { 0 };
+	int estimatorsX_in[ESTIMATOR_COUNT] = { 0 };
+	int estimatorsY_in[ESTIMATOR_COUNT] = { 0 };
+	int valuesFound = 0;
+	int sx3 = sx2, sy3 = sy2;
+	for (int i = 0; i < ESTIMATOR_COUNT; i++)
+	{
+		PositionAdjustInfo2* ai = GetAdjustInfoNoChange(sx3, sy3);
+		if (ai == NULL)
+		{
+			sx3 += dirX;
+			sy3 += dirY;
+			continue;
+		}
+		if ((ai->flags & checkFlags) != checkFlags)
+		{
+			break;
+		}
+		valuesFound++;
+		estimatorsX_out[i] = ai->GetNewX();
+		estimatorsX_in[i] = sx3;
+		estimatorsY_out[i] = ai->GetNewY();
+		estimatorsY_in[i] = sy3;
+		sx3 += dirX;
+		sy3 += dirY;
+	}
+	// can't fill values from this start and this direction
+	if (valuesFound != ESTIMATOR_COUNT)
+	{
+		return;
+	}
+	// use the estimator to estimate values for empty cells
+	double* estimatedX = NULL, * estimatedY = NULL;
+	if (needsX)
+	{
+		estimatedX = getEstimatedValAt(sx, sx2, estimatorsX_in, estimatorsX_out);
+		if (estimatedX == NULL)
+		{
+			printf("Failed to generate estimated values\n");
+			return;
+		}
+	}
+	if (needsY)
+	{
+		estimatedY = getEstimatedValAt(sy, sy2, estimatorsY_in, estimatorsY_out);
+		if (estimatedY == NULL)
+		{
+			printf("Failed to generate estimated values\n");
+			return;
+		}
+	}
+	sx2 = sx, sy2 = sy;
+	int readIndex = 0;
+	metX = 0, metY = 0;
+	while (metX == 0 || metY == 0)
+	{
+		if (sx2 == ex)
+		{
+			metX = 1;
+		}
+		if (sy2 == ey)
+		{
+			metY = 1;
+		}
+		PositionAdjustInfo2* ai = GetAdjustInfoNoChange(sx2, sy2);
+		if (ai == NULL)
+		{
+			// move forward in the search
+			sx2 += dirX;
+			sy2 += dirY;
+			continue;
+		}
+		// found a cell with values we are looking for ?
+		if ((ai->flags & checkFlags) == checkFlags)
+		{
+			break;
+		}
+		// move forward in the search
+		sx2 += dirX;
+		sy2 += dirY;
+		if (needsX)
+		{
+			ai->SetNewX(estimatedX[readIndex]);
+		}
+		if (needsY)
+		{
+			ai->SetNewY(estimatedY[readIndex]);
+		}
+		readIndex++;
+	}
+	free(estimatedX);
+	free(estimatedY);
+}
+
+void LineAntiDistorsionAdjuster2::FillMissingInfo()
+{
+	// expects map to be a square
+	for (int diag = 0; diag < adjustInfoHeader.height; diag++)
+	{
+		printf("Process diag %d\n", diag);
+		// first row/col to lower right corner scan
+		ScanMatFillMissingValues(diag, 0, 1, 1, X_IS_MEASURED | Y_IS_MEASURED);
+		ScanMatFillMissingValues(0, diag, 1, 1, X_IS_MEASURED | Y_IS_MEASURED);
+		// first row / last col to lower left scan
+		ScanMatFillMissingValues(diag, 0, -1, 1, X_IS_MEASURED | Y_IS_MEASURED);
+		ScanMatFillMissingValues(adjustInfoHeader.width - 1, diag, -1, 1, X_IS_MEASURED | Y_IS_MEASURED);
+		// first col / last row to upper right corner scan
+		ScanMatFillMissingValues(0, diag, 1, -1, X_IS_MEASURED | Y_IS_MEASURED);
+		ScanMatFillMissingValues(diag, adjustInfoHeader.height - 1, 1, -1, X_IS_MEASURED | Y_IS_MEASURED);
+		// last col / last row to upper left col scan
+		ScanMatFillMissingValues(adjustInfoHeader.width - 1, diag, -1, -1, X_IS_MEASURED | Y_IS_MEASURED);
+		ScanMatFillMissingValues(diag, adjustInfoHeader.height - 1, -1, -1, X_IS_MEASURED | Y_IS_MEASURED);
+	} 
+	for (int y = 0; y < adjustInfoHeader.height; y++)
+	{
+		printf("Process row %d\n", y);
+		// scan left to right
+		ScanMatFillMissingValues(0, y, 1, 0, X_IS_MEASURED);
+		// scan right to left
+		ScanMatFillMissingValues(adjustInfoHeader.width - 1, y, -1, 0, X_IS_MEASURED);
+	}
+	for (int x = 0; x < adjustInfoHeader.width; x++)
+	{
+		printf("Process col %d\n", x);
+		// scan top to bottom
+		ScanMatFillMissingValues(x, 0, 0, 1, Y_IS_MEASURED);
+		// scan bottom to top
+		ScanMatFillMissingValues(x, adjustInfoHeader.height - 1, 0, -1, Y_IS_MEASURED);
+	}
+#if 0
+	for (int y = 0; y < adjustInfoHeader.height; y++)
+	{
+		printf("Process forward row %d\n", y);
+		// find first X that is missing info
+		int firstValidX = 0;
+		for (; firstValidX < adjustInfoHeader.width - ESTIMATOR_COUNT; firstValidX++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(firstValidX, y);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkXFlags) == 0)
+			{
+				break;
+			}
+		}
+
+		double estimators[ESTIMATOR_COUNT] = {0};
+		int missingValues = 0;
+		for (int i = 0; i < _countof(estimators); i++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(firstValidX + i, y);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkXFlags) == 0)
+			{
+				missingValues = 1;
+				break;
+			}
+			estimators[i] = ai->GetNewX();
+		}
+		if (missingValues == 0)
+		{
+			double *estimated = getEstimatedValAt(0, firstValidX, firstValidX, estimators);
+			for (int tx = 0; tx < firstValidX; tx++)
+			{
+				PositionAdjustInfo2* ai = GetAdjustInfoNoChange(tx, y);
+				if (ai == NULL)
+				{
+					continue;
+				}
+				ai->SetNewX(estimated[tx]);
+			}
+			free(estimated);
+			hasUnsavedAdjustments = 1;
+		}
+	}
+	for (int y = 0; y < adjustInfoHeader.height; y++)
+	{
+		printf("Process row backward %d\n", y);
+		// scan X backwards
+		int LastX = adjustInfoHeader.width - 1;
+		for (; LastX > ESTIMATOR_COUNT; LastX--)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(LastX, y);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkXFlags) == 0)
+			{
+				break;
+			}
+		}
+
+		LastX -= ESTIMATOR_COUNT;
+		double estimators[ESTIMATOR_COUNT] = { 0 };
+		int missingValues = 0;
+		for (int i = 0; i < _countof(estimators); i++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(LastX + i, y);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkXFlags) == 0)
+			{
+				missingValues = 1;
+				break;
+			}
+			estimators[i] = ai->GetNewX();
+
+		}
+		if (missingValues == 0)
+		{
+			double* estimated = getEstimatedValAt(LastX + ESTIMATOR_COUNT, adjustInfoHeader.width, LastX, estimators);
+			for (int tx = LastX + ESTIMATOR_COUNT; tx < adjustInfoHeader.width; tx++)
+			{
+				PositionAdjustInfo2* ai = GetAdjustInfoNoChange(tx, y);
+				if (ai == NULL)
+				{
+					continue;
+				}
+				ai->SetNewX(estimated[tx - (LastX + ESTIMATOR_COUNT)]);
+			}
+			free(estimated);
+			hasUnsavedAdjustments = 1;
+		}
+	}
+/*
+	int minWidthHeight = MIN(adjustInfoHeader.height, adjustInfoHeader.width);
+	for (int diag = 0; diag < minWidthHeight; diag++)
+	{
+		printf("Process forward diag %d\n", diag);
+		// find first X that is missing info
+		int firstValid = 0;
+		for (; firstValid < minWidthHeight - ESTIMATOR_COUNT; firstValid++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(diag, firstValid);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkXFlags) == 0)
+			{
+				break;
+			}
+		}
+
+		double estimators[ESTIMATOR_COUNT] = { 0 };
+		int missingValues = 0;
+		for (int i = 0; i < _countof(estimators); i++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(diag, firstValid + i);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkXFlags) == 0)
+			{
+				missingValues = 1;
+				break;
+			}
+			estimators[i] = ai->GetNewX();
+		}
+		if (missingValues == 0)
+		{
+			double* estimated = getEstimatedValAt(0, firstValid, firstValid, estimators);
+			for (int ti = 0; ti < firstValid; ti++)
+			{
+				PositionAdjustInfo2* ai = GetAdjustInfoNoChange(diag, ti);
+				if (ai == NULL)
+				{
+					continue;
+				}
+				ai->SetNewX(estimated[ti]);
+			}
+			free(estimated);
+			hasUnsavedAdjustments = 1;
+		}
+	}
+	*/
+	for (int x = 0; x < adjustInfoHeader.width; x++)
+	{
+		printf("Process col forward %d\n", x);
+		// find first X that is missing info
+		int firstValidY = 0;
+		for (; firstValidY < adjustInfoHeader.height - ESTIMATOR_COUNT; firstValidY++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, firstValidY);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkYFlags) == 0)
+			{
+				break;
+			}
+		}
+
+		double estimators[ESTIMATOR_COUNT] = { 0 };
+		int missingValues = 0;
+		for (int i = 0; i < _countof(estimators); i++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, firstValidY + i);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkYFlags) == 0)
+			{
+				missingValues = 1;
+				break;
+			}
+			estimators[i] = ai->GetNewY();
+
+		}
+		if (missingValues == 0)
+		{
+			double* estimated = getEstimatedValAt(0, firstValidY, firstValidY, estimators);
+			for (int ty = 0; ty < firstValidY; ty++)
+			{
+				PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, ty);
+				if (ai == NULL)
+				{
+					continue;
+				}
+				ai->SetNewY(estimated[ty]);
+			}
+			free(estimated);
+			hasUnsavedAdjustments = 1;
+		}
+	}
+	for (int x = 0; x < adjustInfoHeader.width; x++)
+	{
+		printf("Process col backward %d\n", x);
+		// find first X that is missing info
+		int lastValidY = adjustInfoHeader.height;
+		for (; lastValidY > ESTIMATOR_COUNT; lastValidY--)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, lastValidY);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkYFlags) == 0)
+			{
+				break;
+			}
+		}
+
+		lastValidY -= ESTIMATOR_COUNT;
+		double estimators[ESTIMATOR_COUNT] = { 0 };
+		int missingValues = 0;
+		for (int i = 0; i < _countof(estimators); i++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, lastValidY + i);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if ((ai->flags & checkYFlags) == 0)
+			{
+				missingValues = 1;
+				break;
+			}
+			estimators[i] = ai->GetNewY();
+
+		}
+		if (missingValues == 0)
+		{
+			double* estimated = getEstimatedValAt(lastValidY + ESTIMATOR_COUNT, adjustInfoHeader.height, lastValidY, estimators);
+			for (int ty = lastValidY + ESTIMATOR_COUNT; ty < adjustInfoHeader.height; ty++)
+			{
+				PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, ty);
+				if (ai == NULL)
+				{
+					continue;
+				}
+				ai->SetNewY(estimated[ty-(lastValidY + ESTIMATOR_COUNT)]);
+			}
+			free(estimated);
+			hasUnsavedAdjustments = 1;
+		}
+	}
+
+	// still have missing values ? Use closest available without any compensation
+#endif
 }

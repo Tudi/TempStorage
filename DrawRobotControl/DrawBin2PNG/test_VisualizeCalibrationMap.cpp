@@ -22,7 +22,7 @@ void Test_VisualizeCallibrationMap()
 		{
 			continue;
 		}
-		int correctedX = ai->GetNewX(); // should be middle centered with range between -6000,6000
+		int correctedX = (int)ai->GetNewX(); // should be middle centered with range between -6000,6000
 		printf("Corrected x=%d to %d at row %d\n", xMiddleCentered, correctedX, yMiddleCentered);
 		int correctedY = yMiddleCentered;
 		int xImgCentered1 = IMG_CENTER + correctedX;

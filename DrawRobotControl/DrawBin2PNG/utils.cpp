@@ -1,4 +1,7 @@
 #include "StdAfx.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void LogMessage(const char* file, int line, const char* msg)
 { 
@@ -204,7 +207,7 @@ void DrawLineColorFade(FIBITMAP* Img, float sx, float sy, float ex, float ey, BY
 	}
 	float xinc = dx / steps;
 	float yinc = dy / steps;
-	float colorStep = 0.5 / steps;
+	float colorStep = 0.5f / steps;
 
 	BYTE* Bytes = FreeImage_GetBits(Img);
 	int Stride = FreeImage_GetPitch(Img);
@@ -219,9 +222,9 @@ void DrawLineColorFade(FIBITMAP* Img, float sx, float sy, float ex, float ey, BY
 			continue;
 		}
 		float colorMul = colorStep * step;
-		Bytes[y * Stride + x * Bytespp + 0] = B / 2 + B * colorMul;
-		Bytes[y * Stride + x * Bytespp + 1] = G / 2 + G * colorMul;
-		Bytes[y * Stride + x * Bytespp + 2] = R / 2 + R * colorMul;
+		Bytes[y * Stride + x * Bytespp + 0] = (BYTE)(B / 2 + B * colorMul);
+		Bytes[y * Stride + x * Bytespp + 1] = (BYTE)(G / 2 + G * colorMul);
+		Bytes[y * Stride + x * Bytespp + 2] = (BYTE)(R / 2 + R * colorMul);
 	}
 }
 
@@ -230,4 +233,38 @@ int getSign(double a)
 	if (a == 0) return 0;
 	if (a < 0) return -1;
 	return 1;
+}
+
+char* exec(const char* cmd)
+{
+#define BUFFER_SIZE 1024
+	char buffer[BUFFER_SIZE]; // Buffer to store output
+
+	FILE* pipe = _popen(cmd, "r"); // Open pipe to execute command
+	if (!pipe) {
+		printf("Failed to execute command\n");
+		return NULL;
+	}
+
+	size_t length = 0; // Length of output string
+	size_t written = 0;
+	char* output = NULL; // Output string
+
+	// Read command output line by line and append to output string
+	while (fgets(buffer, BUFFER_SIZE, pipe))
+	{
+		length += strlen(buffer) + 2;
+		char* output2 = (char*)realloc(output, length + 1);
+		if (output2 == NULL)
+		{
+			free(output);
+			return NULL;
+		}
+		output = output2;
+		strcpy_s(&output[written], length - written, buffer);
+		written += strlen(buffer);
+	}
+
+	_pclose(pipe); // Close pipe
+	return output;
 }

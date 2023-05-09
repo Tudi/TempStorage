@@ -2,7 +2,7 @@
 
 // managed to draw max, non stretched, 2900 commands. Non adjusted that is about 5 inches
 #define NUM_COMMANDS_PER_UNIT	25
-#define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*0.7f) // try to not full fill tear
+#define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*0.70f) // try to not full fill tear
 
 int isLineWithinTear(int sx, int sy, int ex, int ey)
 {
@@ -13,7 +13,7 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	static BYTE* tearBytes = NULL;
 	if (tearImg == NULL)
 	{
-		tearImg = LoadImage_("SA_2_Tear_filled_2.bmp");
+		tearImg = LoadImage_("SA_2_Tear_filled_3.bmp");
 		if (tearImg)
 		{
 			tearStride = FreeImage_GetPitch(tearImg);
@@ -64,6 +64,7 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	return IsWithin == 2;
 }
 
+#if 0
 void drawMeasurementLines(int lines, int isHorizontal)
 {
 	SOFT_ASSERT((lines % 2) == 0, "There needs to be a reference line at the origin");
@@ -137,6 +138,7 @@ void drawMeasurementLines(int lines, int isHorizontal)
 
 	bfw.CloseFile();
 }
+#endif
 
 //#define USE_LINE_DRAW_FUNC(sx,sy,ex,ey) bfw.AddLineAntiDistorted(sx/PIXELS_IN_INCH,sy/PIXELS_IN_INCH,ex/PIXELS_IN_INCH,ey/PIXELS_IN_INCH)
 #define USE_LINE_DRAW_FUNC(sx,sy,ex,ey) bfw.AddLineAntiDistorted(sx,sy,ex,ey)
@@ -149,15 +151,15 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 	char fileName[500];
 	if (isHorizontal == 1)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_03_23.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_70_05_09.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 0)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_03_23.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_70_05_09.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 3)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_03_23.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_70_05_09.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 
 	BinFileWriter bfw(fileName);

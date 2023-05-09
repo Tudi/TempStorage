@@ -69,10 +69,10 @@ int stride;
 BYTE* bytes;
 int manualMarkedOriginX = 0;
 int manualMarkedOriginY = 0;
-#define InterSectionsOrigin 40
+#define InterSectionsOrigin 60
 IntersectionData intersectionsMat[100][100];
-double lineToLineDistance = 17; // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
-double expectedLineToLineDistance = 50; // scale the whole image up so that lineToLineDistance becomes expectedLineToLineDistance. Measured in movement units
+#define lineToLineDistance 17 // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
+#define expectedLineToLineDistance 50 // scale the whole image up so that lineToLineDistance becomes expectedLineToLineDistance. Measured in movement units
 
 #define DELETE_PIXEL(sx,sy) { bytes[(sy) * stride + (sx) * 3 + 0] = 255; bytes[(sy) * stride + (sx) * 3 + 1] = 255; bytes[(sy) * stride + (sx) * 3 + 2] = 255;}
 #define SetPixelColor(sx,sy,r,g,b) { bytes[(sy) * stride + (sx) * 3 + 0] = b; bytes[(sy) * stride + (sx) * 3 + 1] = g; bytes[(sy) * stride + (sx) * 3 + 2] = r;}
@@ -325,12 +325,13 @@ void DrawMotionVectors()
 		int yExpected = intersections[i].y;
 		int xFound = intersections[i].picX;
 		int yFound = intersections[i].picY;
-		if (abs(xExpected) == 15 || abs(yExpected) == 15)
+//		if (abs(xExpected) == 15 || abs(yExpected) == 15)
 		{
 			DrawLineColor(Img, (float)(manualMarkedOriginX + xExpected * lineToLineDistance), (float)(manualMarkedOriginY + yExpected * lineToLineDistance), (float)xFound, (float)yFound, 255, 0, 0);
 		}
 	}
 }
+
 
 void PrintMotionVectors()
 {
@@ -350,12 +351,12 @@ void PrintMotionVectors()
 		int yExpected = intersections[i].y;
 		double sx = xExpected * 17;
 		double sy = yExpected * 17;
-//		if (!(sx >= 0 && sy >= 0))
-//		if (!(sx <= 0 && sy >= 0))
-//		if (!(sx <= 0 && sy <= 0))
+		//		if (!(sx >= 0 && sy >= 0))
+		//		if (!(sx <= 0 && sy >= 0))
+		//		if (!(sx <= 0 && sy <= 0))
 		if (!(sx >= 0 && sy <= 0))
 		{
-//			continue;
+			//			continue;
 		}
 		double ex = intersections[i].picX - manualMarkedOriginX;
 		double ey = intersections[i].picY - manualMarkedOriginY;
@@ -422,7 +423,7 @@ void UpdateAdjustmentMap()
 		ex = sx - dx;
 		ey = sy - dy;
 		// 
-		sLineAdjuster2.AdjustPosition(sx, sy, ex, ey);
+		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, ex, ey);
 		DrawLineColorFade(dib, (float)sx + IMG_SIZE / 2, (float)sy + IMG_SIZE / 2, (float)ex + IMG_SIZE / 2, (float)ey + IMG_SIZE / 2, 255, 255, 255);
 	}
 	BYTE* bytes = FreeImage_GetBits(dib);
@@ -492,6 +493,7 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	}
 	printf("Found %d intersections \n", ICount);
 
+#if 1
 	// some formatting and sanity checks
 	memset(intersectionsMat, 0, sizeof(intersectionsMat));
 	int minX = 10000, maxX = -10000, minY = 10000, maxY = -10000;
@@ -534,11 +536,12 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 		}
 	}
 	printf("minX=%d,maxX=%d,minY=%d,maxY=%d\n", minX, maxX, minY, maxY);
-
+#endif
 	// debugging visually
 //	DrawMotionVectors();
 //	PrintMotionVectors();
-//	UpdateAdjustmentMap();
+	UpdateAdjustmentMap();
+	sLineAdjuster2.FillMissingInfo();
 
 	SaveImagePNG(Img, "tv.png");
 

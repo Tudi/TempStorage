@@ -95,18 +95,18 @@ public:
 	void AdjustPosition(int x, int y, double shouldBeX, double shouldBeY);
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	PositionAdjustInfo2* GetAdjustInfo(int x, int y);
-	void DebugDumpMapToImage(int col);
 	// to support sub pixel accuracy. Required to avoid accumulating positioning error on lots of small segments
 	Adjusted2DPos2 GetAdjustedPos(double x, double y);
 	void CreateNewMap(PositionAdjustInfoHeader2* header);
+
+	void DebugDumpMapToImage(int col);
+	void FillMissingInfo();
 private:
 	void LoadAdjusterMap();
 	void SaveAdjusterMap();
+	void ScanMatFillMissingValues(int sx, int sy, int dirX, int dirY, int checkFlags);
 	// position is non adjusted memory map position
 	PositionAdjustInfo2* GetAdjustInfoNoChange(int x, int y);
-	void FindClosestKnown(int x, int y, int flag, PositionAdjustInfo2** out_ai, int& atx, int& aty);
-	void FindClosestKnownRight(int sx, int sy, PositionAdjustInfo2** out_right, int& atx_right);
-	void FindClosestKnownDown(int sx, int sy, PositionAdjustInfo2** out_down, int& aty_right);
 	PositionAdjustInfoHeader2 adjustInfoHeader;
 	PositionAdjustInfo2* adjustInfoMap;
 	int hasUnsavedAdjustments;
