@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 
-#define TEAR_MAX_COMMANDS_QAURTER 2000
-#define IMG_SIZE 4000
+#define TEAR_MAX_COMMANDS_QAURTER 3000
+#define IMG_SIZE 6000
 #define IMG_CENTER ( IMG_SIZE/2)
 
 void Test_VisualizeCallibrationMap()

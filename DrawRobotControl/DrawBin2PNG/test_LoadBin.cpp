@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-#define ImageSizeMultiplier 2
+#define ImageSizeMultiplier 3
 
 void Test_LoadBinFileGeneric(const char* fileName)
 {

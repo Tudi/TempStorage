@@ -92,7 +92,7 @@ public:
 	/// <param name="header"></param>
 	void DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line);
 	/// position is in robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
-	void AdjustPosition(int x, int y, double shouldBeX, double shouldBeY);
+	void AdjustPosition(int x, int y, double shouldBeX, double shouldBeY, int isInitial);
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	PositionAdjustInfo2* GetAdjustInfo(int x, int y);
 	// to support sub pixel accuracy. Required to avoid accumulating positioning error on lots of small segments

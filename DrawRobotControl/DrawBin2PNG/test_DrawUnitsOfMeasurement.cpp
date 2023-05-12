@@ -2,7 +2,8 @@
 
 // managed to draw max, non stretched, 2900 commands. Non adjusted that is about 5 inches
 #define NUM_COMMANDS_PER_UNIT	25
-#define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*0.70f) // try to not full fill tear
+#define TEAR_MULTIPLIER 0.90f
+#define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*TEAR_MULTIPLIER) // try to not full fill tear
 
 int isLineWithinTear(int sx, int sy, int ex, int ey)
 {
@@ -13,7 +14,7 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	static BYTE* tearBytes = NULL;
 	if (tearImg == NULL)
 	{
-		tearImg = LoadImage_("SA_2_Tear_filled_3.bmp");
+		tearImg = LoadImage_("SA_2_Tear_filled_5.bmp");
 		if (tearImg)
 		{
 			tearStride = FreeImage_GetPitch(tearImg);
@@ -151,15 +152,15 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 	char fileName[500];
 	if (isHorizontal == 1)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_70_05_09.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER*100));
 	}
 	else if (isHorizontal == 0)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_70_05_09.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
 	}
 	else if (isHorizontal == 3)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_70_05_09.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
 	}
 
 	BinFileWriter bfw(fileName);
@@ -254,6 +255,6 @@ void Test_DrawUnitsOfMeasurement()
 //	drawMeasurementLines(30, 0);
 //	drawMeasurementLines(30, 3);
 
-	drawMeasurementFullLines(60, 1);
-	drawMeasurementFullLines(60, 0);
+	drawMeasurementFullLines(76, 1);
+	drawMeasurementFullLines(76, 0);
 }
