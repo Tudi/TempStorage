@@ -13,14 +13,14 @@ namespace ShowAvailableMinutes
         private GetGoogleData myDoc;
         private int _redFlags;
 
-        private readonly RegistryKey _registryKey1;
+        private readonly RegistryKey _heartBeatRegKey;
         private const string RegistryPath1 = "SOFTWARE\\WOW6432Node\\MinCounter";
         private const string RegistryValueName1 = "UIHeartBeat";
         public Form1()
         {
             InitializeComponent();
 
-            _registryKey1 = Registry.LocalMachine.OpenSubKey(RegistryPath1, true) ?? Registry.LocalMachine.CreateSubKey(RegistryPath1);
+            _heartBeatRegKey = Registry.LocalMachine.OpenSubKey(RegistryPath1, true) ?? Registry.LocalMachine.CreateSubKey(RegistryPath1);
 
             _redFlags = 0;
 
@@ -38,18 +38,18 @@ namespace ShowAvailableMinutes
         {
             _timer.Stop();
             _timer.Dispose();
-            _registryKey1.Close();
+            _heartBeatRegKey.Close();
         }
 
         private void UpdateUsedTime()
         {
             const string RegistryPath1 = "SOFTWARE\\WOW6432Node\\MinCounter";
             const string RegistryValueName1 = "SumOf5";
-            using (RegistryKey _registryKey1 = Registry.LocalMachine.OpenSubKey(RegistryPath1, false))
+            using (RegistryKey _minutesPlayedRegKey = Registry.LocalMachine.OpenSubKey(RegistryPath1, false))
             {
-                if (_registryKey1 != null)
+                if (_minutesPlayedRegKey != null)
                 {
-                    var regVal = _registryKey1.GetValue(RegistryValueName1, 0);
+                    var regVal = _minutesPlayedRegKey.GetValue(RegistryValueName1, 0);
                     if (regVal != null)
                     {
                         long modMinutes = (DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 60) % 5;
@@ -61,8 +61,6 @@ namespace ShowAvailableMinutes
 
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            _registryKey1.SetValue(RegistryValueName1, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), RegistryValueKind.DWord);
-
             // get available minutes and refresh UI
             UpdateUsedTime();
             lMinutesHave.Text =  myDoc.GetMinutesAvailable().ToString();
@@ -70,7 +68,10 @@ namespace ShowAvailableMinutes
             // check if we no longer have enough minutes, close the PC
             double haveMinutes = double.Parse(lMinutesHave.Text);
             double playedMinutes = double.Parse(lPlayed.Text);
-            if(haveMinutes <= playedMinutes)
+            double availableMinutes = haveMinutes - playedMinutes;
+            lMinutesRemain.Text = availableMinutes.ToString();
+
+            if(availableMinutes <= 0)
             {
                 lPlayed.BackColor = Color.Red;
                 _redFlags++;
@@ -86,6 +87,7 @@ namespace ShowAvailableMinutes
             }
             else
             {
+                _heartBeatRegKey.SetValue(RegistryValueName1, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), RegistryValueKind.DWord);
                 lPlayed.BackColor = Color.Green;
             }
         }
