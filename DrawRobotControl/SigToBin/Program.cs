@@ -10,10 +10,20 @@ namespace SigToBin
     {
         static void Main(string[] args)
         {
-            SigToBin binFileWriter = new SigToBin();
+            // example to create a BIN file and draw 1 line in it
+            {
+                SigToBin binFileWriter = new SigToBin();
+                binFileWriter.SetBinFileName("LineTest.BIN");
+                binFileWriter.AddLine(-1, -1, 1, 1);
+                binFileWriter.CloseBinFile();
+            }
+            // example to convert a SIG file to BIN file
+            {
+                SigToBin binFileWriter = new SigToBin();
 
 //            binFileWriter.ConvertSigFileToBin("../../../BinFiles/S001 Vertical Half Inch Line.Sig");
-            binFileWriter.ConvertSigFileToBin("../../../BinFiles/S005 Five One Inch Squares.Sig");
+                binFileWriter.ConvertSigFileToBin("../../../BinFiles/S005 Five One Inch Squares.Sig");
+            }
         }
     }
 }
