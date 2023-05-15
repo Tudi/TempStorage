@@ -11,10 +11,18 @@ using System.Threading.Tasks;
 
 namespace SigToBin
 {
+    /// <summary>
+    /// Class to draw lines that get compensated enough to look straight after being drawn by the robot
+    /// </summary>
     public class MotionCalibrator
     {
-        const string CALIBRATION_FILE_NAME = "SA2.cal";
+        const string CALIBRATION_FILE_NAME = "SA2.cal"; // can change this as long as you rename the calibration file
+        const int POSITION_ADJUST_FILE_VERSION = 3; // sanity check to not load unknown formatted calibration files
+        const string CALIBRATION_4CC = "cal "; // sanity check to not load unknown file types
 
+        /// <summary>
+        /// Calibration file header
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         struct PositionAdjustInfoHeader2
         {
@@ -26,6 +34,11 @@ namespace SigToBin
             public float scaleX, scaleY; // MapFile might get large unless scaled down
         };
 
+        /// <summary>
+        /// Flags to store info for every possible calibrated location
+        /// A measured location is something we printed by the robot and used a scanner to get movement feedback
+        /// A set location is an estimated movement feedback using linear interpolation
+        /// </summary>
         [Flags]
         public enum PositionAdjustInfoFlags2 : byte
         {
@@ -35,34 +48,45 @@ namespace SigToBin
             Y_IS_SET = 1 << 3
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        struct Adjusted2DPos2
-        {
-            public double x, y;
-            public bool HasValues;
-        }
-
-        // all the info required to make a line draw straight
+        /// <summary>
+        /// Visual feedback information what the robot actually draws compared to expected drawing
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct PositionAdjustInfo2
         {
             public PositionAdjustInfoFlags2 flags; // not every location will be adjusted. Locations between known adjustments are averaged
 
+            /// <summary>
+            /// Axes has been set by either a direct measurement or by an estimator function
+            /// </summary>
+            /// <returns></returns>
             public bool HasX()
             {
                 return (flags & PositionAdjustInfoFlags2.X_IS_SET) != 0;
             }
 
+            /// <summary>
+            /// A compensated position that would make this line draw straight compared to curved
+            /// </summary>
+            /// <returns></returns>
             public double GetNewX()
             {
                 return shouldBeX;
             }
 
+            /// <summary>
+            /// Axes has been set by either a direct measurement or by an estimator function
+            /// </summary>
+            /// <returns></returns>
             public bool HasY()
             {
                 return (flags & PositionAdjustInfoFlags2.Y_IS_SET) != 0;
             }
 
+            /// <summary>
+            /// A compensated position that would make this line draw straight compared to curved
+            /// </summary>
+            /// <returns></returns>
             public double GetNewY()
             {
                 return shouldBeY;
@@ -72,29 +96,20 @@ namespace SigToBin
             public double shouldBeY; // line needs to be moved to this new specific location in order to look straight
         };
 
-
+        /// <summary>
+        /// Data cached from disk. As was stored on disk
+        /// </summary>
         PositionAdjustInfoHeader2 adjustInfoHeader;
         PositionAdjustInfo2[] adjustInfoMap;
 
-        const int POSITION_ADJUST_FILE_VERSION = 3;
-        const int ADJUST_MAP_DEFAULT_WIDTH = 1600;
-        const int ADJUST_MAP_DEFAULT_HEIGHT = 1600;
-        const float DEFAULT_WIDTH_SCALER = 0.20f;
-        const float DEFAULT_HEIGHT_SCALER = 0.20f;
-        const string CALIBRATION_4CC = "cal ";
-
+        /// <summary>
+        /// Avoid reloading this 'service' every time a line is drawn. Load it on Application startup
+        /// Feel free to change the load even to 'onDemand' if it suits the application better
+        /// </summary>
         private static readonly MotionCalibrator instance = new MotionCalibrator();
         private MotionCalibrator() { }
         static MotionCalibrator()
         {
-            MotionCalibrator.Instance.adjustInfoHeader = new PositionAdjustInfoHeader2();
-            MotionCalibrator.Instance.adjustInfoHeader.scaleX = DEFAULT_WIDTH_SCALER;
-            MotionCalibrator.Instance.adjustInfoHeader.scaleY = DEFAULT_HEIGHT_SCALER;
-            MotionCalibrator.Instance.adjustInfoHeader.width = (int)(ADJUST_MAP_DEFAULT_WIDTH);
-            MotionCalibrator.Instance.adjustInfoHeader.height = (int)(ADJUST_MAP_DEFAULT_HEIGHT);
-            MotionCalibrator.Instance.adjustInfoHeader.originX = MotionCalibrator.Instance.adjustInfoHeader.width / 2;
-            MotionCalibrator.Instance.adjustInfoHeader.originY = MotionCalibrator.Instance.adjustInfoHeader.height / 2;
-
             MotionCalibrator.Instance.adjustInfoMap = null;
             // load static distortion map
             MotionCalibrator.Instance.LoadAdjusterMap();
@@ -104,10 +119,9 @@ namespace SigToBin
             get { return instance; }
         }
 
-        public void Dispose()
-        {
-        }
-
+        /// <summary>
+        /// Cache calibration data from disk to memory for faster access
+        /// </summary>
         void LoadAdjusterMap()
         {
             FileStream fs;
@@ -120,6 +134,7 @@ namespace SigToBin
                 return;
             }
 
+            adjustInfoHeader = new PositionAdjustInfoHeader2();
             BinaryReader reader = new BinaryReader(fs);
             adjustInfoHeader.version = reader.ReadInt32();
             adjustInfoHeader.fourCC = reader.ReadInt32();
@@ -180,6 +195,12 @@ namespace SigToBin
             fs.Close();
         }
 
+        /// <summary>
+        /// Calibration data fetch with safety checks regarding memory boundaries
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         PositionAdjustInfo2? GetAdjustInfoNoChange(int x, int y)
         {
             if (x < 0 || x >= adjustInfoHeader.width || y < 0 || y >= adjustInfoHeader.height)
@@ -190,6 +211,19 @@ namespace SigToBin
             return adjustInfoMap[adjustInfoHeader.width * y + x];
         }
 
+        struct Adjusted2DPos2
+        {
+            public double x, y;
+            public bool HasValues;
+        }
+
+        /// <summary>
+        /// Linear interpolate values between measured points.
+        /// This function returns an estimated position between actually measured positions
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         Adjusted2DPos2 GetAdjustedPos(double x, double y)
         {
             Adjusted2DPos2 ret = new Adjusted2DPos2();
@@ -273,6 +307,18 @@ namespace SigToBin
 
             return ret;
         }
+
+        /// <summary>
+        /// Lines drawn will be broken down to sub-lines. This function will draw aprox 1mm long line
+        /// It will accumulate rounding errors and pass it down to the next line to avoid acumulated errors
+        /// </summary>
+        /// <param name="sx"></param>
+        /// <param name="sy"></param>
+        /// <param name="ex"></param>
+        /// <param name="ey"></param>
+        /// <param name="out_line"></param>
+        /// <param name="leftOverX"></param>
+        /// <param name="leftOverY"></param>
         void AppendLineSegment(float sx, float sy, float ex, float ey, ref RelativePointsLine out_line, ref float leftOverX, ref float leftOverY)
         {
             double dx = ex - sx;
@@ -378,6 +424,17 @@ namespace SigToBin
             leftOverX = (float)(dx - writtenDiffX);
             leftOverY = (float)(dy - writtenDiffY);
         }
+
+        /// <summary>
+        /// Drawn a line in memory. Input parameters are in movement commands ( converted from inches )
+        /// Input parameters are from cartesian 2D coordinate system
+        /// The line points will be mapped to a multi cirved 3D surface in order for the line to look straight
+        /// </summary>
+        /// <param name="sx"></param>
+        /// <param name="sy"></param>
+        /// <param name="ex"></param>
+        /// <param name="ey"></param>
+        /// <param name="out_line"></param>
         public void DrawLine(float sx, float sy, float ex, float ey, ref RelativePointsLine out_line)
         {
             double dx = ex - sx;
