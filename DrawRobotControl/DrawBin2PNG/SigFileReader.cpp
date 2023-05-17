@@ -103,6 +103,11 @@ void ReadSigFile(const char* fileName)
 		if (prevX != INVALID_VALUE && prevY != INVALID_VALUE && curX != INVALID_VALUE && curY != INVALID_VALUE)
 		{
 //#define apply_specific_correction curX = curX - (3.6f + 1.1334f) / 2; curY = curY - (9.81374f + 9.79107f) / 2; curX *= 1.3f;curY *= 1.3f;
+//#define apply_specific_correction curX = curX - (3.6f + 1.1334f) / 2; curY = curY - (9.81374f + 9.79107f) / 2; // for Dennis name
+//#define apply_specific_correction curX = curX - (5.89f + 1.14f) / 2; curY = curY - (9.86f + 8.227f) / 2; // for paragraph
+//#define apply_specific_correction curX = curX - (5.89f + 1.14f) / 2; curY = curY - (9.86f + 8.227f) / 2; curX *= 0.7f;curY *= 0.7f; // for paragraph
+//#define apply_specific_correction curX = curX - (3.841f + 0.24894f) / 2; // for BigWheel.sig
+//#define apply_specific_correction curX = curX - (3.841f + 0.24894f) / 2; curX *= 0.7f;curY *= 0.7f; // for BigWheel.sig
 #define apply_specific_correction ;
 			apply_specific_correction
 //			bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);

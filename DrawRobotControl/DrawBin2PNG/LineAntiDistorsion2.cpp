@@ -7,8 +7,8 @@
 #define ADJUST_MAP_DEFAULT_WIDTH 1600
 #define ADJUST_MAP_DEFAULT_HEIGHT 1600
 // we can adjust every 10th command. Inbetween values should be smoothed by line draw
-#define DEFAULT_WIDTH_SCALER 0.30f 
-#define DEFAULT_HEIGHT_SCALER 0.30f
+#define DEFAULT_WIDTH_SCALER 0.20f 
+#define DEFAULT_HEIGHT_SCALER 0.20f
 #define LINE_GAP_CONSIDERED_BUG	100 // measured in movement units. 600 movements = 1 inch
 
 LineAntiDistorsionAdjuster2 sLineAdjuster2;
@@ -317,7 +317,7 @@ void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX,
 	}
 }
 
-void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLine* out_line, float &leftOverX, float& leftOverY)
+void AppendLineSegment(double sx, double sy, double ex, double ey, RelativePointsLine* out_line, double &leftOverX, double &leftOverY)
 {
 	double dx = ex - sx;
 	double dy = ey - sy;
@@ -419,8 +419,8 @@ void AppendLineSegment(float sx, float sy, float ex, float ey, RelativePointsLin
 		}
 	}
 
-	leftOverX = (float)(dx - writtenDiffX);
-	leftOverY = (float)(dy - writtenDiffY);
+	leftOverX = (dx - writtenDiffX);
+	leftOverY = (dy - writtenDiffY);
 }
 
 double angleBetweenPoints(double x1, double y1, double x2, double y2) 
@@ -430,12 +430,10 @@ double angleBetweenPoints(double x1, double y1, double x2, double y2)
 	return atan2(deltaY, deltaX) * (180 / 3.14);
 }
 
-void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line)
+void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line, double &leftOverX, double &leftOverY)
 {
 	double dx = ex - sx;
 	double dy = ey - sy;
-	float leftOverX = 0;
-	float leftOverY = 0;
 	if (dx == dy && dx == 0)
 	{
 		return;
@@ -457,7 +455,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
 
-#define SUB_LINE_LEN 25
+#define SUB_LINE_LEN 10
 	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
 	{
 		double sx2 = sx + step * xIncForStep;
@@ -477,7 +475,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 		Adjusted2DPos2 aiEnd = GetAdjustedPos((float)ex2, (float)ey2);
 		if (aiStart.HasValues && aiEnd.HasValues)
 		{
-			sx2 = aiStart.x;
+			sx2 = aiStart.x; 
 			sy2 = aiStart.y;
 			ex2 = aiEnd.x;
 			ey2 = aiEnd.y;
@@ -532,7 +530,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 			anglePrev = angleNow;
 		}
 #endif
-		AppendLineSegment((float)sx2, (float)sy2, (float)ex2, (float)ey2, out_line, leftOverX, leftOverY);
+		AppendLineSegment(sx2, sy2, ex2, ey2, out_line, leftOverX, leftOverY);
 	}
 
 	out_line->setEndPosition(ex, ey);
@@ -844,4 +842,138 @@ void LineAntiDistorsionAdjuster2::FillMissingInfo()
 		// scan bottom to top
 		ScanMatFillMissingValues(x, adjustInfoHeader.height - 1, 0, -1, Y_IS_SET);
 	} */
+}
+
+void LineAntiDistorsionAdjuster2::FillMissingInfo2()
+{
+#if 0
+	for (int y = 0; y < adjustInfoHeader.height; y++)
+	{
+		int minX = 10000, maxX = -10000;
+		for (int x = 0; x < adjustInfoHeader.width; x++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, y);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if (minX > x && ai->HasXMeasured())
+			{
+				minX = x;
+			}
+			if (maxX < x && ai->HasXMeasured())
+			{
+				maxX = x;
+			}
+			// if Y above us are missing values, copy them
+			{
+				PositionAdjustInfo2* aiTop = GetAdjustInfoNoChange(x, y - 1);
+				if (aiTop != NULL && ai->HasYMeasured() && aiTop->HasYMeasured() == 0)
+				{
+					for (int y2 = y - 1; y2 >= 0; y2--)
+					{
+						PositionAdjustInfo2* aiTop2 = GetAdjustInfoNoChange(x, y2);
+						aiTop2->SetNewY(ai->GetNewY());
+					}
+				}
+			}
+			// if Y below us are missing values, copy them
+			{
+				PositionAdjustInfo2* aiBottom = GetAdjustInfoNoChange(x, y + 1);
+				if (aiBottom != NULL && ai->HasYMeasured() && aiBottom->HasYMeasured() == 0)
+				{
+					for (int y2 = y + 1; y2 < adjustInfoHeader.height; y2++)
+					{
+						PositionAdjustInfo2* aiTop2 = GetAdjustInfoNoChange(x, y2);
+						aiTop2->SetNewY(ai->GetNewY());
+					}
+				}
+			}
+		}
+		// spread X values to the left
+		if(minX != 10000)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(minX, y);
+			for (int x2 = minX - 1; x2 >= 0; x2--)
+			{
+				PositionAdjustInfo2* aiLeft = GetAdjustInfoNoChange(x2, y);
+				aiLeft->SetNewX(ai->GetNewX());
+			}
+		}
+		// spread X values to the right
+		if (maxX != -10000)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(maxX, y);
+			for (int x2 = maxX + 1; x2 < adjustInfoHeader.width; x2++)
+			{
+				PositionAdjustInfo2* aiRight = GetAdjustInfoNoChange(x2, y);
+				aiRight->SetNewX(ai->GetNewX());
+			}
+		}
+	}
+	for (int x = 0; x < adjustInfoHeader.width; x++)
+	{
+		int minY = 10000, maxY = -10000;
+		for (int y = 0; y < adjustInfoHeader.height; y++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, y);
+			if (ai == NULL)
+			{
+				continue;
+			}
+			if (minY > y && ai->HasYMeasured())
+			{
+				minY = y;
+			}
+			if (maxY < y && ai->HasYMeasured())
+			{
+				maxY = y;
+			}
+			// if X to left are missing values, copy them
+			{
+				PositionAdjustInfo2* aiLeft = GetAdjustInfoNoChange(x - 1, y);
+				if (aiLeft != NULL && ai->HasXMeasured() && aiLeft->HasXMeasured() == 0)
+				{
+					for (int x2 = x - 1; x2 >= 0; x2--)
+					{
+						PositionAdjustInfo2* aiLeft2 = GetAdjustInfoNoChange(x2, y);
+						aiLeft2->SetNewX(ai->GetNewX());
+					}
+				}
+			}
+			// if X right to us are missing values, copy them
+			{
+				PositionAdjustInfo2* aiRight = GetAdjustInfoNoChange(x + 1, y);
+				if (aiRight != NULL && ai->HasXMeasured() && aiRight->HasXMeasured() == 0)
+				{
+					for (int x2 = x + 1; x2 < adjustInfoHeader.width; x2++)
+					{
+						PositionAdjustInfo2* aiRight2 = GetAdjustInfoNoChange(x2, y);
+						aiRight2->SetNewX(ai->GetNewX());
+					}
+				}
+			}
+		}
+		// spread Y values to the left
+		if (minY != 10000)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, minY);
+			for (int y2 = minY - 1; y2 >= 0; y2--)
+			{
+				PositionAdjustInfo2* aiTop = GetAdjustInfoNoChange(x, y2);
+				aiTop->SetNewY(ai->GetNewY());
+			}
+		}
+		// spread X values to the right
+		if (maxY != -10000)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, maxY);
+			for (int y2 = maxY + 1; y2 < adjustInfoHeader.height; y2++)
+			{
+				PositionAdjustInfo2* aiBottom = GetAdjustInfoNoChange(x, y2);
+				aiBottom->SetNewY(ai->GetNewY());
+			}
+		}
+	}
+#endif
 }

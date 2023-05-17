@@ -90,7 +90,7 @@ public:
 	/// Anti distortion map was generated expecting an inch to have 600 commands
 	/// </summary>
 	/// <param name="header"></param>
-	void DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line);
+	void DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line, double& leftOverX, double& leftOverY);
 	/// position is in robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	void AdjustPosition(int x, int y, double shouldBeX, double shouldBeY, int isInitial);
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
@@ -101,6 +101,7 @@ public:
 
 	void DebugDumpMapToImage(int col);
 	void FillMissingInfo();
+	void FillMissingInfo2();
 private:
 	void LoadAdjusterMap();
 	void SaveAdjusterMap();

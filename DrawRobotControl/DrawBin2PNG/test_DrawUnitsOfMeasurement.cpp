@@ -2,7 +2,7 @@
 
 // managed to draw max, non stretched, 2900 commands. Non adjusted that is about 5 inches
 #define NUM_COMMANDS_PER_UNIT	25
-#define TEAR_MULTIPLIER 0.90f
+#define TEAR_MULTIPLIER 0.80f
 #define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*TEAR_MULTIPLIER) // try to not full fill tear
 
 int isLineWithinTear(int sx, int sy, int ex, int ey)

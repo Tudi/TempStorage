@@ -54,6 +54,7 @@ typedef struct RobotDrawSession
 {
 	float startx, starty; // should be the same as origo ? 0,0 ?
 	float curx, cury;
+	double roundingX, roundingY; // less then a full movement command at the end of the line
 	int linesDrawn;
 	int linesNotDrawn; // line while the pen is in the air
 	RobotCommand prevCMD;

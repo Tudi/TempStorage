@@ -498,7 +498,7 @@ void InitAdjustmentMap()
 	FreeImage_Unload(dib);
 }
 
-void UpdateAdjustmentMap()
+void UpdateAdjustmentMap(double ImpactCoeff = 1.0)
 {
 	// build a calibration map out of the obtained data
 	FIBITMAP* dib = CreateNewImage(IMG_SIZE_DEBUG_VECTORS, IMG_SIZE_DEBUG_VECTORS);
@@ -521,7 +521,7 @@ void UpdateAdjustmentMap()
 		double dx = ex - sx;
 		double dy = ey - sy;
 		// 
-		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, -dx, -dy, 0);
+		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, -dx * ImpactCoeff, -dy * ImpactCoeff, 0);
 		ex = sx - dx;
 		ey = sy - dy;
 		DrawLineColorFade(dib, (float)sx + IMG_SIZE_DEBUG_VECTORS / 2, (float)sy + IMG_SIZE_DEBUG_VECTORS / 2, (float)ex + IMG_SIZE_DEBUG_VECTORS / 2, (float)ey + IMG_SIZE_DEBUG_VECTORS / 2, 255, 255, 255);
@@ -759,8 +759,8 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	}
 	else
 	{
-//		UpdateAdjustmentMap();
-//		sLineAdjuster2.FillMissingInfo();
+		UpdateAdjustmentMap(1);
+//		sLineAdjuster2.FillMissingInfo2();
 		SaveImagePNG(Img, "tv2.png");
 	}
 
@@ -771,5 +771,6 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 void Test_loadCallibrationImages2()
 {
 //	LoadSpecificCallibrationImage("./stretch_maps/horver3_05_10.bmp", 1, 25, 1);
-	LoadSpecificCallibrationImage("./stretch_maps/horver3_7_05_11.bmp", 1, 25, 0);
+//	LoadSpecificCallibrationImage("./stretch_maps/horver3_7_05_11.bmp", 1, 25, 0);
+	LoadSpecificCallibrationImage("./stretch_maps/horver_4_4_05_16.bmp", 1, 25, 0);
 }
