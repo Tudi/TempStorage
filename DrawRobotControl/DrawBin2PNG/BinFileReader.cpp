@@ -17,6 +17,7 @@ void RobotCommand_Constructor(RobotCommand* CMD, BYTE fromByte = 0)
 void RobotSession_Constructor(RobotDrawSession* robotSession)
 {
 	memset(robotSession, 0, sizeof(RobotDrawSession));
+	robotSession->moveSpeedCoeff = 1; // 100% movement speed
 	RobotCommand_Constructor(&robotSession->prevCMD);
 }
 

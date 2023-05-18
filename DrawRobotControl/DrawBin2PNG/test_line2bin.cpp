@@ -14,7 +14,7 @@ void TestDrawReadLineSpecific(float sx, float sy, float ex, float ey)
 	RelativePointsLine lineWritten;
 	RelativePointsLine lineRead;
 	lineWritten.setStartingPosition(robotSession.curx, robotSession.cury);
-	DrawLineRelativeInMem(sx, sy, ex, ey, &lineWritten);
+	DrawLineRelativeInMem(sx, sy, ex, ey, &lineWritten, robotSession.roundingX, robotSession.roundingY);
 
 	{
 		FILE* f = NULL;

@@ -4,62 +4,62 @@ void drawClockPNG(FIBITMAP* dib, RobotDrawSession& robotSession)
 {
 	RelativePointsLine line;
 	line.setStartingPosition(robotSession.curx, robotSession.cury);
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.5) * PIXELS_IN_INCH), &line);
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.5) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.433) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.433) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.25) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.25) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.5) * PIXELS_IN_INCH), robotSession.cury + (float)((0) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.5) * PIXELS_IN_INCH), robotSession.cury + (float)((0) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((0.433) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((0.433) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((0.25) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((-0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((0.25) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0) * PIXELS_IN_INCH), robotSession.cury + (float)((0.5) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0) * PIXELS_IN_INCH), robotSession.cury + (float)((0.5) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((0.433) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((0.433) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((0.25) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((0.25) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.5) * PIXELS_IN_INCH), robotSession.cury + (float)((0) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.5) * PIXELS_IN_INCH), robotSession.cury + (float)((0) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.433) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.25) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.433) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 
-	robotSession.curx = robotSession.startx;
-	robotSession.cury = robotSession.starty;
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.25) * PIXELS_IN_INCH), &line);
+	robotSession.curx = 0;
+	robotSession.cury = 0;
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, robotSession.curx + (float)((0.433) * PIXELS_IN_INCH), robotSession.cury + (float)((-0.25) * PIXELS_IN_INCH), &line, robotSession.roundingX, robotSession.roundingY);
 	DrawBinLineOnPNG(dib, robotSession.curx, robotSession.cury, &line);
 }
 
@@ -133,6 +133,7 @@ void DrawClockAnyRadius(double R_inches, double lineCount)
 	sprintf_s(fileName, sizeof(fileName), "clock_%.02f_%d.bin", R_inches, (int)lineCount);
 
 	BinFileWriter bfw(fileName);
+//	bfw.SetDrawSpeedPCT(25);
 
 	double angleIncrement = 360 / lineCount;
 	double originX = 0;
@@ -152,8 +153,8 @@ void DrawClockAnyRadius(double R_inches, double lineCount)
 void Test_DrawClock()
 {
 //	drawClockBin();
-	DrawClockAnyRadius(1, 10);
+//	DrawClockAnyRadius(1, 10);
 	DrawClockAnyRadius(2, 20);
 //	DrawClockAnyRadius(2.5, 60);
-	DrawClockAnyRadius(3, 30);
+//	DrawClockAnyRadius(3, 30);
 }

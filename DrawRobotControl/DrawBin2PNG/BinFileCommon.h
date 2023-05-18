@@ -52,11 +52,14 @@ typedef struct RobotCommand
 // lines move relatively, need to track pen position, reset pen position on specific commands
 typedef struct RobotDrawSession
 {
-	float startx, starty; // should be the same as origo ? 0,0 ?
+//	float startx, starty; // should be the same as origo ? 0,0 ?
 	float curx, cury;
 	double roundingX, roundingY; // less then a full movement command at the end of the line
-	int linesDrawn;
-	int linesNotDrawn; // line while the pen is in the air
+	double moveSpeedCoeff; // 1 = 100% movement speed
+	int stepsWritten; // measure number of steps taken to know when to insert a delay step. Used to make pen move slower
+	int skipsWritten;
+//	int linesDrawn;
+//	int linesNotDrawn; // line while the pen is in the air
 	RobotCommand prevCMD;
 	PenRobotMovementCodesPrimary prevMoveDir;
 }RobotDrawSession;

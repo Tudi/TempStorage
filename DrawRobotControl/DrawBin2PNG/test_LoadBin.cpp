@@ -6,8 +6,8 @@ void Test_LoadBinFileGeneric(const char* fileName)
 {
 	FIBITMAP* dib = CreateNewImage(2048 * ImageSizeMultiplier, 2048 * ImageSizeMultiplier);
 	RobotDrawSession robotSession;
-	robotSession.curx = robotSession.startx = 2048 * ImageSizeMultiplier / 2;
-	robotSession.cury = robotSession.starty = 2048 * ImageSizeMultiplier / 2;
+	robotSession.curx = 2048 * ImageSizeMultiplier / 2;
+	robotSession.cury = 2048 * ImageSizeMultiplier / 2;
 
 //	DrawCircleAt(dib, robotSession.curx, robotSession.cury, 300);
 

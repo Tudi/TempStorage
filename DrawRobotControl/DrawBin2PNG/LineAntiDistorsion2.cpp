@@ -337,90 +337,51 @@ void AppendLineSegment(double sx, double sy, double ex, double ey, RelativePoint
 		lineDrawSteps = abs(dx);
 	}
 
-	int curx = (int)sx;
-	int cury = (int)sy;
-
 	double xIncForStep = dx / lineDrawSteps;
 	double yIncForStep = dy / lineDrawSteps;
-	int writtenDiffX = 0;
-	int writtenDiffY = 0;
-	for (double step = 1; step <= lineDrawSteps; step += 1)
+	double writtenX = -leftOverX;
+	double writtenY = -leftOverY;
+	double step = 0;
+	do
 	{
+		step += 1;
+		if (step > lineDrawSteps)
+		{
+			step = lineDrawSteps;
+		}
 		double curXPos = step * xIncForStep;
 		double curYPos = step * yIncForStep;
-		int xdiff = (int)curXPos - writtenDiffX;
-		int ydiff = (int)curYPos - writtenDiffY;
+		double xdiff = curXPos - writtenX;
+		double ydiff = curYPos - writtenY;
 
-		if (xdiff < -1)
+		if (xdiff <= -1.0)
 		{
-			xdiff = -1;
+			writtenX += -1.0;
+			out_line->storeNextPoint(-1.0, 0);
 		}
-		else if (xdiff > 1)
+		else if (xdiff >= 1.0)
 		{
-			xdiff = 1;
+			writtenX += 1.0;
+			out_line->storeNextPoint(1.0, 0);
 		}
-		if (ydiff < -1)
+		if (ydiff <= -1.0)
 		{
-			ydiff = -1;
+			writtenY += -1.0;
+			out_line->storeNextPoint(0, -1.0);
 		}
-		else if (ydiff > 1)
+		else if (ydiff >= 1.0)
 		{
-			ydiff = 1;
+			writtenY += 1.0;
+			out_line->storeNextPoint(0, 1.0);
 		}
+	} while (step != lineDrawSteps);
 
-		if (xdiff != 0)
-		{
-			writtenDiffX += xdiff;
-			out_line->storeNextPoint(xdiff, 0);
-			curx += xdiff;
-		}
-		if (ydiff != 0)
-		{
-			writtenDiffY += ydiff;
-			out_line->storeNextPoint(0, ydiff);
-			cury += ydiff;
-		}
-	}
-
-	dx += leftOverX;
-	dy += leftOverY;
-
-	// fix rounding errors
-	if (dx < 0)
-	{
-		while (writtenDiffX > (int)dx)
-		{
-			writtenDiffX--;
-			out_line->storeNextPoint(-1, 0);
-		}
-	}
-	if (dx > 0)
-	{
-		while (writtenDiffX < (int)dx)
-		{
-			writtenDiffX++;
-			out_line->storeNextPoint(1, 0);
-		}
-	}
-	if (dy < 0)
-	{
-		while (writtenDiffY > (int)dy)
-		{
-			writtenDiffY--;
-			out_line->storeNextPoint(0, -1);
-		}
-	}
-	if (dy > 0)
-	{
-		while (writtenDiffY < (int)dy)
-		{
-			writtenDiffY++;
-			out_line->storeNextPoint(0, 1);
-		}
-	}
-
-	leftOverX = (dx - writtenDiffX);
-	leftOverY = (dy - writtenDiffY);
+	double curXPos = lineDrawSteps * xIncForStep;
+	double curYPos = lineDrawSteps * yIncForStep;
+	leftOverX = curXPos - writtenX;
+	leftOverY = curYPos - writtenY;
+	SOFT_ASSERT(abs(leftOverX) < 1, "LeftoverX is greater than 1");
+	SOFT_ASSERT(abs(leftOverY) < 1, "LeftoverY is greater than 1");
 }
 
 double angleBetweenPoints(double x1, double y1, double x2, double y2) 
@@ -430,16 +391,17 @@ double angleBetweenPoints(double x1, double y1, double x2, double y2)
 	return atan2(deltaY, deltaX) * (180 / 3.14);
 }
 
-void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float ey, RelativePointsLine* out_line, double &leftOverX, double &leftOverY)
+void LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, double ey, RelativePointsLine* out_line, double &leftOverX, double &leftOverY)
 {
+	out_line->setStartingPosition(sx, sy);
+	out_line->setEndPosition(ex, ey);
+
 	double dx = ex - sx;
 	double dy = ey - sy;
 	if (dx == dy && dx == 0)
 	{
 		return;
 	}
-
-	out_line->setStartingPosition(sx, sy);
 
 	// just to increase the draw accuracy. More points, more smoothness
 	double out_lineDrawSteps;
@@ -455,7 +417,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 	double xIncForStep = dx / out_lineDrawSteps;
 	double yIncForStep = dy / out_lineDrawSteps;
 
-#define SUB_LINE_LEN 10
+#define SUB_LINE_LEN 30.0
 	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
 	{
 		double sx2 = sx + step * xIncForStep;
@@ -530,10 +492,19 @@ void LineAntiDistorsionAdjuster2::DrawLine(float sx, float sy, float ex, float e
 			anglePrev = angleNow;
 		}
 #endif
+#ifdef DEBUG_LEFTOVER_ROLLOVER
+		int pcprev = out_line->GetPointsCount();
+		double preLeftOverX = leftOverX;
+		double preLeftOverY = leftOverY;
+#endif
 		AppendLineSegment(sx2, sy2, ex2, ey2, out_line, leftOverX, leftOverY);
+#ifdef DEBUG_LEFTOVER_ROLLOVER
+		if (pcprev == out_line->GetPointsCount())
+		{
+			printf("\t no point subline between %.02f,%.02f to %.02f,%.02f. preleftover, nowleftover : %.02f,%.02f to %.02f,%.02f\n", sx2, sy2, ex2, ey2, preLeftOverX, preLeftOverY, leftOverX, leftOverY);
+		}
+#endif
 	}
-
-	out_line->setEndPosition(ex, ey);
 }
 
 // visualize the callibration map itself. Scale correction values to calibration map size

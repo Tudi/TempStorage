@@ -59,4 +59,4 @@ void DrawBinLineOnPNG(FIBITMAP *dib, float&x, float&y, RelativePointsLine*line);
 void DrawCircleAt(FIBITMAP* dib, float x, float y, float radius);
 // create a line that will be similar to what it would look like read from the BIN file
 // using this as an experiment to check if issues are with opcode rotations
-void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePointsLine* line);
+void DrawLineRelativeInMem(double sx, double sy, double ex, double ey, RelativePointsLine* line, double &leftoverX, double &leftoverY);

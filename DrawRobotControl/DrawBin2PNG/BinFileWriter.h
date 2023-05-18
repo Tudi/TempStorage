@@ -6,9 +6,10 @@ class BinFileWriter
 {
 public:
 	BinFileWriter(const char *fileName);
-	void AddLine(float sx, float sy, float ex, float ey);
-	void AddLineAntiDistorted(float sx, float sy, float ex, float ey);
+	void AddLine(double sx, double sy, double ex, double ey);
+	void AddLineAntiDistorted(double sx, double sy, double ex, double ey);
 	void CloseFile();
+	void SetDrawSpeedPCT(double pct) { robotSession.moveSpeedCoeff = pct / 100.0; }
 private:
 	void OpenBinFile();
 	bool bHeaderWritten;

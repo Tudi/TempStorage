@@ -140,16 +140,17 @@ void DrawCircleAt(FIBITMAP* in_Img, float x, float y, float radius)
 // relative negative y means to draw it downwards on paper
 // in memory, this would be a positive y
 // Movement units are measured in robot commands ! That means it's rounded to 1 or 0
-void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePointsLine* line)
+void DrawLineRelativeInMem(double sx, double sy, double ex, double ey, RelativePointsLine* out_line, double& leftOverX, double& leftOverY)
 {
+	out_line->setStartingPosition(sx, sy);
+	out_line->setEndPosition(ex, ey);
+
 	double dx = ex - sx;
 	double dy = ey - sy;
 	if (dx == dy && dx == 0)
 	{
 		return;
 	}
-
-	line->setStartingPosition(sx, sy);
 
 	// just to increase the draw accuracy. More points, more smoothness
 	double lineDrawSteps;
@@ -162,89 +163,49 @@ void DrawLineRelativeInMem(float sx, float sy, float ex, float ey, RelativePoint
 		lineDrawSteps = abs(dx);
 	}
 
-	int curx = (int)sx;
-	int cury = (int)sy;
-
 	double xIncForStep = dx / lineDrawSteps;
 	double yIncForStep = dy / lineDrawSteps;
-	int writtenDiffX = 0;
-	int writtenDiffY = 0;
-	for (double step = 1; step <= lineDrawSteps; step += 1)
+	double writtenX = -leftOverX;
+	double writtenY = -leftOverY;
+	double step = 0;
+	do
 	{
+		step += 1;
+		if (step > lineDrawSteps)
+		{
+			step = lineDrawSteps;
+		}
 		double curXPos = step * xIncForStep;
 		double curYPos = step * yIncForStep;
-		int xdiff = (int)curXPos - writtenDiffX;
-		int ydiff = (int)curYPos - writtenDiffY;
+		double xdiff = curXPos - writtenX;
+		double ydiff = curYPos - writtenY;
 
-		if (xdiff < -1)
+		if (xdiff <= -1.0)
 		{
-			xdiff = -1;
+			writtenX += -1.0;
+			out_line->storeNextPoint(-1.0, 0);
 		}
-		else if (xdiff > 1)
+		else if (xdiff >= 1.0)
 		{
-			xdiff = 1;
+			writtenX += 1.0;
+			out_line->storeNextPoint(1.0, 0);
 		}
-		if (ydiff < -1)
+		if (ydiff <= -1.0)
 		{
-			ydiff = -1;
+			writtenY += -1.0;
+			out_line->storeNextPoint(0, -1.0);
 		}
-		else if (ydiff > 1)
+		else if (ydiff >= 1.0)
 		{
-			ydiff = 1;
+			writtenY += 1.0;
+			out_line->storeNextPoint(0, 1.0);
 		}
+	} while (step != lineDrawSteps);
 
-		if (xdiff != 0)
-		{
-			writtenDiffX += xdiff;
-			line->storeNextPoint(xdiff, 0);
-			curx += xdiff;
-		}
-		if (ydiff != 0)
-		{
-			writtenDiffY += ydiff;
-			line->storeNextPoint(0, ydiff);
-			cury += ydiff;
-		}
-	}
-
-	// fix rounding errors
-	if (dx < 0)
-	{
-		while (writtenDiffX > (int)dx)
-		{
-			writtenDiffX--;
-			line->storeNextPoint(-1, 0);
-		}
-	}
-	if (dx > 0)
-	{
-		while (writtenDiffX < (int)dx)
-		{
-			writtenDiffX++;
-			line->storeNextPoint(1, 0);
-		}
-	}
-	if (dy < 0)
-	{
-		while (writtenDiffY > (int)dy)
-		{
-			writtenDiffY--;
-			line->storeNextPoint(0, -1);
-		}
-	}
-	if (dy > 0)
-	{
-		while (writtenDiffY < (int)dy)
-		{
-			writtenDiffY++;
-			line->storeNextPoint(0, 1);
-		}
-	}
-
-	line->setEndPosition(sx + dx, sy + dy);
-
-	SOFT_ASSERT(writtenDiffX == (int)dx, "Did not arrive at destination X");
-	SOFT_ASSERT(writtenDiffY == (int)dy, "Did not arrive at destination y");
+	double curXPos = lineDrawSteps * xIncForStep;
+	double curYPos = lineDrawSteps * yIncForStep;
+	leftOverX = curXPos - writtenX;
+	leftOverY = curYPos - writtenY;
 }
 
 int RelativePointsLine::ensureCanStoreLinePoint(int count = 1)

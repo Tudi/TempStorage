@@ -87,7 +87,7 @@ void BinFileWriter::OpenBinFile()
 	}
 }
 
-void BinFileWriter::AddLine(float sx, float sy, float ex, float ey)
+void BinFileWriter::AddLine(double sx, double sy, double ex, double ey)
 {
 	if (fBinFile == NULL)
 	{
@@ -99,30 +99,37 @@ void BinFileWriter::AddLine(float sx, float sy, float ex, float ey)
 		bHeaderWritten = true;
 	}
 
-	if ((int)robotSession.curx != (int)sx || (int)robotSession.cury != (int)sy)
+	if (robotSession.curx != sx || robotSession.cury != sy)
 	{
 		RelativePointsLine line;
+		double roundingX = robotSession.roundingX;
+		double roundingY = robotSession.roundingY;
 		printf("Moving NODRAW pen from %.02f,%.02f to %.02f,%.02f\n", robotSession.curx, robotSession.cury, sx, sy);
-		DrawLineRelativeInMem(robotSession.curx, robotSession.cury, sx, sy, &line);
+		DrawLineRelativeInMem(robotSession.curx, robotSession.cury, sx, sy, &line, roundingX, roundingY);
 		if (line.GetPointsCount() > 0)
 		{
 			line.setPenPosition( Pen_Up);
 			WriteBinLine(fBinFile, &line, &robotSession);
+			robotSession.roundingX = roundingX;
+			robotSession.roundingY = roundingY;
 		}
 	}
 
 	RelativePointsLine line;
+	double roundingX = robotSession.roundingX;
+	double roundingY = robotSession.roundingY;
 	printf("Draw line from %.02f,%.02f to %.02f,%.02f\n", sx, sy, ex, ey);
-	line.setStartingPosition(robotSession.curx, robotSession.cury);
-	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, ex, ey, &line);
+	DrawLineRelativeInMem(robotSession.curx, robotSession.cury, ex, ey, &line, roundingX, roundingY);
 	if (line.GetPointsCount() > 0)
 	{
 		line.setPenPosition( Pen_Down );
 		WriteBinLine(fBinFile, &line, &robotSession);
+		robotSession.roundingX = roundingX;
+		robotSession.roundingY = roundingY;
 	}
 }
 
-void BinFileWriter::AddLineAntiDistorted(float sx, float sy, float ex, float ey)
+void BinFileWriter::AddLineAntiDistorted(double sx, double sy, double ex, double ey)
 {
 	if (fBinFile == NULL)
 	{
@@ -134,26 +141,50 @@ void BinFileWriter::AddLineAntiDistorted(float sx, float sy, float ex, float ey)
 		bHeaderWritten = true;
 	}
 
-	if ((int)robotSession.curx != (int)sx || (int)robotSession.cury != (int)sy)
+//	if ((int)robotSession.curx != (int)sx || (int)robotSession.cury != (int)sy)
+	if (robotSession.curx != sx || robotSession.cury != sy)
 	{
 		RelativePointsLine line;
+		double roundingX = robotSession.roundingX;
+		double roundingY = robotSession.roundingY;
 		printf("Moving NODRAW pen from %.02f,%.02f to %.02f,%.02f\n", robotSession.curx, robotSession.cury, sx, sy);
-		sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, sx, sy, &line, robotSession.roundingX, robotSession.roundingY);
+		sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, sx, sy, &line, roundingX, roundingY);
 		if (line.GetPointsCount() > 0)
 		{
 			line.setPenPosition(Pen_Up);
 			WriteBinLine(fBinFile, &line, &robotSession);
+			robotSession.roundingX = roundingX;
+			robotSession.roundingY = roundingY;
+		}
+		else
+		{
+			printf("\t Pen movement contained no points\n");
+//			robotSession.curx = sx;
+//			robotSession.cury = sy;
+//			robotSession.roundingX = roundingX;
+//			robotSession.roundingY = roundingY;
 		}
 	}
 
 	RelativePointsLine line;
+	double roundingX = robotSession.roundingX;
+	double roundingY = robotSession.roundingY;
 	printf("Draw line from %.02f,%.02f to %.02f,%.02f\n", sx, sy, ex, ey);
-	line.setStartingPosition(robotSession.curx, robotSession.cury);
-	sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, ex, ey, &line, robotSession.roundingX, robotSession.roundingY);
+	sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, ex, ey, &line, roundingX, roundingY);
 	if (line.GetPointsCount() > 0)
 	{
 		line.setPenPosition(Pen_Down);
 		WriteBinLine(fBinFile, &line, &robotSession);
+		robotSession.roundingX = roundingX;
+		robotSession.roundingY = roundingY;
+	}
+	else
+	{
+		printf("\t Pen movement contained no points between %.02f,%.02f to %.02f,%.02f\n", robotSession.curx, robotSession.cury, ex, ey);
+//		robotSession.curx = ex;
+//		robotSession.cury = ey;
+//		robotSession.roundingX = roundingX;
+//		robotSession.roundingY = roundingY;
 	}
 }
 
@@ -232,6 +263,16 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 				CMD.secondaryDirection = ~CMD.secondaryDirection;
 
 				fwrite(&CMD, 1, 1, f);
+
+				// slow down movement by inserting a repeating pattern
+				robotSession->stepsWritten++;
+				if (robotSession->moveSpeedCoeff < 1 &&
+					(robotSession->stepsWritten + robotSession->skipsWritten) * robotSession->moveSpeedCoeff > robotSession->skipsWritten)
+				{
+					fwrite(&CMD, 1, 1, f);
+					robotSession->skipsWritten++;
+				}
+
 				primaryDirection = Move1_Uninitialized;
 			}
 
@@ -271,6 +312,15 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 				CMD.secondaryDirection = ~CMD.secondaryDirection;
 
 				fwrite(&CMD, 1, 1, f);
+
+				// slow down movement by inserting a repeating pattern
+				robotSession->stepsWritten++;
+				if (robotSession->moveSpeedCoeff < 1 &&
+					(robotSession->stepsWritten + robotSession->skipsWritten) * robotSession->moveSpeedCoeff > robotSession->skipsWritten)
+				{
+					fwrite(&CMD, 1, 1, f);
+					robotSession->skipsWritten++;
+				}
 			}
 		}
 	}
@@ -289,14 +339,14 @@ void MovePenToLineStart_DrawLineInFile(FILE* f, RobotDrawSession* robotSession, 
 	if (robotSession->curx != sx || robotSession->cury != sy)
 	{
 		RelativePointsLine line;
-		DrawLineRelativeInMem(robotSession->curx, robotSession->cury, sx, sy, &line);
+		DrawLineRelativeInMem(robotSession->curx, robotSession->cury, sx, sy, &line, robotSession->roundingX, robotSession->roundingY);
 		line.setPenPosition( Pen_Up );
 		WriteBinLine(f, &line, robotSession);
 	}
 
 	RelativePointsLine line;
 	line.setStartingPosition(robotSession->curx, robotSession->cury);
-	DrawLineRelativeInMem(sx, sy, ex, ey, &line);
+	DrawLineRelativeInMem(sx, sy, ex, ey, &line, robotSession->roundingX, robotSession->roundingY);
 	line.setPenPosition( Pen_Down );
 	WriteBinLine(f, &line, robotSession);
 }

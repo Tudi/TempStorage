@@ -72,14 +72,14 @@ void ReadSigFile(const char* fileName)
 	free(sBinFileName);
 
 	//read until the end of file
-	float prevX = INVALID_VALUE, prevY = INVALID_VALUE;
+	double prevX = INVALID_VALUE, prevY = INVALID_VALUE;
 	while (!feof(f))
 	{
 		//read next line
 		char* line;
 		int lineLen;
 		readLine(f, &line, &lineLen);
-		float curX = INVALID_VALUE, curY = INVALID_VALUE;
+		double curX = INVALID_VALUE, curY = INVALID_VALUE;
 		if (strcmp(line, "PLINESTART") == 0)
 		{
 			prevX = INVALID_VALUE;
@@ -97,7 +97,7 @@ void ReadSigFile(const char* fileName)
 		}
 		else
 		{
-			sscanf_s(line, "%f,%f", &curX, &curY);
+			sscanf_s(line, "%lf,%lf", &curX, &curY);
 		}
 		free(line);
 		if (prevX != INVALID_VALUE && prevY != INVALID_VALUE && curX != INVALID_VALUE && curY != INVALID_VALUE)
@@ -110,8 +110,18 @@ void ReadSigFile(const char* fileName)
 //#define apply_specific_correction curX = curX - (3.841f + 0.24894f) / 2; curX *= 0.7f;curY *= 0.7f; // for BigWheel.sig
 #define apply_specific_correction ;
 			apply_specific_correction
-//			bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
-			bfw.AddLineAntiDistorted(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
+//			double dx = prevX * PIXELS_IN_INCH - curX * PIXELS_IN_INCH;
+//			double dy = prevY * PIXELS_IN_INCH - curY * PIXELS_IN_INCH;
+//			double dist = sqrt(dx * dx + dy * dy);
+//			if (dist < 1)
+			{
+//				printf("Line too small to add : %f\n", dist);
+			}
+//			else
+			{
+//				bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
+				bfw.AddLineAntiDistorted(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
+			}
 		}
 		else if (curX != INVALID_VALUE && curY != INVALID_VALUE)
 		{
