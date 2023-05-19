@@ -22,7 +22,7 @@ namespace SigToBin
                 SigToBin binFileWriter = new SigToBin();
 
 //            binFileWriter.ConvertSigFileToBin("../../../BinFiles/S001 Vertical Half Inch Line.Sig");
-                binFileWriter.ConvertSigFileToBin("../../../BinFiles/S005 Five One Inch Squares.Sig");
+                binFileWriter.ConvertSigFileToBin("S005 Five One Inch Squares.Sig");
             }
         }
     }

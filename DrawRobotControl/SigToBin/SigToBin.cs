@@ -208,6 +208,19 @@ namespace SigToBin
             }
             bfw.AddLine(sx * PIXELS_IN_INCH, sy * PIXELS_IN_INCH, ex * PIXELS_IN_INCH, ey * PIXELS_IN_INCH);
         }
+
+        /// <summary>
+        /// Set the pen movement speed. 100% means the pen moves fast
+        /// </summary>
+        /// <param name="penMoveSpeedPercent"></param>
+        public void SetDrawSpeed(double penMoveSpeedPercent)
+        {
+            if (bfw == null)
+            {
+                bfw = new BinFileWriter(binFileName); // should add the disposable
+            }
+            bfw.SetDrawSpeed(penMoveSpeedPercent);
+        }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -301,15 +314,27 @@ namespace SigToBin
     /// </summary>
     public class RobotDrawSession
     {
-        public float curx;
-        public float cury;
+        public double curx;
+        public double cury;
         public RobotCommand prevCMD;
         public RobotDrawSession()
         {
             curx = cury = 0;
             prevCMD = new RobotCommand();
             prevCMD.UnPack(0);
+            moveSpeedCoeff = 0;
+            stepsWritten = 0;
+            skipsWritten = 0;
+
+            leftOverX = leftOverY = 0;
         }
+
+        public double moveSpeedCoeff; // 0 = 100% movement speed
+        public int stepsWritten; // measure number of steps taken to know when to insert a delay step. Used to make pen move slower
+        public int skipsWritten;
+
+        // because some residual pixels remain at the end of the line. Try to append it to the next line
+        public double leftOverX, leftOverY;
     }
 
     /// <summary>
@@ -344,6 +369,17 @@ namespace SigToBin
             fBinFile = null;
         }
 
+        /// <summary>
+        /// Set the pen movement speed. 100% means the pen moves fast
+        /// </summary>
+        /// <param name="penMoveSpeedPercent"></param>
+        public void SetDrawSpeed(double penMoveSpeedPercent)
+        {
+            if (penMoveSpeedPercent > 0)
+            {
+                robotSession.moveSpeedCoeff = 100 - penMoveSpeedPercent;
+            }
+        }
         /// <summary>
         /// Open the output file for writing. Will overwrite the destination file if already exists
         /// </summary>
@@ -520,6 +556,15 @@ namespace SigToBin
                         CMD.secondaryDirection = (byte)~CMD.secondaryDirection;
 
                         fBinFile.WriteByte(CMD.Pack());
+
+                        // adjust pen movement speed
+                        robotSession.stepsWritten++;
+                        if ((robotSession.stepsWritten + robotSession.skipsWritten) * robotSession.moveSpeedCoeff > robotSession.skipsWritten)
+                        {
+                            fBinFile.WriteByte(CMD.Pack());
+                            robotSession.skipsWritten++;
+                        }
+
                         prevPrimaryDirection = primaryDirection;
                         primaryDirection = PenRobotMovementCodesPrimary.Move1_Uninitialized;
                     }
@@ -554,6 +599,15 @@ namespace SigToBin
                         CMD.secondaryDirection = (byte)~CMD.secondaryDirection;
 
                         fBinFile.WriteByte(CMD.Pack());
+
+                        // adjust pen movement speed
+                        robotSession.stepsWritten++;
+                        if ((robotSession.stepsWritten + robotSession.skipsWritten) * robotSession.moveSpeedCoeff > robotSession.skipsWritten)
+                        {
+                            fBinFile.WriteByte(CMD.Pack());
+                            robotSession.skipsWritten++;
+                        }
+
                         prevPrimaryDirection = primaryDirection;
                     }
                 }
@@ -591,23 +645,32 @@ namespace SigToBin
                 RelativePointsLine line = new RelativePointsLine();
                 Console.WriteLine("Moving NODRAW pen from {0:F2},{1:F2} to {2:F2},{3:F2}", robotSession.curx, robotSession.cury, sx, sy);
 //                line.DrawLineRelativeInMem(robotSession.curx, robotSession.cury, sx, sy);
-                MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, sx, sy, ref line);
+                double leftOverX = robotSession.leftOverX;
+                double leftOverY = robotSession.leftOverY;
+                MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, sx, sy, ref line, ref leftOverX, ref leftOverY);
                 if (line.GetPointsCount() > 0)
                 {
                     line.SetPenPosition(PenRobotPenPosition.Pen_Up);
                     WriteBinLine(ref line);
+                    robotSession.leftOverX = leftOverX;
+                    robotSession.leftOverY = leftOverY;
                 }
             }
 
-            RelativePointsLine line2 = new RelativePointsLine();
-            Console.WriteLine("Draw line from {0:F2},{1:F2} to {2:F2},{3:F2}", sx, sy, ex, ey);
-            line2.SetStartingPosition(robotSession.curx, robotSession.cury);
-//            line2.DrawLineRelativeInMem(robotSession.curx, robotSession.cury, ex, ey);
-            MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, ex, ey, ref line2);
-            if (line2.GetPointsCount() > 0)
             {
-                line2.SetPenPosition(PenRobotPenPosition.Pen_Down);
-                WriteBinLine(ref line2);
+                RelativePointsLine line2 = new RelativePointsLine();
+                Console.WriteLine("Draw line from {0:F2},{1:F2} to {2:F2},{3:F2}", sx, sy, ex, ey);
+//              line2.DrawLineRelativeInMem(robotSession.curx, robotSession.cury, ex, ey);
+                double leftOverX = robotSession.leftOverX;
+                double leftOverY = robotSession.leftOverY;
+                MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, ex, ey, ref line2, ref leftOverX, ref leftOverY);
+                if (line2.GetPointsCount() > 0)
+                {
+                    line2.SetPenPosition(PenRobotPenPosition.Pen_Down);
+                    WriteBinLine(ref line2);
+                    robotSession.leftOverX = leftOverX;
+                    robotSession.leftOverY = leftOverY;
+                }
             }
         }
 

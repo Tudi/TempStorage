@@ -238,7 +238,7 @@ namespace SigToBin
                 {
                     if (poi.Value.HasX())
                     {
-                        ret.x = (float)poi.Value.GetNewX();
+                        ret.x = poi.Value.GetNewX();
                     }
                     else
                     {
@@ -246,7 +246,7 @@ namespace SigToBin
                     }
                     if (poi.Value.HasY())
                     {
-                        ret.y = (float)poi.Value.GetNewY();
+                        ret.y = poi.Value.GetNewY();
                     }
                     else
                     {
@@ -272,7 +272,7 @@ namespace SigToBin
                     {
                         if (poi.Value.HasX())
                         {
-                            ax[valuesX, valuesY] = (float)poi.Value.GetNewX();
+                            ax[valuesX, valuesY] = poi.Value.GetNewX();
                         }
                         else
                         {
@@ -280,7 +280,7 @@ namespace SigToBin
                         }
                         if (poi.Value.HasY())
                         {
-                            ay[valuesX, valuesY] = (float)poi.Value.GetNewY();
+                            ay[valuesX, valuesY] = poi.Value.GetNewY();
                         }
                         else
                         {
@@ -301,8 +301,8 @@ namespace SigToBin
             double x_out = coef00 * ax[0, 0] + coef10 * ax[1, 0] + coef01 * ax[0, 1] + coef11 * ax[1, 1];
             double y_out = coef00 * ay[0, 0] + coef10 * ay[1, 0] + coef01 * ay[0, 1] + coef11 * ay[1, 1];
 
-            ret.x = (float)x_out;
-            ret.y = (float)y_out;
+            ret.x = x_out;
+            ret.y = y_out;
             ret.HasValues = true;
 
             return ret;
@@ -319,7 +319,7 @@ namespace SigToBin
         /// <param name="out_line"></param>
         /// <param name="leftOverX"></param>
         /// <param name="leftOverY"></param>
-        void AppendLineSegment(float sx, float sy, float ex, float ey, ref RelativePointsLine out_line, ref float leftOverX, ref float leftOverY)
+        void AppendLineSegment(double sx, double sy, double ex, double ey, ref RelativePointsLine out_line, ref double leftOverX, ref double leftOverY)
         {
             double dx = ex - sx;
             double dy = ey - sy;
@@ -339,92 +339,52 @@ namespace SigToBin
                 lineDrawSteps = Math.Abs(dx);
             }
 
-            int curx = (int)sx;
-            int cury = (int)sy;
-
             double xIncForStep = dx / lineDrawSteps;
             double yIncForStep = dy / lineDrawSteps;
-            int writtenDiffX = 0;
-            int writtenDiffY = 0;
-            for (double step = 1; step <= lineDrawSteps; step += 1)
+            double writtenX = -leftOverX;
+            double writtenY = -leftOverY;
+            double step = 0;
+            do
             {
+                step += 1;
+                if (step > lineDrawSteps)
+                {
+                    step = lineDrawSteps;
+                }
                 double curXPos = step * xIncForStep;
                 double curYPos = step * yIncForStep;
-                int xdiff = (int)curXPos - writtenDiffX;
-                int ydiff = (int)curYPos - writtenDiffY;
+                double xdiff = curXPos - writtenX;
+                double ydiff = curYPos - writtenY;
 
-                if (xdiff < -1)
+                if (xdiff <= -1.0)
                 {
-                    xdiff = -1;
+                    writtenX += -1.0;
+                    out_line.StoreNextPoint(-1.0, 0);
                 }
-                else if (xdiff > 1)
+                else if (xdiff >= 1.0)
                 {
-                    xdiff = 1;
+                    writtenX += 1.0;
+                    out_line.StoreNextPoint(1.0, 0);
                 }
-                if (ydiff < -1)
+                if (ydiff <= -1.0)
                 {
-                    ydiff = -1;
+                    writtenY += -1.0;
+                    out_line.StoreNextPoint(0, -1.0);
                 }
-                else if (ydiff > 1)
+                else if (ydiff >= 1.0)
                 {
-                    ydiff = 1;
+                    writtenY += 1.0;
+                    out_line.StoreNextPoint(0, 1.0);
                 }
+            } while (step != lineDrawSteps);
 
-                if (xdiff != 0)
-                {
-                    writtenDiffX += xdiff;
-                    out_line.StoreNextPoint(xdiff, 0);
-                    curx += xdiff;
-                }
-                if (ydiff != 0)
-                {
-                    writtenDiffY += ydiff;
-                    out_line.StoreNextPoint(0, ydiff);
-                    cury += ydiff;
-                }
-            }
-
-            dx += leftOverX;
-            dy += leftOverY;
-
-            // fix rounding errors
-            if (dx < 0)
             {
-                while (writtenDiffX > (int)dx)
-                {
-                    writtenDiffX--;
-                    out_line.StoreNextPoint(-1, 0);
-                }
+                double curXPos = lineDrawSteps * xIncForStep;
+                double curYPos = lineDrawSteps * yIncForStep;
+                leftOverX = curXPos - writtenX;
+                leftOverY = curYPos - writtenY;
             }
-            if (dx > 0)
-            {
-                while (writtenDiffX < (int)dx)
-                {
-                    writtenDiffX++;
-                    out_line.StoreNextPoint(1, 0);
-                }
-            }
-            if (dy < 0)
-            {
-                while (writtenDiffY > (int)dy)
-                {
-                    writtenDiffY--;
-                    out_line.StoreNextPoint(0, -1);
-                }
-            }
-            if (dy > 0)
-            {
-                while (writtenDiffY < (int)dy)
-                {
-                    writtenDiffY++;
-                    out_line.StoreNextPoint(0, 1);
-                }
-            }
-
-            leftOverX = (float)(dx - writtenDiffX);
-            leftOverY = (float)(dy - writtenDiffY);
         }
-
         /// <summary>
         /// Drawn a line in memory. Input parameters are in movement commands ( converted from inches )
         /// Input parameters are from cartesian 2D coordinate system
@@ -435,12 +395,10 @@ namespace SigToBin
         /// <param name="ex"></param>
         /// <param name="ey"></param>
         /// <param name="out_line"></param>
-        public void DrawLine(float sx, float sy, float ex, float ey, ref RelativePointsLine out_line)
+        public void DrawLine(double sx, double sy, double ex, double ey, ref RelativePointsLine out_line,ref double leftOverX, ref double leftOverY)
         {
             double dx = ex - sx;
             double dy = ey - sy;
-            float leftOverX = 0;
-            float leftOverY = 0;
             if (dx == 0 && dy == 0)
             {
                 return;
@@ -476,8 +434,8 @@ namespace SigToBin
                 double ey2 = sy + stepsEnd * yIncForStep;
 
                 // try sub pixel accuracy adjusting
-                Adjusted2DPos2 aiStart = GetAdjustedPos((float)sx2, (float)sy2);
-                Adjusted2DPos2 aiEnd = GetAdjustedPos((float)ex2, (float)ey2);
+                Adjusted2DPos2 aiStart = GetAdjustedPos(sx2, sy2);
+                Adjusted2DPos2 aiEnd = GetAdjustedPos(ex2, ey2);
                 if (aiStart.HasValues && aiEnd.HasValues)
                 {
                     sx2 = aiStart.x;
@@ -485,7 +443,7 @@ namespace SigToBin
                     ex2 = aiEnd.x;
                     ey2 = aiEnd.y;
                 }
-                AppendLineSegment((float)sx2, (float)sy2, (float)ex2, (float)ey2, ref out_line, ref leftOverX, ref leftOverY);
+                AppendLineSegment(sx2, sy2, ex2, ey2, ref out_line, ref leftOverX, ref leftOverY);
             }
 
             out_line.SetEndPosition(ex, ey);
