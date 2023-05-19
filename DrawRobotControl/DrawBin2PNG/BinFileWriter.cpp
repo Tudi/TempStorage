@@ -155,6 +155,13 @@ void BinFileWriter::AddLineAntiDistorted(double sx, double sy, double ex, double
 			WriteBinLine(fBinFile, &line, &robotSession);
 			robotSession.roundingX = roundingX;
 			robotSession.roundingY = roundingY;
+
+//			robotSession.curx -= roundingX;
+//			robotSession.cury -= roundingY;
+//			robotSession.roundingX = 0;
+//			robotSession.roundingY = 0;
+			SOFT_ASSERT(abs(roundingX) < 1, "\tRoundingX is greater than 1");
+			SOFT_ASSERT(abs(roundingY) < 1, "\tRoundingY is greater than 1");
 		}
 		else
 		{
@@ -177,6 +184,13 @@ void BinFileWriter::AddLineAntiDistorted(double sx, double sy, double ex, double
 		WriteBinLine(fBinFile, &line, &robotSession);
 		robotSession.roundingX = roundingX;
 		robotSession.roundingY = roundingY;
+
+//		robotSession.curx -= roundingX;
+//		robotSession.cury -= roundingY;
+//		robotSession.roundingX = 0;
+//		robotSession.roundingY = 0;
+		SOFT_ASSERT(abs(roundingX) < 1, "\tRoundingX is greater than 1");
+		SOFT_ASSERT(abs(roundingY) < 1, "\tRoundingY is greater than 1");
 	}
 	else
 	{
@@ -266,8 +280,7 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 
 				// slow down movement by inserting a repeating pattern
 				robotSession->stepsWritten++;
-				if (robotSession->moveSpeedCoeff < 1 &&
-					(robotSession->stepsWritten + robotSession->skipsWritten) * robotSession->moveSpeedCoeff > robotSession->skipsWritten)
+				if ((robotSession->stepsWritten + robotSession->skipsWritten) * robotSession->moveSpeedCoeff > robotSession->skipsWritten)
 				{
 					fwrite(&CMD, 1, 1, f);
 					robotSession->skipsWritten++;
@@ -315,8 +328,7 @@ int WriteBinLine(FILE* f, RelativePointsLine* line, RobotDrawSession* robotSessi
 
 				// slow down movement by inserting a repeating pattern
 				robotSession->stepsWritten++;
-				if (robotSession->moveSpeedCoeff < 1 &&
-					(robotSession->stepsWritten + robotSession->skipsWritten) * robotSession->moveSpeedCoeff > robotSession->skipsWritten)
+				if ((robotSession->stepsWritten + robotSession->skipsWritten) * robotSession->moveSpeedCoeff > robotSession->skipsWritten)
 				{
 					fwrite(&CMD, 1, 1, f);
 					robotSession->skipsWritten++;

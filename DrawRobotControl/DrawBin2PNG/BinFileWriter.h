@@ -9,7 +9,7 @@ public:
 	void AddLine(double sx, double sy, double ex, double ey);
 	void AddLineAntiDistorted(double sx, double sy, double ex, double ey);
 	void CloseFile();
-	void SetDrawSpeedPCT(double pct) { robotSession.moveSpeedCoeff = pct / 100.0; }
+	void SetDrawSpeedPCT(double pct) { robotSession.moveSpeedCoeff = 100 - pct / 100.0; }
 private:
 	void OpenBinFile();
 	bool bHeaderWritten;

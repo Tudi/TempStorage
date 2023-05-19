@@ -55,7 +55,7 @@ private:
 #pragma pack(pop)
 
 class RelativePointsLine;
-void DrawBinLineOnPNG(FIBITMAP *dib, float&x, float&y, RelativePointsLine*line);
+void DrawBinLineOnPNG(FIBITMAP *dib, double&x, double&y, RelativePointsLine*line);
 void DrawCircleAt(FIBITMAP* dib, float x, float y, float radius);
 // create a line that will be similar to what it would look like read from the BIN file
 // using this as an experiment to check if issues are with opcode rotations

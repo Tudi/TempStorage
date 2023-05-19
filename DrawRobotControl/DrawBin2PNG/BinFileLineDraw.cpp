@@ -31,7 +31,7 @@ void GetLineColor(BYTE& LineBaseR, BYTE& LineBaseG, BYTE& LineBaseB)
 #define FLIP_DRAW_HORIZONTALLY 0
 #define ADDED_DRAW_LINE_WIDTH 1
 
-void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* line)
+void DrawBinLineOnPNG(FIBITMAP* in_Img, double& x, double& y, RelativePointsLine* line)
 {
 	if (line == NULL || line->GetPointsCount() <= 0)
 	{
@@ -46,7 +46,7 @@ void DrawBinLineOnPNG(FIBITMAP* in_Img, float& x, float& y, RelativePointsLine* 
 	size_t linePixels = (size_t)line->GetPointsCount();
 	size_t drawLine = (size_t)line->getPenPosition();
 	BYTE LineBaseR = 64, LineBaseG = 64, LineBaseB = 64;
-	float startx = x, starty = y;
+	double startx = x, starty = y;
 	if (drawLine
 		&& linePixels > 4 // probably just position adjustment line
 		)
