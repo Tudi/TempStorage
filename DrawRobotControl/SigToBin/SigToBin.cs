@@ -110,17 +110,19 @@ namespace SigToBin
         /// Create a new, or append to the existing BIN file content the content of a SIG file
         /// </summary>
         /// <param name="fileLines"></param>
-        public void AddSIGToBin(string[] fileLines)
+        /// <returns>Encountered errors ?</returns>
+        public bool AddSIGToBin(string[] fileLines)
         {
             if(fileLines == null)
             {
-                return;
+                return true;
             }
             // in case there is no BIN file yet, create one
             if (bfw == null)
             {
                 bfw = new BinFileWriter(binFileName); // should add the disposable
             }
+            bool encounteredErrors = false;
 
             // parse the SIG file and convert every line into relative pen movement
             float prevX = INVALID_VALUE, prevY = INVALID_VALUE;
@@ -155,7 +157,10 @@ namespace SigToBin
                 if (prevX != INVALID_VALUE && prevY != INVALID_VALUE && curX != INVALID_VALUE && curY != INVALID_VALUE)
                 {
                     // apply_translations;
-                    bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH);
+                    if( bfw.AddLine(prevX * PIXELS_IN_INCH, prevY * PIXELS_IN_INCH, curX * PIXELS_IN_INCH, curY * PIXELS_IN_INCH) == true )
+                    {
+                        encounteredErrors = true;
+                    }
                 }
                 else if (curX != INVALID_VALUE && curY != INVALID_VALUE)
                 {
@@ -164,6 +169,8 @@ namespace SigToBin
                 prevX = curX;
                 prevY = curY;
             }
+
+            return encounteredErrors;
         }
 
         /// <summary>
@@ -171,26 +178,28 @@ namespace SigToBin
         /// Simplest version of a convert example
         /// </summary>
         /// <param name="fileName"></param>
-        public void ConvertSigFileToBin(string SIGFileName)
+        public bool ConvertSigFileToBin(string SIGFileName)
         {
             Console.WriteLine("Trying to convert {0} to BIN file", SIGFileName);
 
             string[] fileLines = GetSIGFileContent(SIGFileName);
             if(fileLines == null)
             {
-                return;
+                return true;
             }
             if (binFileName == "")
             {
                 genBinFileNameFromInputFileName(SIGFileName);
             }
 
-            AddSIGToBin(fileLines);
+            bool errorsEncountered = AddSIGToBin(fileLines);
             if (bfw != null)
             {
                 bfw.CloseFile();
                 bfw = null;
             }
+
+            return errorsEncountered;
         }
 
         /// <summary>
@@ -200,13 +209,13 @@ namespace SigToBin
         /// <param name="sy"></param>
         /// <param name="ex"></param>
         /// <param name="ey"></param>
-        public void AddLine(float sx, float sy, float ex, float ey)
+        public bool AddLine(float sx, float sy, float ex, float ey)
         {
             if (bfw == null)
             {
                 bfw = new BinFileWriter(binFileName); // should add the disposable
             }
-            bfw.AddLine(sx * PIXELS_IN_INCH, sy * PIXELS_IN_INCH, ex * PIXELS_IN_INCH, ey * PIXELS_IN_INCH);
+            return bfw.AddLine(sx * PIXELS_IN_INCH, sy * PIXELS_IN_INCH, ex * PIXELS_IN_INCH, ey * PIXELS_IN_INCH);
         }
 
         /// <summary>
@@ -628,7 +637,8 @@ namespace SigToBin
         /// <param name="sy"></param>
         /// <param name="ex"></param>
         /// <param name="ey"></param>
-        public void AddLine(float sx, float sy, float ex, float ey)
+        /// <returns>Encountered errors ?</returns>
+        public bool AddLine(float sx, float sy, float ex, float ey)
         {
             if (fBinFile == null)
             {
@@ -640,6 +650,7 @@ namespace SigToBin
                 bHeaderWritten = true;
             }
 
+            bool encounteredErrors = false;
             if ((int)robotSession.curx != (int)sx || (int)robotSession.cury != (int)sy)
             {
                 RelativePointsLine line = new RelativePointsLine();
@@ -647,7 +658,11 @@ namespace SigToBin
 //                line.DrawLineRelativeInMem(robotSession.curx, robotSession.cury, sx, sy);
                 double leftOverX = robotSession.leftOverX;
                 double leftOverY = robotSession.leftOverY;
-                MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, sx, sy, ref line, ref leftOverX, ref leftOverY);
+                MotionCalibrator.DrawLineErrorCode drawErr = MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, sx, sy, ref line, ref leftOverX, ref leftOverY);
+                if(drawErr != MotionCalibrator.DrawLineErrorCode.ERR_NONE)
+                {
+                    encounteredErrors = true;
+                }
                 if (line.GetPointsCount() > 0)
                 {
                     line.SetPenPosition(PenRobotPenPosition.Pen_Up);
@@ -663,7 +678,11 @@ namespace SigToBin
 //              line2.DrawLineRelativeInMem(robotSession.curx, robotSession.cury, ex, ey);
                 double leftOverX = robotSession.leftOverX;
                 double leftOverY = robotSession.leftOverY;
-                MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, ex, ey, ref line2, ref leftOverX, ref leftOverY);
+                MotionCalibrator.DrawLineErrorCode drawErr = MotionCalibrator.Instance.DrawLine(robotSession.curx, robotSession.cury, ex, ey, ref line2, ref leftOverX, ref leftOverY);
+                if (drawErr != MotionCalibrator.DrawLineErrorCode.ERR_NONE)
+                {
+                    encounteredErrors = true;
+                }
                 if (line2.GetPointsCount() > 0)
                 {
                     line2.SetPenPosition(PenRobotPenPosition.Pen_Down);
@@ -672,6 +691,7 @@ namespace SigToBin
                     robotSession.leftOverY = leftOverY;
                 }
             }
+            return encounteredErrors;
         }
 
     }

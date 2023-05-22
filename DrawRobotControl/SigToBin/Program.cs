@@ -14,15 +14,23 @@ namespace SigToBin
             {
                 SigToBin binFileWriter = new SigToBin();
                 binFileWriter.SetBinFileName("LineTest.BIN");
-                binFileWriter.AddLine(-1, -1, 1, 1);
+                bool errorsEncountered = binFileWriter.AddLine(-1, -1, 1, 1);
                 binFileWriter.CloseBinFile();
+                if(errorsEncountered == true)
+                {
+                    Console.WriteLine("There have been errors while drawing");
+                }
             }
             // example to convert a SIG file to BIN file
             {
                 SigToBin binFileWriter = new SigToBin();
 
-//            binFileWriter.ConvertSigFileToBin("../../../BinFiles/S001 Vertical Half Inch Line.Sig");
-                binFileWriter.ConvertSigFileToBin("S005 Five One Inch Squares.Sig");
+//              binFileWriter.ConvertSigFileToBin("../../../BinFiles/S001 Vertical Half Inch Line.Sig");
+                bool errorsEncountered = binFileWriter.ConvertSigFileToBin("S005 Five One Inch Squares.Sig");
+                if (errorsEncountered == true)
+                {
+                    Console.WriteLine("There have been errors while drawing");
+                }
             }
         }
     }

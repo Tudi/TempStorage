@@ -385,6 +385,13 @@ namespace SigToBin
                 leftOverY = curYPos - writtenY;
             }
         }
+
+        public enum DrawLineErrorCode
+        {
+            ERR_NONE = 0,
+            ERR_LINE_HAS_NO_LENGTH,
+            ERR_LINE_FALLS_OUTSIDE_DRAW_AREA
+        };
         /// <summary>
         /// Drawn a line in memory. Input parameters are in movement commands ( converted from inches )
         /// Input parameters are from cartesian 2D coordinate system
@@ -395,13 +402,16 @@ namespace SigToBin
         /// <param name="ex"></param>
         /// <param name="ey"></param>
         /// <param name="out_line"></param>
-        public void DrawLine(double sx, double sy, double ex, double ey, ref RelativePointsLine out_line,ref double leftOverX, ref double leftOverY)
+        /// <param name="leftOverX"></param>
+        /// <param name="leftOverY"></param>
+        /// <returns>0 = no error. Other error code</returns>
+        public DrawLineErrorCode DrawLine(double sx, double sy, double ex, double ey, ref RelativePointsLine out_line,ref double leftOverX, ref double leftOverY)
         {
             double dx = ex - sx;
             double dy = ey - sy;
             if (dx == 0 && dy == 0)
             {
-                return;
+                return DrawLineErrorCode.ERR_LINE_HAS_NO_LENGTH;
             }
 
             out_line.SetStartingPosition(sx, sy);
@@ -421,6 +431,7 @@ namespace SigToBin
             double yIncForStep = dy / out_lineDrawSteps;
 
             const int SUB_LINE_LEN = 25;
+            DrawLineErrorCode ret = DrawLineErrorCode.ERR_NONE;
             for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
             {
                 double sx2 = sx + step * xIncForStep;
@@ -443,10 +454,16 @@ namespace SigToBin
                     ex2 = aiEnd.x;
                     ey2 = aiEnd.y;
                 }
+                else
+                {
+                    ret = DrawLineErrorCode.ERR_LINE_FALLS_OUTSIDE_DRAW_AREA;
+                }
+
                 AppendLineSegment(sx2, sy2, ex2, ey2, ref out_line, ref leftOverX, ref leftOverY);
             }
 
             out_line.SetEndPosition(ex, ey);
+            return ret;
         }
 
     }
