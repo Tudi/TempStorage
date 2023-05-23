@@ -24,35 +24,7 @@ namespace SigToBin
             bfw = null;
             binFileName = pBinFileName;
         }
-        /// <summary>
-        /// Try to be smart and come up with a file name in case none has been provided.
-        /// Maybe it would be better to just throw an error instead
-        /// </summary>
-        /// <param name="SIGFileName"></param>
-        private void genBinFileNameFromInputFileName(string SIGFileName)
-        {
-            // same file name, but different extension
-            binFileName = Path.GetFileName(Path.ChangeExtension(SIGFileName, ".bin"));
-        }
-        /// <summary>
-        /// In case you want some quick tests, you might want to convert a single file to BIN
-        /// </summary>
-        /// <param name="SIGFileName"></param>
-        /// <returns></returns>
-        private string[] GetSIGFileContent(string SIGFileName)
-        {
-            string[] fileLines = null;
-            try
-            {
-                fileLines = System.IO.File.ReadAllLines(SIGFileName);
-            }
-            catch (System.IO.IOException ex)
-            {
-                // Handle file error here
-                Console.WriteLine("An error occurred while reading the file: " + ex.Message);
-            }
-            return fileLines;
-        }
+
         /// <summary>
         /// The output file name
         /// </summary>
@@ -171,35 +143,6 @@ namespace SigToBin
             }
 
             return encounteredErrors;
-        }
-
-        /// <summary>
-        /// When you are unsure what to do, fall back to this function
-        /// Simplest version of a convert example
-        /// </summary>
-        /// <param name="fileName"></param>
-        public bool ConvertSigFileToBin(string SIGFileName)
-        {
-            Console.WriteLine("Trying to convert {0} to BIN file", SIGFileName);
-
-            string[] fileLines = GetSIGFileContent(SIGFileName);
-            if(fileLines == null)
-            {
-                return true;
-            }
-            if (binFileName == "")
-            {
-                genBinFileNameFromInputFileName(SIGFileName);
-            }
-
-            bool errorsEncountered = AddSIGToBin(fileLines);
-            if (bfw != null)
-            {
-                bfw.CloseFile();
-                bfw = null;
-            }
-
-            return errorsEncountered;
         }
 
         /// <summary>
