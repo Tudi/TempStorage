@@ -58,6 +58,6 @@ typedef struct RobotDrawSession
 	int stepsWritten; // measure number of steps taken to know when to insert a delay step. Used to make pen move slower
 	int skipsWritten;
 	RobotCommand prevCMD;
-	PenRobotMovementCodesPrimary prevMoveDir;
+//	PenRobotMovementCodesPrimary prevMoveDir;
 }RobotDrawSession;
 #pragma pack(pop)

@@ -141,8 +141,8 @@ void BinFileWriter::AddLineAntiDistorted(double sx, double sy, double ex, double
 		bHeaderWritten = true;
 	}
 
-//	if ((int)robotSession.curx != (int)sx || (int)robotSession.cury != (int)sy)
-	if (robotSession.curx != sx || robotSession.cury != sy)
+	if ((int)(robotSession.curx * 1000) != (int)(sx * 1000) || (int)(robotSession.cury * 1000) != (int)(sy* 1000))
+//	if (robotSession.curx != sx || robotSession.cury != sy)
 	{
 		RelativePointsLine line;
 		double roundingX = robotSession.roundingX;
@@ -176,7 +176,8 @@ void BinFileWriter::AddLineAntiDistorted(double sx, double sy, double ex, double
 	RelativePointsLine line;
 	double roundingX = robotSession.roundingX;
 	double roundingY = robotSession.roundingY;
-	printf("Draw line from %.02f,%.02f to %.02f,%.02f\n", sx, sy, ex, ey);
+//	printf("Draw line from %.02f,%.02f to %.02f,%.02f\n", sx, sy, ex, ey);
+	printf("Draw line from %lf,%lf to %lf,%lf\n", sx, sy, ex, ey);
 	sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, ex, ey, &line, roundingX, roundingY);
 	if (line.GetPointsCount() > 0)
 	{

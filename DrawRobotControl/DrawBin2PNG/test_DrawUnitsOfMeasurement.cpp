@@ -162,6 +162,11 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 	{
 		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
 	}
+	else if (isHorizontal == 4)
+	{
+		sprintf_s(fileName, sizeof(fileName), "HearthForm_%d_%d_%d.sig", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
+		printf("PLINESTART\n");
+	}
 
 	BinFileWriter bfw(fileName);
 
@@ -179,7 +184,12 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 		USE_LINE_DRAW_FUNC(0, 0, NUM_COMMANDS_PER_UNIT, NUM_COMMANDS_PER_UNIT);
 	}
 
+	double stashedX[1000], stashedY[1000];
+	int stashCount = 0;
+
 	// fill the tear with same distance, same length perfectly horrizontal or vertical lines
+	float prev_minStart = 100000;
+	float prev_maxEnd = -1000000;
 	for (int line2 = -lines; line2 <= lines; line2 += 2)
 	{
 		float XorY = (float)((line2 + 0) * NUM_COMMANDS_PER_UNIT);
@@ -214,6 +224,27 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 					canUseValues = 1;
 				}
 			}
+			else if (isHorizontal == 4 && isLineWithinTear((int)XorY, (int)startAt, (int)XorY, (int)endAt))
+			{
+				Adjusted2DPos2 ap1 = sLineAdjuster2.GetAdjustedPos(XorY, startAt);
+				Adjusted2DPos2 ap2 = sLineAdjuster2.GetAdjustedPos(XorY, endAt);
+				if (ap1.HasValues && ap2.HasValues)
+				{
+					double tx = 0, ty = 0;
+					RelativePointsLine rpl;
+//					if((prev_minStart == 100000 || sLineAdjuster2.DrawLine(XorY, prev_minStart, XorY, startAt, &rpl, tx, ty ) == 0)
+					Adjusted2DPos2 ap1 = sLineAdjuster2.GetAdjustedPos(((float)(XorY / PIXELS_IN_INCH)) * PIXELS_IN_INCH, ((float)(startAt / PIXELS_IN_INCH)) * PIXELS_IN_INCH);
+					Adjusted2DPos2 ap2 = sLineAdjuster2.GetAdjustedPos(((float)(XorY / PIXELS_IN_INCH)) * PIXELS_IN_INCH, ((float)(endAt / PIXELS_IN_INCH)) * PIXELS_IN_INCH);
+					if (ap1.HasValues && ap2.HasValues)
+					{
+						canUseValues = 1;
+					}
+					else
+					{
+						printf("Rounding error detected\n");
+					}
+				}
+			}
 			if (canUseValues)
 			{
 				if (startAt < minStart)
@@ -242,7 +273,55 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 				USE_LINE_DRAW_FUNC(XorY, minStart, XorY + NUM_COMMANDS_PER_UNIT, minStart);
 				USE_LINE_DRAW_FUNC(XorY, minStart, XorY + NUM_COMMANDS_PER_UNIT, minStart + NUM_COMMANDS_PER_UNIT);
 			}
+			else if (isHorizontal == 4)
+			{
+				// because of rounding errors, these might point outside the actual teardrop
+#define ROUNDING_ERR_DECREASE 0
+				double XorY2, minStart2, maxEnd2;
+				if (XorY < 0)
+					XorY2 = XorY + ROUNDING_ERR_DECREASE * NUM_COMMANDS_PER_UNIT;
+				else
+					XorY2 = XorY - ROUNDING_ERR_DECREASE * NUM_COMMANDS_PER_UNIT;
+				XorY2 = XorY;
+				minStart2 = minStart + ROUNDING_ERR_DECREASE * NUM_COMMANDS_PER_UNIT;
+				maxEnd2 = maxEnd - ROUNDING_ERR_DECREASE * NUM_COMMANDS_PER_UNIT;
+
+				Adjusted2DPos2 ap = sLineAdjuster2.GetAdjustedPos(XorY2, minStart2);
+				if (ap.HasValues)
+				{
+					printf("%lf,%lf\n", XorY2 / PIXELS_IN_INCH, minStart2 / PIXELS_IN_INCH);
+//					printf("%lf,%lf\n", XorY2, minStart2);
+//					printf("%lf,%lf\n", ap.x / PIXELS_IN_INCH, ap.y / PIXELS_IN_INCH);
+				}
+				else
+				{
+					printf("!! Drawing outside calibrated area 1: %lf,%lf\n", XorY2, minStart2);
+				}
+				ap = sLineAdjuster2.GetAdjustedPos(XorY2, maxEnd2);
+				if (ap.HasValues)
+				{
+					stashedX[stashCount] = XorY2;
+					stashedY[stashCount] = maxEnd2;
+//					stashedX[stashCount] = ap.x;
+//					stashedY[stashCount] = ap.y;
+					stashCount++;
+				}
+				else
+				{
+					printf("!! Drawing outside calibrated area 2 : %lf,%lf\n", XorY2, maxEnd2);
+				}
+			}
 		}
+	}
+	
+	if (isHorizontal == 4)
+	{
+		for (int i = stashCount - 1; i >= 0; i--)
+		{
+			printf("%lf,%lf\n", stashedX[i] / PIXELS_IN_INCH, stashedY[i] / PIXELS_IN_INCH);
+//			printf("%lf,%lf\n", stashedX[i], stashedY[i]);
+		}
+		printf("PLINEEND\nSetting\nSetting\n0, 0, 0, 11\n34082, 0, 0, 0, 1\n");
 	}
 
 	bfw.CloseFile();
@@ -257,4 +336,6 @@ void Test_DrawUnitsOfMeasurement()
 
 	drawMeasurementFullLines(76, 1);
 	drawMeasurementFullLines(76, 0);
+
+//	drawMeasurementFullLines(76, 4); // draw current tear as sig
 }

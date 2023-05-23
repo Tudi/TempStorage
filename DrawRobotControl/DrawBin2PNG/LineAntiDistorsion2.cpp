@@ -391,7 +391,7 @@ double angleBetweenPoints(double x1, double y1, double x2, double y2)
 	return atan2(deltaY, deltaX) * (180 / 3.14);
 }
 
-void LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, double ey, RelativePointsLine* out_line, double &leftOverX, double &leftOverY)
+int LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, double ey, RelativePointsLine* out_line, double &leftOverX, double &leftOverY)
 {
 	out_line->setStartingPosition(sx, sy);
 	out_line->setEndPosition(ex, ey);
@@ -400,7 +400,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, doub
 	double dy = ey - sy;
 	if (dx == dy && dx == 0)
 	{
-		return;
+		return 1;
 	}
 
 	// just to increase the draw accuracy. More points, more smoothness
@@ -418,6 +418,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, doub
 	double yIncForStep = dy / out_lineDrawSteps;
 
 #define SUB_LINE_LEN 30.0
+	int ret = 0;
 	for (double step = 0; step < out_lineDrawSteps; step += SUB_LINE_LEN)
 	{
 		double sx2 = sx + step * xIncForStep;
@@ -433,14 +434,19 @@ void LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, doub
 		double ey2 = sy + stepsEnd * yIncForStep;
 
 		// try sub pixel accuracy adjusting
-		Adjusted2DPos2 aiStart = GetAdjustedPos((float)sx2, (float)sy2);
-		Adjusted2DPos2 aiEnd = GetAdjustedPos((float)ex2, (float)ey2);
+		Adjusted2DPos2 aiStart = GetAdjustedPos(sx2, sy2);
+		Adjusted2DPos2 aiEnd = GetAdjustedPos(ex2, ey2);
 		if (aiStart.HasValues && aiEnd.HasValues)
 		{
 			sx2 = aiStart.x; 
 			sy2 = aiStart.y;
 			ex2 = aiEnd.x;
 			ey2 = aiEnd.y;
+		}
+		else
+		{
+			printf("Line segments is not within tear : %lf,%lf - %lf,%lf\n", sx2, sy2, ex2, ey2);
+			ret = 1;
 		}
 //#define DEBUG_LINE_CONTINUITY
 #ifdef DEBUG_LINE_CONTINUITY
@@ -505,6 +511,7 @@ void LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, doub
 		}
 #endif
 	}
+	return ret;
 }
 
 // visualize the callibration map itself. Scale correction values to calibration map size

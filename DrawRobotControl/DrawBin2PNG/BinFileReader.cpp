@@ -245,7 +245,7 @@ int ReadBinLine(uint8_t* bytes, uint32_t& readPos, size_t fileSize, RelativePoin
 				followPrimaryDirection = *prevDirection;
 			}
 #endif
-			robotSession->prevMoveDir = (PenRobotMovementCodesPrimary)followPrimaryDirection;
+//			robotSession->prevMoveDir = (PenRobotMovementCodesPrimary)followPrimaryDirection;
 			line->setPenPosition(CMD.penPosition);
 			LinesParsedCounter++;
 			printf("%d) Will follow move type %d-%s. Pen is %d. start at pos %d, Prev byte %02X, cur byte %02X\n",
