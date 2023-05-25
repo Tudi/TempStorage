@@ -466,5 +466,11 @@ int main()
 	printf("Save the calibration image\n");
 	SaveImage(img1, "calibration.bmp");
 
+	FreeImage_Unload(img1);
+	FreeImage_Unload(img2);
+
+	// Deinitialize FreeImage library
+	FreeImage_DeInitialise();
+
 	return 0;
 }
