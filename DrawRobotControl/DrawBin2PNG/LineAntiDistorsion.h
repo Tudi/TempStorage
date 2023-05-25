@@ -2,7 +2,7 @@
 
 #define CALIBRATION_FILE_NAME "SA2.cal"
 #define CALIBRATION_4CC	"cal "
-#define POSITION_TO_SHORT_SCALER (65000.0f/10.0f) // map 10 inches into 65 values
+#define POSITION_TO_SHORT_SCALER (65000.0/10.0) // map 10 inches into 65 values
 
 class RelativePointsLine;
 

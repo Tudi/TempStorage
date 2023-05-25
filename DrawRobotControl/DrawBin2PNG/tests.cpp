@@ -8,7 +8,7 @@ void RunAllTests(char** argv, int argc)
 	Test_SigToBin(argv, argc);
 	Test_LoadBinFile(argv, argc);
 	// basically me testing stuff
-	if (argc == 1)
+//	if (argc == 1)
 	{
 //		Test_DrawUnitsOfMeasurement();
 //		Test_loadCallibrationImages();

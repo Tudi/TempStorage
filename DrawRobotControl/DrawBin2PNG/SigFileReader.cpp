@@ -71,6 +71,10 @@ void ReadSigFile(const char* fileName)
 	BinFileWriter bfw(sBinFileName);
 	free(sBinFileName);
 
+	// dummy line. Legend says first non drawn line vanishes in air 
+	bfw.AddLineAntiDistorted(0, 0, 0.01 * PIXELS_IN_INCH, 0.01 * PIXELS_IN_INCH);
+	bfw.AddLineAntiDistorted(0.01 * PIXELS_IN_INCH, 0.01 * PIXELS_IN_INCH, 0, 0);
+
 	//read until the end of file
 	double prevX = INVALID_VALUE, prevY = INVALID_VALUE;
 	while (!feof(f))
@@ -108,14 +112,16 @@ void ReadSigFile(const char* fileName)
 //#define apply_specific_correction curX = curX - (5.89f + 1.14f) / 2; curY = curY - (9.86f + 8.227f) / 2; curX *= 0.7f;curY *= 0.7f; // for paragraph
 //#define apply_specific_correction curX = curX - (3.841f + 0.24894f) / 2; // for BigWheel.sig
 //#define apply_specific_correction curX = curX - (3.841f + 0.24894f) / 2; curX *= 0.7f;curY *= 0.7f; // for BigWheel.sig
+//#define apply_specific_correction curX *= 0.3f;curY *= 0.3f; // just scale it to fit in screen
 #define apply_specific_correction ;
 			apply_specific_correction
-//			double dx = prevX * PIXELS_IN_INCH - curX * PIXELS_IN_INCH;
-//			double dy = prevY * PIXELS_IN_INCH - curY * PIXELS_IN_INCH;
-//			double dist = sqrt(dx * dx + dy * dy);
-//			if (dist < 1)
+			double dx = prevX * PIXELS_IN_INCH - curX * PIXELS_IN_INCH;
+			double dy = prevY * PIXELS_IN_INCH - curY * PIXELS_IN_INCH;
+			double dist = sqrt(dx * dx + dy * dy);
+			if (dist < 20)
 			{
 //				printf("Line too small to add : %f\n", dist);
+//				continue;
 			}
 //			else
 			{
