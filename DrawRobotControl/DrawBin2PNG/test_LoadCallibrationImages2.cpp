@@ -9,7 +9,7 @@
 #define lineToLineDistance2 36 // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
 #define expectedLineToLineDistance 50 // scale the whole image up so that lineToLineDistance becomes expectedLineToLineDistance. Measured in movement units
 #define MAX_LINE_WIDTH 4
-#define MAX_INTERSECTION_DISTANCE (lineToLineDistance2*7/4) // stop searching for next intersection
+#define MAX_INTERSECTION_DISTANCE (lineToLineDistance*7/4) // stop searching for next intersection
 
 #define VertColor ((252)|(110<<8)|(107<<16))
 #define HorColor ((7)|(251<<8)|(1<<16))
@@ -75,12 +75,11 @@ int stride;
 BYTE* bytes;
 int manualMarkedOriginX = 0;
 int manualMarkedOriginY = 0;
-#define InterSectionsOrigin 60
+#define InterSectionsOrigin 70
 IntersectionData intersectionsMat[InterSectionsOrigin * 2][InterSectionsOrigin * 2];
 double lineToLineDistance = 0;
 #define DELETE_PIXEL(sx,sy) { bytes[(sy) * stride + (sx) * 3 + 0] = 255; bytes[(sy) * stride + (sx) * 3 + 1] = 255; bytes[(sy) * stride + (sx) * 3 + 2] = 255;}
-#define SetPixelColor(sx,sy,r,g,b) { bytes[(sy) * stride + (sx) * 3 + 0] = b; bytes[(sy) * stride + (sx) * 3 + 1] = g; bytes[(sy) * stride + (sx) * 3 + 2] = r;}
-#define ColorMatch(a,b) (((a)&0x00FFFFFF)==((b)&0x00FFFFFF))
+#define SetPixelColor_(sx,sy,r,g,b) { bytes[(sy) * stride + (sx) * 3 + 0] = b; bytes[(sy) * stride + (sx) * 3 + 1] = g; bytes[(sy) * stride + (sx) * 3 + 2] = r;}
 #define SNAP_TO_LINE_DIST 5
 
 // need to find both vertical and horizontal line nearby
@@ -157,11 +156,11 @@ void ScanIntersection3(int sx, int sy, int xdir, int ydir, int& xFound, int& yFo
 						{
 							for (size_t x3 = minX2; x3 <= maxX2; x3++)
 							{
-								SetPixelColor(x3, y3, 255, 255, 255);
+								SetPixelColor_(x3, y3, 255, 255, 255);
 							}
 						}
 #endif
-						SetPixelColor(x2, y2, 0, 0, 255);
+						SetPixelColor_(x2, y2, 0, 0, 255);
 						xFound = (int)x2;
 						yFound = (int)y2;
 						return;
@@ -213,7 +212,7 @@ void ScanIntersection3(int sx, int sy, int xdir, int ydir, int& xFound, int& yFo
 		}
 		sx = nextsx;
 		sy = nextsy;
-//		SetPixelColor(sx, sy, stepColor, 0, 0); stepColor -= 15;
+//		SetPixelColor_(sx, sy, stepColor, 0, 0); stepColor -= 15;
 	}
 }
 
@@ -257,6 +256,7 @@ int CheckScanIntersection2(IntersectionData* si, int xdir, int ydir)
 	return 0;
 }
 
+#if 0
 void ScanNeighbourIntersections(int index)
 {
 	// go to left, right, up, down and try to find 4 intersections
@@ -275,6 +275,23 @@ void ScanNeighbourIntersections(int index)
 	while (index2 < ICount && CheckScanIntersection2(&intersections[index2], 0, 1) == 0)
 		index2++;
 }
+#endif
+void ScanNeighbourIntersections(int index)
+{
+	// go to left, right, up, down and try to find 4 intersections
+	int index2;
+
+	index2 = index;
+	while (index2 < ICount)
+	{
+		CheckScanIntersection2(&intersections[index2], -1, 0);
+		CheckScanIntersection2(&intersections[index2], 1, 0);
+		CheckScanIntersection2(&intersections[index2], 0, -1);
+		CheckScanIntersection2(&intersections[index2], 0, 1);
+		index2++;
+	}
+}
+
 
 void MarkAllIntersections()
 {
@@ -313,6 +330,8 @@ void MarkAllIntersections()
 			{
 				continue;
 			}
+			ShapeStore ss = ExtractShapeAtLoc(outb, stride, width, height, (int)x, (int)y, 3, INTERSECTION_SIZE, INTERSECTION_SIZE);
+#if 0
 			// group nearby intersection pixels into a single intersection blob
 			// at this point we know that in the previous line there was no intersection, se we only need to scan the next lines
 			int count = 0;
@@ -331,19 +350,25 @@ void MarkAllIntersections()
 						sy += y2;
 						sx += x2;
 						count++;
+//SetPixelColor_(x2, y2, 255, 0, 255);
 					}
 				}
 			}
+			// the average position of this intersection is ...
+			sy = sy / count;
+			sx = sx / count;
+#else
+			int count = ss.pixelsFound;
+			int sx = ss.centerx2;
+			int sy = ss.centery2;
+#endif
 			// we are expecting at least 2-9 pixels for an intersection
 			if (count > 4)
 			{
-				// the average position of this intersection is ...
-				sy = sy / count;
-				sx = sx / count;
-
 				// actually mark and intersection
 				// this mark will be used by later steps !
-				SetPixelColor(sx, sy, 255, 0, 255);
+				SetPixelColor_(sx, sy, 255, 0, 255);
+//				SetPixelColor(Img, sx, sy, 3, 255, 0, 255);
 				markCount++;
 			}
 		}
@@ -384,7 +409,7 @@ void VisualMarkIntersections()
 			{
 				if (x >= 0 && x < width && y >= 0 && y < height)
 				{
-					SetPixelColor(x, y, 255, 0, 0);
+					SetPixelColor_(x, y, 255, 0, 0);
 				}
 			}
 		}
@@ -551,14 +576,14 @@ void RunSafetyChecks()
 	{
 		int x = intersections[i].x + InterSectionsOrigin;
 		int y = intersections[i].y + InterSectionsOrigin;
-		if (x < 0 || x > 100)
+		if (x < 0 || x >= InterSectionsOrigin * 2)
 		{
-			printf("Mat is not large enough\n");
+			printf("Mat is not large enough x= %d y=%d\n", x, y);
 			continue;
 		}
-		if (y < 0 || y > 100)
+		if (y < 0 || y >= InterSectionsOrigin * 2)
 		{
-			printf("Mat is not large enough\n");
+			printf("Mat is not large enough x= %d y=%d\n", x, y);
 			continue;
 		}
 		if (intersectionsMat[y][x].picX != 0)
@@ -578,10 +603,32 @@ void RunSafetyChecks()
 			if (intersectionsMat[y][x].picX != 0 && intersectionsMat[y][x + 1].picX == 0 && intersectionsMat[y][x + 2].picX != 0)
 			{
 				printf("Gap in row %zd col %zd detected\n", y, x);
+				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
 			}
 			if (intersectionsMat[y][x].picX != 0 && intersectionsMat[y + 1][x].picX == 0 && intersectionsMat[y + 2][x].picX != 0)
 			{
 				printf("Gap in col %zd col %zd detected\n", y, x);
+				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+			}
+			if (intersectionsMat[y][x].picY != 0 && intersectionsMat[y][x + 1].picY == 0 && intersectionsMat[y][x + 2].picY != 0)
+			{
+				printf("Gap in row %zd col %zd detected\n", y, x);
+				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+			}
+			if (intersectionsMat[y][x].picY != 0 && intersectionsMat[y + 1][x].picY == 0 && intersectionsMat[y + 2][x].picY != 0)
+			{
+				printf("Gap in col %zd col %zd detected\n", y, x);
+				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+			}
+			if (intersectionsMat[y][x].picX != 0 && intersectionsMat[y][x + 1].picX != 0 && intersectionsMat[y][x].picX >= intersectionsMat[y][x + 1].picX)
+			{
+				printf("Column should be increasing %zd col %zd detected\n", y, x);
+				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+			}
+			if (intersectionsMat[y][x].picY != 0 && intersectionsMat[y+1][x].picY != 0 && intersectionsMat[y][x].picY >= intersectionsMat[y+1][x].picY)
+			{
+				printf("Row should be increasing %zd col %zd detected\n", y, x);
+				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
 			}
 		}
 	}
@@ -625,7 +672,10 @@ void RunSafetyChecks()
 				{
 					for (int x3 = intersections[indAtPreMissing].picX - 10; x3 < intersections[indAtPreMissing].picX + 10; x3++)
 					{
-						SetPixelColor(x3, y3, 0, 0, 0);
+						if (x3 >= 0 && x3 < width && y >= 0 && y < height)
+						{
+							SetPixelColor_(x3, y3, 0, 0, 0);
+						}
 					}
 				}
 			}
@@ -673,7 +723,7 @@ void RunSafetyChecks()
 				{
 					for (int x3 = intersections[indAtPreMissing].picX - 10; x3 < intersections[indAtPreMissing].picX + 10; x3++)
 					{
-						SetPixelColor(x3, y3, 0, 0, 0);
+						SetPixelColor_(x3, y3, 0, 0, 0);
 					}
 				}
 			}
@@ -732,7 +782,7 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	// remove intersection at 0,0 to avoid finding it multiple times
 	for (int y = manualMarkedOriginY - 4; y <= manualMarkedOriginY + 4; y++)
 		for (int x = manualMarkedOriginX - 4; x <= manualMarkedOriginX + 4; x++)
-			SetPixelColor(x, y, 0, 0, 255);
+			SetPixelColor_(x, y, 0, 0, 255);
 
 	intersections[0].picX = manualMarkedOriginX;
 	intersections[0].picY = manualMarkedOriginY;
@@ -747,14 +797,14 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	}
 	printf("Found %d intersections \n", ICount);
 
-	RunSafetyChecks(); // make sure lines are lines and columns are columns. See if values are missing inbetween
 	VisualMarkIntersections(); // debugging visually
+	RunSafetyChecks(); // make sure lines are lines and columns are columns. See if values are missing inbetween
 //	DrawMotionVectors(); // draw a line from expected to actual position
 //	PrintMotionVectors(); // once uppon a time when python was used manually ..
 	if (isInitialImg)
 	{
-//		InitAdjustmentMap();
-		sLineAdjuster2.FillMissingInfo();
+		InitAdjustmentMap();
+//		sLineAdjuster2.FillMissingInfo();
 		SaveImagePNG(Img, "tv1.png");
 	}
 	else
@@ -770,7 +820,9 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 
 void Test_loadCallibrationImages2()
 {
-//	LoadSpecificCallibrationImage("./stretch_maps/horver3_05_10.bmp", 1, 25, 1);
+	LoadSpecificCallibrationImage("./stretch_maps/horver3_05_24_1.bmp", 1, 25, 1);
 //	LoadSpecificCallibrationImage("./stretch_maps/horver3_7_05_11.bmp", 1, 25, 0);
-	LoadSpecificCallibrationImage("./stretch_maps/horver_4_4_05_16.bmp", 1, 25, 0);
+//	LoadSpecificCallibrationImage("./stretch_maps/horver_4_4_05_16.bmp", 1, 25, 0);
+
+//	sLineAdjuster2.FillMissingInfo();
 }

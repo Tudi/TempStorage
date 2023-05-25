@@ -6,10 +6,12 @@
 
 void Test_VisualizeCallibrationMap()
 {
+	sLineAdjuster2.DebugDumpMapToImage(); 
+	return;
 	// tear is [-4.5,4.5] inches in size or [-2700,2700] in commands
 	for (int i = 0; i < 1600; i += 100)
 	{
-		sLineAdjuster2.DebugDumpMapToImage(i);
+		sLineAdjuster2.DebugDumpMapRowColToImage(i);
 	}
 
 	FIBITMAP* dib = CreateNewImage(IMG_SIZE, IMG_SIZE);

@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-#define POSITION_ADJUST_FILE_VERSION 3
+#define POSITION_ADJUST_FILE_VERSION 4
 // the physical tear size is around 10x10 inches
 // we need around 600 commands to draw 1 inch => we would need 6000x6000 map to represent every command
 // the map in the file would be [-3000,3000]x[-3000,3000]
@@ -515,7 +515,7 @@ int LineAntiDistorsionAdjuster2::DrawLine(double sx, double sy, double ex, doubl
 }
 
 // visualize the callibration map itself. Scale correction values to calibration map size
-void LineAntiDistorsionAdjuster2::DebugDumpMapToImage(int col)
+void LineAntiDistorsionAdjuster2::DebugDumpMapRowColToImage(int col)
 {
 	{
 #define SCALE_DOWN_X 2
@@ -573,14 +573,81 @@ void LineAntiDistorsionAdjuster2::DebugDumpMapToImage(int col)
 	}
 }
 
-#define ESTIMATOR_COUNT 5
-double *getEstimatedValAt(int startPos, int endPos, int *srcVals, double *vals)
+void LineAntiDistorsionAdjuster2::DebugDumpMapToImage()
+{
+	const int MARKER_PIXEL_SIZE = 3;
+	const int ExpectedMapSize = 6000;
+	FIBITMAP* dib = CreateNewImage(ExpectedMapSize, ExpectedMapSize);
+	const double centerVal = ExpectedMapSize / 2;
+//	const int printOnlyFlags = X_IS_MEASURED | Y_IS_MEASURED;
+	const int printOnlyFlags = X_IS_SET | Y_IS_SET;
+	// draw horizontal lines
+	for (int y = 0; y < adjustInfoHeader.height; y++)
+	{
+		double prevX = 10000, prevY;
+		for (int x = 0; x < adjustInfoHeader.width; x++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, y);
+			if (ai == NULL || (ai->flags & printOnlyFlags) != printOnlyFlags)
+			{
+				continue;
+			}
+			double x2 = centerVal + ai->GetNewX() / SCALE_DOWN_X;
+			double y2 = centerVal + ai->GetNewY() / SCALE_DOWN_X;
+			if (x != 0 && prevX != 10000)
+			{
+				DrawLineColor(dib, (float)(prevX), (float)(prevY), (float)(x2), (float)(y2), 255, 0, 0);
+			}
+			prevX = x2;
+			prevY = y2;
+		}
+	}
+	// draw vertical lines
+	for (int x = 0; x < adjustInfoHeader.width; x++)
+	{
+		double prevX = 10000, prevY;
+		for (int y = 0; y < adjustInfoHeader.height; y++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, y);
+			if (ai == NULL || (ai->flags & printOnlyFlags) != printOnlyFlags)
+			{
+				continue;
+			}
+			double x2 = centerVal + ai->GetNewX() / SCALE_DOWN_X;
+			double y2 = centerVal + ai->GetNewY() / SCALE_DOWN_X;
+			if (x != 0 && prevX != 10000)
+			{
+				DrawLineColor(dib, (float)(prevX), (float)(prevY), (float)(x2), (float)(y2), 0, 255, 0);
+			}
+			SetPixelColor(dib, (float)x2, (float)y2, MARKER_PIXEL_SIZE, 0, 0, 255);
+			prevX = x2;
+			prevY = y2;
+		}
+	}
+
+	char fileName[500];
+	sprintf_s(fileName, sizeof(fileName), "map_locs.png");
+	SaveImagePNG(dib, fileName);
+	FreeImage_Unload(dib);
+}
+
+#define ESTIMATOR_COUNT_MIN 5
+#define ESTIMATOR_COUNT_MAX 200
+
+double *getEstimatedValAt(int startPos, int endPos, int valCount, int *srcVals, double *vals)
 {
 	char cmd[6400];
-//	sprintf_s(cmd, sizeof(cmd), "python curve_fit/fit5.py %d %d %d %d %d %d %f %f %f %f", 
-//		startPos, endPos, srcVals[0], srcVals[1], srcVals[2], srcVals[3], vals[0], vals[1], vals[2], vals[3]);
-	sprintf_s(cmd, sizeof(cmd), "python curve_fit/fit6.py %d %d %d %d %d %d %d %f %f %f %f %f",
-		startPos, endPos, srcVals[0], srcVals[1], srcVals[2], srcVals[3], srcVals[4], vals[0], vals[1], vals[2], vals[3], vals[4]);
+	int writtenCount = 0;
+	writtenCount += sprintf_s(cmd, sizeof(cmd), "python curve_fit/fit6.py %d %d %d ",
+		startPos, endPos, valCount);
+	for (int i = 0; i < valCount; i++)
+	{
+		writtenCount += sprintf_s(&cmd[writtenCount], sizeof(cmd) - writtenCount, "%d ", srcVals[i]);
+	}
+	for (int i = 0; i < valCount; i++)
+	{
+		writtenCount += sprintf_s(&cmd[writtenCount], sizeof(cmd) - writtenCount, "%f ", vals[i]);
+	}
 	char *cmd_ret = exec(cmd);
 	double *ret = (double* )malloc(4000 * sizeof(double));
 	memset(ret, 0, 4000 * sizeof(double));
@@ -670,13 +737,13 @@ void LineAntiDistorsionAdjuster2::ScanMatFillMissingValues(int sx, int sy, int d
 	// fill in estimator values
 	int needsX = (checkFlags & (X_IS_MEASURED | X_IS_SET)) != 0;
 	int needsY = (checkFlags & (Y_IS_MEASURED | Y_IS_SET)) != 0;
-	double estimatorsX_out[ESTIMATOR_COUNT] = { 0 };
-	double estimatorsY_out[ESTIMATOR_COUNT] = { 0 };
-	int estimatorsX_in[ESTIMATOR_COUNT] = { 0 };
-	int estimatorsY_in[ESTIMATOR_COUNT] = { 0 };
+	double estimatorsX_out[ESTIMATOR_COUNT_MAX] = { 0 };
+	double estimatorsY_out[ESTIMATOR_COUNT_MAX] = { 0 };
+	int estimatorsX_in[ESTIMATOR_COUNT_MAX] = { 0 };
+	int estimatorsY_in[ESTIMATOR_COUNT_MAX] = { 0 };
 	int valuesFound = 0;
 	int sx3 = sx2, sy3 = sy2;
-	for (int i = 0; i < ESTIMATOR_COUNT; i++)
+	for (int i = 0; i < ESTIMATOR_COUNT_MAX; i++)
 	{
 		PositionAdjustInfo2* ai = GetAdjustInfoNoChange(sx3, sy3);
 		if (ai == NULL)
@@ -698,7 +765,7 @@ void LineAntiDistorsionAdjuster2::ScanMatFillMissingValues(int sx, int sy, int d
 		sy3 += dirY;
 	}
 	// can't fill values from this start and this direction
-	if (valuesFound != ESTIMATOR_COUNT)
+	if (valuesFound <= ESTIMATOR_COUNT_MIN)
 	{
 		return;
 	}
@@ -706,7 +773,7 @@ void LineAntiDistorsionAdjuster2::ScanMatFillMissingValues(int sx, int sy, int d
 	double* estimatedX = NULL, * estimatedY = NULL;
 	if (needsX)
 	{
-		estimatedX = getEstimatedValAt(sx, sx2, estimatorsX_in, estimatorsX_out);
+		estimatedX = getEstimatedValAt(sx, sx2, valuesFound, estimatorsX_in, estimatorsX_out);
 		if (estimatedX == NULL)
 		{
 			printf("Failed to generate estimated values\n");
@@ -715,7 +782,7 @@ void LineAntiDistorsionAdjuster2::ScanMatFillMissingValues(int sx, int sy, int d
 	}
 	if (needsY)
 	{
-		estimatedY = getEstimatedValAt(sy, sy2, estimatorsY_in, estimatorsY_out);
+		estimatedY = getEstimatedValAt(sy, sy2, valuesFound, estimatorsY_in, estimatorsY_out);
 		if (estimatedY == NULL)
 		{
 			printf("Failed to generate estimated values\n");

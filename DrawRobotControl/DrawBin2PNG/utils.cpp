@@ -43,7 +43,9 @@ int IsCallibrationLinePixel(FIBITMAP* Img, int x, int y)
 	return 0;
 }
 
-ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY)
+#define ONLY_SINGLE_THREAD_SUPPORTED
+
+ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY)
 {
 	ShapeStore ss;
 	memset(&ss, 0, sizeof(ss));
@@ -53,10 +55,6 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 	ss.maxX = x;
 	ss.minY = y;
 	ss.maxY = y;
-	BYTE* Bytes = FreeImage_GetBits(Img);
-	int Stride = FreeImage_GetPitch(Img);
-	int Width = FreeImage_GetWidth(Img);
-	int Height = FreeImage_GetHeight(Img);
 	if (x <= 2 || x >= Width - 2)
 	{
 		return ss;
@@ -65,14 +63,15 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 	{
 		return ss;
 	}
-	if (!IsCallibrationLinePixel(Img, x, y))
-	{
-		return ss;
-	}
 
 	// mark starting position
 	short lineId = LineExtractUsedID;
 	LineExtractUsedID = LineExtractUsedID + 1;
+	int followColor = *(int*)(&Bytes[y * Stride + x * Bytespp]) & 0x00FFFFFF;
+	if ((followColor & 0xFFFF) == lineId)
+	{
+		lineId++;
+	}
 	*(short*)(&Bytes[y * Stride + x * Bytespp]) = lineId;
 
 	// search nearby as long as we find a pixel
@@ -80,17 +79,31 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 
 	int prevLocsFound = 1;
 	int curLocsFound = 0;
+#ifdef ONLY_SINGLE_THREAD_SUPPORTED
+	static picLoc* prevLocs = NULL;
+	static picLoc* curLocs = NULL;
+	static int AllocForSize = 0;
+	if (prevLocs == NULL || curLocs == NULL || AllocForSize != Width * Height)
+	{
+		free(prevLocs);
+		free(curLocs);
+		AllocForSize = Width * Height;
+		prevLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
+		curLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
+	}
+#else
 	picLoc* prevLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
 	picLoc* curLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
+#endif
 	if (prevLocs == NULL || curLocs == NULL)
 	{
 		return ss;
 	}
 	prevLocs[0].x = x;
 	prevLocs[0].y = y;
-	__int64 sumX = 0;
-	__int64 sumY = 0;
-	__int64 sumCount = 0;
+	__int64 sumX = x;
+	__int64 sumY = y;
+	__int64 sumCount = 1;
 
 	while (prevLocsFound > 0)
 	{
@@ -118,9 +131,14 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 					{
 						continue;
 					}
+					if (atx < 0 || atx >= Width || aty < 0 || aty >= Height)
+					{
+						continue;
+					}
 					// black pixel means there is a line pixel
 		//			if(*(short*)&Bytes[(y + y2) * Stride + (x + x2) * Bytespp] == lineId)
-					if (IsCallibrationLinePixel(Img, atx, aty))
+//					if (IsCallibrationLinePixel(Img, atx, aty))
+					if(ColorMatch(*(int*)&Bytes[aty * Stride + atx * Bytespp], followColor))
 					{
 						curLocs[curLocsFound].x = atx;
 						curLocs[curLocsFound].y = aty;
@@ -147,16 +165,55 @@ ShapeStore ExtractShapeAtLoc(FIBITMAP* Img, int x, int y, int jumpGap, int searc
 		prevLocsFound = curLocsFound;
 	}
 
+#ifndef ONLY_SINGLE_THREAD_SUPPORTED
 	free(prevLocs);
 	free(curLocs);
+#endif
 
 	ss.centerx = (ss.minX + ss.maxX) / 2;
 	ss.centery = (ss.minY + ss.maxY) / 2;
 	ss.centerx2 = (int)(sumX / sumCount);
 	ss.centery2 = (int)(sumY / sumCount);
+	ss.pixelsFound = (int)sumCount;
 	ss.lineId = lineId;
 
 	return ss;
+}
+
+ShapeStore ExtractShapeAtLoc2(FIBITMAP* Img, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY)
+{
+	BYTE* Bytes = FreeImage_GetBits(Img);
+	int Stride = FreeImage_GetPitch(Img);
+	int Width = FreeImage_GetWidth(Img);
+	int Height = FreeImage_GetHeight(Img);
+
+//	if (!IsCallibrationLinePixel(Img, x, y))
+	{
+//		return ss;
+	}
+
+	return ExtractShapeAtLoc(Bytes, Stride, Width, Height, x, y, jumpGap, searchRadiusX, searchRadiusY);
+}
+
+void SetPixelColor(FIBITMAP* Img, float sx, float sy, int size, BYTE R, BYTE G, BYTE B)
+{
+	BYTE* Bytes = FreeImage_GetBits(Img);
+	int Stride = FreeImage_GetPitch(Img);
+	int Width = FreeImage_GetWidth(Img);
+	int Height = FreeImage_GetHeight(Img);
+	for (int y = (int)sy - size; y <= (int)sy + size; y++)
+	{
+		for (int x = (int)sx - size; x <= (int)sx + size; x++)
+		{
+			if (x < 0 || y < 0 || x >= Width || y >= Height)
+			{
+				continue;
+			}
+			Bytes[y * Stride + x * Bytespp + 0] = B;
+			Bytes[y * Stride + x * Bytespp + 1] = G;
+			Bytes[y * Stride + x * Bytespp + 2] = R;
+		}
+	}
 }
 
 void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B)

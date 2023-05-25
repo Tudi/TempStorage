@@ -99,7 +99,8 @@ public:
 	Adjusted2DPos2 GetAdjustedPos(double x, double y);
 	void CreateNewMap(PositionAdjustInfoHeader2* header);
 
-	void DebugDumpMapToImage(int col);
+	void DebugDumpMapRowColToImage(int col);
+	void DebugDumpMapToImage();
 	void FillMissingInfo();
 	void FillMissingInfo2();
 private:

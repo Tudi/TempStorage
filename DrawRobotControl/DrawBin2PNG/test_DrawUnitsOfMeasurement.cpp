@@ -14,7 +14,7 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	static BYTE* tearBytes = NULL;
 	if (tearImg == NULL)
 	{
-		tearImg = LoadImage_("SA_2_Tear_filled_5.bmp");
+		tearImg = LoadImage_("SA_2_Tear_filled_7.bmp");
 		if (tearImg)
 		{
 			tearStride = FreeImage_GetPitch(tearImg);
@@ -169,6 +169,7 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 	}
 
 	BinFileWriter bfw(fileName);
+	bfw.SetDrawSpeedPCT(50);
 
 	// in a horizontal file, draw a vertical line to outline the position of origin
 	if (isHorizontal == 1)
@@ -334,8 +335,8 @@ void Test_DrawUnitsOfMeasurement()
 //	drawMeasurementLines(30, 0);
 //	drawMeasurementLines(30, 3);
 
-	drawMeasurementFullLines(76, 1);
-	drawMeasurementFullLines(76, 0);
+	drawMeasurementFullLines(90, 1);
+	drawMeasurementFullLines(90, 0);
 
 //	drawMeasurementFullLines(76, 4); // draw current tear as sig
 }
