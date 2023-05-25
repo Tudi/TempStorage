@@ -14,6 +14,7 @@ namespace SigToBin
             {
                 SigToBin binFileWriter = new SigToBin();
                 binFileWriter.SetBinFileName("LineTest.BIN");
+                binFileWriter.SetDrawSpeed(50); // set draw speed
                 bool errorsEncountered = binFileWriter.AddLine(-1, -1, 1, 1);
                 binFileWriter.CloseBinFile();
                 if(errorsEncountered == true)

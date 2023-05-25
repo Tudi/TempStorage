@@ -163,6 +163,8 @@ namespace SigToBin
 
         /// <summary>
         /// Set the pen movement speed. 100% means the pen moves fast
+        /// Setting draw speed only affect future drawn lines. 
+        /// You can change draw speed multiple times
         /// </summary>
         /// <param name="penMoveSpeedPercent"></param>
         public void SetDrawSpeed(double penMoveSpeedPercent)
