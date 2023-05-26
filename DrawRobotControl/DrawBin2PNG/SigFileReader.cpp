@@ -72,8 +72,8 @@ void ReadSigFile(const char* fileName)
 	free(sBinFileName);
 
 	// dummy line. Legend says first non drawn line vanishes in air 
-	bfw.AddLineAntiDistorted(0, 0, 0.01 * PIXELS_IN_INCH, 0.01 * PIXELS_IN_INCH);
-	bfw.AddLineAntiDistorted(0.01 * PIXELS_IN_INCH, 0.01 * PIXELS_IN_INCH, 0, 0);
+//	bfw.AddLineAntiDistorted(0, 0, 0.01 * PIXELS_IN_INCH, 0.01 * PIXELS_IN_INCH);
+//	bfw.AddLineAntiDistorted(0.01 * PIXELS_IN_INCH, 0.01 * PIXELS_IN_INCH, 0, 0);
 
 	//read until the end of file
 	double prevX = INVALID_VALUE, prevY = INVALID_VALUE;

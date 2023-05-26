@@ -2,18 +2,35 @@
 
 void WriteBinHeader(FILE* f, RobotDrawSession* robotSession)
 {
+	uint8_t byte = BIN_HEADER_BYTE;
 	for (size_t i = 0; i < BIN_HEADER_BYTE_COUNT; i++)
 	{
-		uint8_t byte = BIN_HEADER_BYTE;
 		fwrite(&byte, 1, 1, f);
 	}
 	// temp test to see if this caused the head to not move at all
+//#define DEBUG_HEAD_NO_MOVE
+#ifdef DEBUG_HEAD_NO_MOVE
 	for (size_t i = 0; i < 4; i++)
 	{
 		uint8_t byte = BIN_HEADER_BYTE;
 		fwrite(&byte, 1, 1, f);
 	}
-	RobotCommand_Constructor(&robotSession->prevCMD, BIN_HEADER_BYTE);
+#endif
+	// BAD : EB(1110 1011), C8(1100 1000)-08
+	byte = 0xCB;
+	fwrite(&byte, 1, 1, f);
+	byte = 0x0B;
+	fwrite(&byte, 1, 1, f);
+	byte = 0xCB;
+	fwrite(&byte, 1, 1, f);
+	byte = 0x0B;
+	fwrite(&byte, 1, 1, f);
+	byte = 0xCB;
+	fwrite(&byte, 1, 1, f);
+	byte = 0x0B;
+	fwrite(&byte, 1, 1, f);
+
+	RobotCommand_Constructor(&robotSession->prevCMD, byte);
 }
 
 void WriteBinFooter(FILE* f, RobotDrawSession* robotSession)
