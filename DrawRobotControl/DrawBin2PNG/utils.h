@@ -1,5 +1,10 @@
 #pragma once
 
+typedef struct picLoc
+{
+	int x, y;
+}picLoc;
+
 typedef struct ShapeStore
 {
 	int startX, startY;					// position where we started scanning the whole shape
@@ -11,6 +16,8 @@ typedef struct ShapeStore
 	int pixelsFound;
 	int checkedNeighbours;
 	int lineIndex; // temp store
+	picLoc* locs; // this is shared memory between multiple threads. Do not deallocate
+	int locCount; 
 	//	int shapeRelativX, shapeRelativY; // relativ to center, where is this shape located ?
 	int HasValues() { return (minX != maxX); }
 }ShapeStore;
@@ -22,6 +29,7 @@ typedef struct ShapeStore
 // if the shape is a line, you can specify a "gap" in the line, so it will be considered a continuous line
 ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY);
 ShapeStore ExtractShapeAtLoc2(FIBITMAP* Img, int x, int y, int jumpGap, int searchRadiusX, int searchRadiusY);
+void SetShapeColor(ShapeStore *ss, FIBITMAP* Img, BYTE R, BYTE G, BYTE B);
 int IsCallibrationLinePixel(FIBITMAP* Img, int x, int y);
 void DrawLineColor(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B);
 void DrawLineColorFade(FIBITMAP* Img, float sx, float sy, float ex, float ey, BYTE R, BYTE G, BYTE B);

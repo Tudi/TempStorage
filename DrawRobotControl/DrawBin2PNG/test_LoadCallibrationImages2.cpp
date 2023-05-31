@@ -5,7 +5,7 @@
 #define ORIGIN_B 36
 #define EXPECTED_NORMAL_LINE_GAP 4 // counted in pixels
 #define INTERSECTION_SIZE 7 // 25 pixels distance, but 4+4 pixel line width
-#define lineToLineDistance1 17 // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
+#define lineToLineDistance1 50 // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
 #define lineToLineDistance2 36 // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
 #define expectedLineToLineDistance 50 // scale the whole image up so that lineToLineDistance becomes expectedLineToLineDistance. Measured in movement units
 #define MAX_LINE_WIDTH 4
@@ -30,8 +30,10 @@ static void FindManuallyMarkedOrigin(FIBITMAP* Img, int& manualMarkedOriginX, in
 			BYTE* bNow = &Bytes[y * Stride + x * Bytespp];
 			if (bNow[0] == ORIGIN_B && bNow[1] == ORIGIN_G && bNow[2] == ORIGIN_R)
 			{
-				manualMarkedOriginX = (int)x;
-				manualMarkedOriginY = (int)y;
+				ShapeStore ss = ExtractShapeAtLoc2(Img, x, y, 1, 10, 10);
+				manualMarkedOriginX = (int)ss.centerx2;
+				manualMarkedOriginY = (int)ss.centery2;
+				SetShapeColor(&ss, Img, ORIGIN_B, ORIGIN_G, ORIGIN_R);
 				return;
 			}
 		}
@@ -75,7 +77,7 @@ int stride;
 BYTE* bytes;
 int manualMarkedOriginX = 0;
 int manualMarkedOriginY = 0;
-#define InterSectionsOrigin 70
+#define InterSectionsOrigin 80
 IntersectionData intersectionsMat[InterSectionsOrigin * 2][InterSectionsOrigin * 2];
 double lineToLineDistance = 0;
 #define DELETE_PIXEL(sx,sy) { bytes[(sy) * stride + (sx) * 3 + 0] = 255; bytes[(sy) * stride + (sx) * 3 + 1] = 255; bytes[(sy) * stride + (sx) * 3 + 2] = 255;}
@@ -672,7 +674,7 @@ void RunSafetyChecks()
 				{
 					for (int x3 = intersections[indAtPreMissing].picX - 10; x3 < intersections[indAtPreMissing].picX + 10; x3++)
 					{
-						if (x3 >= 0 && x3 < width && y >= 0 && y < height)
+						if (x3 >= 0 && x3 < width && y3 >= 0 && y3 < height)
 						{
 							SetPixelColor_(x3, y3, 0, 0, 0);
 						}
@@ -816,13 +818,16 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 
 	FreeImage_Unload(Img);
 	Img = NULL;
+
+	sLineAdjuster2.DebugDumpMapToImage(X_IS_SET | Y_IS_SET, "map_locs_set.png");
+	sLineAdjuster2.DebugDumpMapToImage(X_IS_MEASURED | Y_IS_MEASURED, "map_locs_measured.png");
+	sLineAdjuster2.DebugDumpMapToImage(X_IS_UPDATED | Y_IS_UPDATED, "map_locs_updated.png");
 }
 
 void Test_loadCallibrationImages2()
 {
-	LoadSpecificCallibrationImage("./stretch_maps/horver3_05_24_1.bmp", 1, 25, 1);
-//	LoadSpecificCallibrationImage("./stretch_maps/horver3_7_05_11.bmp", 1, 25, 0);
-//	LoadSpecificCallibrationImage("./stretch_maps/horver_4_4_05_16.bmp", 1, 25, 0);
+	LoadSpecificCallibrationImage("./stretch_maps/horver4_05_30_1.bmp", 1, 25, 1);
+//	LoadSpecificCallibrationImage("./stretch_maps/horver4_05_30.bmp", 1, 25, 0);
 
 //	sLineAdjuster2.FillMissingInfo();
 }

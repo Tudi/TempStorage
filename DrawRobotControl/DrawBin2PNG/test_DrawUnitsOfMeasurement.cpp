@@ -2,8 +2,7 @@
 
 // managed to draw max, non stretched, 2900 commands. Non adjusted that is about 5 inches
 #define NUM_COMMANDS_PER_UNIT	25
-#define TEAR_MULTIPLIER 0.80f
-#define PIXELS_IN_INCH_FOR_TEAR (PIXELS_IN_INCH*TEAR_MULTIPLIER) // try to not full fill tear
+#define TEAR_MULTIPLIER 1.10f
 
 int isLineWithinTear(int sx, int sy, int ex, int ey)
 {
@@ -14,7 +13,7 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	static BYTE* tearBytes = NULL;
 	if (tearImg == NULL)
 	{
-		tearImg = LoadImage_("SA_2_Tear_filled_7.bmp");
+		tearImg = LoadImage_("SA_2_Tear_filled_9.bmp");
 		if (tearImg)
 		{
 			tearStride = FreeImage_GetPitch(tearImg);
@@ -27,23 +26,21 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	if (tearImg)
 	{
 		// scale the sx,sy,ex,ey so that commands become inches
-		float pixelToInch_sx = sx / PIXELS_IN_INCH_FOR_TEAR;
-		float pixelToInch_sy = sy / PIXELS_IN_INCH_FOR_TEAR;
-		float pixelToInch_ex = ex / PIXELS_IN_INCH_FOR_TEAR;
-		float pixelToInch_ey = ey / PIXELS_IN_INCH_FOR_TEAR;
+		float pixelToInch_sx = sx * TEAR_MULTIPLIER;
+		float pixelToInch_sy = sy * TEAR_MULTIPLIER;
+		float pixelToInch_ex = ex * TEAR_MULTIPLIER;
+		float pixelToInch_ey = ey * TEAR_MULTIPLIER;
 
-#define TearWidthInInches	9.0f
-#define TearHeightInInches	9.0f
 		// origin is in the middle
-		pixelToInch_sx += TearWidthInInches / 2.0f;
-		pixelToInch_sy += TearHeightInInches / 2.0f;
-		pixelToInch_ex += TearWidthInInches / 2.0f;
-		pixelToInch_ey += TearHeightInInches / 2.0f;
+		pixelToInch_sx += tearWidth / 2.0f;
+		pixelToInch_sy += tearHeight / 2.0f;
+		pixelToInch_ex += tearWidth / 2.0f;
+		pixelToInch_ey += tearHeight / 2.0f;
 		// scale inches to "tear image" pixels
-		int img_sx = (int)((float)tearWidth / TearWidthInInches * pixelToInch_sx);
-		int img_sy = (int)((float)tearHeight / TearHeightInInches * pixelToInch_sy);
-		int img_ex = (int)((float)tearWidth / TearWidthInInches * pixelToInch_ex);
-		int img_ey = (int)((float)tearHeight / TearHeightInInches * pixelToInch_ey);
+		int img_sx = (int)(pixelToInch_sx);
+		int img_sy = (int)(pixelToInch_sy);
+		int img_ex = (int)(pixelToInch_ex);
+		int img_ey = (int)(pixelToInch_ey);
 
 		if (img_sx > 0 && img_sy > 0 && img_sx < tearWidth && img_sy < tearHeight)
 		{
@@ -152,19 +149,19 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 	char fileName[500];
 	if (isHorizontal == 1)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER*100));
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_05_31.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 0)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_05_31.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 3)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_%d_05_10.bin", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_05_31.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 4)
 	{
-		sprintf_s(fileName, sizeof(fileName), "HearthForm_%d_%d_%d.sig", lines, NUM_COMMANDS_PER_UNIT, (int)(TEAR_MULTIPLIER * 100));
+		sprintf_s(fileName, sizeof(fileName), "HearthForm_%d_%d.sig", lines, NUM_COMMANDS_PER_UNIT);
 		printf("PLINESTART\n");
 	}
 
@@ -190,13 +187,13 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 
 	// fill the tear with same distance, same length perfectly horrizontal or vertical lines
 	float prev_minStart = 100000;
-	float prev_maxEnd = -1000000;
+	float prev_maxEnd = -100000;
 	for (int line2 = -lines; line2 <= lines; line2 += 2)
 	{
 		float XorY = (float)((line2 + 0) * NUM_COMMANDS_PER_UNIT);
 		// horizontal line
 		float minStart = 100000;
-		float maxEnd = -1000000;
+		float maxEnd = -100000;
 		for (int line = -lines; line <= lines; line += 2)
 		{
 			float startAt = (float)((line + 0) * NUM_COMMANDS_PER_UNIT);
@@ -335,8 +332,8 @@ void Test_DrawUnitsOfMeasurement()
 //	drawMeasurementLines(30, 0);
 //	drawMeasurementLines(30, 3);
 
-	drawMeasurementFullLines(90, 1);
-	drawMeasurementFullLines(90, 0);
+	drawMeasurementFullLines(80, 1);
+	drawMeasurementFullLines(80, 0);
 
 //	drawMeasurementFullLines(76, 4); // draw current tear as sig
 }

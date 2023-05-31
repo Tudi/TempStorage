@@ -305,11 +305,11 @@ void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX,
 		ai->SetNewY(newY);
 		if (shouldBeX != 0)
 		{
-			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | X_IS_MEASURED);
+			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | X_IS_UPDATED);
 		}
 		if (shouldBeY != 0)
 		{
-			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | Y_IS_MEASURED);
+			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | Y_IS_UPDATED);
 		}
 		SOFT_ASSERT((int)(ai->GetNewX() * 100) == (int)(newX * 100), "Precision loss error");
 		SOFT_ASSERT((int)(ai->GetNewY() * 100) == (int)(newY * 100), "Precision loss error");
@@ -573,14 +573,26 @@ void LineAntiDistorsionAdjuster2::DebugDumpMapRowColToImage(int col)
 	}
 }
 
-void LineAntiDistorsionAdjuster2::DebugDumpMapToImage()
+void LineAntiDistorsionAdjuster2::DebugDumpMapToImage(int flags, const char* fileName, int inputLayout)
 {
+#define SCALE_DOWN_X2 (36.0/50.0)
+#define SCALE_DOWN_Y2 (36.0/50.0)
+
 	const int MARKER_PIXEL_SIZE = 3;
 	const int ExpectedMapSize = 6000;
 	FIBITMAP* dib = CreateNewImage(ExpectedMapSize, ExpectedMapSize);
+
+	// set background color to white
+	BYTE* Bytes = FreeImage_GetBits(dib);
+	int Stride = FreeImage_GetPitch(dib);
+	int Height = FreeImage_GetHeight(dib);
+	memset(Bytes, 255, Stride * Height);
+
 	const double centerVal = ExpectedMapSize / 2;
 //	const int printOnlyFlags = X_IS_MEASURED | Y_IS_MEASURED;
-	const int printOnlyFlags = X_IS_SET | Y_IS_SET;
+//	const int printOnlyFlags = X_IS_SET | Y_IS_SET;
+	const int printOnlyFlags = flags;
+
 	// draw horizontal lines
 	for (int y = 0; y < adjustInfoHeader.height; y++)
 	{
@@ -592,11 +604,23 @@ void LineAntiDistorsionAdjuster2::DebugDumpMapToImage()
 			{
 				continue;
 			}
-			double x2 = centerVal + ai->GetNewX() / SCALE_DOWN_X;
-			double y2 = centerVal + ai->GetNewY() / SCALE_DOWN_X;
+			double x2 = centerVal + ai->GetNewX() * SCALE_DOWN_X2;
+			double y2 = centerVal + ai->GetNewY() * SCALE_DOWN_Y2;
+
+			// print the distorsion map is it would have printed
+			if (inputLayout)
+			{
+				double normalX = ( x - adjustInfoHeader.originX ) / adjustInfoHeader.scaleX;
+				double adjustedX = ai->GetNewX();
+				x2 = centerVal + (normalX + (normalX - adjustedX)) * SCALE_DOWN_X2;
+				double normalY = ( y - adjustInfoHeader.originY ) / adjustInfoHeader.scaleY;
+				double adjustedY = ai->GetNewY();
+				y2 = centerVal + (normalY + (normalY - adjustedY)) * SCALE_DOWN_Y2;
+			}
+
 			if (x != 0 && prevX != 10000)
 			{
-				DrawLineColor(dib, (float)(prevX), (float)(prevY), (float)(x2), (float)(y2), 255, 0, 0);
+				DrawLineColor(dib, (float)(prevX), (float)(prevY), (float)(x2), (float)(y2), 1, 251, 7);
 			}
 			prevX = x2;
 			prevY = y2;
@@ -613,21 +637,96 @@ void LineAntiDistorsionAdjuster2::DebugDumpMapToImage()
 			{
 				continue;
 			}
-			double x2 = centerVal + ai->GetNewX() / SCALE_DOWN_X;
-			double y2 = centerVal + ai->GetNewY() / SCALE_DOWN_X;
+			double x2 = centerVal + ai->GetNewX() * SCALE_DOWN_X2;
+			double y2 = centerVal + ai->GetNewY() * SCALE_DOWN_Y2;
+
+			// print the distorsion map is it would have printed
+			if (inputLayout)
+			{
+				double normalX = (x - adjustInfoHeader.originX) / adjustInfoHeader.scaleX;
+				double adjustedX = ai->GetNewX();
+				x2 = centerVal + (normalX + (normalX - adjustedX)) * SCALE_DOWN_X2;
+				double normalY = (y - adjustInfoHeader.originY) / adjustInfoHeader.scaleY;
+				double adjustedY = ai->GetNewY();
+				y2 = centerVal + (normalY + (normalY - adjustedY)) * SCALE_DOWN_Y2;
+			}
+
 			if (x != 0 && prevX != 10000)
 			{
-				DrawLineColor(dib, (float)(prevX), (float)(prevY), (float)(x2), (float)(y2), 0, 255, 0);
+				DrawLineColor(dib, (float)(prevX), (float)(prevY), (float)(x2), (float)(y2), 107, 110, 252);
 			}
-			SetPixelColor(dib, (float)x2, (float)y2, MARKER_PIXEL_SIZE, 0, 0, 255);
+//			SetPixelColor(dib, (float)x2, (float)y2, MARKER_PIXEL_SIZE, 0, 0, 255);
 			prevX = x2;
 			prevY = y2;
 		}
 	}
 
-	char fileName[500];
-	sprintf_s(fileName, sizeof(fileName), "map_locs.png");
+	// mark origin
+	PositionAdjustInfo2* ai = GetAdjustInfoNoChange(adjustInfoHeader.originX, adjustInfoHeader.originY);
+	if (ai != NULL)
+	{
+		double x2 = centerVal + ai->GetNewX() * SCALE_DOWN_X2;
+		double y2 = centerVal + ai->GetNewY() * SCALE_DOWN_Y2;
+		SetPixelColor(dib, (float)x2, (float)y2, MARKER_PIXEL_SIZE, 237, 28, 36);
+	}
+
+//	char fileName[500];
+//	sprintf_s(fileName, sizeof(fileName), "map_locs.png");
 	SaveImagePNG(dib, fileName);
+	FreeImage_Unload(dib);
+}
+
+void LineAntiDistorsionAdjuster2::DebugDumpMapToTear()
+{
+	const int MARKER_PIXEL_SIZE = 3;
+	const int ExpectedMapSize = 6000;
+	FIBITMAP* dib = CreateNewImage(ExpectedMapSize, ExpectedMapSize);
+
+	// set background color to white
+	BYTE* Bytes = FreeImage_GetBits(dib);
+	int Stride = FreeImage_GetPitch(dib);
+	int Height = FreeImage_GetHeight(dib);
+	memset(Bytes, 255, Stride * Height);
+
+	const double centerVal = ExpectedMapSize / 2;
+	const int printOnlyFlags = X_IS_MEASURED | Y_IS_MEASURED;
+
+	// draw horizontal lines
+	double prevMinX = 0, prevMaxX = 0, prevY = 0;;
+	for (int y = 0; y < adjustInfoHeader.height; y++)
+	{
+		double minx = 10000, maxx = -10000;
+		for (int x = 0; x < adjustInfoHeader.width; x++)
+		{
+			PositionAdjustInfo2* ai = GetAdjustInfoNoChange(x, y);
+			if (ai == NULL || (ai->flags & printOnlyFlags) != printOnlyFlags)
+			{
+				continue;
+			}
+
+			if (x < minx) minx = x;
+			if (x > maxx) maxx = x;
+		}
+		if (minx != 10000 && minx != maxx)
+		{
+			minx = (minx - adjustInfoHeader.originX) / adjustInfoHeader.scaleX + centerVal;
+			maxx = (maxx - adjustInfoHeader.originX) / adjustInfoHeader.scaleX + centerVal;
+			double y2 = (y - adjustInfoHeader.originY) / adjustInfoHeader.scaleY + centerVal;
+			if (prevMinX != 0)
+			{
+				DrawLineColor(dib, (float)(prevMinX), (float)(prevY), (float)(minx), (float)(y2), 0, 0, 255);
+				DrawLineColor(dib, (float)(prevMaxX), (float)(prevY), (float)(maxx), (float)(y2), 0, 0, 255);
+			}
+			else
+			{
+				printf("Min y = %d\n", y - adjustInfoHeader.originY);
+			}
+			prevMinX = minx;
+			prevMaxX = maxx;
+			prevY = y2;
+		}
+	}
+	SaveImagePNG(dib, "map_as_tear.bmp");
 	FreeImage_Unload(dib);
 }
 
@@ -834,7 +933,7 @@ void LineAntiDistorsionAdjuster2::ScanMatFillMissingValues(int sx, int sy, int d
 
 void LineAntiDistorsionAdjuster2::FillMissingInfo()
 {
-#define USE_DIAGONAL_VALUE_GUESSING
+//#define USE_DIAGONAL_VALUE_GUESSING
 #ifdef USE_DIAGONAL_VALUE_GUESSING
 	// expects map to be a square
 	for (int diag = 0; diag < adjustInfoHeader.height; diag++)

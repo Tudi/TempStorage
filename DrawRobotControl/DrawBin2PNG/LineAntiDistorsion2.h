@@ -23,6 +23,8 @@ enum PositionAdjustInfoFlags2 : char
 	Y_IS_MEASURED = 1 << 1,
 	X_IS_SET = 1 << 2,
 	Y_IS_SET = 1 << 3,
+	X_IS_UPDATED = 1 << 4,
+	Y_IS_UPDATED = 1 << 5,
 };
 
 typedef struct Adjusted2DPos2
@@ -100,7 +102,8 @@ public:
 	void CreateNewMap(PositionAdjustInfoHeader2* header);
 
 	void DebugDumpMapRowColToImage(int col);
-	void DebugDumpMapToImage();
+	void DebugDumpMapToImage(int flags, const char *fileName, int inputLayout = 0);
+	void DebugDumpMapToTear();
 	void FillMissingInfo();
 	void FillMissingInfo2();
 private:

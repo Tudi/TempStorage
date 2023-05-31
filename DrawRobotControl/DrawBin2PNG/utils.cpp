@@ -12,11 +12,6 @@ void LogMessage(const char* file, int line, const char* msg)
 
 static signed short LineExtractUsedID = 1;
 
-typedef struct picLoc
-{
-	int x, y;
-}picLoc;
-
 int IsCallibrationLinePixel(FIBITMAP* Img, int x, int y)
 {
 	if (x < 0 || y < 0)
@@ -77,38 +72,35 @@ ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int
 	// search nearby as long as we find a pixel
 	int foundShapeAtRadius = 0;
 
-	int prevLocsFound = 1;
-	int curLocsFound = 0;
+	int locsFound = 1;
+	int locsSearched = 0;
 #ifdef ONLY_SINGLE_THREAD_SUPPORTED
-	static picLoc* prevLocs = NULL;
 	static picLoc* curLocs = NULL;
 	static int AllocForSize = 0;
-	if (prevLocs == NULL || curLocs == NULL || AllocForSize != Width * Height)
+	if (curLocs == NULL || AllocForSize < Width * Height)
 	{
-		free(prevLocs);
 		free(curLocs);
-		AllocForSize = Width * Height;
-		prevLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
-		curLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
+		AllocForSize = Width * Height + 64;
+		curLocs = (picLoc*)malloc(AllocForSize * sizeof(picLoc));
 	}
 #else
 	picLoc* prevLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
 	picLoc* curLocs = (picLoc*)malloc(Width * Height * sizeof(picLoc));
 #endif
-	if (prevLocs == NULL || curLocs == NULL)
+	if (curLocs == NULL)
 	{
 		return ss;
 	}
-	prevLocs[0].x = x;
-	prevLocs[0].y = y;
+	curLocs[0].x = x;
+	curLocs[0].y = y;
 	__int64 sumX = x;
 	__int64 sumY = y;
 	__int64 sumCount = 1;
 
-	while (prevLocsFound > 0)
+	while (locsSearched < locsFound)
 	{
-		curLocsFound = 0;
-		for (int ind = 0; ind < prevLocsFound; ind++)
+//		locsSearched = 0;
+//		for (int ind = 0; ind < locsFound; ind++)
 		{
 			//			int atx, aty;
 			//			if (CheckLinePresentNearby(Img, prevLocs[ind].x, prevLocs[ind].y, searchRadius, lineId, atx, aty))
@@ -120,8 +112,8 @@ ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int
 					{
 						continue;
 					}
-					int atx = prevLocs[ind].x + x2;
-					int aty = prevLocs[ind].y + y2;
+					int atx = curLocs[locsSearched].x + x2;
+					int aty = curLocs[locsSearched].y + y2;
 					// too far from search center ?
 					if (atx < x - searchRadiusX || x + searchRadiusX < atx)
 					{
@@ -140,11 +132,11 @@ ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int
 //					if (IsCallibrationLinePixel(Img, atx, aty))
 					if(ColorMatch(*(int*)&Bytes[aty * Stride + atx * Bytespp], followColor))
 					{
-						curLocs[curLocsFound].x = atx;
-						curLocs[curLocsFound].y = aty;
-						if (curLocsFound < Width * Height)
+						curLocs[locsFound].x = atx;
+						curLocs[locsFound].y = aty;
+						if (locsFound < Width * Height)
 						{
-							curLocsFound++;
+							locsFound++;
 						}
 						*(short*)(&Bytes[aty * Stride + atx * Bytespp]) = lineId; // mark this location so that we do not find it next time
 						ss.minX = MIN(ss.minX, atx);
@@ -159,14 +151,10 @@ ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int
 				}
 			}
 		}
-		picLoc* t = prevLocs;
-		prevLocs = curLocs;
-		curLocs = t;
-		prevLocsFound = curLocsFound;
+		locsSearched++;
 	}
 
 #ifndef ONLY_SINGLE_THREAD_SUPPORTED
-	free(prevLocs);
 	free(curLocs);
 #endif
 
@@ -176,6 +164,8 @@ ShapeStore ExtractShapeAtLoc(BYTE* Bytes, int Stride, int Width, int Height, int
 	ss.centery2 = (int)(sumY / sumCount);
 	ss.pixelsFound = (int)sumCount;
 	ss.lineId = lineId;
+	ss.locs = curLocs;
+	ss.locCount = locsFound;
 
 	return ss;
 }
@@ -193,6 +183,26 @@ ShapeStore ExtractShapeAtLoc2(FIBITMAP* Img, int x, int y, int jumpGap, int sear
 	}
 
 	return ExtractShapeAtLoc(Bytes, Stride, Width, Height, x, y, jumpGap, searchRadiusX, searchRadiusY);
+}
+
+void SetShapeColor(ShapeStore *ss, FIBITMAP* Img, BYTE R, BYTE G, BYTE B)
+{
+	BYTE* Bytes = FreeImage_GetBits(Img);
+	int Stride = FreeImage_GetPitch(Img);
+	int Width = FreeImage_GetWidth(Img);
+	int Height = FreeImage_GetHeight(Img);
+	for (int i = 0; i < ss->locCount; i++)
+	{
+		int x = ss->locs[i].x;
+		int y = ss->locs[i].y;
+		if (x < 0 || x >= Width || y < 0 || y >= Height)
+		{
+			continue;
+		}
+		Bytes[y * Stride + x * Bytespp + 0] = B;
+		Bytes[y * Stride + x * Bytespp + 1] = G;
+		Bytes[y * Stride + x * Bytespp + 2] = R;
+	}
 }
 
 void SetPixelColor(FIBITMAP* Img, float sx, float sy, int size, BYTE R, BYTE G, BYTE B)
