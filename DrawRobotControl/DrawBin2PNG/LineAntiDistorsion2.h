@@ -3,6 +3,7 @@
 #define CALIBRATION_FILE_NAME "SA2.cal"
 #define CALIBRATION_4CC	"cal "
 #define POSITION_TO_SHORT_SCALER (65000.0f/3000.0f) // 3000 values to 65000
+#define MIN_CALIBRATION_UPDATE_AXIS	0 // around 1 mm
 
 class RelativePointsLine;
 
@@ -94,7 +95,7 @@ public:
 	/// <param name="header"></param>
 	int DrawLine(double sx, double sy, double ex, double ey, RelativePointsLine* out_line, double& leftOverX, double& leftOverY);
 	/// position is in robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
-	void AdjustPosition(int x, int y, double shouldBeX, double shouldBeY, int isInitial);
+	void AdjustPosition(int x, int y, double shouldBeX, double shouldBeY, int isInitial, int isRawCoord);
 	// position is robot commands = inches * PIXELS_IN_INCH, 0,0 is at the center
 	PositionAdjustInfo2* GetAdjustInfo(int x, int y);
 	// to support sub pixel accuracy. Required to avoid accumulating positioning error on lots of small segments

@@ -273,9 +273,17 @@ PositionAdjustInfo2* LineAntiDistorsionAdjuster2::GetAdjustInfoNoChange(int x, i
 
 }
 
-void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX, double shouldBeY, int isInitial)
+void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX, double shouldBeY, int isInitial, int isRawCoord)
 {
-	PositionAdjustInfo2* ai = GetAdjustInfo(x, y);
+	PositionAdjustInfo2* ai;
+	if (isRawCoord)
+	{
+		ai = GetAdjustInfoNoChange(adjustInfoHeader.originX + x, adjustInfoHeader.originY + y);
+	}
+	else
+	{
+		ai = GetAdjustInfo(x, y);
+	}
 	SOFT_ASSERT(ai != NULL, "Calibration map should always be larger than calibration image size");
 	if (isInitial)
 	{
@@ -299,21 +307,28 @@ void LineAntiDistorsionAdjuster2::AdjustPosition(int x, int y, double shouldBeX,
 	}
 	else
 	{
-		double newX = ai->GetNewX() + shouldBeX;
-		double newY = ai->GetNewY() + shouldBeY;
-		ai->SetNewX(newX);
-		ai->SetNewY(newY);
-		if (shouldBeX != 0)
+		if (ai->HasX() && abs(shouldBeX) > MIN_CALIBRATION_UPDATE_AXIS)
 		{
-			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | X_IS_UPDATED);
+			double newX = ai->GetNewX() + shouldBeX;
+			ai->SetNewX(newX);
+			if (shouldBeX != 0)
+			{
+				ai->flags = (PositionAdjustInfoFlags2)(ai->flags | X_IS_MEASURED | X_IS_UPDATED);
+			}
+			SOFT_ASSERT((int)(ai->GetNewX() * 100) == (int)(newX * 100), "Precision loss error");
+			hasUnsavedAdjustments = 1;
 		}
-		if (shouldBeY != 0)
+		if (ai->HasY() && abs(shouldBeY) > MIN_CALIBRATION_UPDATE_AXIS)
 		{
-			ai->flags = (PositionAdjustInfoFlags2)(ai->flags | Y_IS_UPDATED);
+			double newY = ai->GetNewY() + shouldBeY;
+			ai->SetNewY(newY);
+			if (shouldBeY != 0)
+			{
+				ai->flags = (PositionAdjustInfoFlags2)(ai->flags | Y_IS_MEASURED | Y_IS_UPDATED);
+			}
+			SOFT_ASSERT((int)(ai->GetNewY() * 100) == (int)(newY * 100), "Precision loss error");
+			hasUnsavedAdjustments = 1;
 		}
-		SOFT_ASSERT((int)(ai->GetNewX() * 100) == (int)(newX * 100), "Precision loss error");
-		SOFT_ASSERT((int)(ai->GetNewY() * 100) == (int)(newY * 100), "Precision loss error");
-		hasUnsavedAdjustments = 1;
 	}
 }
 
@@ -575,8 +590,10 @@ void LineAntiDistorsionAdjuster2::DebugDumpMapRowColToImage(int col)
 
 void LineAntiDistorsionAdjuster2::DebugDumpMapToImage(int flags, const char* fileName, int inputLayout)
 {
-#define SCALE_DOWN_X2 (36.0/50.0)
-#define SCALE_DOWN_Y2 (36.0/50.0)
+//#define SCALE_DOWN_X2 (36.0/50.0)
+//#define SCALE_DOWN_Y2 (36.0/50.0)
+#define SCALE_DOWN_X2 (1)
+#define SCALE_DOWN_Y2 (1)
 
 	const int MARKER_PIXEL_SIZE = 3;
 	const int ExpectedMapSize = 6000;

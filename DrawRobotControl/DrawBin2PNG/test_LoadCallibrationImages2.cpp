@@ -9,7 +9,7 @@
 #define lineToLineDistance2 36 // based on the origin left/right/up/down distance estimate the scaling of the scanned image. This is measured in pixels
 #define expectedLineToLineDistance 50 // scale the whole image up so that lineToLineDistance becomes expectedLineToLineDistance. Measured in movement units
 #define MAX_LINE_WIDTH 4
-#define MAX_INTERSECTION_DISTANCE (lineToLineDistance*7/4) // stop searching for next intersection
+#define MAX_INTERSECTION_DISTANCE (lineToLineDistanceX*7/4) // stop searching for next intersection
 
 #define VertColor ((252)|(110<<8)|(107<<16))
 #define HorColor ((7)|(251<<8)|(1<<16))
@@ -79,7 +79,8 @@ int manualMarkedOriginX = 0;
 int manualMarkedOriginY = 0;
 #define InterSectionsOrigin 80
 IntersectionData intersectionsMat[InterSectionsOrigin * 2][InterSectionsOrigin * 2];
-double lineToLineDistance = 0;
+double lineToLineDistanceX = 0;
+double lineToLineDistanceY = 0;
 #define DELETE_PIXEL(sx,sy) { bytes[(sy) * stride + (sx) * 3 + 0] = 255; bytes[(sy) * stride + (sx) * 3 + 1] = 255; bytes[(sy) * stride + (sx) * 3 + 2] = 255;}
 #define SetPixelColor_(sx,sy,r,g,b) { bytes[(sy) * stride + (sx) * 3 + 0] = b; bytes[(sy) * stride + (sx) * 3 + 1] = g; bytes[(sy) * stride + (sx) * 3 + 2] = r;}
 #define SNAP_TO_LINE_DIST 5
@@ -321,6 +322,9 @@ void MarkAllIntersections()
 		}
 	}
 
+	double bestDistancesX[4] = { 10000, 10000, 10000, 10000 };
+	double bestDistancesY[4] = { 10000, 10000, 10000, 10000 };
+
 	// group up nearby intersections and calculate the average location for them
 	int markCount = 0;
 	for (size_t y = 0; y < height; y++)
@@ -367,6 +371,45 @@ void MarkAllIntersections()
 			// we are expecting at least 2-9 pixels for an intersection
 			if (count > 4)
 			{
+				// get the distance to the center
+				double dx = sx - manualMarkedOriginX;
+				double dy = sy - manualMarkedOriginY;
+				double dist = sqrt(dx * dx + dy * dy);
+				//is this a new "best" distance ?
+				if (dist > 4 
+					// don't inspect values on diagonals
+					&& (abs(dx) < lineToLineDistanceX /2 || abs(dy) < lineToLineDistanceY / 2))
+				{
+					double *bestDistances;
+					if (abs(dx) < lineToLineDistanceX / 2)
+					{
+						bestDistances = bestDistancesX;
+					}
+					else
+					{
+						bestDistances = bestDistancesY;
+					}
+					// what is the worst distance we memorized so far ? replace it
+					int putToIndex = -1;
+					double putToDist = -1;
+					for (int td = 0; td < _countof(bestDistancesX); td++)
+					{
+						if (bestDistances[td] > dist)
+						{
+							double distdist = abs(bestDistances[td] - dist);
+							if (distdist > putToDist)
+							{
+								putToDist = distdist;
+								putToIndex = td;
+							}
+						}
+					}
+					if(putToIndex != -1)
+					{
+//						printf("new best distance at %d %d dist %lf %lf. replace %lf with %lf\n", sx, sy, dx, dy, bestDistances[putToIndex], dist);
+						bestDistances[putToIndex] = dist;
+					}
+				}
 				// actually mark and intersection
 				// this mark will be used by later steps !
 				SetPixelColor_(sx, sy, 255, 0, 255);
@@ -376,6 +419,18 @@ void MarkAllIntersections()
 		}
 	}
 	printf("Marked %d intersections for later search\n", markCount);
+	double avgDistanceX = 0,avgDistanceY = 0;
+	for (int i = 0; i < _countof(bestDistancesX); i++)
+	{
+		avgDistanceX += bestDistancesX[i];
+		avgDistanceY += bestDistancesY[i];
+	}
+	avgDistanceX = avgDistanceX / (_countof(bestDistancesX) + _countof(bestDistancesX) / 2);
+	avgDistanceY = avgDistanceY / (_countof(bestDistancesX) + _countof(bestDistancesX) / 2);
+	printf("Average line to line distance in pixels : %lf %lf\n", avgDistanceX, avgDistanceY);
+	// we want to have same amount of lines on both X an Y. So we will force one of the axis to stretch to the other one
+	lineToLineDistanceX = MAX(avgDistanceX, avgDistanceY);
+	lineToLineDistanceY = MAX(avgDistanceX, avgDistanceY);
 
 	free(outb);
 }
@@ -392,7 +447,7 @@ void DrawMotionVectors()
 //		if (xExpected > 15 && yExpected > 15)
 //		if (abs(yExpected) == 24)
 		{
-			DrawLineColor(Img, (float)(manualMarkedOriginX + xExpected * lineToLineDistance), (float)(manualMarkedOriginY + yExpected * lineToLineDistance), (float)xFound, (float)yFound, 255, 0, 0);
+			DrawLineColor(Img, (float)(manualMarkedOriginX + xExpected * lineToLineDistanceX), (float)(manualMarkedOriginY + yExpected * lineToLineDistanceY), (float)xFound, (float)yFound, 255, 0, 0);
 		}
 	}
 }
@@ -485,47 +540,32 @@ void InitAdjustmentMap()
 	paih.originX = paih.width / 2;
 	paih.originY = paih.height / 2;
 	sLineAdjuster2.CreateNewMap(&paih);
-	FIBITMAP* dib = CreateNewImage(IMG_SIZE_DEBUG_VECTORS, IMG_SIZE_DEBUG_VECTORS);
 	for (size_t i = 0; i < ICount; i++)
 	{
 		int xExpected = intersections[i].x;
 		int yExpected = intersections[i].y;
-		double sx = xExpected * lineToLineDistance;
-		double sy = yExpected * lineToLineDistance;
+		double sx = xExpected * lineToLineDistanceX;
+		double sy = yExpected * lineToLineDistanceY;
 		double ex = intersections[i].picX - manualMarkedOriginX;
 		double ey = intersections[i].picY - manualMarkedOriginY;
 		// scale to normalized size. We intended to draw lines with distance 25*2, but the scanned image contained 17 pixels
 		// the scanned image is almost 3 times smaller than we intended to have
-		sx = sx * expectedLineToLineDistance / lineToLineDistance;
-		sy = sy * expectedLineToLineDistance / lineToLineDistance;
-		ex = ex * expectedLineToLineDistance / lineToLineDistance;
-		ey = ey * expectedLineToLineDistance / lineToLineDistance;
+		sx = sx * expectedLineToLineDistance / lineToLineDistanceX;
+		sy = sy * expectedLineToLineDistance / lineToLineDistanceY;
+		ex = ex * expectedLineToLineDistance / lineToLineDistanceX;
+		ey = ey * expectedLineToLineDistance / lineToLineDistanceY;
 		// we need to flip the position of the destination relativ to the position where we intended it to be
 		// required to obtain a compensation value instead of the obtained value
 		double dx = ex - sx;
 		double dy = ey - sy;
 		ex = sx - dx;
 		ey = sy - dy;
-		// 
-		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, ex, ey, 1);
-		DrawLineColorFade(dib, (float)sx + IMG_SIZE_DEBUG_VECTORS / 2, (float)sy + IMG_SIZE_DEBUG_VECTORS / 2, (float)ex + IMG_SIZE_DEBUG_VECTORS / 2, (float)ey + IMG_SIZE_DEBUG_VECTORS / 2, 255, 255, 255);
+//		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, ex, ey, 1);
+		sLineAdjuster2.AdjustPosition(intersections[i].x, intersections[i].y, ex, ey, 1, 1);
 	}
-	BYTE* bytes = FreeImage_GetBits(dib);
-	int stride = FreeImage_GetPitch(dib);
-	for (size_t y = IMG_SIZE_DEBUG_VECTORS / 2 - 5; y < IMG_SIZE_DEBUG_VECTORS / 2 + 5; y++)
-	{
-		for (size_t x = IMG_SIZE_DEBUG_VECTORS / 2 - 5; x < IMG_SIZE_DEBUG_VECTORS / 2 + 5; x++)
-		{
-			bytes[(y)*stride + (x) * 3 + 0] = 0; 
-			bytes[(y)*stride + (x) * 3 + 1] = 0; 
-			bytes[(y)*stride + (x) * 3 + 2] = 255; 
-		}
-	}
-	SaveImagePNG(dib, "CorrectionsVisualized1.png");
-	FreeImage_Unload(dib);
 }
 
-void UpdateAdjustmentMap(double ImpactCoeff = 1.0)
+void VisualizeCorrections()
 {
 	// build a calibration map out of the obtained data
 	FIBITMAP* dib = CreateNewImage(IMG_SIZE_DEBUG_VECTORS, IMG_SIZE_DEBUG_VECTORS);
@@ -533,22 +573,20 @@ void UpdateAdjustmentMap(double ImpactCoeff = 1.0)
 	{
 		int xExpected = intersections[i].x;
 		int yExpected = intersections[i].y;
-		double sx = xExpected * lineToLineDistance;
-		double sy = yExpected * lineToLineDistance;
+		double sx = xExpected * lineToLineDistanceX;
+		double sy = yExpected * lineToLineDistanceY;
 		double ex = intersections[i].picX - manualMarkedOriginX;
 		double ey = intersections[i].picY - manualMarkedOriginY;
 		// scale to normalized size. We intended to draw lines with distance 25*2, but the scanned image contained 17 pixels
 		// the scanned image is almost 3 times smaller than we intended to have
-		sx = sx * expectedLineToLineDistance / lineToLineDistance;
-		sy = sy * expectedLineToLineDistance / lineToLineDistance;
-		ex = ex * expectedLineToLineDistance / lineToLineDistance;
-		ey = ey * expectedLineToLineDistance / lineToLineDistance;
+		sx = sx * expectedLineToLineDistance / lineToLineDistanceX;
+		sy = sy * expectedLineToLineDistance / lineToLineDistanceY;
+		ex = ex * expectedLineToLineDistance / lineToLineDistanceX;
+		ey = ey * expectedLineToLineDistance / lineToLineDistanceY;
 		// we need to flip the position of the destination relativ to the position where we intended it to be
 		// required to obtain a compensation value instead of the obtained value
 		double dx = ex - sx;
 		double dy = ey - sy;
-		// 
-		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, -dx * ImpactCoeff, -dy * ImpactCoeff, 0);
 		ex = sx - dx;
 		ey = sy - dy;
 		DrawLineColorFade(dib, (float)sx + IMG_SIZE_DEBUG_VECTORS / 2, (float)sy + IMG_SIZE_DEBUG_VECTORS / 2, (float)ex + IMG_SIZE_DEBUG_VECTORS / 2, (float)ey + IMG_SIZE_DEBUG_VECTORS / 2, 255, 255, 255);
@@ -564,8 +602,42 @@ void UpdateAdjustmentMap(double ImpactCoeff = 1.0)
 			bytes[(y)*stride + (x) * 3 + 2] = 255;
 		}
 	}
-	SaveImagePNG(dib, "CorrectionsVisualized2.png");
+	SaveImagePNG(dib, "CorrectionsVisualized1.png");
 	FreeImage_Unload(dib);
+}
+
+void UpdateAdjustmentMap(double ImpactCoeff = 1.0)
+{
+	// build a calibration map out of the obtained data
+	for (size_t i = 0; i < ICount; i++)
+	{
+		int xExpected = intersections[i].x;
+		int yExpected = intersections[i].y;
+		double sx = xExpected * lineToLineDistanceX;
+		double sy = yExpected * lineToLineDistanceY;
+		double ex = intersections[i].picX - manualMarkedOriginX;
+		double ey = intersections[i].picY - manualMarkedOriginY;
+		// scale to normalized size. We intended to draw lines with distance 25*2, but the scanned image contained 17 pixels
+		// the scanned image is almost 3 times smaller than we intended to have
+		sx = sx * expectedLineToLineDistance / lineToLineDistanceX;
+		sy = sy * expectedLineToLineDistance / lineToLineDistanceY;
+		ex = ex * expectedLineToLineDistance / lineToLineDistanceX;
+		ey = ey * expectedLineToLineDistance / lineToLineDistanceY;
+		// we need to flip the position of the destination relativ to the position where we intended it to be
+		// required to obtain a compensation value instead of the obtained value
+		double dx = ex - sx;
+		double dy = ey - sy;
+//		if (abs(dx) > lineToLineDistanceX)
+		{
+//			printf("Large adjustment x = %lf y = %lf\n", dx, dy);
+		}
+//		if (abs(dy) > lineToLineDistanceY)
+		{
+//			printf("Large adjustment x = %lf y = %lf\n", dx, dy);
+		}
+//		sLineAdjuster2.AdjustPosition((int)sx, (int)sy, -dx * ImpactCoeff, -dy * ImpactCoeff, 0, 0);
+		sLineAdjuster2.AdjustPosition(intersections[i].x, intersections[i].y, -dx * ImpactCoeff, -dy * ImpactCoeff, 0, 1);
+	}
 }
 
 void RunSafetyChecks()
@@ -631,6 +703,37 @@ void RunSafetyChecks()
 			{
 				printf("Row should be increasing %zd col %zd detected\n", y, x);
 				SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+			}
+			// values should be between neighbours
+			if (x > 0 && intersectionsMat[y][x].picX != 0 && intersectionsMat[y][x - 1].picX != 0 && intersectionsMat[y][x + 1].picX != 0)
+			{
+				if (!(intersectionsMat[y][x - 1].picX < intersectionsMat[y][x].picX && intersectionsMat[y][x].picX < intersectionsMat[y][x + 1].picX))
+				{
+					printf("Col value is not between neighbours %zd col %zd detected\n", y, x);
+					SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+				}
+				double distLeft = abs(intersectionsMat[y][x - 1].picX - intersectionsMat[y][x].picX);
+				double distRight = abs(intersectionsMat[y][x + 1].picX - intersectionsMat[y][x].picX);
+				if (distLeft / distRight > 1.5 || distLeft / distRight < 0.5)
+				{
+//					printf("Big distance diff in X %zd col %zd detected %lf %lf\n", y, x, distLeft, distRight);
+					SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+				}
+			}
+			if (y > 0 && intersectionsMat[y - 1][x].picY != 0 && intersectionsMat[y][x].picY != 0 && intersectionsMat[y + 1][x].picY != 0)
+			{
+				if (!(intersectionsMat[y - 1][x].picY < intersectionsMat[y][x].picY && intersectionsMat[y][x].picY < intersectionsMat[y + 1][x].picY))
+				{
+					printf("Row value is not between neighbours %zd col %zd detected\n", y, x);
+					SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+				}
+				double distUp = abs(intersectionsMat[y-1][x].picY - intersectionsMat[y][x].picY);
+				double distDown = abs(intersectionsMat[y+1][x].picY - intersectionsMat[y][x].picY);
+				if (distUp / distDown > 1.5 || distUp / distDown < 0.5)
+				{
+					printf("Big distance diff in Y %zd col %zd detected %lf %lf\n", y, x, distUp, distDown);
+//					SetPixelColor(Img, intersectionsMat[y][x].picX, intersectionsMat[y][x].picY, 7, 0, 0, 0);
+				}
 			}
 		}
 	}
@@ -717,7 +820,7 @@ void RunSafetyChecks()
 		// check if all values are set
 		for (int i = minY + 1; i < maxY; i++)
 		{
-			if (valuesSet[InterSectionsOrigin + i] == 0)
+			if (valuesSet[InterSectionsOrigin + i] == 0 && valuesSet[InterSectionsOrigin + i - 1] - 1 >= 0)
 			{
 				printf("Value is not set for col %d row %d. MinX %d maxX %d\n", x, i, minY, maxY);
 				int indAtPreMissing = valuesSet[InterSectionsOrigin + i - 1] - 1;
@@ -759,11 +862,13 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	bytes = FreeImage_GetBits(Img);
 	if (isInitialImg)
 	{
-		lineToLineDistance = lineToLineDistance1;
+		lineToLineDistanceX = lineToLineDistance1;
+		lineToLineDistanceY = lineToLineDistance1;
 	}
 	else
 	{
-		lineToLineDistance = lineToLineDistance2;
+		lineToLineDistanceX = lineToLineDistance2;
+		lineToLineDistanceY = lineToLineDistance2;
 	}
 
 	FindManuallyMarkedOrigin(Img, manualMarkedOriginX, manualMarkedOriginY);
@@ -800,8 +905,9 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	printf("Found %d intersections \n", ICount);
 
 	VisualMarkIntersections(); // debugging visually
+	VisualizeCorrections(); // create a separate image without background for motion vectors only
 	RunSafetyChecks(); // make sure lines are lines and columns are columns. See if values are missing inbetween
-//	DrawMotionVectors(); // draw a line from expected to actual position
+	DrawMotionVectors(); // draw a line from expected to actual position
 //	PrintMotionVectors(); // once uppon a time when python was used manually ..
 	if (isInitialImg)
 	{
@@ -826,8 +932,8 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 
 void Test_loadCallibrationImages2()
 {
-	LoadSpecificCallibrationImage("./stretch_maps/horver4_05_30_1.bmp", 1, 25, 1);
-//	LoadSpecificCallibrationImage("./stretch_maps/horver4_05_30.bmp", 1, 25, 0);
+//	LoadSpecificCallibrationImage("./stretch_maps/horver6_05_31_1.bmp", 1, 25, 1);
+	LoadSpecificCallibrationImage("./stretch_maps/horver6_05_31.bmp", 1, 25, 0);
 
 //	sLineAdjuster2.FillMissingInfo();
 }
