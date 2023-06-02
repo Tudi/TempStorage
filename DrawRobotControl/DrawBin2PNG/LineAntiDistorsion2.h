@@ -3,7 +3,7 @@
 #define CALIBRATION_FILE_NAME "SA2.cal"
 #define CALIBRATION_4CC	"cal "
 #define POSITION_TO_SHORT_SCALER (65000.0f/3000.0f) // 3000 values to 65000
-#define MIN_CALIBRATION_UPDATE_AXIS	0 // around 1 mm
+#define MIN_CALIBRATION_UPDATE_AXIS	0 // around 1 mm ?
 
 class RelativePointsLine;
 
