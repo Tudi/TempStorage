@@ -17,7 +17,7 @@ namespace SigToBin
     public class MotionCalibrator
     {
         const string CALIBRATION_FILE_NAME = "SA2.cal"; // can change this as long as you rename the calibration file
-        const int POSITION_ADJUST_FILE_VERSION = 3; // sanity check to not load unknown formatted calibration files
+        const int POSITION_ADJUST_FILE_VERSION = 4; // sanity check to not load unknown formatted calibration files
         const string CALIBRATION_4CC = "cal "; // sanity check to not load unknown file types
 
         /// <summary>
