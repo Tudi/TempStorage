@@ -6,10 +6,10 @@
 
 void Test_VisualizeCallibrationMap()
 {
-//	sLineAdjuster2.DebugDumpMapToTear(); return;
-	sLineAdjuster2.DebugDumpMapToImage(X_IS_SET | Y_IS_SET, "map_locs_set.png", 0);
-	sLineAdjuster2.DebugDumpMapToImage(X_IS_MEASURED | Y_IS_MEASURED, "map_locs_measured.png", 0);
-	sLineAdjuster2.DebugDumpMapToImage(X_IS_UPDATED | Y_IS_UPDATED, "map_locs_updated.png", 1);
+	sLineAdjuster2.DebugDumpMapToTear();
+//	sLineAdjuster2.DebugDumpMapToImage(X_IS_SET | Y_IS_SET, "map_locs_set.png", 0);
+//	sLineAdjuster2.DebugDumpMapToImage(X_IS_MEASURED | Y_IS_MEASURED, "map_locs_measured.png", 0);
+	sLineAdjuster2.DebugDumpMapToImage(X_IS_UPDATED | Y_IS_UPDATED, "map_locs_updated_1.png", 1);
 	return;
 	// tear is [-4.5,4.5] inches in size or [-2700,2700] in commands
 	for (int i = 0; i < 1600; i += 100)

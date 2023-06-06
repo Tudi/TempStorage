@@ -77,7 +77,7 @@ int stride;
 BYTE* bytes;
 int manualMarkedOriginX = 0;
 int manualMarkedOriginY = 0;
-#define InterSectionsOrigin 80
+#define InterSectionsOrigin 60
 IntersectionData intersectionsMat[InterSectionsOrigin * 2][InterSectionsOrigin * 2];
 double lineToLineDistanceX = 0;
 double lineToLineDistanceY = 0;
@@ -907,7 +907,7 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 	VisualMarkIntersections(); // debugging visually
 	VisualizeCorrections(); // create a separate image without background for motion vectors only
 	RunSafetyChecks(); // make sure lines are lines and columns are columns. See if values are missing inbetween
-	DrawMotionVectors(); // draw a line from expected to actual position
+//	DrawMotionVectors(); // draw a line from expected to actual position
 //	PrintMotionVectors(); // once uppon a time when python was used manually ..
 	if (isInitialImg)
 	{
@@ -932,8 +932,8 @@ static void LoadSpecificCallibrationImage(const char* fileName, int isInitial, i
 
 void Test_loadCallibrationImages2()
 {
-//	LoadSpecificCallibrationImage("./stretch_maps/horver6_05_31_1.bmp", 1, 25, 1);
-	LoadSpecificCallibrationImage("./stretch_maps/horver6_05_31.bmp", 1, 25, 0);
+	LoadSpecificCallibrationImage("./stretch_maps/horver7_06_03_3.bmp", 1, 25, 1);
+//	LoadSpecificCallibrationImage("./stretch_maps/horver7_06_01_updt.bmp", 1, 25, 0);
 
 //	sLineAdjuster2.FillMissingInfo();
 }

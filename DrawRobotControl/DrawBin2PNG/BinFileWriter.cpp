@@ -165,7 +165,17 @@ void BinFileWriter::AddLineAntiDistorted(double sx, double sy, double ex, double
 		double roundingX = robotSession.roundingX;
 		double roundingY = robotSession.roundingY;
 		printf("Moving NODRAW pen from %.02f,%.02f to %.02f,%.02f\n", robotSession.curx, robotSession.cury, sx, sy);
-		sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, sx, sy, &line, roundingX, roundingY);
+		int drawErr = sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, sx, sy, &line, roundingX, roundingY);
+#if 0
+//		if (drawErr)
+		int drawErr = 0;
+		{
+			line.~RelativePointsLine();
+			// move only on X later on Y
+			drawErr = sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, sx, robotSession.cury, &line, roundingX, roundingY);
+			drawErr += sLineAdjuster2.DrawLine(robotSession.curx, robotSession.cury, sx, sy, &line, roundingX, roundingY);
+		}
+#endif
 		if (line.GetPointsCount() > 0)
 		{
 			line.setPenPosition(Pen_Up);

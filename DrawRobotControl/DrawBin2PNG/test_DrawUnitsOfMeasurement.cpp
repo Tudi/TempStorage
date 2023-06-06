@@ -2,7 +2,7 @@
 
 // managed to draw max, non stretched, 2900 commands. Non adjusted that is about 5 inches
 #define NUM_COMMANDS_PER_UNIT	25
-#define TEAR_MULTIPLIER 1.0f
+#define TEAR_MULTIPLIER 1.05f
 
 int isLineWithinTear(int sx, int sy, int ex, int ey)
 {
@@ -13,7 +13,7 @@ int isLineWithinTear(int sx, int sy, int ex, int ey)
 	static BYTE* tearBytes = NULL;
 	if (tearImg == NULL)
 	{
-		tearImg = LoadImage_("SA_2_Tear_filled_11.bmp");
+		tearImg = LoadImage_("map_as_tear_14.bmp");
 		if (tearImg)
 		{
 			tearStride = FreeImage_GetPitch(tearImg);
@@ -166,15 +166,15 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 	char fileName[500];
 	if (isHorizontal == 1)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_06_01.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_H_%d_%d_FL_06_05.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 0)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_06_01.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_V_%d_%d_FL_06_05.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 3)
 	{
-		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_06_01.bin", lines, NUM_COMMANDS_PER_UNIT);
+		sprintf_s(fileName, sizeof(fileName), "UnitsOfMeasurement_HV_%d_%d_FL_06_05.bin", lines, NUM_COMMANDS_PER_UNIT);
 	}
 	else if (isHorizontal == 4)
 	{
@@ -240,9 +240,19 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 			{
 				if (isLineWithinTear((int)XorY, (int)startAt, (int)XorY, (int)startAt + NUM_COMMANDS_PER_UNIT) &&
 					isLineWithinTear((int)XorY, (int)startAt, (int)XorY + NUM_COMMANDS_PER_UNIT, (int)startAt) &&
-					isLineWithinTear((int)XorY, (int)startAt, (int)XorY + NUM_COMMANDS_PER_UNIT, (int)startAt + NUM_COMMANDS_PER_UNIT))
+					isLineWithinTear((int)XorY, (int)startAt, (int)XorY + NUM_COMMANDS_PER_UNIT, (int)startAt + NUM_COMMANDS_PER_UNIT)
+					&& sLineAdjuster2.GetAdjustedPos(XorY, startAt).HasValues
+					&& sLineAdjuster2.GetAdjustedPos(XorY, startAt + NUM_COMMANDS_PER_UNIT).HasValues
+					&& sLineAdjuster2.GetAdjustedPos(XorY + NUM_COMMANDS_PER_UNIT, startAt).HasValues
+					&& sLineAdjuster2.GetAdjustedPos(XorY + NUM_COMMANDS_PER_UNIT, startAt + NUM_COMMANDS_PER_UNIT).HasValues
+					)
 				{
-					canUseValues = 1;
+//					canUseValues = 1;
+					float tx = XorY;
+					float ty = startAt;
+					USE_LINE_DRAW_FUNC(tx, ty, tx, ty + NUM_COMMANDS_PER_UNIT);
+					USE_LINE_DRAW_FUNC(tx, ty, tx + NUM_COMMANDS_PER_UNIT, ty);
+					USE_LINE_DRAW_FUNC(tx, ty, tx + NUM_COMMANDS_PER_UNIT, ty + NUM_COMMANDS_PER_UNIT);
 				}
 			}
 			else if (isHorizontal == 4 && isLineWithinTear((int)XorY, (int)startAt, (int)XorY, (int)endAt))
@@ -294,12 +304,27 @@ void drawMeasurementFullLines(int lines, int isHorizontal)
 				if (ap1.HasValues != 1 || ap2.HasValues != 1) printf("need to have values\n");
 				USE_LINE_DRAW_FUNC(XorY, minStart, XorY, maxEnd);
 			}
+#if 0
 			else if (isHorizontal == 3)
 			{
-				USE_LINE_DRAW_FUNC(XorY, minStart, XorY, minStart + NUM_COMMANDS_PER_UNIT);
-				USE_LINE_DRAW_FUNC(XorY, minStart, XorY + NUM_COMMANDS_PER_UNIT, minStart);
-				USE_LINE_DRAW_FUNC(XorY, minStart, XorY + NUM_COMMANDS_PER_UNIT, minStart + NUM_COMMANDS_PER_UNIT);
+				for (int td = 0; td < (int)((maxEnd - minStart) / NUM_COMMANDS_PER_UNIT / 2); td++)
+				{
+					float tx = XorY + td * NUM_COMMANDS_PER_UNIT * 2;
+					float ty = minStart + td * NUM_COMMANDS_PER_UNIT * 2;
+					if (sLineAdjuster2.GetAdjustedPos(tx, ty).HasValues != 1 ||
+						sLineAdjuster2.GetAdjustedPos(tx + NUM_COMMANDS_PER_UNIT, ty).HasValues != 1 ||
+						sLineAdjuster2.GetAdjustedPos(tx, ty + NUM_COMMANDS_PER_UNIT).HasValues != 1 ||
+						sLineAdjuster2.GetAdjustedPos(tx + NUM_COMMANDS_PER_UNIT, ty + NUM_COMMANDS_PER_UNIT).HasValues != 1)
+					{
+						continue;
+					}
+
+					USE_LINE_DRAW_FUNC(tx, ty, tx, ty + NUM_COMMANDS_PER_UNIT);
+					USE_LINE_DRAW_FUNC(tx, ty, tx + NUM_COMMANDS_PER_UNIT, ty);
+					USE_LINE_DRAW_FUNC(tx, ty, tx + NUM_COMMANDS_PER_UNIT, ty + NUM_COMMANDS_PER_UNIT);
+				}
 			}
+#endif
 			else if (isHorizontal == 4)
 			{
 				// because of rounding errors, these might point outside the actual teardrop
@@ -361,10 +386,12 @@ void Test_DrawUnitsOfMeasurement()
 //	drawMeasurementLines(30, 0);
 //	drawMeasurementLines(30, 3);
 
-	drawMeasurementFullLines(94, 1);
-	if (printLinesForSIG)		printf("PLINEEND\nSetting\nSetting\n0, 0, 0, 11\n34082, 0, 0, 0, 1\n\n\n");
-	drawMeasurementFullLines(94, 0);
-	if (printLinesForSIG)		printf("PLINEEND\nSetting\nSetting\n0, 0, 0, 11\n34082, 0, 0, 0, 1\n\n\n");
+	drawMeasurementFullLines(108, 1);
+	if (printLinesForSIG)		printf("Setting\nSetting\n0, 0, 0, 11\n34082, 0, 0, 0, 1\n\n\n");
+	drawMeasurementFullLines(108, 0);
+	if (printLinesForSIG)		printf("Setting\nSetting\n0, 0, 0, 11\n34082, 0, 0, 0, 1\n\n\n");
+//	drawMeasurementFullLines(84, 3);
+	if (printLinesForSIG)		printf("Setting\nSetting\n0, 0, 0, 11\n34082, 0, 0, 0, 1\n\n\n");
 
-//	drawMeasurementFullLines(76, 4); // draw current tear as sig
+//	drawMeasurementFullLines(84, 4); // draw current tear as sig
 }
