@@ -25,6 +25,7 @@ namespace SigToBin
             // example to convert a SIG file to BIN file
             {
                 SigToBin binFileWriter = new SigToBin();
+                binFileWriter.SetBinFileName("S005 Five One Inch Squares.BIN");
                 string[] fileContent = GetSIGFileContent("S005 Five One Inch Squares.Sig");
                 bool errorsEncountered = binFileWriter.AddSIGToBin(fileContent);
                 if (errorsEncountered == true)
@@ -36,6 +37,7 @@ namespace SigToBin
             // example to add 2 sigs to the same BIN
             {
                 SigToBin binFileWriter = new SigToBin();
+                binFileWriter.SetBinFileName("2Sigs.BIN");
                 string[] fileContent = GetSIGFileContent("TearDrop_05_22.sig");
                 bool errorsEncountered = binFileWriter.AddSIGToBin(fileContent);
                 if (errorsEncountered == true)
@@ -43,6 +45,24 @@ namespace SigToBin
                     Console.WriteLine("There have been errors while drawing");
                 }
                 fileContent = GetSIGFileContent("Paragraph.Sig");
+                errorsEncountered = binFileWriter.AddSIGToBin(fileContent);
+                if (errorsEncountered == true)
+                {
+                    Console.WriteLine("There have been errors while drawing");
+                }
+                binFileWriter.CloseBinFile();
+            }
+            // drop the pen + convert a sig file to bin
+            {
+                SigToBin binFileWriter = new SigToBin();
+                binFileWriter.SetBinFileName("Paragraph.BIN");
+                binFileWriter.SetDrawSpeed(50); // set draw speed
+                bool errorsEncountered = binFileWriter.AddLine(0, 0, 0.01f, 0.01f);
+                if (errorsEncountered == true)
+                {
+                    Console.WriteLine("There have been errors while drawing");
+                }
+                string[] fileContent = GetSIGFileContent("Paragraph.Sig");
                 errorsEncountered = binFileWriter.AddSIGToBin(fileContent);
                 if (errorsEncountered == true)
                 {

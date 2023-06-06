@@ -461,6 +461,10 @@ namespace SigToBin
         /// <returns></returns>
         public int WriteBinLine(ref RelativePointsLine line)
         {
+            if(fBinFile == null)
+            {
+                return 1;
+            }
             RobotCommand CMD = robotSession.prevCMD;
             PenRobotMovementCodesPrimary prevPrimaryDirection = PenRobotMovementCodesPrimary.Move1_Uninitialized;
 
@@ -588,6 +592,10 @@ namespace SigToBin
             if (fBinFile == null)
             {
                 OpenBinFile();
+            }
+            if(fBinFile == null)
+            {
+                return false;
             }
             if (bHeaderWritten == false)
             {
