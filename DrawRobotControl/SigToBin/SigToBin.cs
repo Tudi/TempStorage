@@ -10,7 +10,7 @@ namespace SigToBin
     /// </summary>
     public class SigToBin
     {
-        private const int PIXELS_IN_INCH = 600;
+        private const int PIXELS_IN_INCH = 522;
         private const float INVALID_VALUE = 100000;
         private BinFileWriter bfw;
         private string binFileName;
