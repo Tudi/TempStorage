@@ -428,38 +428,43 @@ namespace SigToBin
         /// </summary>
         public void WriteBinTransition(int writePaperSwap)
         {
-            byte byteVal = 0x88; // does not seem to matter?
-            fBinFile.Write(new byte[] { byteVal }, 0, 1);
+            // make sure the Pen is raised
+            robotSession.prevCMD.penPosition = PenRobotPenPosition.Pen_Up;
+            fBinFile.Write(new byte[] { robotSession.prevCMD.Pack() }, 0, 1);
 
+            RobotCommand cmd = new RobotCommand();
+            cmd.Transition = 1; // 0x04
+            cmd.penIsMoving = 1; // 0x08
+            byte byteVal = cmd.Pack(); 
             for (int i = 0; i < 20; i++)
             {
-                byteVal = 0x08 | 0x04;
                 fBinFile.Write(new byte[] { byteVal }, 0, 1);
             }
 
-            // only part that does not have "always 1" bit 4 set
-            // probably enough for a transition
+            cmd.penIsMoving = 0; // 0x08
+            byteVal = cmd.Pack();
             for (int i = 0; i < 20; i++)
             {
-                byteVal = 0x04;
                 fBinFile.Write(new byte[] { byteVal }, 0, 1);
             }
 
-            robotSession.prevCMD.UnPack(0x04);
+            robotSession.prevCMD.UnPack(byteVal);
 
             // seems like this part generates the paper swap
             if (writePaperSwap != 0)
             {
+                cmd.Transition = 0;
+                cmd.penIsMoving = 1;
+                byteVal = cmd.Pack();
                 for (int i = 0; i < 4; i++)
                 {
-                    byteVal = 0x08;
                     fBinFile.Write(new byte[] { byteVal }, 0, 1);
                 }
 
                 // reset pen position, acumulated errors ..
                 robotSession.ResetOnTransition();
                 // this was the last command we added to the file
-                robotSession.prevCMD.UnPack(0x08);
+                robotSession.prevCMD.UnPack(byteVal);
             }
         }
 

@@ -70,6 +70,17 @@ namespace SigToBin
                 }
                 binFileWriter.CloseBinFile();
             }
+            // 2 lines separated by a transition
+            {
+                SigToBin binFileWriter = new SigToBin();
+                binFileWriter.SetBinFileName("1line2Papers.BIN");
+                binFileWriter.AddLine(0, 0, 0.1f, 0.0f);
+
+                binFileWriter.InsertPaperTransition();
+
+                binFileWriter.AddLine(0, 0, 0.0f, 0.1f);
+                binFileWriter.CloseBinFile();
+            }
         }
         /// <summary>
         /// In case you want some quick tests, you might want to convert a single file to BIN
