@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace SigToBin
 {
@@ -273,13 +274,19 @@ namespace SigToBin
         public RobotCommand prevCMD;
         public RobotDrawSession()
         {
-            curx = cury = 0;
-            prevCMD = new RobotCommand();
-            prevCMD.UnPack(0);
             moveSpeedCoeff = 0;
+            prevCMD = new RobotCommand();
+            ResetOnTransition();
+        }
+        /// <summary>
+        /// Reset the pen status. Needed when a transition is performed
+        /// </summary>
+        public void ResetOnTransition()
+        {
+            prevCMD.UnPack(0);
+            curx = cury = 0;
             stepsWritten = 0;
             skipsWritten = 0;
-
             leftOverX = leftOverY = 0;
         }
 
@@ -449,6 +456,9 @@ namespace SigToBin
                     fBinFile.Write(new byte[] { byteVal }, 0, 1);
                 }
 
+                // reset pen position, acumulated errors ..
+                robotSession.ResetOnTransition();
+                // this was the last command we added to the file
                 robotSession.prevCMD.UnPack(0x08);
             }
         }
