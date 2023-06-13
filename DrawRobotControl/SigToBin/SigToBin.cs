@@ -448,8 +448,6 @@ namespace SigToBin
                 fBinFile.Write(new byte[] { byteVal }, 0, 1);
             }
 
-            robotSession.prevCMD.UnPack(byteVal);
-
             // seems like this part generates the paper swap
             if (writePaperSwap != 0)
             {
@@ -460,12 +458,12 @@ namespace SigToBin
                 {
                     fBinFile.Write(new byte[] { byteVal }, 0, 1);
                 }
-
-                // reset pen position, acumulated errors ..
-                robotSession.ResetOnTransition();
-                // this was the last command we added to the file
-                robotSession.prevCMD.UnPack(byteVal);
             }
+
+            // reset pen position, acumulated errors ..
+            robotSession.ResetOnTransition();
+            // this was the last command we added to the file
+            robotSession.prevCMD.UnPack(byteVal);
         }
 
         /// <summary>
