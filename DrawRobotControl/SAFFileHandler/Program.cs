@@ -23,8 +23,10 @@
 }
 
 // example to create a SAF file and put 1 SIG into a single transition segment
+// also set Address mode
 {
     SAFFileHandler.ISAFFile myFile = new SAFFileHandler.SAFFile();
+    myFile.SetAddressMode(true);
     myFile.AppendSigFile(GetSIGFileContent("1.sig"));
     myFile.WriteFile("out2.saf");
 }

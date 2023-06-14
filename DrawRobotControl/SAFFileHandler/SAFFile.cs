@@ -76,6 +76,12 @@ namespace SAFFileHandler
         /// </summary>
         /// <param name="t"></param>
         public void IsEqualHeader(SAFFile t);
+
+        /// <summary>
+        /// SAF can be address(proceed to next file) mode or signiture(do drawing + swap paper) mode
+        /// </summary>
+        /// <param name="Enabled"></param>
+        public void SetAddressMode(bool Enabled = true);
     }
 
     /************************************************************************************************************************
@@ -95,6 +101,7 @@ namespace SAFFileHandler
             public const float SAF_INCH_MULTIPLIER = 25.4f;
             public const int SAF_IV_SIZE = 16;
             public const int SAF_HASH_SIZE = 32;
+            public const int SAFFileInfo2_FLAG_ADDRESS_MODE = 1;
             public static int SAF_16BYTE_ALLIGN(int x) => (((x + 15) / 16) * 16);
         }
 
@@ -275,6 +282,21 @@ namespace SAFFileHandler
         {
             Array.Clear(header4CC, 0, header4CC.Length);
             sections.Clear();
+        }
+
+        public void SetAddressMode(bool Enabled = true)
+        {
+            if (fileInfo2 != null)
+            {
+                if (Enabled == true)
+                {
+                    fileInfo2.flags = (ushort)(fileInfo2.flags | SAFConstants.SAFFileInfo2_FLAG_ADDRESS_MODE);
+                }
+                else
+                {
+                    fileInfo2.flags = (ushort)(fileInfo2.flags & (~SAFConstants.SAFFileInfo2_FLAG_ADDRESS_MODE));
+                }
+            }
         }
 
         private int GetDB4Data(FileStream f, SAFTransitionData out_db4)
