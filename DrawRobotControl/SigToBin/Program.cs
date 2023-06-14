@@ -15,9 +15,20 @@ namespace SigToBin
                 SigToBin binFileWriter = new SigToBin();
                 binFileWriter.SetBinFileName("LineTest.BIN");
                 binFileWriter.SetDrawSpeed(50); // set draw speed
-                bool errorsEncountered = binFileWriter.AddLine(-1, -1, 1, 1);
+                bool errorsEncountered = binFileWriter.AddLine(0, 0.1f, 0, 0.2f);
                 binFileWriter.CloseBinFile();
                 if(errorsEncountered == true)
+                {
+                    Console.WriteLine("There have been errors while drawing");
+                }
+            }
+            {
+                SigToBin binFileWriter = new SigToBin();
+                binFileWriter.SetBinFileName("LineTest0Line.BIN");
+                binFileWriter.SetDrawSpeed(50); // set draw speed
+                bool errorsEncountered = binFileWriter.AddLine(0, 0, 0, 0.1f);
+                binFileWriter.CloseBinFile();
+                if (errorsEncountered == true)
                 {
                     Console.WriteLine("There have been errors while drawing");
                 }

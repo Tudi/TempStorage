@@ -213,12 +213,12 @@ namespace SigToBin
     /// </summary>
     public class RobotCommand
     {
-        public PenRobotMovementCodesPrimary primaryDirection;
-        public byte Transition;
-        public byte penIsMoving;
-        public byte alwaysZero;
-        public PenRobotPenPosition penPosition;
-        public byte secondaryDirection;
+        public PenRobotMovementCodesPrimary primaryDirection; // bits 0,1
+        public byte Transition; // bit 2
+        public byte penIsMoving; // bit 3 = val 0x08
+        public byte alwaysZero; // bit 4
+        public PenRobotPenPosition penPosition; // bit 5
+        public byte secondaryDirection; // bit 6,7
 
         public RobotCommand()
         {
@@ -272,6 +272,7 @@ namespace SigToBin
         public double curx;
         public double cury;
         public RobotCommand prevCMD;
+        public int linesWritten;
         public RobotDrawSession()
         {
             moveSpeedCoeff = 0;
@@ -288,6 +289,7 @@ namespace SigToBin
             stepsWritten = 0;
             skipsWritten = 0;
             leftOverX = leftOverY = 0;
+            linesWritten = 0;
         }
 
         public double moveSpeedCoeff; // 0 = 100% movement speed
@@ -395,12 +397,6 @@ namespace SigToBin
                 byte byteVal = BIN_HEADER_BYTE;
                 fBinFile.WriteByte(byteVal);
             }
-            // temp test to see if this caused the head to not move at all
-            for (int i = 0; i < 4; i++)
-            {
-                byte byteVal = BIN_HEADER_BYTE;
-                fBinFile.WriteByte(byteVal);
-            }
             robotSession.prevCMD.UnPack(BIN_HEADER_BYTE);
         }
 
@@ -478,6 +474,45 @@ namespace SigToBin
             {
                 return 1;
             }
+
+            // this code section exists to try to make first line get drawn if the pen is 'up'
+            {
+                if (robotSession.linesWritten == 0)
+                {
+                    // in every example this sequence got added
+                    if (line.GetPenPosition() == PenRobotPenPosition.Pen_Down)
+                    {
+                        RobotCommand tCMD = new RobotCommand();
+                        tCMD.UnPack(0);
+                        tCMD.penIsMoving = 1;
+                        for (int i = 0; i < 4; i++)
+                        {
+                            fBinFile.WriteByte(tCMD.Pack());
+                        }
+                        robotSession.prevCMD = tCMD;
+                    }
+                }
+                else if (robotSession.linesWritten == 1)
+                {
+                    // in every example this sequence got added
+                    if (robotSession.prevCMD.penPosition == PenRobotPenPosition.Pen_Up)
+                    {
+                        RobotCommand tCMD = new RobotCommand();
+                        tCMD.UnPack(0);
+                        tCMD.penIsMoving = 1;
+                        tCMD.penPosition = PenRobotPenPosition.Pen_Down;
+                        tCMD.secondaryDirection = 3;
+                        for (int i = 0; i < 4; i++)
+                        {
+                            fBinFile.WriteByte(tCMD.Pack());
+                        }
+                        robotSession.prevCMD = tCMD;
+                    }
+                }
+
+                robotSession.linesWritten++;
+            }
+
             RobotCommand CMD = robotSession.prevCMD;
             PenRobotMovementCodesPrimary prevPrimaryDirection = PenRobotMovementCodesPrimary.Move1_Uninitialized;
 
