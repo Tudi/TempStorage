@@ -545,13 +545,6 @@ namespace SAFFileHandler
 
             fileInfo.transitionCount1 = fileInfo.transitionCount2 = sections.Count;
 
-//            for (int i = 0; i < 16; i++)
-//                fileInfo.points[i] = i + 1;
-
-            fileInfo2.flags = 2;
-            if (fileInfo.transitionCount1 > 1)
-                fileInfo2.flags |= 1;
-
             int prevSectionStartOffset = 0;
             int sectionStartOffset = (int)(SAFConstants.SAF_4CC_SIZE +
                 SAFConstants.SAF_IV_SIZE + Marshal.SizeOf(typeof(SAFFileInfo)) + SAFConstants.SAF_HASH_SIZE +
