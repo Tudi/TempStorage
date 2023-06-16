@@ -6,13 +6,22 @@ namespace SafViewer
 {
     public partial class SafViewerForm : Form
     {
+        // content that we intend to paint on the screen
         SAFTransitionData? SafDataToPaint;
+        // allow zooming in/out of content
         float MouseZoom = 1;
+        // used to implement dragging of content
         private bool isDragging = false;
         private Point lastCursorPosition;
+        // the result of dragging
         int Offset_x = 0;
         int Offset_y = 0;
+        // so we can add our opened file name to the name of the window
         string OriginalFormTitle;
+        // some consts
+        const float mouseZoomSpeed = 0.1f;
+        Color lineColorsSAF = Color.White;
+        const float lineWidthSAF = 2;
 
         public SafViewerForm()
         {
@@ -99,6 +108,8 @@ namespace SafViewer
                 SafDataToPaint = tSAFFile.GetTransitionData(0);
                 SafContent.Invalidate();
                 this.Text = OriginalFormTitle + " - " + file;
+                MouseZoom = 1; // reset zoom
+                Offset_x = Offset_y = 0; // reset SAF content offset
                 break;
             }
         }
@@ -111,9 +122,11 @@ namespace SafViewer
                 return;
             }
 
+            // use our window center to draw the center of the SAF file
             int Offset_X = SafContent.Width / 2 + Offset_x;
             int Offset_Y = SafContent.Height / 2 + Offset_y;
 
+            // scale the content of the SAf file to the size of our window
             float Scale_X = SafContent.Width / SafDataToPaint.transitionInfo.width;
             float Scale_Y = SafContent.Height / SafDataToPaint.transitionInfo.height;
             if(SafDataToPaint.transitionInfo.width == 0)
@@ -124,6 +137,7 @@ namespace SafViewer
             {
                 Scale_Y = 1;
             }
+            // Apply custom zoom to the SAF file content
             Scale_X *= MouseZoom;
             Scale_Y *= MouseZoom;
 
@@ -131,7 +145,7 @@ namespace SafViewer
             Graphics g = e.Graphics;
 
             // Set the color and thickness of the line
-            Pen pen = new Pen(Color.White, 2);
+            Pen pen = new Pen(lineColorsSAF, lineWidthSAF);
 
             Point startPoint = new Point(), endPoint = new Point();
             startPoint.X = endPoint.X = 10000;
@@ -161,11 +175,11 @@ namespace SafViewer
             if (e.Delta > 0)
             {
                 // Zoom in
-                MouseZoom += 0.1f;
+                MouseZoom += mouseZoomSpeed;
             }
             else if (e.Delta < 0)
             {
-                MouseZoom -= 0.1f;
+                MouseZoom -= mouseZoomSpeed;
             }
             if(MouseZoom < 0)
             {
