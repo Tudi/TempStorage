@@ -12,6 +12,7 @@ namespace SafViewer
         private Point lastCursorPosition;
         int Offset_x = 0;
         int Offset_y = 0;
+        string OriginalFormTitle;
 
         public SafViewerForm()
         {
@@ -22,15 +23,21 @@ namespace SafViewer
             // Subscribe to the Resize event of the form
             Resize += SafViewerForm_Resize;
 
+            // allow drag and drop SAF file opening
             AllowDrop = true;
             DragEnter += SafViewerForm_DragEnter;
             DragDrop += SafViewerForm_DragDrop;
 
+            // Paint the SAF content
             SafContent.Paint += SafContent_Paint;
+            // Allow drag and zoom of the SAf file content
             SafContent.MouseWheel += SafContent_MouseWheel;
             SafContent.MouseDown += SafContent_MouseDown;
             SafContent.MouseMove += SafContent_MouseMove;
             SafContent.MouseUp += SafContent_MouseUp;
+
+            // show the file opened right now
+            OriginalFormTitle = this.Text;
         }
 
         protected override void OnLoad(EventArgs e)
@@ -47,6 +54,7 @@ namespace SafViewer
         {
             // Update the size of the PictureBox to match the form size
             SafContent.Size = ClientSize;
+            SafContent.Invalidate();
         }
 
         private void SafViewerForm_DragEnter(object? sender, DragEventArgs e)
@@ -90,6 +98,8 @@ namespace SafViewer
                 }
                 SafDataToPaint = tSAFFile.GetTransitionData(0);
                 SafContent.Invalidate();
+                this.Text = OriginalFormTitle + " - " + file;
+                break;
             }
         }
 
