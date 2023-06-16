@@ -89,7 +89,7 @@ namespace SAFFileHandler
     ************************************************************************************************************************/
     public class SAFFile : ISAFFile
     {
-        private char[] header4CC = new char[SAFConstants.SAF_4CC_SIZE];
+        private byte[] header4CC = new byte[SAFConstants.SAF_4CC_SIZE];
         internal SAFFileInfo? fileInfo = new SAFFileInfo();
         internal SAFFileInfo2? fileInfo2 = new SAFFileInfo2();
         internal List<SAFTransitionData> sections = new List<SAFTransitionData>();
@@ -142,7 +142,7 @@ namespace SAFFileHandler
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        internal class SAFTransitionInfo
+        public class SAFTransitionInfo
         {
             public int prevSectionStartOffset; // Seen it take the value of block end offset
             public int sectionEndOffset;
@@ -231,7 +231,7 @@ namespace SAFFileHandler
             }
         }
 
-        internal class SAFTransitionData
+        public class SAFTransitionData
         {
             public SAFTransitionInfo? transitionInfo = new SAFTransitionInfo();
             public List<SAFPolyline> lines = new List<SAFPolyline>();
@@ -350,8 +350,8 @@ namespace SAFFileHandler
         {
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
-                fs.Read(Encoding.ASCII.GetBytes(header4CC), 0, header4CC.Length);
-                if (BitConverter.ToInt32(Encoding.ASCII.GetBytes(header4CC), 0) != SAFConstants.SAF_4CC_VAL)
+                fs.Read(header4CC, 0, header4CC.Length);
+                if (BitConverter.ToInt32(header4CC, 0) != SAFConstants.SAF_4CC_VAL)
                 {
                     Console.WriteLine("File does not seem to be a SAF file");
                     return -3;
@@ -504,7 +504,7 @@ namespace SAFFileHandler
             {
                 byte[] tempBuff;
                 int transitionsParsed = 0;
-                f.Write(Encoding.ASCII.GetBytes(header4CC), 0, header4CC.Length);
+                f.Write(header4CC, 0, header4CC.Length);
                 SAFCrypto.WriteGenericEncryptedBlock(f, StructToBytes(fileInfo), Marshal.SizeOf<SAFFileInfo>());
                 SAFCrypto.WriteGenericBlock(f, StructToBytes(fileInfo2), Marshal.SizeOf<SAFFileInfo2>());
 
@@ -697,5 +697,22 @@ namespace SAFFileHandler
             }
         }
 
+        public int GetTransitionCount()
+        {
+            if(fileInfo == null)
+            {
+                return 0;
+            }
+            return fileInfo.transitionCount1;
+        }
+
+        public SAFTransitionData? GetTransitionData(int index)
+        {
+            if(sections.Count <= index)
+            {
+                return null;
+            }
+            return this.sections[index];
+        }
     }
 }
