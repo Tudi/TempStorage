@@ -8,4 +8,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\SAFFileHandler\SAFCrypto.cs" Link="ExternalDependecies\SAFCrypto.cs" />
+    <Compile Include="..\SAFFileHandler\SAFFile.cs" Link="ExternalDependecies\SAFFile.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ExternalDependecies\" />
+  </ItemGroup>
+
 </Project>
