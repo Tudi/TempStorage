@@ -16,8 +16,12 @@ namespace SafViewer
         // the result of dragging
         int Offset_x = 0;
         int Offset_y = 0;
+        // should we flip shown picture vertically or horizontally ?
+        bool flipSAFVertically = false;
+        bool flipSAFHorizontally = false;
         // so we can add our opened file name to the name of the window
         string OriginalFormTitle;
+        int selectedTransitionBlock = 0;
         // some consts
         const float mouseZoomSpeed = 0.1f;
         Color lineColorsSAF = Color.White;
@@ -105,11 +109,14 @@ namespace SafViewer
                 {
                     MessageBox.Show("Can only show first transition block");
                 }
-                SafDataToPaint = tSAFFile.GetTransitionData(0);
+                selectedTransitionBlock = 0;
+                SafDataToPaint = tSAFFile.GetTransitionData(selectedTransitionBlock);
                 SafContent.Invalidate();
                 this.Text = OriginalFormTitle + " - " + file;
                 MouseZoom = 1; // reset zoom
                 Offset_x = Offset_y = 0; // reset SAF content offset
+                flipSAFHorizontally = false;
+                flipSAFVertically = false;
                 break;
             }
         }
@@ -155,8 +162,18 @@ namespace SafViewer
                 foreach (SAFPolylinePoint point in line.points)
                 {
                     startPoint = endPoint;
-                    endPoint.X = Offset_X + (int)(point.x * Scale_X);
-                    endPoint.Y = Offset_Y + (int)(point.y * Scale_Y);
+                    float tx = point.x;
+                    float ty = point.y;
+                    if (flipSAFHorizontally)
+                    {
+                        ty = SafDataToPaint.transitionInfo.height / 2 - ty;
+                    }
+                    if (flipSAFVertically)
+                    {
+                        tx = SafDataToPaint.transitionInfo.width / 2 - tx;
+                    }
+                    endPoint.X = Offset_X + (int)(tx * Scale_X);
+                    endPoint.Y = Offset_Y + (int)(ty * Scale_Y);
                     if (startPoint.X != 10000 && endPoint.X != 10000)
                     {
                         // Draw the line using the start and end points
@@ -213,6 +230,31 @@ namespace SafViewer
         {
             // Stop dragging
             isDragging = false;
+        }
+
+        private void flipVerticalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            flipSAFVertically = !flipSAFVertically;
+            SafContent.Invalidate();
+        }
+
+        private void flipHorizontalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            flipSAFHorizontally = !flipSAFHorizontally;
+            SafContent.Invalidate();
+        }
+
+        private void selectTransitionBlockToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Create an input dialog form
+            GetSAFSelectedTransaction inputDialog = new GetSAFSelectedTransaction();
+
+            // Show the input dialog as a modal dialog
+            if (inputDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Get the user input value
+                selectedTransitionBlock = inputDialog.GetSelectedTransition();
+            }
         }
     }
 }
