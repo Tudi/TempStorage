@@ -46,7 +46,9 @@ void main()
 //    DivTestsqsq3();
 //    DivTestBitByBit();
 //    DivTestBitByBit2();
-    DivTestBitByBit3();
+//    DivTestBitByBit3();
+    DivTestabxy(); // could be made to use lookup table for fast progress
+//    DivTestabxy2(); // -> avg case worse than prev version. Happy scenario better
 
     printf("All done\n");
 }

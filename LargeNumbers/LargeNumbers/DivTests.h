@@ -55,3 +55,5 @@ void DivTestsqsq3();
 void DivTestBitByBit();
 void DivTestBitByBit2();
 void DivTestBitByBit3();
+void DivTestabxy();
+void DivTestabxy2();

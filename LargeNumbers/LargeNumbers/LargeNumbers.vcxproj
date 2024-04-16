@@ -156,6 +156,8 @@
     <ClCompile Include="DivTest_abc.cpp" />
     <ClCompile Include="DivTest_abSQ.cpp" />
     <ClCompile Include="DivTest_abSQ2.cpp" />
+    <ClCompile Include="DivTest_abxy.cpp" />
+    <ClCompile Include="DivTest_abxy2.cpp" />
     <ClCompile Include="DivTest_BitByBit.cpp" />
     <ClCompile Include="DivTest_BitByBit2.cpp" />
     <ClCompile Include="DivTest_BitByBit3.cpp" />
