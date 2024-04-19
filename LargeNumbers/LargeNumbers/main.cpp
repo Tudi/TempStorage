@@ -48,7 +48,7 @@ void main()
 //    DivTestBitByBit2();
 //    DivTestBitByBit3(); // probably the fastest but uses most memory.
     DivTestabxy(); // probably the fastest and safest way for least memory. Could be made to use lookup table for fast progress
-//    DivTestabxy2(); // same as prev, but changes SQN instead complicating formula
+//    DivTestabxy2(); // same, but here we change SQN instead xp-yp
 
     printf("All done\n");
 }

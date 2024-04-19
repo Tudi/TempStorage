@@ -98,7 +98,8 @@ static void AdvanceXY(__int64& xp, __int64& yp, __int64& SQN, __int64 m, __int64
 		__int64 tx = xp + x;
 		new_yp = (tx * tx + m) / (SQN - tx);
 	}
-	if (new_xp > new_yp)
+	// should be same as (xp+checkDigitsUntil)<SQN/3
+	if (new_xp - xp - checkDigitsUntil > new_yp - yp - checkDigitsUntil)
 	{
 		xp = new_xp;
 		yp += checkDigitsUntil;
@@ -148,4 +149,5 @@ void DivTestabxy()
 	DivTestabxy_(26729, 31793); // N = 849795097 , SN = 29151
 	DivTestabxy_(784727, 918839);
 	DivTestabxy_(3, 918839);
+	DivTestabxy_(349, 918839);
 }

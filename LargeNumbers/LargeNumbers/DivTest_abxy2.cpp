@@ -131,6 +131,11 @@ static void AdvanceY(__int64& SQN, __int64& m, __int64 N, __int64& xFory, __int6
 
 	// 40 checks for 100x100 tries
 	const __int64 checkDigitsUntil = 100;
+//#define CHECK_SIMETRY_X_Y_CHECKS
+#ifdef CHECK_SIMETRY_X_Y_CHECKS
+	char uniqueYs[checkDigitsUntil] = { 0 };
+	char uniqueXs[checkDigitsUntil] = { 0 };
+#endif
 	for (__int64 y = ys; y < checkDigitsUntil; y += 2)
 	{
 		for (__int64 x = xs; x < checkDigitsUntil; x += 2)
@@ -150,6 +155,10 @@ static void AdvanceY(__int64& SQN, __int64& m, __int64 N, __int64& xFory, __int6
 			}
 			if ((left % checkDigitsUntil) == (right % checkDigitsUntil))
 			{
+#ifdef CHECK_SIMETRY_X_Y_CHECKS
+				uniqueYs[y] = 1;
+				uniqueXs[x] = 1;
+#endif
 				checksMade++;
 				if (isXSolution(tx, SQN, m, N)
 					|| isYSolution(ty, SQN, m, N)
@@ -162,7 +171,17 @@ static void AdvanceY(__int64& SQN, __int64& m, __int64 N, __int64& xFory, __int6
 		}
 	}
 
-	if (xFory + checkDigitsUntil >= (SQN * 10 / 25))
+#ifdef CHECK_SIMETRY_X_Y_CHECKS
+	// looks like only 10 y checks are needed for 100 y values
+	size_t unique_tests_x = 0, unique_tests_y = 0;
+	for (size_t i = 0; i < checkDigitsUntil; i++)
+	{
+		if (uniqueXs[i] != 0)unique_tests_x++;
+		if (uniqueYs[i] != 0)unique_tests_y++;
+	}
+#endif
+
+	if (xFory + checkDigitsUntil >= (SQN / 3))
 	{
 		// one X produces more Y
 		// we can only increase SQN by y/2
@@ -229,4 +248,5 @@ void DivTestabxy2()
 	DivTestabxy2_(26729, 31793); // N = 849795097 , SN = 29151
 	DivTestabxy2_(784727, 918839);
 	DivTestabxy2_(3, 918839);
+	DivTestabxy2_(349, 918839);
 }
