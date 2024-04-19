@@ -309,3 +309,30 @@ void ReCheckSize(LargeNumber *LN)
 	if (LN->Len != MAX_DIGIT_COUNT - 1 && LN->Len != 0)
 		LN->Len++;
 }
+
+int getNumLen(__int64 n)
+{
+	if (n < 10)
+	{
+		return 1;
+	}
+	if (n < 100)
+	{
+		return 2;
+	}
+	if (n < 1000)
+	{
+		return 3;
+	}
+	if (n < 10000)
+	{
+		return 4;
+	}
+	int ret = 0;
+	while (n > 0)
+	{
+		ret++;
+		n = n / 10;
+	}
+	return ret;
+}

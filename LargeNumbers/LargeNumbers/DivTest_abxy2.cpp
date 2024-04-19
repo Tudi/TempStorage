@@ -24,7 +24,7 @@ static int isYSolution(__int64 y, __int64 SQN, __int64 m, __int64 N)
 	return tN == N;
 }
 
-static void AdvanceX(__int64& SQN, __int64 &m, __int64 N, __int64& checksMade)
+static void AdvanceX(__int64& SQN, __int64 &m, __int64 N, __int64& yForx, __int64& checksMade)
 {
 	// cause we know x,y can only be pair or impair
 	__int64 xs = 0, ys = 0;
@@ -32,24 +32,25 @@ static void AdvanceX(__int64& SQN, __int64 &m, __int64 N, __int64& checksMade)
 	{
 		xs = 1;
 	}
-	if (((SQN + xs) & 1) == 0)
+	if (((SQN + xs + yForx) & 1) == 0)
 	{
 		ys = 1;
 	}
 
-	// 
+	// 40 checks for 100x100 tries
 	const __int64 checkDigitsUntil = 100;
 	for (__int64 y = ys; y < checkDigitsUntil; y += 2)
 	{
 		for (__int64 x = xs; x < checkDigitsUntil; x += 2)
 		{
-			__int64 left = x * x + y * x + m;
-			__int64 right = y * SQN;
+			__int64 ty = yForx + y; // would be enough to set low digits
+			__int64 left = x * x + ty * x + m;
+			__int64 right = ty * SQN;
 			if ((left % checkDigitsUntil) == (right % checkDigitsUntil))
 			{
 				checksMade++;
 				if (isXSolution(x, SQN, m, N)
-					|| isYSolution(y, SQN, m, N) // would only need to check for first iteration. After that y would increase beyond x
+					|| isYSolution(ty, SQN, m, N)
 					)
 				{
 					SQN = 0;
@@ -58,55 +59,34 @@ static void AdvanceX(__int64& SQN, __int64 &m, __int64 N, __int64& checksMade)
 			}
 		}
 	}
-	SQN -= checkDigitsUntil;
-	m = N - SQN * SQN;
-}
 
-static void AdvanceY(__int64& SQN, __int64& m, __int64 N, __int64& checksMade)
-{
-	// cause we know x,y can only be pair or impair
-	__int64 xs = 0, ys = 0;
-	if (((SQN) & 1) == 0)
+	__int64 new_xp;
 	{
-		xs = 1;
+		__int64 ty = yForx + checkDigitsUntil;
+		__int64 x_a = 1;
+		__int64 x_b = ty;
+		__int64 x_c = m - SQN * ty;
+		new_xp = (-x_b + isqrt(x_b * x_b - 4 * x_a * x_c)) / (2 * x_a);
 	}
-	if (((SQN + xs) & 1) == 0)
+	if (new_xp > checkDigitsUntil)
 	{
-		ys = 1;
-	}
+		yForx += 2 * new_xp + checkDigitsUntil;
 
-	// 
-	const __int64 checkDigitsUntil = 100;
-	for (__int64 y = ys; y < checkDigitsUntil; y += 2)
-	{
-		for (__int64 x = xs; x < checkDigitsUntil; x += 2)
-		{
-			__int64 left;
-			__int64 right;
-			if (m < 0)
-			{
-				left = x * x + y * x;
-				right = y * SQN - m;
-			}
-			else
-			{
-				left = x * x + y * x + m;
-				right = y * SQN;
-			}
-			if ((left % checkDigitsUntil) == (right % checkDigitsUntil))
-			{
-				checksMade++;
-				// we are aiming for y. y will always be smaller than x
-				if (isYSolution(y, SQN, m, N))
-				{
-					SQN = 0;
-					return;
-				}
-			}
-		}
+		SQN -= new_xp;
+		m = N - SQN * SQN;
 	}
-	SQN += (checkDigitsUntil - 1) / 2;
-	m = N - SQN * SQN;
+	else
+	{
+		// at this point we are looping through the same solution candidates. Only m changes in the eq beacause (SQN mod checkDigitsUntil) remains the same
+		// this will start to happen when (y+1)-(y) <= 1  .. ((x+1)^2+m-(x^2+m))/(n-x-1) <= 1
+		// (x^2+2*x+1-x^2)/(n-x-1) <= 1  2*x <= n-x-1    x <= n / 3 -> aproximately !
+		__int64 tx = checkDigitsUntil;
+		__int64 new_yp = (tx * tx + m) / (SQN - tx);
+		yForx = new_yp;
+
+		SQN -= checkDigitsUntil;
+		m = N - SQN * SQN;
+	}
 }
 
 void DivTestabxy2_x(__int64 A, __int64 B)
@@ -117,6 +97,7 @@ void DivTestabxy2_x(__int64 A, __int64 B)
 
 	__int64 stepsMade = 0;
 	__int64 checksMade = 0;
+	__int64 yforx = 0;
 
 	printf("N = %lld. SQN = %lld. m = %lld\n", N, SQN, m);
 	__int64 searchedX = SQN - A;
@@ -125,14 +106,84 @@ void DivTestabxy2_x(__int64 A, __int64 B)
 	printf("Searching for y=%lld for B=%lld\n", searchedY, B);
 	while (SQN > 0)
 	{
-		AdvanceX(SQN, m, N, checksMade);
+		AdvanceX(SQN, m, N, yforx, checksMade);
 		stepsMade++;
 		if (SQN != 0)
 		{
-			printf("\t %lld) SQN now=%lld m now=%lld checkssofar=%lld\n", stepsMade, SQN, m, checksMade);
+			printf("\t %lld) SQN now=%lld m now=%lld x=%lld y=%lld, checkssofar=%lld\n", stepsMade, SQN, m, SQN - A, A + B - 2 * SQN - yforx, checksMade);
 		}
 	}
-	printf("Found A,B in %lld steps, %lld checks using SQN=%lld, m=%lld\n\n", stepsMade, checksMade, SQN, m);
+	printf("Found A,B in %lld steps, %lld checks\n\n", stepsMade, checksMade);
+}
+
+static void AdvanceY(__int64& SQN, __int64& m, __int64 N, __int64& xFory, __int64& checksMade)
+{
+	// cause we know x,y can only be pair or impair
+	__int64 xs = 0, ys = 0;
+	if (((SQN + xFory) & 1) == 0)
+	{
+		xs = 1;
+	}
+	if (((SQN + xs + xFory) & 1) == 0)
+	{
+		ys = 1;
+	}
+
+	// 40 checks for 100x100 tries
+	const __int64 checkDigitsUntil = 100;
+	for (__int64 y = ys; y < checkDigitsUntil; y += 2)
+	{
+		for (__int64 x = xs; x < checkDigitsUntil; x += 2)
+		{
+			__int64 ty = y; // would be enough to set low digits
+			__int64 tx = x + xFory;
+			__int64 left, right;
+			if (m > 0)
+			{
+				left = tx * tx + ty * tx + m;
+				right = ty * SQN;
+			}
+			else
+			{
+				left = tx * tx + ty * tx;
+				right = ty * SQN - m;
+			}
+			if ((left % checkDigitsUntil) == (right % checkDigitsUntil))
+			{
+				checksMade++;
+				if (isXSolution(tx, SQN, m, N)
+					|| isYSolution(ty, SQN, m, N)
+					)
+				{
+					SQN = 0;
+					return;
+				}
+			}
+		}
+	}
+
+	if (xFory + checkDigitsUntil >= (SQN * 10 / 25))
+	{
+		// one X produces more Y
+		// we can only increase SQN by y/2
+		__int64 tx = xFory + checkDigitsUntil; // we checked this many so far
+		__int64 ty = (tx * tx + m) / (SQN - tx);
+		// we are only testing X ( lost track of proper y), we are only allowed to progress on the X axis 
+		xFory += checkDigitsUntil * 2;
+		SQN += checkDigitsUntil;
+	}
+	else
+	{
+		// one y produces more Xes
+		// we can only increase SQN by y/2
+		__int64 ty = checkDigitsUntil;
+		__int64 x_a = 1;
+		__int64 x_b = ty;
+		__int64 x_c = m - SQN * ty;
+		xFory = (-x_b + isqrt(x_b * x_b - 4 * x_a * x_c)) / (2 * x_a);
+		SQN += ty / 2;
+	}
+	m = N - SQN * SQN;
 }
 
 void DivTestabxy2_y(__int64 A, __int64 B)
@@ -143,6 +194,7 @@ void DivTestabxy2_y(__int64 A, __int64 B)
 
 	__int64 stepsMade = 0;
 	__int64 checksMade = 0;
+	__int64 xfory = 0;
 
 	printf("N = %lld. SQN = %lld. m = %lld\n", N, SQN, m);
 	__int64 searchedX = SQN - A;
@@ -151,21 +203,20 @@ void DivTestabxy2_y(__int64 A, __int64 B)
 	printf("Searching for y=%lld for B=%lld\n", searchedY, B);
 	while (SQN > 0)
 	{
-		AdvanceY(SQN, m, N, checksMade);
+		AdvanceY(SQN, m, N, xfory, checksMade);
 		stepsMade++;
 		if (SQN != 0)
 		{
-			printf("\t %lld) SQNnow=%lld mnow=%lld xnow=%lld ynow=%lld checkssofar=%lld\n",
-				stepsMade, SQN, m, SQN - A, A + B - 2 * SQN, checksMade);
+			printf("\t %lld) SQN now=%lld m now=%lld x=%lld y=%lld, checkssofar=%lld\n", 
+				stepsMade, SQN, m, SQN - A - xfory, A + B - 2 * SQN, checksMade);
 		}
 	}
-	printf("Found A,B in %lld steps, %lld checks using SQN=%lld, m=%lld\n\n", stepsMade, checksMade, SQN, m);
+	printf("Found A,B in %lld steps, %lld checks\n\n", stepsMade, checksMade);
 }
-
 
 void DivTestabxy2_(__int64 A, __int64 B)
 {
-	DivTestabxy2_x(A, B);
+//	DivTestabxy2_x(A, B);
 	DivTestabxy2_y(A, B);
 }
 

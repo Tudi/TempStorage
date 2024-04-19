@@ -46,9 +46,9 @@ void main()
 //    DivTestsqsq3();
 //    DivTestBitByBit();
 //    DivTestBitByBit2();
-//    DivTestBitByBit3();
-    DivTestabxy(); // could be made to use lookup table for fast progress
-//    DivTestabxy2(); // -> avg case worse than prev version. Happy scenario better
+//    DivTestBitByBit3(); // probably the fastest but uses most memory.
+    DivTestabxy(); // probably the fastest and safest way for least memory. Could be made to use lookup table for fast progress
+//    DivTestabxy2(); // same as prev, but changes SQN instead complicating formula
 
     printf("All done\n");
 }

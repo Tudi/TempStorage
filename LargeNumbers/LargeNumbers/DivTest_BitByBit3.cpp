@@ -132,6 +132,6 @@ void DivTestBitByBit3()
     DivTestBitByBit3_(349, 751); // N = 262099 , SN = 511
     DivTestBitByBit3_(6871, 7673); // N = 52721183 , SN = 7260
     DivTestBitByBit3_(26729, 31793); // N = 849795097 , SN = 29151
-    DivTestBitByBit3_(784727, 918839);
+    DivTestBitByBit3_(784727, 918839); // N = 721037771953
     DivTestBitByBit3_(3, 918839);
 }
