@@ -46,9 +46,10 @@ void main()
 //    DivTestsqsq3();
 //    DivTestBitByBit();
 //    DivTestBitByBit2();
-//    DivTestBitByBit3(); // probably the fastest but uses most memory.
-    DivTestabxy(); // probably the fastest and safest way for least memory. Could be made to use lookup table for fast progress
+//    DivTestBitByBit3(); // probably the fastest but uses most memory. 
+    DivTestabxy(); // worst case SQN/4 steps to get result. Until n/6 searches with inverse exponential speed
 //    DivTestabxy2(); // same, but here we change SQN instead xp-yp
+//    DivTestIncA(); // quite slow. Wasn't expecting it to work at all. Wanted to compare to decB version
 
     printf("All done\n");
 }

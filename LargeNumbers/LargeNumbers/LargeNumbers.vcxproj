@@ -163,6 +163,7 @@
     <ClCompile Include="DivTest_BitByBit3.cpp" />
     <ClCompile Include="DivTest_Decrement.cpp" />
     <ClCompile Include="DivTest_edef.cpp" />
+    <ClCompile Include="DivTest_IncA.cpp" />
     <ClCompile Include="DivTest_InvMul.cpp" />
     <ClCompile Include="DivTest_LineDraw.cpp" />
     <ClCompile Include="DivTest_LineDraw2.cpp" />
