@@ -1,6 +1,8 @@
 #include "StdAfx.h"
+#include "SharedDecl.h"
 
-// I have this file to avoid creating it in the future
+// I have this file to avoid creating it in the future : no advantage can be gained by multiplying ( or dividing ) N. You can trace it back to x1. Because length of N does not decrease
+//				The only advantage can be gained if more info gets known about A or B
 
 // This approach aims to use y=(1,2,3,4...) to test if it's a solution in the eq. y < SQN / 12
 // x^2+x*y+m-y*n=0	x=sqrt(y*y-4*(m-y*n))/2 - 1
@@ -18,38 +20,6 @@
 // Conclusion : this approach should be exactly useless compared to checking x 1 by 1 unless there is some magical scenario
 
 #define MAX_SEARCHED_RATIO 1000
-#define Gen_COMBO_MOD		50
-
-struct NumberCombo
-{
-	__int64 a, b; // used to store only partial numbers 
-};
-
-struct NumberComboDouble
-{
-	double x, y, xpy; // used to store only partial numbers 
-	__int64 ix,iy; // talk about lasy
-};
-
-struct IterationStateHolder {
-	__int64 c1;
-	__int64 c2; // coeff is c1/c2 and it's always greater than 0
-	__int64 AInitial;
-	__int64 BInitial;
-	__int64 NInitial;
-	__int64 SQNInitial;
-	__int64 mInitial;
-	__int64 ANow;
-	__int64 BNow;
-	__int64 Nnow;
-	__int64 SQNnow;
-	__int64 mnow;
-	__int64 StopIterating;
-	__int64 ChecksMade;
-
-	NumberCombo AB[Gen_COMBO_MOD * 10];
-	NumberComboDouble xy[Gen_COMBO_MOD];
-};
 
 __int64 gcd(__int64 a, __int64 b) {
 	while (b != 0) {
@@ -74,34 +44,45 @@ void removeCommonDivisors(__int64* num1, __int64* num2) {
 
 void floatToFraction(__int64 &numerator, __int64 & denominator)
 {
-	__int64 scaler = 1;
+	__int64 scalerN = 1;
 	while (numerator > denominator * 10)
 	{
-		scaler *= 10;
+		scalerN *= 10;
 		denominator *= 10;
+	}
+	__int64 scalerD = 1;
+	while (numerator * 10 < denominator)
+	{
+		scalerD *= 10;
+		numerator *= 10;
 	}
 
 	double value = (double)(numerator) / (double)(denominator);
+	assert(value >= 1);
+	assert(value < 10);
 	double error = value;
-	int num = 1, den = 1;
+	int num = numerator, den = denominator;
 
 	for (int i = 1; i <= MAX_SEARCHED_RATIO; i++) {
-		for (int j = 1; j <= MAX_SEARCHED_RATIO; j++) {
+		int startVal = i / value;
+		for (int j = startVal; j <= i * 10; j++) {
 			double newVal = (double)i / j;
-			if (newVal <= value)
-			{
+			if (newVal <= value) {
 				double currentError = value - newVal;
 				if (currentError < error) {
 					error = currentError;
 					num = i;
 					den = j;
 				}
+				else {
+					break;
+				}
 			}
 		}
 	}
 
-	numerator = num * scaler;
-	denominator = den;
+	numerator = num * scalerN;
+	denominator = den * scalerD;
 }
 
 uint64_t isqrt5(uint64_t n) {
@@ -604,11 +585,17 @@ void GenXYCombos(IterationStateHolder& sh, const __int64 SQN, const __int64 m, c
 	}
 	else
 	{
+//		__int64 xmod = (SQN % sh.c1); // number required to be able to round up to good value
+		// check if our x form expectation matches : x = w * c1 + xmod
+//		assert(((SQN - xmod) % sh.c1) == 0);
+//		__int64 xMultMin = xFromy / sh.c1;
 		// one x increase produces more than 1 y increase
 		if (SQN & 1) xFromy = xFromy & (~1);
 		else xFromy = xFromy | 1;
 		for (__int64 x = xFromy; x < xFromy + Gen_COMBO_MOD * 2 + 10; x += 2)
+//		for (__int64 xMul = xMultMin; xMul < xMultMin + Gen_COMBO_MOD * 2 + 10; xMul += 1)
 		{
+//			__int64 x = xMul * sh.c1 + xmod;
 			double y = (double)(x * x + m) / (SQN - x);
 			sh.xy[combos_added].y = y;
 			sh.xy[combos_added].x = x;
@@ -626,13 +613,6 @@ void GenXYCombos(IterationStateHolder& sh, const __int64 SQN, const __int64 m, c
 
 static void MakeProgress4(IterationStateHolder& sh)
 {
-/*	if (((double)sh.BNow / sh.ANow) >= MAX_SEARCHED_RATIO)
-	{
-		printf("Not made to handle this input\n");
-		sh.StopIterating = 1;
-		return;
-	}*/
-
 	sh.Nnow = sh.AInitial * sh.c1 * sh.BInitial * sh.c2;
 	sh.SQNnow = isqrt5(sh.Nnow);
 	sh.mnow = sh.Nnow - sh.SQNnow * sh.SQNnow;
@@ -705,6 +685,9 @@ static void MakeProgress4(IterationStateHolder& sh)
 	}
 	GenXYCombos(sh, sh.SQNInitial, sh.mInitial, genfory);
 
+	__int64 x2fromx1First = sh.c1 * sh.xy[0].x - sh.c1 * sh.SQNInitial + sh.SQNnow;
+	__int64 xMultFirst = (x2fromx1First - xmod) / sh.c1;
+	__int64 xMultPrev = -1;
 	for (size_t i = 0; i < _countof(sh.xy); i++)
 	{
 		// N = (n-x)*(n+xpy)
@@ -714,7 +697,12 @@ static void MakeProgress4(IterationStateHolder& sh)
 		// x + y = z * c2 + ymod
 		// y = c2 * B - c1 * x - n
 		// y = c1 * A + c2 * B - 2 * n
-
+		{
+			double x2fromx1Now = sh.c1 * (sh.xy[i].x - sh.SQNInitial) + sh.SQNnow;
+			__int64 xMultNow = (x2fromx1Now - xmod) / sh.c1; // should be +1 previous
+			assert(xMultPrev + 1 <= xMultNow);
+			xMultPrev = xMultNow;
+		}
 		// temp asuming we never hit the result
 		if (sh.xy[i].x == sh.xy[i].ix && sh.xy[i].y == sh.xy[i].iy)
 		{
@@ -774,32 +762,26 @@ static void MakeProgress4(IterationStateHolder& sh)
 #endif
 	}
 	size_t lastValidIndex = _countof(sh.xy) - 1;
-	double x2fromx1 = sh.c1 * sh.xy[lastValidIndex].x - sh.c1 * sh.SQNInitial + sh.SQNnow;
+	double x2fromx1 = sh.c1 * (sh.xy[lastValidIndex].x - sh.SQNInitial) + sh.SQNnow;
 	double y2fromy1 = sh.c2 * sh.xy[lastValidIndex].y + (sh.c2 - sh.c1) * sh.xy[lastValidIndex].x + (sh.c1 + sh.c2) * sh.SQNInitial - 2 * sh.SQNnow;
 	tA = sh.SQNnow - x2fromx1;
 	tB = sh.SQNnow + x2fromx1 + y2fromy1;
 
-//	IterationStateHolder backupstate = sh;
 	sh.ANow = tA;
 	sh.BNow = tB;
 	sh.c1 = sh.c1 * tB;
 	sh.c2 = sh.c2 * tA;
+
 	double trateNow = (double)tB / tA;
-/*	if (((double)sh.c1 / sh.c2) >= MAX_SEARCHED_RATIO)
-	{
-		printf("Not made to handle this input\n");
-		sh.StopIterating = 1;
-		return;
-	}*/
 	double rateFinal = (double)sh.BInitial / (double)sh.AInitial;
 	double rateSumary = (double)sh.c1 / (double)sh.c2;
 	// simplify
-	printf("%lld)Rate sum %f", sh.ChecksMade, (double)sh.c1 / (double)sh.c2);
 	floatToFraction(sh.c1, sh.c2);
-	printf(" == %f for %lld/%lld. Stop at %f. Reached y %lld. rateNow %f\n",
-		rateSumary, sh.c1, sh.c2, rateFinal, sh.xy[lastValidIndex].iy, trateNow);
+	double tratePostSimplified = (double)sh.c1 / (double)sh.c2;
 
-//	sh = backupstate;
+	printf("%lld)Rate sum %f", sh.ChecksMade, rateSumary);
+	printf(" == %f for %lld/%lld. Stop at %f. Reached y %lld. rateNow %f\n",
+		tratePostSimplified, sh.c1, sh.c2, rateFinal, sh.xy[lastValidIndex].iy, trateNow);
 }
 
 void DivTestIncA_(__int64 A, __int64 B)

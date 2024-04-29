@@ -171,6 +171,9 @@
     <ClCompile Include="DivTest_IncA.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_DecB.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
@@ -183,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="DivTests.h">
+      <Filter>DivTests</Filter>
+    </ClInclude>
+    <ClInclude Include="SharedDecl.h">
       <Filter>DivTests</Filter>
     </ClInclude>
   </ItemGroup>

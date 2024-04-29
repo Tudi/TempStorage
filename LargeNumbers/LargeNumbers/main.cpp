@@ -50,6 +50,7 @@ void main()
     DivTestabxy(); // worst case SQN/4 steps to get result. Until n/6 searches with inverse exponential speed
 //    DivTestabxy2(); // same, but here we change SQN instead xp-yp
 //    DivTestIncA(); // quite slow. Wasn't expecting it to work at all. Wanted to compare to decB version
+//    DivTestDecB(); // just so it exists
 
     printf("All done\n");
 }

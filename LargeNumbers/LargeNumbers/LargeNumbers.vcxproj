@@ -161,6 +161,7 @@
     <ClCompile Include="DivTest_BitByBit.cpp" />
     <ClCompile Include="DivTest_BitByBit2.cpp" />
     <ClCompile Include="DivTest_BitByBit3.cpp" />
+    <ClCompile Include="DivTest_DecB.cpp" />
     <ClCompile Include="DivTest_Decrement.cpp" />
     <ClCompile Include="DivTest_edef.cpp" />
     <ClCompile Include="DivTest_IncA.cpp" />
@@ -195,6 +196,7 @@
   <ItemGroup>
     <ClInclude Include="DivTests.h" />
     <ClInclude Include="math.h" />
+    <ClInclude Include="SharedDecl.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="testcases.h" />
   </ItemGroup>

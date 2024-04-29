@@ -58,3 +58,4 @@ void DivTestBitByBit3();
 void DivTestabxy();
 void DivTestabxy2();
 void DivTestIncA();
+void DivTestDecB();

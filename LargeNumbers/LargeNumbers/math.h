@@ -57,3 +57,4 @@ __int64 isqrt4(__int64 n);
 __int64 isqrtNegative(__int64 n);
 int IsLarger(LargeNumber *Larger, LargeNumber *Smaller);
 void ReCheckSize(LargeNumber *Larger);
+constexpr int getNumLen(__int64 n);

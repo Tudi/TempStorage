@@ -310,7 +310,7 @@ void ReCheckSize(LargeNumber *LN)
 		LN->Len++;
 }
 
-int getNumLen(__int64 n)
+constexpr int getNumLen(__int64 n)
 {
 	if (n < 10)
 	{
