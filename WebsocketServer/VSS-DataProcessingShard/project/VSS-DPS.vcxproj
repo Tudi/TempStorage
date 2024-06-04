@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\LogManager.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Session\ApplicationSession.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Util\Allocator.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Util\InitFileHandler.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Util\VariousFuncs.cpp" />
+    <ClCompile Include="..\src\DB\MysqlManager.cpp" />
+    <ClCompile Include="..\src\DB\TableCacheManager.cpp" />
+    <ClCompile Include="..\src\DummyRadar.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\Network\NetworkSession.cpp" />
+    <ClCompile Include="..\src\Network\NetworkSessionManager.cpp" />
+    <ClCompile Include="..\src\Network\UDPServer.cpp" />
+    <ClCompile Include="..\src\Network\WSServer.cpp" />
+    <ClCompile Include="..\src\ResourceManager\AlertLifeCycleManager.cpp" />
+    <ClCompile Include="..\src\ResourceManager\ConsoleCommandManager.cpp" />
+    <ClCompile Include="..\src\ResourceManager\DataSourceManager.cpp" />
+    <ClCompile Include="..\src\ResourceManager\ServerHealthReportingManager.cpp" />
+    <ClCompile Include="..\src\Web\CurlInterface.cpp" />
+    <ClCompile Include="..\src\Web\WebApiInterface.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\curl.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\curlver.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\easy.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\header.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\mprintf.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\multi.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\options.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\stdcheaders.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\system.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\typecheck-gcc.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\urlapi.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\websockets.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\zconf.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\zlib.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\magic_enum\magic_enum_all.hpp" />
+    <ClInclude Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\LogManager.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Session\ApplicationSession.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\Allocator.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\InitFileHandler.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\ObjDescriptor.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\VariousFuncs.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\VectRW.h" />
+    <ClInclude Include="..\src\DB\MysqlManager.h" />
+    <ClInclude Include="..\src\DB\TableCacheManager.h" />
+    <ClInclude Include="..\src\DummyRadar.h" />
+    <ClInclude Include="..\src\Network\NetworkSession.h" />
+    <ClInclude Include="..\src\Network\NetworkSessionManager.h" />
+    <ClInclude Include="..\src\Network\UDPServer.h" />
+    <ClInclude Include="..\src\Network\WSServer.h" />
+    <ClInclude Include="..\src\ResourceManager\AlertLifeCycleManager.h" />
+    <ClInclude Include="..\src\ResourceManager\ConsoleCommandManager.h" />
+    <ClInclude Include="..\src\ResourceManager\DataSourceManager.h" />
+    <ClInclude Include="..\src\ResourceManager\ServerHealthReportingManager.h" />
+    <ClInclude Include="..\src\Web\CurlInterface.h" />
+    <ClInclude Include="..\src\Web\WebApiInterface.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{a4210fed-2f31-4d5a-94cb-6ee4a4f3be64}</ProjectGuid>
+    <RootNamespace>VSSDPS</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>..\..\VSS-Shared\src\Network;..\..\VSS-Shared\src\Session;..\..\VSS-Shared\src\ResourceManager;..\..\VSS-Shared\src\Util;..\..\VSS-Shared\dependencies\websocketpp\include;..\dependencies\mysql_soci\include\soci;..\dependencies\mysql_soci\include\mysql;..\dependencies\mysql_soci\include\boost;..\dependencies\mysql_soci\include;..\src;..\..\VSS-Shared\dependencies;..\..\VSS-Shared\src;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\VSS-Shared\dependencies\websocketpp\lib;..\..\VSS-Shared\dependencies;..\dependencies\mysql_soci\lib\$(Configuration);$(LibraryPath)</LibraryPath>
+    <OutDir>..\bin\$(Configuration)\</OutDir>
+    <IntDir>..\bin\$(Configuration)Build\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>..\..\VSS-Shared\src\Network;..\..\VSS-Shared\src\Session;..\..\VSS-Shared\src\ResourceManager;..\..\VSS-Shared\src\Util;..\..\VSS-Shared\dependencies\websocketpp\include;..\dependencies\mysql_soci\include\soci;..\dependencies\mysql_soci\include\mysql;..\dependencies\mysql_soci\include\boost;..\dependencies\mysql_soci\include;..\src;..\..\VSS-Shared\dependencies;..\..\VSS-Shared\src;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\VSS-Shared\dependencies\websocketpp\lib;..\..\VSS-Shared\dependencies;..\dependencies\mysql_soci\lib\$(Configuration);$(LibraryPath)</LibraryPath>
+    <OutDir>..\bin\$(Configuration)\</OutDir>
+    <IntDir>..\bin\$(Configuration)Build\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgManifestInstall>false</VcpkgManifestInstall>
+    <VcpkgAutoLink>false</VcpkgAutoLink>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);;BUILD_SERVER_PACKETS;WINDOWS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libssl.lib;libcrypto.lib;boost_system-vc140-mt.lib;boost_regex-vc140-mt.lib;boost_exception-vc140-mt.lib;boost_date_time-vc140-mt.lib;boost_coroutine-vc140-mt.lib;boost_context-vc140-mt.lib;boost_container-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_random-vc140-mt.lib;mysqlcppconn8.lib;soci_core_4_0.lib;soci_mysql_4_0.lib;libmysql.lib;curl\lib\libcurl-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>../../VSS-Shared/dependencies/GIT_rev/GetGITRev.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);;BUILD_SERVER_PACKETS;WINDOWS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libssl.lib;libcrypto.lib;boost_system-vc140-mt.lib;boost_regex-vc140-mt.lib;boost_exception-vc140-mt.lib;boost_date_time-vc140-mt.lib;boost_coroutine-vc140-mt.lib;boost_context-vc140-mt.lib;boost_container-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_random-vc140-mt.lib;mysqlcppconn8.lib;soci_core_4_0.lib;soci_mysql_4_0.lib;libmysql.lib;curl\lib\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>../../VSS-Shared/dependencies/GIT_rev/GetGITRev.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

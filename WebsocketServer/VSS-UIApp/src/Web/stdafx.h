@@ -1,0 +1,20 @@
+#pragma once
+
+#include <mutex>
+#include <cctype>
+#include <thread>
+#include <list>
+#include <mutex>
+#include "json/json.hpp"
+#include "json/yyjson.h"
+#include "json/yyjson2.h"
+#include "../ResourceManagers/stdafx.h"
+#include "../Util/stdafx.h"
+#include "../UI/stdafx.h"
+#include "../Licensing/stdafx.h"
+#include "Session/ApplicationSession.h"
+#include "../UserSession.h"
+#include "CurlInterface.h"
+#include "WebApiInterface.h"
+#include "DBHelper.h"
+#include "WebSocketClient.h"

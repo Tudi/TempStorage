@@ -1,0 +1,771 @@
+2023-11-24 12:27:38-/Login.php-Required field is missing : SessionKey-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-11-24 12:30:33-/SetUserInfo.php-User not found-Callstack:footer_include.php:6:LogMsg:SetUserInfo.php:68:require_once:
+2023-11-24 12:39:56-/SetUserInfo.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:SetUserInfo.php:68:require_once:
+2023-11-24 12:40:41-/GetModules.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetModules.php:57:require_once:
+2023-11-24 12:41:28-/SetUserInfo.php-Organization not found for user 1-Callstack:footer_include.php:6:LogMsg:SetUserInfo.php:68:require_once:
+2023-11-24 12:44:16-/SetUserInfo.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:SetUserInfo.php:69:require_once:
+2023-11-24 12:47:20-/Login.php-Failed to log in (Bad passw) : nobody@nowhere.bro / 48145790103821915-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-11-24 12:47:26-/Login.php-Failed to log in (Bad passw) : nobody@nowhere.bro / 9712668582305701-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-11-24 12:47:29-/Login.php-Failed to log in (Bad passw) : nobody@nowhere.bro / 9712668582305701-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-11-24 12:48:07-/SetUserInfo.php-Organization not found for user 1-Callstack:footer_include.php:6:LogMsg:SetUserInfo.php:69:require_once:
+2023-11-24 12:48:57-/GetAlerts.php-Session salt mismatch. Got 29-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-24 12:57:41-/SetLocation.php-Exception: Duplicate entry 'A' for key 'geographiclocations.LocationName' while executing the query insert into GeographicLocations (OrganizationID,LocationName,LocationDescription,LocationAddressLine1,LocationAddressLine2,LocationCity,LocationState,LocationCountyOrRegion,LocationCountry,LocationX,LocationY,LocationZ) values (?,?,?,?,?,?,?,?,?,?,?,?)-Callstack:mysq_con.php:143:LogMsg:SetLocation.php:66:executeMySQLQuery:
+2023-11-24 13:01:56-/SetLocation.php-Exception: Duplicate entry 'a' for key 'geographiclocations.LocationName' while executing the query insert into GeographicLocations (OrganizationID,LocationName,LocationDescription,LocationAddressLine1,LocationAddressLine2,LocationCity,LocationState,LocationCountyOrRegion,LocationCountry,LocationX,LocationY,LocationZ) values (?,?,?,?,?,?,?,?,?,?,?,?)-Callstack:mysq_con.php:143:LogMsg:SetLocation.php:66:executeMySQLQuery:
+2023-11-24 13:07:23-/GetModules.php-Exception: Unknown column 'OM.LocationID' in 'field list' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleTag, MD.ModuleStatusID, 
+		GL.LocationName, OM.LocationID 
+		FROM OrganizationModules OM 
+		INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+		INNER JOIN GeographicLocations GL ON OM.ModuleLocationID = GL.LocationID 
+		WHERE (OM.OrganizationID = 1)
+		  limit 0,100-Callstack:mysq_con.php:50:LogMsg:GetModules.php:44:executeMySQLQuery:
+2023-11-24 13:07:29-/GetModules.php-Exception: Unknown column 'OM.LocationID' in 'field list' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleTag, MD.ModuleStatusID, 
+		GL.LocationName, OM.LocationID 
+		FROM OrganizationModules OM 
+		INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+		INNER JOIN GeographicLocations GL ON OM.ModuleLocationID = GL.LocationID 
+		WHERE (OM.OrganizationID = 1)
+		  limit 0,100-Callstack:mysq_con.php:50:LogMsg:GetModules.php:44:executeMySQLQuery:
+2023-11-24 13:08:33-/GetAlerts.php-Session salt mismatch. Got 4-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-24 13:12:11-/GetModules.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'FROM OrganizationModules OM 
+		GL.LocationName, GL.LocationID 
+		INNER JOIN mo' at line 2 while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleTag, MD.ModuleStatusID, 
+		FROM OrganizationModules OM 
+		GL.LocationName, GL.LocationID 
+		INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+		INNER JOIN GeographicLocations GL ON OM.ModuleLocationID = GL.LocationID 
+		WHERE (OM.OrganizationID = 1)
+		  limit 0,100-Callstack:mysq_con.php:50:LogMsg:GetModules.php:44:executeMySQLQuery:
+2023-11-24 16:18:41-/GetAlerts.php-Session salt mismatch. Got 29-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-24 16:18:41-/GetLocations.php-Session salt mismatch. Got 11-Callstack:footer_include.php:6:LogMsg:GetLocations.php:67:require_once:
+2023-11-24 16:23:05-/GetLocations.php-Exception: Unknown column 'LocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and OM.ModuleLocationID = 1 and MD.ModuleStatusID=1)
+			and LocationID=1 -Callstack:mysq_con.php:50:LogMsg:GetLocations.php:49:executeMySQLQuery:
+2023-11-24 16:24:40-/GetAlerts.php-Session salt mismatch. Got 31-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-24 16:28:52-/GetAlerts.php-Session salt mismatch. Got 20-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-24 16:30:37-/GetAlerts.php-Session salt mismatch. Got 27-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-24 16:32:27-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-27 17:20:11-/GetAlerts.php-Session salt mismatch. Got 18-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-27 17:25:43-/GetAlerts.php-Session salt mismatch. Got 19-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-11-27 17:27:40-/SetModuleLocation.php-No API access for this role-Callstack:footer_include.php:6:LogMsg:SetModuleLocation.php:38:require_once:
+2023-11-27 17:28:31-/SetModuleLocation.php-Exception: Unknown column '$4' in 'field list' while executing the query update OrganizationModules set ModuleLocationID=$4 
+		where OrganizationID=1 and ModuleDefineID=2-Callstack:mysq_con.php:50:LogMsg:SetModuleLocation.php:31:executeMySQLQuery:
+2023-11-28 17:32:08-/SetLocation.php-Exception: Duplicate entry 'a' for key 'geographiclocations.LocationName' while executing the query insert into GeographicLocations (OrganizationID,LocationName,LocationDescription,LocationAddressLine1,LocationAddressLine2,LocationCity,LocationState,LocationCountyOrRegion,LocationCountry,LocationX,LocationY,LocationZ) values (?,?,?,?,?,?,?,?,?,?,?,?)-Callstack:mysq_con.php:143:LogMsg:SetLocation.php:66:executeMySQLQuery:
+2023-11-30 17:58:28-/RstPasswReq.php-Passw reset email sent-Callstack:RstPasswReq.php:49:LogMsg:
+2023-11-30 18:19:39-/GetAlerts.php-Session salt mismatch. Got 27-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-01 12:25:15-/Login.php-Failed to log in (Bad passw) : nobody@nowhere.bro / 48145790103821915-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-12-01 12:29:07-/GetAlerts.php-Session salt mismatch. Got 32-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-01 12:31:33-/GetLocations.php-Session salt mismatch. Got 30-Callstack:footer_include.php:6:LogMsg:GetLocations.php:68:require_once:
+2023-12-01 12:31:33-/GetModules.php-Session salt mismatch. Got 30-Callstack:footer_include.php:6:LogMsg:GetModules.php:57:require_once:
+2023-12-01 12:33:24-/GetAlerts.php-Session salt mismatch. Got 2-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-01 13:06:35-/GetAlerts.php-Session salt mismatch. Got 4-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-01 15:58:29-/GetAlerts.php-Session salt mismatch. Got 0-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-01 16:15:00-/GetLocations.php-Session salt mismatch. Got 24-Callstack:footer_include.php:6:LogMsg:GetLocations.php:68:require_once:
+2023-12-01 16:28:58-/GetAlerts.php-Session salt mismatch. Got 6-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-04 11:38:50-/GetAlerts.php-Session salt mismatch. Got 24-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 11:55:20-/GetAlerts.php-Session salt mismatch. Got 4-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 12:48:22-/GetModules.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'CASE WHEN OM.ModuleLocationID IS NOT NULL THEN OM.ModuleLocationID ELSE 0 END AS' at line 2 while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleDeveloper
+			CASE WHEN OM.ModuleLocationID IS NOT NULL THEN OM.ModuleLocationID ELSE 0 END AS ModuleLocationID,
+			CASE WHEN OM.OrganizationID IS NOT NULL THEN OM.OrganizationID ELSE 0 END AS OrganizationID			   
+			FROM moduledefines MD 
+			LEFT JOIN OrganizationModules OM ON MD.ModuleDefineID = OM.ModuleDefineID 	
+			 limit 0,100-Callstack:mysq_con.php:50:LogMsg:GetModules.php:46:executeMySQLQuery:
+2023-12-05 13:35:27-/GetAlerts.php-Session salt mismatch. Got 7-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 14:26:25-/GetAlerts.php-Session salt mismatch. Got 16-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 15:24:39-/CreateOrganizationModule.php-No API access for this role-Callstack:footer_include.php:6:LogMsg:CreateOrganizationModule.php:43:require_once:
+2023-12-05 15:25:15-/GetAlerts.php-Session salt mismatch. Got 18-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 15:33:03-/GetAlerts.php-Session salt mismatch. Got 15-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 15:43:11-/CreateOrganizationModule.php-Exception: Cannot add or update a child row: a foreign key constraint fails (`vss_dashboard`.`organizationmodules`, CONSTRAINT `organizationmodules_ibfk_1` FOREIGN KEY (`OrganizationID`) REFERENCES `organizations` (`OrganizationID`)) while executing the query INSERT INTO OrganizationModules (OrganizationID,ModuleDefineID,ModuleLocationID) values (
+	0, 0, 29)-Callstack:mysq_con.php:50:LogMsg:CreateOrganizationModule.php:30:executeMySQLQuery:
+2023-12-05 15:43:55-/GetAlerts.php-Session salt mismatch. Got 20-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 15:55:07-/CreateOrganizationModule.php-Exception: Cannot add or update a child row: a foreign key constraint fails (`vss_dashboard`.`organizationmodules`, CONSTRAINT `organizationmodules_ibfk_2` FOREIGN KEY (`ModuleDefineID`) REFERENCES `moduledefines` (`ModuleDefineID`)) while executing the query INSERT INTO OrganizationModules (OrganizationID,ModuleDefineID,ModuleLocationID) values (
+	1, 0, 29)-Callstack:mysq_con.php:50:LogMsg:CreateOrganizationModule.php:30:executeMySQLQuery:
+2023-12-05 15:55:35-/GetAlerts.php-Session salt mismatch. Got 32-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 15:57:56-/CreateOrganizationModule.php-Exception: Cannot add or update a child row: a foreign key constraint fails (`vss_dashboard`.`organizationmodules`, CONSTRAINT `organizationmodules_ibfk_2` FOREIGN KEY (`ModuleDefineID`) REFERENCES `moduledefines` (`ModuleDefineID`)) while executing the query INSERT INTO OrganizationModules (OrganizationID,ModuleDefineID,ModuleLocationID) values (
+	1, 0, 29)-Callstack:mysq_con.php:50:LogMsg:CreateOrganizationModule.php:30:executeMySQLQuery:
+2023-12-05 15:58:16-/GetAlerts.php-Session salt mismatch. Got 14-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 15:58:29-/CreateOrganizationModule.php-Exception: Cannot add or update a child row: a foreign key constraint fails (`vss_dashboard`.`organizationmodules`, CONSTRAINT `organizationmodules_ibfk_2` FOREIGN KEY (`ModuleDefineID`) REFERENCES `moduledefines` (`ModuleDefineID`)) while executing the query INSERT INTO OrganizationModules (OrganizationID,ModuleDefineID,ModuleLocationID) values (
+	1, 0, 29)-Callstack:mysq_con.php:50:LogMsg:CreateOrganizationModule.php:30:executeMySQLQuery:
+2023-12-05 16:01:17-/GetAlerts.php-Session salt mismatch. Got 26-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 16:01:36-/CreateOrganizationModule.php-Required field is missing : ModuleDefineID-Callstack:footer_include.php:6:LogMsg:CreateOrganizationModule.php:43:require_once:
+2023-12-05 16:01:53-/GetAlerts.php-Session salt mismatch. Got 14-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-05 16:04:17-/GetAlerts.php-Session salt mismatch. Got 23-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-08 14:17:22-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-08 15:46:48-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-08 16:19:59-/GetAlerts.php-Session salt mismatch. Got 11-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-08 16:23:11-/CreateSMSNotification.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON ' at line 2 while executing the query Select AD.AlertDefinitionName, AD.AlertMobilePhoneNumber
+	AI.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON AD.AlertDefinitionId = AI.AlertDefinitionId
+	INNER JOIN GeographicLocations GL ON AI.LocationId = GL.LocationID
+	where AI.AlertId=34
+	-Callstack:mysq_con.php:53:LogMsg:CreateSMSNotification.php:34:executeMySQLQuery:
+2023-12-08 16:23:11-/CreateSMSNotification.php-Could not find Alert-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:132:require_once:
+2023-12-08 16:23:48-/GetAlerts.php-Session salt mismatch. Got 7-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-08 16:57:32-/CreateSMSNotification.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON ' at line 2 while executing the query Select AD.AlertDefinitionName, AD.AlertMobilePhoneNumber
+	AI.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON AD.AlertDefinitionId = AI.AlertDefinitionId
+	INNER JOIN GeographicLocations GL ON AI.LocationId = GL.LocationID
+	where AI.AlertId=35
+	-Callstack:mysq_con.php:53:LogMsg:CreateSMSNotification.php:34:executeMySQLQuery:
+2023-12-08 16:57:32-/CreateSMSNotification.php-Could not find Alert-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:132:require_once:
+2023-12-08 16:59:02-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-11 17:59:47-/CreateSMSNotification.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON ' at line 2 while executing the query Select AD.AlertDefinitionName, AD.AlertMobilePhoneNumber
+	AI.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON AD.AlertDefinitionId = AI.AlertDefinitionId
+	INNER JOIN GeographicLocations GL ON AI.LocationId = GL.LocationID
+	where AI.AlertId=36
+	-Callstack:mysq_con.php:53:LogMsg:CreateSMSNotification.php:34:executeMySQLQuery:
+2023-12-11 17:59:47-/CreateSMSNotification.php-Could not find Alert-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:132:require_once:
+2023-12-11 17:59:49-/CreateSMSNotification.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON ' at line 2 while executing the query Select AD.AlertDefinitionName, AD.AlertMobilePhoneNumber
+	AI.LocationId, GL.LocationName
+	from Alerts AI
+	INNER JOIN AlertDefintion AD ON AD.AlertDefinitionId = AI.AlertDefinitionId
+	INNER JOIN GeographicLocations GL ON AI.LocationId = GL.LocationID
+	where AI.AlertId=37
+	-Callstack:mysq_con.php:53:LogMsg:CreateSMSNotification.php:34:executeMySQLQuery:
+2023-12-11 17:59:49-/CreateSMSNotification.php-Could not find Alert-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:132:require_once:
+2023-12-11 18:15:16-/CreateSMSNotification.php-cURL error: error setting certificate verify locations:  CAfile: D:\wamp_uniserver_Eric\www\NotHosted\curl-ca-bundle.crt CApath: none (77)-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:132:require_once:
+2023-12-11 18:16:47-/GetAlerts.php-Session salt mismatch. Got 35-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-11 18:17:07-/GetAlerts.php-Session salt mismatch. Got 26-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-11 18:18:27-/GetAlerts.php-Session salt mismatch. Got 36-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-11 18:18:44-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: -Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:133:require_once:
+2023-12-11 18:19:27-/GetAlerts.php-Session salt mismatch. Got 29-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-11 18:20:57-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+12565107775) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:133:require_once:
+2023-12-11 18:21:25-/GetAlerts.php-Session salt mismatch. Got 0-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-11 20:22:28-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:133:require_once:
+2023-12-12 11:44:27-/CreateEmailNotification.php-Required field is missing : AlertID-Callstack:footer_include.php:6:LogMsg:CreateEmailNotification.php:100:require_once:
+2023-12-12 11:46:44-/CreateEmailNotification.php-Alert notification email sent-Callstack:CreateEmailNotification.php:88:LogMsg:CreateEmailNotification.php:70:SendEmailSingleDest:
+2023-12-12 11:47:37-/GetAlerts.php-Session salt mismatch. Got 9-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-12 16:16:48-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=52,
+	ys=69 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:48-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=72,
+	ys=74 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:48-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=68,
+	ys=55 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:49-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=53,
+	ys=72 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:49-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=58,
+	ys=71 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:49-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=65,
+	ys=68 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:50-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=53,
+	ys=68 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:50-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=51,
+	ys=65 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:50-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=52,
+	ys=63 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:51-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=50,
+	ys=60 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:51-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=50,
+	ys=72 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:51-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=62,
+	ys=66 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:52-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=66,
+	ys=59 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:52-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=58,
+	ys=54 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:52-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=75,
+	ys=72 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:53-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=52,
+	ys=73 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:53-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=63,
+	ys=60 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:16:53-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=69,
+	ys=74 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:46-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=59,
+	ys=65 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:46-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=62,
+	ys=51 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:46-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=65,
+	ys=73 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:47-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=60,
+	ys=59 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:47-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=55,
+	ys=54 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:47-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=54,
+	ys=52 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:48-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=59,
+	ys=71 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:48-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=64,
+	ys=57 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:17:48-/GetDemoRadarFeed.php-Exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4 while executing the query update DemoRadarState set x=0,
+	y=0,
+	xs=69,
+	ys=74 where id=-Callstack:mysq_con.php:53:LogMsg:GetDemoRadarFeed.php:27:executeMySQLQuery:
+2023-12-12 16:19:02-/GetAlerts.php-Session salt mismatch. Got 5-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-12 16:21:35-/GetAlerts.php-Session salt mismatch. Got 14-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-12 16:23:37-/GetAlerts.php-Session salt mismatch. Got 26-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-13 12:47:26-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21603, "message": "A 'From' or 'MessagingServiceSid' parameter is required to send a message", "more_info": "https://www.twilio.com/docs/errors/21603", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-13 13:20:15-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21603, "message": "A 'From' or 'MessagingServiceSid' parameter is required to send a message", "more_info": "https://www.twilio.com/docs/errors/21603", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-13 13:20:34-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21603, "message": "A 'From' or 'MessagingServiceSid' parameter is required to send a message", "more_info": "https://www.twilio.com/docs/errors/21603", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-13 13:23:28-/GetAlerts.php-Session salt mismatch. Got 12-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 13:49:19-/GetOrganizationModules.php-No API access for this role-Callstack:footer_include.php:6:LogMsg:GetOrganizationModules.php:57:require_once:
+2023-12-14 13:49:20-/GetOrganizationModules.php-No API access for this role-Callstack:footer_include.php:6:LogMsg:GetOrganizationModules.php:57:require_once:
+2023-12-14 13:50:14-/GetAlerts.php-Session salt mismatch. Got 11-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 13:53:51-/GetAlerts.php-Session salt mismatch. Got 33-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 13:53:56-/GetOrganizationModules.php-Exception: Unknown column 'MI.OrganizationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleTag, MI.ModuleStatusID, 
+		GL.LocationName, GL.LocationID, MD.ModuleDeveloper, OM.ModuleInstanceID   
+		FROM OrganizationModules OM 
+		INNER JOIN ModuleDefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+		INNER JOIN ModuleInstances MI ON MI.ModuleInstanceID = OM.ModuleInstanceID 
+		INNER JOIN GeographicLocations GL ON MI.ModuleLocationID = GL.LocationID 		
+		WHERE (MI.OrganizationID = 1)  limit 0,1000-Callstack:mysq_con.php:50:LogMsg:GetOrganizationModules.php:44:executeMySQLQuery:
+2023-12-14 13:54:47-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 14:13:51-/GetModuleInstances.php-Session salt mismatch. Got 13-Callstack:footer_include.php:6:LogMsg:GetModuleInstances.php:52:require_once:
+2023-12-14 14:22:25-/GetOrganizationModules.php-Exception: Unknown column 'OM.ModuleDefineID' in 'on clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleTag, MI.ModuleStatusID, 
+		GL.LocationName, GL.LocationID, MD.ModuleDeveloper, OM.ModuleInstanceID   
+		FROM OrganizationModules OM 
+		INNER JOIN ModuleDefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+		INNER JOIN ModuleInstances MI ON MI.ModuleInstanceID = OM.ModuleInstanceID 
+		INNER JOIN GeographicLocations GL ON MI.ModuleLocationID = GL.LocationID 		
+		WHERE (OM.OrganizationID = 1)  limit 0,1000-Callstack:mysq_con.php:50:LogMsg:GetOrganizationModules.php:44:executeMySQLQuery:
+2023-12-14 14:23:03-/GetAlerts.php-Session salt mismatch. Got 6-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 14:23:07-/GetOrganizationModules.php-Exception: Unknown column 'OM.ModuleDefineID' in 'on clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName, MD.ModuleTag, MI.ModuleStatusID, 
+		GL.LocationName, GL.LocationID, MD.ModuleDeveloper, OM.ModuleInstanceID   
+		FROM OrganizationModules OM 
+		INNER JOIN ModuleDefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+		INNER JOIN ModuleInstances MI ON MI.ModuleInstanceID = OM.ModuleInstanceID 
+		INNER JOIN GeographicLocations GL ON MI.ModuleLocationID = GL.LocationID 		
+		WHERE (OM.OrganizationID = 1)  limit 0,1000-Callstack:mysq_con.php:50:LogMsg:GetOrganizationModules.php:44:executeMySQLQuery:
+2023-12-14 14:23:21-/GetAlerts.php-Session salt mismatch. Got 20-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 14:23:41-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-14 14:23:45-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 22 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-14 14:45:05-/GetAlerts.php-Session salt mismatch. Got 4-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 14:57:12-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 15:02:13-/GetAlerts.php-Session salt mismatch. Got 7-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-14 15:14:54-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-14 15:15:00-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 13:36:40-/SetKPI.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:SetKPI.php:64:require_once:
+2023-12-15 13:38:23-/GetAlerts.php-Session salt mismatch. Got 1-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-15 13:48:25-/GetAlerts.php-Session salt mismatch. Got 29-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-15 13:48:57-/GetAlerts.php-Session salt mismatch. Got 10-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-15 13:48:57-/SetKPI.php-Session salt mismatch. Got 11-Callstack:footer_include.php:6:LogMsg:SetKPI.php:64:require_once:
+2023-12-15 13:49:19-/GetAlerts.php-Session salt mismatch. Got 16-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-15 13:51:14-/GetAlerts.php-Session salt mismatch. Got 18-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-15 13:51:48-/SetKPI.php-Not enough self rights-Callstack:footer_include.php:6:LogMsg:SetKPI.php:64:require_once:
+2023-12-15 13:52:48-/SetKPI.php-Not enough self rights-Callstack:footer_include.php:6:LogMsg:SetKPI.php:64:require_once:
+2023-12-15 14:00:27-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 14:00:36-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:25:12-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:25:45-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:26:17-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:26:45-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:33:52-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:34:51-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 15:35:26-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-15 23:16:07-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 10:57:42-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 10:58:39-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 10:58:54-/GetAlerts.php-Session salt mismatch. Got 20-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-18 11:00:31-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:03:41-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:27:33-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:30:00-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:31:59-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:35:56-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:39:39-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:42:02-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:42:34-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-18 11:49:30-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:54:49-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-18 11:54:53-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 10:50:17-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-19 10:50:28-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 10:50:55-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-19 10:51:28-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-19 10:52:52-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-19 10:53:02-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-19 10:53:05-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 10:53:08-/GetLocations.php-Exception: Unknown column 'OM.ModuleLocationID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = OM.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			OM.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:79:executeMySQLQuery:
+2023-12-19 11:02:57-/GetLocations.php-Exception: Unknown column 'MD.ModuleStatusID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduleinstances MI ON MI.ModuleInstanceID = OM.ModuleInstanceID 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = MI.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			MI.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:80:executeMySQLQuery:
+2023-12-19 11:03:04-/GetLocations.php-Exception: Unknown column 'MD.ModuleStatusID' in 'where clause' while executing the query SELECT MD.ModuleDefineID, MD.ModuleName 
+			FROM OrganizationModules OM 
+			INNER JOIN moduleinstances MI ON MI.ModuleInstanceID = OM.ModuleInstanceID 
+			INNER JOIN moduledefines MD ON MD.ModuleDefineID = MI.ModuleDefineID 
+			WHERE (OM.OrganizationID = 1 and 
+			MI.ModuleLocationID = 2 and 
+			MD.ModuleStatusID=1)-Callstack:mysq_con.php:50:LogMsg:GetLocations.php:80:executeMySQLQuery:
+2023-12-19 11:06:18-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 11:06:42-/GetAlerts.php-Session salt mismatch. Got 2-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 13:00:50-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 13:00:58-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 13:02:07-/GetAlerts.php-Session salt mismatch. Got 18-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 16:46:02-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 16:52:53-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 16:53:35-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-19 16:55:22-/GetAlerts.php-Session salt mismatch. Got 15-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 17:37:35-/GetAlerts.php-Session salt mismatch. Got 12-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 17:40:59-/CreateOrganizationModule.php-Exception: Duplicate entry '1-6' for key 'organizationmodules.PRIMARY' while executing the query INSERT INTO OrganizationModules (OrganizationID,ModuleInstanceID) values (
+	1, 6)-Callstack:mysq_con.php:50:LogMsg:CreateOrganizationModule.php:29:executeMySQLQuery:
+2023-12-19 17:41:41-/GetAlerts.php-Session salt mismatch. Got 17-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 21:37:49-/GetAlerts.php-Session salt mismatch. Got 0-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 21:40:05-/GetAlerts.php-Session salt mismatch. Got 12-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 21:42:21-/GetAlerts.php-Session salt mismatch. Got 27-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 21:44:59-/GetAlerts.php-Session salt mismatch. Got 0-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-19 21:46:51-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-20 14:24:43-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-20 14:33:15-/GetModuleInstances.php-Session salt mismatch. Got 6-Callstack:footer_include.php:6:LogMsg:GetModuleInstances.php:52:require_once:
+2023-12-20 14:33:41-/GetModuleInstances.php-Session salt mismatch. Got 13-Callstack:footer_include.php:6:LogMsg:GetModuleInstances.php:52:require_once:
+2023-12-20 14:38:54-/GetAlerts.php-Session salt mismatch. Got 35-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-20 15:39:49-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-20 15:44:51-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-20 15:44:54-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-20 15:44:56-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-20 15:44:57-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2023-12-22 15:40:43-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-12-22 15:41:11-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-12-22 15:41:19-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-12-22 15:41:21-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-12-22 15:41:23-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:133:require_once:
+2023-12-22 15:42:28-/SetCrashLog.php-Session salt mismatch. Got 12-Callstack:footer_include.php:6:LogMsg:SetCrashLog.php:41:require_once:
+2023-12-22 15:42:28-/SetCrashLog.php-Exception: Incorrect string value: '\xCC\xCC\xCC\xCC\xCC\xCC...' for column 'ApiParams' at row 1 while executing the query insert into UserAPIActivity (UserId, ApiUrl, ApiParams, IsGuessedUserId) values (9, ?, ?, 1)-Callstack:mysq_con.php:143:LogMsg:CustomFunctions.php:364:executeMySQLQuery:footer_include.php:16:StoreUserEndpointActivity:
+2023-12-22 15:42:30-/GetStringDefines.php-Session salt mismatch. Got 8-Callstack:footer_include.php:6:LogMsg:GetStringDefines.php:150:require_once:
+2023-12-22 15:52:45-/SetCrashLog.php-Session salt mismatch. Got 26-Callstack:footer_include.php:6:LogMsg:SetCrashLog.php:41:require_once:
+2023-12-22 15:52:45-/GetAlerts.php-Session salt mismatch. Got 20-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2023-12-22 15:55:14-/SetCrashLog.php-Exception: Field 'CrashDumpId' doesn't have a default value while executing the query replace into CrashDumps (ClientEndpoint,BuildHash,CallStack) values (?,?,?)-Callstack:mysq_con.php:143:LogMsg:SetCrashLog.php:34:executeMySQLQuery:
+2024-01-03 20:23:52-/Login.php-Failed to log in (Bad passw) : nobody@nowhere.bro / 139745912750722-Callstack:footer_include.php:6:LogMsg:Login.php:148:require_once:
+2024-01-03 20:25:49-/Login.php-Failed to log in (Bad passw) : ejp@worldintegratednetwork.com / 48145790103821915-Callstack:footer_include.php:6:LogMsg:Login.php:148:require_once:
+2024-01-03 20:26:50-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:129:require_once:
+2024-01-03 20:50:15-/GetOrganizationModules.php-Session salt mismatch. Got 16-Callstack:footer_include.php:6:LogMsg:GetOrganizationModules.php:57:require_once:
+2024-01-04 15:44:48-/Login.php-Failed to log in (Bad passw) : ejp@worldintegratednetwork.com / 48145790103821915-Callstack:footer_include.php:6:LogMsg:Login.php:182:require_once:
+2024-01-04 15:45:03-/Login.php-Exception: Incorrect datetime value: '1970-01-01 02:00:00' for column 'MFAExpires' at row 1 while executing the query insert into UserSessions 
+			(SessionID,UserID,SessionIpAddress,MFAType,MFAToken,MFAExpires) values (?,?,?,?,?,FROM_UNIXTIME(?))-Callstack:mysq_con.php:143:LogMsg:Login.php:67:executeMySQLQuery:
+2024-01-04 15:46:04-/AddLog.php-Could not find session with id 1917043831031968019-Callstack:footer_include.php:6:LogMsg:AddLog.php:34:require_once:
+2024-01-04 15:46:04-/AddLog.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:AddLog.php:34:require_once:
+2024-01-04 15:46:04-/GetLocations.php-Could not find session with id 1917043831031968019-Callstack:footer_include.php:6:LogMsg:GetLocations.php:99:require_once:
+2024-01-04 15:46:04-/GetStringDefines.php-Could not find session with id 1917043831031968019-Callstack:footer_include.php:6:LogMsg:GetStringDefines.php:150:require_once:
+2024-01-04 15:46:04-/GetOrganizationModules.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetOrganizationModules.php:57:require_once:
+2024-01-04 15:46:04-/AddLog.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:AddLog.php:34:require_once:
+2024-01-04 15:46:04-/GetAlerts.php-Could not find session with id 1917043831031968019-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-04 15:46:04-/AddLog.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:AddLog.php:34:require_once:
+2024-01-04 15:47:05-/GetActivity.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetActivity.php:51:require_once:
+2024-01-04 15:47:11-/GetOrganizationModules.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetOrganizationModules.php:57:require_once:
+2024-01-04 15:47:13-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:99:require_once:
+2024-01-04 17:09:27-/LoginMFA.php-Failed to MFA log in (Bad token) : jozsab1@gmail.com / 595990-Callstack:footer_include.php:6:LogMsg:LoginMFA.php:82:require_once:
+2024-01-04 17:16:45-/LoginMFA.php-Failed to MFA log in (Bad token) : jozsab1@gmail.com / 157080-Callstack:footer_include.php:6:LogMsg:LoginMFA.php:85:require_once:
+2024-01-04 20:12:45-/CreateSMSNotification.php-cURL error: error setting certificate verify locations:  CAfile: D:\wamp_uniserver_Eric\www\NotHosted\NotHosted\curl-ca-bundle.crt CApath: none (77)-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:78:require_once:
+2024-01-04 20:13:20-/GetAlerts.php-Session salt mismatch. Got 21-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-04 20:15:04-/GetAlerts.php-Session salt mismatch. Got 29-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-04 20:15:09-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 400Response: {"code": 21606, "message": "The 'From' phone number provided (+18886955357) is not a valid message-capable Twilio phone number for this destination", "more_info": "https://www.twilio.com/docs/errors/21606", "status": 400}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:78:require_once:
+2024-01-04 20:15:37-/GetAlerts.php-Session salt mismatch. Got 28-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-04 20:21:05-/CreateEmailNotification.php-Required field is missing : UserID-Callstack:footer_include.php:6:LogMsg:CreateEmailNotification.php:99:require_once:
+2024-01-05 12:21:16-/GetAlerts.php-Session salt mismatch. Got 31-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-05 12:22:01-/GetAlerts.php-Session salt mismatch. Got 4-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-05 12:34:49-/RstPasswReq.php-Passw reset email sent-Callstack:RstPasswReq.php:49:LogMsg:
+2024-01-08 12:31:07-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-01-08 12:35:18-/login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-01-08 12:40:13-/login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-01-08 12:42:04-/Login.php-Required field is missing : uname-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-01-19 16:54:31-/GetAlerts.php-Session salt mismatch. Got 31-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-19 16:54:34-/GetAlerts.php-Session salt mismatch. Got 18-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-23 18:03:48-/GetAlerts.php-Session salt mismatch. Got 26-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-01-23 18:19:53-/GetAlerts.php-Session salt mismatch. Got 13-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:66:require_once:
+2024-02-09 14:46:02-/GetLocations.php-Session salt mismatch. Got 35-Callstack:footer_include.php:6:LogMsg:GetLocations.php:99:require_once:
+2024-02-09 16:40:16-/GetAlerts.php-Session salt mismatch. Got 18-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:68:require_once:
+2024-02-15 16:51:23-/CreateEmailNotification.php-Required field is missing : UserID-Callstack:footer_include.php:6:LogMsg:CreateEmailNotification.php:118:require_once:
+2024-02-15 16:51:40-/CreateEmailNotification.php-Required field is missing : UserID-Callstack:footer_include.php:6:LogMsg:CreateEmailNotification.php:118:require_once:
+2024-02-15 16:51:50-/CreateEmailNotification.php-Could not find Alert-Callstack:footer_include.php:6:LogMsg:CreateEmailNotification.php:118:require_once:
+2024-02-19 18:05:22-/AddLog.php-Session salt mismatch. Got 31-Callstack:footer_include.php:6:LogMsg:AddLog.php:34:require_once:
+2024-02-19 18:13:41-/GetLocations.php-Session salt mismatch. Got 11-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-19 18:13:41-/GetOrganizationModules.php-Session salt mismatch. Got 11-Callstack:footer_include.php:6:LogMsg:GetOrganizationModules.php:57:require_once:
+2024-02-19 18:34:10-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:34:25-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:34:36-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:34:46-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:34:57-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:35:02-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:35:16-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:35:30-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:35:46-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:35:58-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:44:30-/GetStringDefines.php-Session salt mismatch. Got 34-Callstack:footer_include.php:6:LogMsg:GetStringDefines.php:172:require_once:
+2024-02-19 18:44:32-/GetAlerts.php-Session salt mismatch. Got 34-Callstack:footer_include.php:6:LogMsg:GetAlerts.php:68:require_once:
+2024-02-19 18:44:48-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:44:53-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:45:08-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:45:19-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:45:35-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:45:46-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:45:59-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:46:04-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-19 18:46:09-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:19:25-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:19:58-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:20:04-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:20:15-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:20:29-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:24:29-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:24:46-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:24:59-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:25:14-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:25:34-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:25:40-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:25:50-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:25:56-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:09-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:15-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:21-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:26-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:37-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:49-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:26:54-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:37:11-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:37:20-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:37:28-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:37:33-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 12:37:54-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:17:09-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:17:09-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:17:10-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:17:11-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:17:11-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:17:12-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:19:01-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:19:11-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:19:15-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:20:25-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:20:30-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:20:44-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:20:50-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:21:05-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:21:14-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:21:23-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:21:28-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:21:48-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:22:30-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:22:34-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:22:46-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:22:56-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-20 13:23:07-/CreateSMSNotification.php-Failed to send SMS. HTTP Status: 401Response: {"code":20003,"message":"Authenticate","more_info":"https://www.twilio.com/docs/errors/20003","status":401}-Callstack:footer_include.php:6:LogMsg:CreateSMSNotification.php:98:require_once:
+2024-02-26 14:20:57-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-26 14:22:53-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-26 17:35:05-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-26 17:38:24-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-27 14:54:16-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-27 14:54:22-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-27 14:54:25-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-27 14:57:05-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-27 20:51:23-/RstPasswReq.php-Passw reset email sent-Callstack:RstPasswReq.php:49:LogMsg:
+2024-02-27 20:52:07-/RstPasswReq.php-Passw reset email sent-Callstack:RstPasswReq.php:49:LogMsg:
+2024-02-28 15:28:56-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 15:30:00-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 15:39:53-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:07:41-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:10:18-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:11:08-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:12:03-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:12:34-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:32:09-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:33:05-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:34:31-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:39:25-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 16:39:57-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-28 16:43:12-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 17:22:56-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:13:01-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:15:49-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:17:07-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:19:28-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:20:16-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:28:10-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:39:32-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 19:48:27-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 20:18:43-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 20:20:05-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 20:48:48-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 20:54:13-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 21:09:04-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 21:09:13-/Login.php-Failed to log in (Bad passw) : jozsab1@gmail.com / 89285791125818484-Callstack:footer_include.php:6:LogMsg:Login.php:195:require_once:
+2024-02-28 21:45:41-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 21:49:01-/GetLocations.php-Session salt mismatch. Got 3-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 21:52:57-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 21:57:33-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 22:00:05-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 22:02:27-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 22:03:27-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 22:04:45-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 22:05:50-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-28 22:08:34-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 05:27:11-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 05:31:28-/GetRadarDataSources.php-Session salt mismatch. Got 6-Callstack:footer_include.php:6:LogMsg:GetRadarDataSources.php:49:require_once:
+2024-02-29 05:31:40-/GetLocations.php-Session salt mismatch. Got 10-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 05:37:42-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 05:43:02-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 05:44:15-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 05:50:10-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 10:32:55-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 10:35:01-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 10:36:26-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 10:47:21-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 10:52:44-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 10:55:11-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 11:20:50-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 11:26:48-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 11:27:15-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 11:37:35-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 11:50:12-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 11:55:26-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:03:00-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:05:13-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:10:18-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:11:42-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:12:18-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:15:32-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:19:28-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:21:33-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:23:11-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:25:26-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:55:46-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 13:58:40-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 14:09:44-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 20:42:11-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 20:43:13-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 21:06:00-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 21:14:02-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 21:20:12-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 21:40:47-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-02-29 21:41:43-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 10:39:59-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 10:40:48-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 10:41:32-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 10:42:00-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 10:47:17-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:28:36-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:37:35-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:38:42-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:44:06-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:45:14-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:49:24-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 12:55:18-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 13:01:49-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:
+2024-03-01 13:03:01-/GetLocations.php-Could not find session with id 0-Callstack:footer_include.php:6:LogMsg:GetLocations.php:101:require_once:

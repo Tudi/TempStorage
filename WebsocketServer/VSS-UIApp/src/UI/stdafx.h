@@ -1,0 +1,43 @@
+#pragma once
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <thread>
+#include <list>
+#include <mutex>
+#include <ctype.h>
+#include <vector>
+#include <set>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+#include "FlatTextField.h"
+#include "GenericWindow.h"
+#include "GenericButton.h"
+#include "GenericDropdown.h"
+#include "FlatButton.h"
+#include "TransparentButton.h"
+#include "GenericDataGrid.h"
+#include "ImGUIBackend.h"
+#include "DoplerRadarView.h"
+#include "MainWindow.h"
+#include "LoginWindow.h"
+#include "ResetPasswWindow.h"
+#include "UserInfoWindow.h"
+#include "Dashboard_RecentLocationsWindow.h"
+#include "Dashboard_RecentAlertsWindow.h"
+#include "Dashboard_ActionsWindow.h"
+#include "Dashboard_WelcomeWindow.h"
+#include "SettingsWindow.h"
+#include "LocationsWindow.h"
+#include "LocationEdit.h"
+#include "LocationView.h"
+#include "AlertsWindow.h"
+#include "ActivityLogWindow.h"
+#include "ModulesWindow.h"
+#include "ModulesBuyWindow.h"
+
+#include "../ResourceManagers/stdafx.h"
+#include "../Web/stdafx.h"
+#include "Session/ApplicationSession.h"

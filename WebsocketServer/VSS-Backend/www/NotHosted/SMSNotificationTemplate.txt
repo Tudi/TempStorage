@@ -1,0 +1,1 @@
+Alert '{AlertDefinitionName}' got triggered at location '{LocationName}'

@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{57E2DF5A-6FC8-45BB-99DD-91A18C646E80}</ProjectGuid>
+    <RootNamespace>VSS-UI</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\bin\$(Configuration)\</OutDir>
+    <IntDir>..\bin\$(Configuration)Build\</IntDir>
+    <IncludePath>..\dependencies\curl\include;..\..\VSS-Shared\dependencies\websocketpp\include;..\..\VSS-Shared\src;..\..\..\VSS-Shared\src;..\..\VSS-Shared\dependencies;..\..\..\VSS-Shared\dependencies;..\..\..\..\VSS-Shared\dependencies;..\src;..\..\src;..\dependencies;..\..\dependencies;..\..\..\dependencies;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\VSS-Shared\dependencies\websocketpp\lib;..\..\VSS-Shared\dependencies;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\bin\$(Configuration)\</OutDir>
+    <IntDir>..\bin\$(Configuration)Build\</IntDir>
+    <IncludePath>..\dependencies\curl\include;..\..\VSS-Shared\dependencies\websocketpp\include;..\..\VSS-Shared\src;..\..\..\VSS-Shared\src;..\..\VSS-Shared\dependencies;..\..\..\VSS-Shared\dependencies;..\..\..\..\VSS-Shared\dependencies;..\src;..\..\src;..\dependencies;..\..\dependencies;..\..\..\dependencies;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\VSS-Shared\dependencies\websocketpp\lib;..\..\VSS-Shared\dependencies;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>false</VcpkgEnabled>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>%VULKAN_SDK%\include;..\dependencies\imgui;..\dependencies\imgui\backends;..\dependencies\imgui\libs\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ImTextureID=ImU64;_MBCS;WINDOWS;BUILD_CLIENT_PACKETS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%\lib;..\dependencies\imgui\libs\glfw\lib-vc2010-64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;libssl.lib;libcrypto.lib;boost_system-vc140-mt.lib;boost_regex-vc140-mt.lib;boost_exception-vc140-mt.lib;boost_date_time-vc140-mt.lib;boost_coroutine-vc140-mt.lib;boost_context-vc140-mt.lib;boost_container-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_random-vc140-mt.lib;curl/lib/libcurl-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>../../VSS-Shared/dependencies/GIT_rev/GetGITRev.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>%VULKAN_SDK%\include;..\dependencies\imgui;..\dependencies\imgui\backends;..\dependencies\imgui\libs\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PreprocessorDefinitions>ImTextureID=ImU64;_MBCS;WINDOWS;BUILD_CLIENT_PACKETS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild>false</MinimalRebuild>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>%VULKAN_SDK%\lib;..\dependencies\imgui\libs\glfw\lib-vc2010-64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;libssl.lib;libcrypto.lib;boost_system-vc140-mt.lib;boost_regex-vc140-mt.lib;boost_exception-vc140-mt.lib;boost_date_time-vc140-mt.lib;boost_coroutine-vc140-mt.lib;boost_context-vc140-mt.lib;boost_container-vc140-mt.lib;boost_chrono-vc140-mt.lib;boost_random-vc140-mt.lib;curl\lib\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+    <PreBuildEvent>
+      <Command>../../VSS-Shared/dependencies/GIT_rev/GetGITRev.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\VSS-Shared\dependencies\json\yyjson.c" />
+    <ClCompile Include="..\..\VSS-Shared\dependencies\json\yyjson2.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\AsyncTaskManager.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\LogManager.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Session\ApplicationSession.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Util\Allocator.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Util\InitFileHandler.cpp" />
+    <ClCompile Include="..\..\VSS-Shared\src\Util\VariousFuncs.cpp" />
+    <ClCompile Include="..\dependencies\imgui\imgui.cpp" />
+    <ClCompile Include="..\dependencies\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\dependencies\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\dependencies\imgui\backends\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\src\CrashHandle\ExceptionHandler.cpp" />
+    <ClCompile Include="..\src\CrashHandle\StackWalker.cpp" />
+    <ClCompile Include="..\src\Licensing\GetBiosUUID_Win.cpp" />
+    <ClCompile Include="..\src\Licensing\LicenseManager.cpp" />
+    <ClCompile Include="..\src\Licensing\LicensingFingerprint.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\AlertCacheManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\FontManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\ImageManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\KPIManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\LocalizationManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\LocationRecentsManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\RadarDataSourceManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\StyleManager.cpp" />
+    <ClCompile Include="..\src\ResourceManagers\WindowManager.cpp" />
+    <ClCompile Include="..\src\UI\ActivityLogWindow.cpp" />
+    <ClCompile Include="..\src\UI\AlertsWindow.cpp" />
+    <ClCompile Include="..\src\UI\Dashboard_ActionsWindow.cpp" />
+    <ClCompile Include="..\src\UI\DoplerRadarView.cpp" />
+    <ClCompile Include="..\src\UI\FlatButton.cpp" />
+    <ClCompile Include="..\src\UI\GenericButton.cpp" />
+    <ClCompile Include="..\src\UI\GenericDataGrid.cpp" />
+    <ClCompile Include="..\src\UI\GenericDataGridFilter.cpp" />
+    <ClCompile Include="..\src\UI\GenericDropdown.cpp" />
+    <ClCompile Include="..\src\UI\ImGUIBackend.cpp" />
+    <ClCompile Include="..\src\UI\LocationEdit.cpp" />
+    <ClCompile Include="..\src\UI\LocationsWindow.cpp" />
+    <ClCompile Include="..\src\UI\LocationView.cpp" />
+    <ClCompile Include="..\src\UI\LoginWindow.cpp" />
+    <ClCompile Include="..\src\UI\MainWindow.cpp" />
+    <ClCompile Include="..\src\UI\ModulesBuyWindow.cpp" />
+    <ClCompile Include="..\src\UI\ModulesWindow.cpp" />
+    <ClCompile Include="..\src\UI\ResetPasswWindow.cpp" />
+    <ClCompile Include="..\src\UI\Dashboard_RecentAlertsWindow.cpp" />
+    <ClCompile Include="..\src\UI\SettingsWindow.cpp" />
+    <ClCompile Include="..\src\UI\Dashboard_RecentLocationsWindow.cpp" />
+    <ClCompile Include="..\src\UI\Dashboard_WelcomeWindow.cpp" />
+    <ClCompile Include="..\src\UI\TransparentButton.cpp" />
+    <ClCompile Include="..\src\UI\UserInfoWindow.cpp" />
+    <ClCompile Include="..\src\Util\MonochromeImage.cpp" />
+    <ClCompile Include="..\src\Web\CurlInterface.cpp" />
+    <ClCompile Include="..\src\Web\DBHelper.cpp" />
+    <ClCompile Include="..\src\Web\WebApiInterface.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\UserSession.cpp" />
+    <ClCompile Include="..\src\Web\WebSocketClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\json\json.hpp" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\json\yyjson.h" />
+    <ClInclude Include="..\..\VSS-Shared\dependencies\json\yyjson2.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\AsyncTaskManager.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\LogManager.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Session\ApplicationSession.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\Allocator.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\InitFileHandler.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\ObjDescriptor.h" />
+    <ClInclude Include="..\..\VSS-Shared\src\Util\VariousFuncs.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\curl.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\curlver.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\easy.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\header.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\mprintf.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\multi.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\options.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\stdcheaders.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\system.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\typecheck-gcc.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\urlapi.h" />
+    <ClInclude Include="..\dependencies\curl\include\curl\websockets.h" />
+    <ClInclude Include="..\dependencies\imgui\imconfig.h" />
+    <ClInclude Include="..\dependencies\imgui\imgui.h" />
+    <ClInclude Include="..\dependencies\imgui\imgui_internal.h" />
+    <ClInclude Include="..\dependencies\imgui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="..\dependencies\imgui\backends\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\dependencies\stb\stb_image.h" />
+    <ClInclude Include="..\src\CrashHandle\ExceptionHandler.h" />
+    <ClInclude Include="..\src\CrashHandle\StackWalker.h" />
+    <ClInclude Include="..\src\CrashHandle\stdafx.h" />
+    <ClInclude Include="..\src\Licensing\LicenseManager.h" />
+    <ClInclude Include="..\src\Licensing\stdafx.h" />
+    <ClInclude Include="..\src\ResourceManagers\AlertCacheManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\FontManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\ImageManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\KPIManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\LocalizationManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\LocationRecentsManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\RadarDataSourceManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\stdafx.h" />
+    <ClInclude Include="..\src\ResourceManagers\StyleManager.h" />
+    <ClInclude Include="..\src\ResourceManagers\WindowManager.h" />
+    <ClInclude Include="..\src\UI\ActivityLogWindow.h" />
+    <ClInclude Include="..\src\UI\AlertsWindow.h" />
+    <ClInclude Include="..\src\UI\Dashboard_ActionsWindow.h" />
+    <ClInclude Include="..\src\UI\DoplerRadarView.h" />
+    <ClInclude Include="..\src\UI\FlatButton.h" />
+    <ClInclude Include="..\src\UI\FlatTextField.h" />
+    <ClInclude Include="..\src\UI\GenericButton.h" />
+    <ClInclude Include="..\src\UI\GenericDataGrid.h" />
+    <ClInclude Include="..\src\UI\GenericDropdown.h" />
+    <ClInclude Include="..\src\UI\GenericWindow.h" />
+    <ClInclude Include="..\src\UI\ImGUIBackend.h" />
+    <ClInclude Include="..\src\UI\LocationEdit.h" />
+    <ClInclude Include="..\src\UI\LocationsWindow.h" />
+    <ClInclude Include="..\src\UI\LocationView.h" />
+    <ClInclude Include="..\src\UI\LoginWindow.h" />
+    <ClInclude Include="..\src\UI\MainWindow.h" />
+    <ClInclude Include="..\src\UI\ModulesBuyWindow.h" />
+    <ClInclude Include="..\src\UI\ModulesWindow.h" />
+    <ClInclude Include="..\src\UI\ResetPasswWindow.h" />
+    <ClInclude Include="..\src\UI\Dashboard_RecentAlertsWindow.h" />
+    <ClInclude Include="..\src\UI\SettingsWindow.h" />
+    <ClInclude Include="..\src\UI\Dashboard_RecentLocationsWindow.h" />
+    <ClInclude Include="..\src\UI\Dashboard_WelcomeWindow.h" />
+    <ClInclude Include="..\src\UI\stdafx.h" />
+    <ClInclude Include="..\src\UI\TransparentButton.h" />
+    <ClInclude Include="..\src\UI\UserInfoWindow.h" />
+    <ClInclude Include="..\src\Util\MonochromeImage.h" />
+    <ClInclude Include="..\src\Util\stdafx.h" />
+    <ClInclude Include="..\src\Web\CurlInterface.h" />
+    <ClInclude Include="..\src\Web\DBHelper.h" />
+    <ClInclude Include="..\src\Web\stdafx.h" />
+    <ClInclude Include="..\src\Web\WebApiInterface.h" />
+    <ClInclude Include="..\src\StdAfx.h" />
+    <ClInclude Include="..\src\UserSession.h" />
+    <ClInclude Include="..\src\Web\WebSocketClient.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\dependencies\imgui\misc\debuggers\imgui.natstepfilter" />
+    <None Include="..\dependencies\imgui\misc\debuggers\imgui.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\dependencies\Lamp.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

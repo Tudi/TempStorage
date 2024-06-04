@@ -1,0 +1,499 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="sources">
+      <UniqueIdentifier>{f18ab499-84e1-499f-8eff-9754361e0e52}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="sources\WindowDefinitions">
+      <UniqueIdentifier>{de335ec7-461d-4d92-b165-6f793e5b60a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libs">
+      <UniqueIdentifier>{234d2d8a-3e44-4396-ae3d-018ad87a7e39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libs\imgui">
+      <UniqueIdentifier>{20b90ce4-7fcb-4731-b9a0-075f875de82d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libs\CURL">
+      <UniqueIdentifier>{c2b626e4-1484-4610-90dc-c42185833541}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\WebApiInterface">
+      <UniqueIdentifier>{620f3f3d-0092-427a-8bf4-f9d088a40de8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\Licensing">
+      <UniqueIdentifier>{020d7a14-f151-4489-9ce5-62dcbff36fff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\CrashHandling">
+      <UniqueIdentifier>{99720421-a425-4f93-948b-9add74d3aa00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\Util">
+      <UniqueIdentifier>{9ddc4ca7-8ece-489e-9cc9-b10855650b85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\ResourceManagers">
+      <UniqueIdentifier>{ff3ac99e-5adc-4217-9921-8e522263e327}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\WindowDefinitions\Backend">
+      <UniqueIdentifier>{b666d3ed-e74d-4bf4-934d-b6f05a26049f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\WindowDefinitions\GenericTemplates">
+      <UniqueIdentifier>{12b09517-7483-4160-be6a-f16965be8acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libs\yyjson">
+      <UniqueIdentifier>{f7994469-0b59-40c3-888c-ebbc299c8770}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\WindowDefinitions\ModuleRenderers">
+      <UniqueIdentifier>{658ab5df-ffd6-41d7-ac78-914353b3b727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\SessionDefinitions">
+      <UniqueIdentifier>{92b24a01-9e8a-485f-8932-4ed29168927d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources\WindowDefinitions\WindowRenderers">
+      <UniqueIdentifier>{f46f4e92-2b8c-4bb0-8e17-f65251a24315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libs\STB">
+      <UniqueIdentifier>{45282c82-0dc1-4ef5-a72c-ecb29a18e025}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui.cpp">
+      <Filter>External Libs\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_draw.cpp">
+      <Filter>External Libs\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>External Libs\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\backends\imgui_impl_vulkan.cpp">
+      <Filter>External Libs\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_tables.cpp">
+      <Filter>External Libs\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dependencies\imgui\imgui_widgets.cpp">
+      <Filter>External Libs\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Licensing\GetBiosUUID_Win.cpp">
+      <Filter>sources\Licensing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Licensing\LicensingFingerprint.cpp">
+      <Filter>sources\Licensing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CrashHandle\ExceptionHandler.cpp">
+      <Filter>sources\CrashHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CrashHandle\StackWalker.cpp">
+      <Filter>sources\CrashHandling</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Web\CurlInterface.cpp">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Web\WebApiInterface.cpp">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\LoginWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\MainWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\KPIManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\LocalizationManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\StyleManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\WindowManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Licensing\LicenseManager.cpp">
+      <Filter>sources\Licensing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\ResetPasswWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\UserInfoWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\FontManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Dashboard_RecentAlertsWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Dashboard_RecentLocationsWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Dashboard_WelcomeWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\ImageManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\ImGUIBackend.cpp">
+      <Filter>sources\WindowDefinitions\Backend</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\GenericButton.cpp">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\GenericDataGrid.cpp">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\LocationsWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\LocationEdit.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\FlatButton.cpp">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\LocationView.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Web\DBHelper.cpp">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\AlertsWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\AlertCacheManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\ActivityLogWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\ModulesWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\GenericDropdown.cpp">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\DoplerRadarView.cpp">
+      <Filter>sources\WindowDefinitions\ModuleRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\ModulesBuyWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Web\WebSocketClient.cpp">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\RadarDataSourceManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UserSession.cpp">
+      <Filter>sources\SessionDefinitions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.cpp">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Util\Allocator.cpp">
+      <Filter>sources\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Session\ApplicationSession.cpp">
+      <Filter>sources\SessionDefinitions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Util\InitFileHandler.cpp">
+      <Filter>sources\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Util\VariousFuncs.cpp">
+      <Filter>sources\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\dependencies\json\yyjson2.cpp">
+      <Filter>External Libs\yyjson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\LogManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\dependencies\json\yyjson.c">
+      <Filter>External Libs\yyjson</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\GenericDataGridFilter.cpp">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\TransparentButton.cpp">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Util\MonochromeImage.cpp">
+      <Filter>sources\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\AsyncTaskManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\SettingsWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManagers\LocationRecentsManager.cpp">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Dashboard_ActionsWindow.cpp">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dependencies\imgui\imconfig.h">
+      <Filter>External Libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui.h">
+      <Filter>External Libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\backends\imgui_impl_glfw.h">
+      <Filter>External Libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\backends\imgui_impl_vulkan.h">
+      <Filter>External Libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\imgui\imgui_internal.h">
+      <Filter>External Libs\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\StdAfx.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\curl.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\curlver.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\easy.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\header.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\mprintf.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\multi.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\options.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\stdcheaders.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\system.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\typecheck-gcc.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\urlapi.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\curl\include\curl\websockets.h">
+      <Filter>External Libs\CURL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Licensing\stdafx.h">
+      <Filter>sources\Licensing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CrashHandle\ExceptionHandler.h">
+      <Filter>sources\CrashHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CrashHandle\StackWalker.h">
+      <Filter>sources\CrashHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CrashHandle\stdafx.h">
+      <Filter>sources\CrashHandling</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Util\stdafx.h">
+      <Filter>sources\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\CurlInterface.h">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\stdafx.h">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\WebApiInterface.h">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\stdafx.h">
+      <Filter>sources\WindowDefinitions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\LoginWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\MainWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\KPIManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\LocalizationManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\stdafx.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\StyleManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\WindowManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Licensing\LicenseManager.h">
+      <Filter>sources\Licensing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\ResetPasswWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\UserInfoWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\FontManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dashboard_RecentAlertsWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dashboard_RecentLocationsWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dashboard_WelcomeWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\ImageManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\ImGUIBackend.h">
+      <Filter>sources\WindowDefinitions\Backend</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\GenericButton.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\GenericWindow.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\src\UI\GenericDataGrid.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\LocationsWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\LocationEdit.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\FlatTextField.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\FlatButton.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\LocationView.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\DBHelper.h">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\AlertsWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\AlertCacheManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\ActivityLogWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\ModulesWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\GenericDropdown.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\DoplerRadarView.h">
+      <Filter>sources\WindowDefinitions\ModuleRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\ModulesBuyWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\WebSocketClient.h">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\RadarDataSourceManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UserSession.h">
+      <Filter>sources\SessionDefinitions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.h">
+      <Filter>sources\WebApiInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\Allocator.h">
+      <Filter>sources\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Session\ApplicationSession.h">
+      <Filter>sources\SessionDefinitions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\InitFileHandler.h">
+      <Filter>sources\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\VariousFuncs.h">
+      <Filter>sources\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\json\yyjson2.h">
+      <Filter>External Libs\yyjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\LogManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\json\yyjson.h">
+      <Filter>External Libs\yyjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\json\json.hpp">
+      <Filter>External Libs\yyjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\stb\stb_image.h">
+      <Filter>External Libs\STB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\ObjDescriptor.h">
+      <Filter>sources\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\TransparentButton.h">
+      <Filter>sources\WindowDefinitions\GenericTemplates</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Util\MonochromeImage.h">
+      <Filter>sources\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\AsyncTaskManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\SettingsWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManagers\LocationRecentsManager.h">
+      <Filter>sources\ResourceManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\UI\Dashboard_ActionsWindow.h">
+      <Filter>sources\WindowDefinitions\WindowRenderers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\dependencies\imgui\misc\debuggers\imgui.natstepfilter">
+      <Filter>External Libs\imgui</Filter>
+    </None>
+    <None Include="..\dependencies\imgui\misc\debuggers\imgui.natvis">
+      <Filter>External Libs\imgui</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\dependencies\Lamp.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+</Project>

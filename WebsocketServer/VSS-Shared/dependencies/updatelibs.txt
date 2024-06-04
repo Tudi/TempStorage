@@ -1,0 +1,9 @@
+Install Vcpkg https://github.com/microsoft/vcpkg
+then command line the following
+	set VCPKG_DEFAULT_TRIPLET=x64-windows
+	vcpkg install websocketpp
+
+copy from :
+	d:\GitHub\vcpkg\vcpkg\installed\x64-windows\include\
+	d:\GitHub\vcpkg\vcpkg\installed\x64-windows\lib\
+	d:\GitHub\vcpkg\vcpkg\installed\x64-windows\bin\

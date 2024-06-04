@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{3a4e0d58-cc89-44c6-9e46-027ce8499a57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Managers">
+      <UniqueIdentifier>{9b3c858e-0f03-4944-8d7e-b29404fb3d0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sessions">
+      <UniqueIdentifier>{3500e297-6c3c-4188-9d68-5d4d99493536}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies">
+      <UniqueIdentifier>{ecd4444b-3de3-48e9-a95d-6fb4d90bfa4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies\MagicEnum">
+      <UniqueIdentifier>{daeb8a63-cd30-4515-9785-7f7cd6d76c1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Network">
+      <UniqueIdentifier>{dfea7c6f-178c-4e08-b726-ca0c5a78535c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Web">
+      <UniqueIdentifier>{290abbf0-3e93-4971-8654-38b8ae9f82e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies\Curl">
+      <UniqueIdentifier>{efb80b08-d158-4a87-9b27-6fdfc830694a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies\websocketpp">
+      <UniqueIdentifier>{c88cb614-5b3e-44a6-b5ad-2215d3f497fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies\websocketpp\boost">
+      <UniqueIdentifier>{a5673d82-66b4-4c9d-8d34-8e98142c8174}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies\websocketpp\openssl">
+      <UniqueIdentifier>{2c57790f-66a4-480d-b6c2-86718aac1d59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ExternalDependencies\websocketpp\websocketpp">
+      <UniqueIdentifier>{cb5359f2-1cfb-4674-ac38-7623ff675a65}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Util\Allocator.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DB\MysqlManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Session\ApplicationSession.cpp">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\LogManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Util\InitFileHandler.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Util\VariousFuncs.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManager\DataSourceManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManager\ConsoleCommandManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DummyRadar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Network\WSServer.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Network\UDPServer.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Network\NetworkSessionManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManager\AlertLifeCycleManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Network\NetworkSession.cpp">
+      <Filter>Source Files\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Web\CurlInterface.cpp">
+      <Filter>Source Files\Web</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Web\WebApiInterface.cpp">
+      <Filter>Source Files\Web</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DB\TableCacheManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ResourceManager\ServerHealthReportingManager.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\Allocator.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DB\MysqlManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Session\ApplicationSession.h">
+      <Filter>Source Files\Sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\LogManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\ResourceManager\ConfigManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\InitFileHandler.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\magic_enum\magic_enum_all.hpp">
+      <Filter>Source Files\ExternalDependencies\MagicEnum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\VariousFuncs.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\VectRW.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManager\DataSourceManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManager\ConsoleCommandManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Util\ObjDescriptor.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DummyRadar.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\src\Network\VSSPacketDefines.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Network\WSServer.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Network\UDPServer.h">
+      <Filter>Source Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Network\NetworkSessionManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManager\AlertLifeCycleManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Network\NetworkSession.h">
+      <Filter>Source Files\Sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\CurlInterface.h">
+      <Filter>Source Files\Web</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Web\WebApiInterface.h">
+      <Filter>Source Files\Web</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\zconf.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\zlib.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\curl.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\curlver.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\easy.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\header.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\mprintf.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\multi.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\options.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\stdcheaders.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\system.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\typecheck-gcc.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\urlapi.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\VSS-Shared\dependencies\curl\include\curl\websockets.h">
+      <Filter>Source Files\ExternalDependencies\Curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DB\TableCacheManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ResourceManager\ServerHealthReportingManager.h">
+      <Filter>Source Files\Managers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
