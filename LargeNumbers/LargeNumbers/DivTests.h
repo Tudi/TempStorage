@@ -59,3 +59,7 @@ void DivTestabxy();
 void DivTestabxy2();
 void DivTestIncA();
 void DivTestDecB();
+void DivTestRestrictModulo();
+void DivTestMod9();
+void DivTestMod10();
+void DivTestMod11();

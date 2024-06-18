@@ -7,6 +7,7 @@
 // N=A*B	N2=A*(0.8*B) .. we aim to reach A with B
 //double x2fromx1 = x1 - n1 + n2;
 //double y2fromy1 = c2 * y1 + (c2 - 1) * x1 + (1 + c2) * n1 - 2 * n2;
+// same as no scale : since y2 increases by some c2 value, the number of increases is the same as for y1, it's just the size of the jump that is smaller
 
 static void MakeProgress1(IterationStateHolder& sh)
 {
@@ -18,8 +19,9 @@ static void MakeProgress1(IterationStateHolder& sh)
 
 	__int64 xRequired = sh.SQNnow - sh.AInitial;
 	double yRequired = sh.AInitial + sh.BInitial * sh.cf2 - 2 * sh.SQNnow;
-	printf("\t %lld)searching for x=%lld y=%f. c2(sum)=%f. lastr=%f. final=%f\n",
-		sh.ChecksMade, xRequired, yRequired, sh.cf2, (double)sh.ANow / sh.BNow, (double)sh.AInitial / sh.BInitial);
+	printf("\t %lld)searching for x=%lld y=%f. c2(sum)=%f. lastr=%f. final=%f nnow=%lld\n",
+		sh.ChecksMade, xRequired, yRequired, sh.cf2, (double)sh.ANow / sh.BNow, 
+		(double)sh.AInitial / sh.BInitial, sh.SQNnow);
 
 	size_t bAIsImPair = (sh.AInitial & sh.c1) & 1;
 	size_t bBIsImPair = (sh.BInitial & sh.c2) & 1;

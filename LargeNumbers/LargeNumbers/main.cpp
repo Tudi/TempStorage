@@ -47,10 +47,13 @@ void main()
 //    DivTestBitByBit();
 //    DivTestBitByBit2();
 //    DivTestBitByBit3(); // probably the fastest but uses most memory. 
-    DivTestabxy(); // worst case SQN/4 steps to get result. Until n/6 searches with inverse exponential speed
+//    DivTestabxy(); // worst case SQN/4 steps to get result. Until n/6 searches with inverse exponential speed
 //    DivTestabxy2(); // same, but here we change SQN instead xp-yp
 //    DivTestIncA(); // quite slow. Wasn't expecting it to work at all. Wanted to compare to decB version
 //    DivTestDecB(); // just so it exists
+//    DivTestRestrictModulo();
+//    DivTestMod9();
+    DivTestMod11(); // can become 2 times better than DivTestabxy(). Not finished since it's a principle test
 
     printf("All done\n");
 }

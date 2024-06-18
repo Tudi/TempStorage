@@ -3,6 +3,10 @@
 #define MAX_DIGIT_COUNT 500
 #define USE_BASE        10
 
+#ifndef MIN
+    #define MIN( a, b ) ((a)<(b))?(a):(b)
+#endif
+
 #ifndef MAX
     #define MAX( a, b ) ((a)>(b))?(a):(b)
     #define MAX3( a, b, c ) MAX( a, MAX( b, c ) )
