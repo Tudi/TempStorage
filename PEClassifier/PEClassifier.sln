@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35004.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PEClassifier", "PEClassifier.vcxproj", "{434853A6-8A45-4F61-8A33-5752606E7789}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{434853A6-8A45-4F61-8A33-5752606E7789}.Debug|x64.ActiveCfg = Debug|x64
+		{434853A6-8A45-4F61-8A33-5752606E7789}.Debug|x64.Build.0 = Debug|x64
+		{434853A6-8A45-4F61-8A33-5752606E7789}.Release|x64.ActiveCfg = Release|x64
+		{434853A6-8A45-4F61-8A33-5752606E7789}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E07629E-4DA3-4750-A40E-E332AD070CC7}
+	EndGlobalSection
+EndGlobal

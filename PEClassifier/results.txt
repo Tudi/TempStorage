@@ -1,0 +1,12 @@
+Filename Category
+-------- --------
+f00      regular 
+f01      regular 
+f02      regular 
+f03      packed  
+f04      regular 
+f05      packed  
+f06      regular 
+f07      packed  
+f08      regular 
+f09      regular 
