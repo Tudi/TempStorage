@@ -53,7 +53,13 @@ void main()
 //    DivTestDecB(); // just so it exists
 //    DivTestRestrictModulo();
 //    DivTestMod9();
-    DivTestMod11(); // can become 2 times better than DivTestabxy(). Not finished since it's a principle test
+//    DivTestMod11(); // can become 2 times better than DivTestabxy(). Not finished since it's a principle test
+//    DivTestIncSQN();
+    DivTestModulo12(); // pretty good only usable when A is small ( 27 bits ) and the difference between A and B is large
+//    DivTestFermatGen1(); // only good for some magic numbers ! But it does 4*sqrt(sqrt(N)) steps
+//    DivTestGen_y_v1(); // just curiosity. Same as guessing A*B
+//    DivTestGen_y_v2();
+//    DivTestGen_xyce(); // curiosity : 10 new versions per digit. Same as A*B
 
     printf("All done\n");
 }

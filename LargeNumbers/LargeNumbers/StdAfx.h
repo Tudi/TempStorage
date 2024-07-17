@@ -9,3 +9,4 @@
 #include "math.h"
 #include "testcases.h"
 #include "DivTests.h"
+#include "SharedDecl.h"

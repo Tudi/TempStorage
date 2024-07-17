@@ -164,7 +164,12 @@
     <ClCompile Include="DivTest_DecB.cpp" />
     <ClCompile Include="DivTest_Decrement.cpp" />
     <ClCompile Include="DivTest_edef.cpp" />
+    <ClCompile Include="DivTest_Fermat_gen1.cpp" />
+    <ClCompile Include="DivTest_gen_xyec.cpp" />
+    <ClCompile Include="DivTest_gen_y_1.cpp" />
+    <ClCompile Include="DivTest_gen_y_2.cpp" />
     <ClCompile Include="DivTest_IncA.cpp" />
+    <ClCompile Include="DivTest_IncSQN.cpp" />
     <ClCompile Include="DivTest_InvMul.cpp" />
     <ClCompile Include="DivTest_LineDraw.cpp" />
     <ClCompile Include="DivTest_LineDraw2.cpp" />
@@ -178,6 +183,7 @@
     <ClCompile Include="DivTest_Modulo.cpp" />
     <ClCompile Include="DivTest_Modulo10.cpp" />
     <ClCompile Include="DivTest_Modulo11.cpp" />
+    <ClCompile Include="DivTest_Modulo12.cpp" />
     <ClCompile Include="DivTest_Modulo2.cpp" />
     <ClCompile Include="DivTest_Modulo3.cpp" />
     <ClCompile Include="DivTest_Modulo4.cpp" />

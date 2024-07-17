@@ -35,5 +35,10 @@ struct IterationStateHolder {
 	NumberComboDouble xy[Gen_COMBO_MOD];
 };
 
+struct ModuloPair {
+	__int64 m1, m2;
+};
+
 void GenXYCombos(IterationStateHolder& sh, const __int64 SQN, const __int64 m, const __int64 startY);
 uint64_t isqrt5(uint64_t n);
+__int64 GetCoveringBitMask(__int64 nNum);

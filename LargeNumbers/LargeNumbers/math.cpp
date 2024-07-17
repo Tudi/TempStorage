@@ -182,6 +182,7 @@ unsigned int isqrt(__int64 n)
   return b - 1;
 }
 
+// this is only for the length of SQRT !
 __int64 isqrt2(__int64 n)
 {
 	if (n < 2)

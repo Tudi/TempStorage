@@ -186,6 +186,24 @@
     <ClCompile Include="DivTest_Modulo11.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_IncSQN.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_Modulo12.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_Fermat_gen1.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_gen_y_1.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_gen_y_2.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
+    <ClCompile Include="DivTest_gen_xyec.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">

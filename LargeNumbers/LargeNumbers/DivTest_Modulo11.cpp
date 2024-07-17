@@ -27,10 +27,7 @@ Conclusion :
 #include "StdAfx.h"
 #include <vector>
 
-struct MudoluPair {
-	__int64 m1, m2;
-};
-void GenPossible_m_ForScaler(const __int64 N, const __int64 *SCALER_FACTORS, std::vector<MudoluPair> &out_pairs)
+void GenPossible_m_ForScaler(const __int64 N, const __int64 *SCALER_FACTORS, std::vector<ModuloPair> &out_pairs)
 {
 	__int64 SCALER = 1;
 	for (__int64 i = 0; SCALER_FACTORS[i] != 1; i++)
@@ -84,7 +81,7 @@ void GenPossible_m_ForScaler(const __int64 N, const __int64 *SCALER_FACTORS, std
 			}
 	//		printf("%lld)Nomirror %lld. Possible m1=%lld m2=%lld\n",
 //				m1m2CombosFound, m1m2CombosFound - m1m2CombosMirroredFound, m1, m2);
-			out_pairs.push_back(MudoluPair{ m1,m2 });
+			out_pairs.push_back(ModuloPair{ m1,m2 });
 			m1m2CombosFound++;
 		}
 	}
@@ -103,6 +100,56 @@ void GetPrimesUntil(__int64 upperLimit, std::vector<__int64>& out_primes)
 		if (IsPrime(now))
 		{
 			out_primes.push_back(now);
+		}
+	}
+}
+
+void check_maybe_invalid_m1m2(__int64 N, __int64 A, __int64 B, __int64 SQN, __int64 m, __int64 SCALER, std::vector<ModuloPair> &mpairs)
+{
+	__int64 a = SQN, b = SQN;
+	__int64 Nmod = N % SCALER;
+//	m = N - a * b;
+
+	for (ModuloPair& mpair : mpairs)
+	{
+		__int64 ta = (a / SCALER + 0) * SCALER + mpair.m1; // round down and add modulo
+		__int64 tb = (b / SCALER - 1) * SCALER + mpair.m2; // round down and add modulo
+//		__int64 tm = N - ta * tb;
+
+		__int64 xgood = ta - A;
+		__int64 ygood = B - tb - xgood;
+		__int64 xgoodScaled = xgood / SCALER;
+		__int64 ygoodScaled = ygood / SCALER; // the actual value we are searching for
+
+		__int64 foundxyGoodCombo = 0;
+		for (__int64 x = 1; x < SCALER; x++)
+		{
+			for (__int64 y = 1; y < SCALER; y++)
+			{
+				if (x == xgoodScaled && y == ygoodScaled)
+				{
+					foundxyGoodCombo = foundxyGoodCombo;
+				}
+				// x/y can't share factors with m1/m2
+				// note that there is a high chance m1,m2 is a prime
+				if ((mpair.m1 > 1 && ((x % mpair.m1) == 0)) || 
+					(mpair.m2 > 1 && ((y % mpair.m2) == 0)))
+				{
+					continue;
+				}
+				__int64 tA = ta - x * SCALER;
+				__int64 tB = tb + x * SCALER + y * SCALER;
+				__int64 tN = tA * tB;
+				__int64 tNmod = tN % SCALER;
+				if (tNmod == Nmod)
+				{
+					foundxyGoodCombo++;
+				}
+			}
+		}
+		if (foundxyGoodCombo == 0)
+		{
+			printf("No valid x/y was possible for m1=%lld, m2=%lld\n", mpair.m1, mpair.m2);
 		}
 	}
 }
@@ -160,7 +207,7 @@ void DivTestMod11_(__int64 A, __int64 B)
 	}
 
 	// get all the m1,m2 combinations when we can use this scaler
-	std::vector<MudoluPair> mpairs;
+	std::vector<ModuloPair> mpairs;
 	GenPossible_m_ForScaler(N, SCALER_FACTORS, mpairs);
 
 	// check if unscaled y is a solution
@@ -178,6 +225,9 @@ void DivTestMod11_(__int64 A, __int64 B)
 		}
 	}
 
+	// just for curiosity, do m1m2 combos exist that could be eliminated due to x,y not existing ?
+	check_maybe_invalid_m1m2(N, A, B, SQN, m, SCALER, mpairs);
+
 	// now loop until we find x or y
 	__int64 xnow = 0, ynow = 1;
 	__int64 iterationsMade = 1;
@@ -185,7 +235,7 @@ void DivTestMod11_(__int64 A, __int64 B)
 	{
 		__int64 foundTheProperm1m2Combo = 0;
 
-		for (MudoluPair& mpair : mpairs)
+		for (ModuloPair& mpair : mpairs)
 		{
 			// for the sake of debugging
 			if ((A - mpair.m1) % SCALER == 0 && (B - mpair.m2) % SCALER == 0)
