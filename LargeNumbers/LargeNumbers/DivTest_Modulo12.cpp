@@ -78,6 +78,7 @@ static void GenIntervalMods(__int64 PrimeFactorsUntil)
 		// looks like a unique mod that can generate ANY number
 		g_mods[PrimeFactorsUntil].push_back(modNow);
 	}
+	printf("nr mods for mul %lld : %lld\n", nEnd, g_mods[PrimeFactorsUntil].size());
 }
 
 __int64 GetCoveringBitMask(__int64 nNum)
@@ -157,6 +158,37 @@ void IncreaseMultiplierAndExtendMods(__int64 N, StateHolderM12& MulState)
 		MulState.m.push_back(ModuloPair{ modNow,0 });
 	}
 #endif
+#if 0 // check if we could eliminate any of the mods, by making them become personal to N
+	const __int64 NModMul = N % MulState.mul_a;
+	__int64 modsEliminted = 0;
+	for (size_t i = 0; i < g_mods[MulState.SelectedPrimesUntil_a].size(); i++)
+	{
+		const __int64 mod1 = g_mods[MulState.SelectedPrimesUntil_a][i];
+		__int64 foundPair = 0;
+		for (size_t j = 0; j < g_mods[MulState.SelectedPrimesUntil_a].size(); j++) // if we do not know if we are guessing A or B
+//		for (size_t j = i; j < g_mods[MulState.SelectedPrimesUntil_a].size(); j++) // if we pick to guess only A or B
+		{
+			const __int64 mod2 = g_mods[MulState.SelectedPrimesUntil_a][j];
+			const __int64 mod = mod1 * mod2;
+			const __int64 modmod = mod % MulState.mul_a;
+			if (modmod == NModMul)
+			{
+				foundPair = 1;
+				break;
+			}
+		}
+		if (foundPair == 0)
+		{
+			modsEliminted++;
+		}
+	}
+	if (modsEliminted)
+	{
+		printf("For mul %lld, could remove %lld mods out of %lld\n", MulState.mul_a, modsEliminted, g_mods[MulState.SelectedPrimesUntil_a].size());
+	}
+#endif
+	// if we check if N is dividable by primes until mul_a, we can make sure
+	// that a will not be equal to m or divisors of m. that would mean nextFactor < a 
 
 	// increase the limit for the next loop
 	MulState.SelectedPrimesUntil_a++;
@@ -174,7 +206,7 @@ void DivTestModulo12_(__int64 A, __int64 B)
 	printf("N = %lld. SQN = %lld. m = %lld\n", N, SQN, m);
 	__int64 x = a - A;
 	__int64 y = B - b - x;
-	printf("Looking for x=%lld y=%lld\n", x, y);
+	printf("just as reference. Not looking for these x=%lld y=%lld\n", x, y);
 
 	StateHolderM12 MulState;
 	MulState.mul_a = 1;
@@ -225,7 +257,8 @@ void DivTestModulo12_(__int64 A, __int64 B)
 		const __int64 Check_a_Until = g_Primes[MulState.SelectedPrimesUntil_a];
 		const __int64 RoundedSQN = (SQN / MulState.mul_a * MulState.mul_a);
 
-		printf("\t mul now %lld. Mods count %lld. Will do %lld checks\n", MulState.mul_a, MulState.mods_a->size(), Check_a_Until * MulState.mods_a->size());
+		printf("\t mul now %lld. Mods count %lld. Will do %lld checks. Sol a=%lld m1=%lld\n", 
+			MulState.mul_a, MulState.mods_a->size(), Check_a_Until * MulState.mods_a->size(), a_solution, m1_solution);
 
 		for (__int64 a = 1; a <= Check_a_Until; a++)
 		{

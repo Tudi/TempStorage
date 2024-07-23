@@ -1,0 +1,2 @@
+Create a class that uses shared memory. Multiple applications can implement the class. Each application will monitor the other applications and restart if any of them goes down
+The specified class also monitors if fake applications appear with same name / image that are supposed to implement the class but they are not. 
