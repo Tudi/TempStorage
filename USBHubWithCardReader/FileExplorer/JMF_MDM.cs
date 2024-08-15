@@ -51,9 +51,9 @@ namespace FileExplorer
     public class JMF_MDM
     {
         // Hardcoded. Should be some secure/encrypted data
-        const string clientURL = "pioneersquarenfr";
-        const string username = "USBtest";
-        const string password = "testingUSB2024";
+        const string clientURL = "thisisyourjamfaccount";
+        const string username = "";
+        const string password = "";
 
         // will be obtained once needed
         static string bearerToken = "";
