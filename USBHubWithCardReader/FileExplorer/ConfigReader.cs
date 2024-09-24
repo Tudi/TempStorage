@@ -37,6 +37,8 @@ public static class ConfigReader
     {
         if (File.Exists(filePath))
         {
+            LogWriter.WriteLog("ConfigReader : reading config file : " + filePath);
+
             foreach (var line in File.ReadAllLines(filePath))
             {
                 if (!string.IsNullOrWhiteSpace(line) && line.Contains('='))
@@ -54,6 +56,8 @@ public static class ConfigReader
                     }
                 }
             }
+
+            LogWriter.WriteLog("ConfigReader : done loading " + _settings.Count.ToString() + " config settings ");
         }
         else
         {
@@ -61,12 +65,27 @@ public static class ConfigReader
         }
     }
 
-    public static string GetConfigValue(string key)
+    public static string GetConfigValue(string key, string defaultVal = null)
     {
         if (_settings.TryGetValue(key, out string value))
         {
             return value;
         }
+        if (defaultVal != null)
+        {
+            return defaultVal;
+        }
         throw new KeyNotFoundException($"Key '{key}' not found in the configuration file.");
+    }
+    public static int GetConfigValueInt(string key, int defaultVal)
+    {
+        if (_settings.TryGetValue(key, out string value))
+        {
+            if (int.TryParse(value, out int int_out))
+            {
+                return int_out;
+            }
+        }
+        return defaultVal;
     }
 }

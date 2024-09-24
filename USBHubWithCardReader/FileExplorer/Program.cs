@@ -10,6 +10,8 @@ namespace USBDeviceInfoAPI
         [STAThread]
         static void Main()
         {
+            LogWriter.WriteLog("Application is starting up");
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -36,10 +38,14 @@ namespace USBDeviceInfoAPI
                 Plugable_DeviceManager.OnRFIDCardPresented("0008406925");
                 Thread.Sleep(6000);
                 Plugable_DeviceManager.OnDeviceUnPlugged("00008120-0009395A3C62201E");
+
+                Plugable_DeviceManager.OnDevicePluggedIn("00008120-0009395A3C62201E");
+                Thread.Sleep(6000);
             }/**/
 
             Application.Run(new Form1());
 
+            LogWriter.WriteLog("Application is shutting down");
             // stop device status poll
             // stop keyboard hook
             // unload ini

@@ -22,31 +22,30 @@ namespace FileExplorer
         }
         public static void LoadCardDetails()
         {
+            LogWriter.WriteLog("RFIDCardManager : Loading RFID card settings");
             for (int i = 0; i < 100; i++)
             {
                 string confName = "Card_" + i.ToString();
-                try
+                string cardDetails = ConfigReader.GetConfigValue(confName, "");
+                if (cardDetails != null && cardDetails.Length > 0)
                 {
-                    string cardDetails = ConfigReader.GetConfigValue(confName);
-                    if (cardDetails != null)
+                    string[] cardDetailsParts = cardDetails.Split(',');
+                    if (cardDetailsParts.Length > 0)
                     {
-                        string[] cardDetailsParts = cardDetails.Split(',');
-                        if (cardDetailsParts.Length > 0)
-                        {
-                            RFIDCardDetails card = new RFIDCardDetails();
-                            card.cardID = cardDetailsParts[0];
-                            card.EA_Name = cardDetailsParts[1];
-                            _cards[card.cardID] = card;
-                        }
+                        RFIDCardDetails card = new RFIDCardDetails();
+                        card.cardID = cardDetailsParts[0];
+                        card.EA_Name = cardDetailsParts[1];
+                        _cards[card.cardID] = card;
                     }
                 }
-                catch { }
             }
+            LogWriter.WriteLog("RFIDCardManager : Done loading " + _cards.Count().ToString() + " cards ");
         }
         public static string GetCardUser(string CardId)
         {
             if(_cards.ContainsKey(CardId) == false)
             {
+                LogWriter.WriteLog("DeviceStatusCache : Card : " + CardId + " does not have a user assigned to it");
                 return "";
             }
             return _cards[CardId].EA_Name;

@@ -2,6 +2,7 @@ using FileExplorer;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Management;
 using System.Windows.Forms;
 
@@ -13,7 +14,6 @@ namespace USBDeviceInfoAPI
         private Button btnRefresh;
         private Button btnStartStop;
         private bool isTimerRunning = true;
-        private Dictionary<string, ListViewItem> previousDeviceDetails = new Dictionary<string, ListViewItem>();
 
         public Form1()
         {
@@ -24,15 +24,7 @@ namespace USBDeviceInfoAPI
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            GetUSBDevices();
-        }
-
-        private void InitializeTimer()
-        {
-            timer = new Timer();
-            timer.Interval = Int32.Parse(ConfigReader.GetConfigValue("DeviceStatusRefreshInterval"));
-            timer.Tick += new EventHandler(Timer_Tick);
-            timer.Start();
+            RefreshDeviceList(sender, e);
         }
 
         private void InitializeButtons()
@@ -54,7 +46,7 @@ namespace USBDeviceInfoAPI
 
         private void BtnRefresh_Click(object sender, EventArgs e)
         {
-            RefreshDeviceList();
+            RefreshDeviceList(sender, e);
         }
 
         private void BtnStartStop_Click(object sender, EventArgs e)
@@ -72,18 +64,16 @@ namespace USBDeviceInfoAPI
             isTimerRunning = !isTimerRunning;
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void InitializeTimer()
         {
-            RefreshDeviceList();
+            timer = new Timer();
+            timer.Interval = ConfigReader.GetConfigValueInt("DeviceStatusRefreshInterval", 1000);
+            timer.Tick += new EventHandler(RefreshDeviceList);
+            timer.Start();
         }
 
-        private void RefreshDeviceList()
-        {
-            listView1.Items.Clear(); // Clear the existing items
-            GetUSBDevices();         // Refresh the list
-        }
-
-        private void GetUSBDevices()
+        private Dictionary<string, ListViewItem> previousDeviceDetails = new Dictionary<string, ListViewItem>();
+        private void RefreshDeviceList(object sender, EventArgs e)
         {
             var searcher = new ManagementObjectSearcher(@"Select * From Win32_PnPEntity Where PNPDeviceID Like '%USB%'");
             var currentDeviceIds = new HashSet<string>();
@@ -94,37 +84,36 @@ namespace USBDeviceInfoAPI
                 string name = mo["Name"]?.ToString() ?? "Unknown";
                 string Manufacturer = mo["Manufacturer"]?.ToString() ?? "Unknown";
 
-                if (Manufacturer.ToLower() != "Apple, Inc.".ToLower())
+                if (!Manufacturer.Equals("Apple, Inc.", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
-//                if (name.Contains("Apple iPhone") || name.Contains("Apple iPad"))
-                if (name.ToLower() != "Apple Mobile Device USB Composite Device".ToLower())
+                if (!name.Equals("Apple Mobile Device USB Composite Device", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 string deviceId = mo["DeviceID"]?.ToString() ?? "Unknown";
                 string serialNumber = GetSerialNumber(mo);
-                var item = new ListViewItem(new[] { name, Manufacturer, serialNumber, deviceId });
 
                 // Check if the device is new or existing
-                if (previousDeviceDetails.ContainsKey(deviceId))
+                if (previousDeviceDetails.TryGetValue(deviceId, out var existingItem))
                 {
-                    if (previousDeviceDetails[deviceId].BackColor != Color.Green)
+                    if (existingItem.BackColor != Color.Green)
                     {
+                        existingItem.BackColor = Color.Green;
                         Plugable_DeviceManager.OnDevicePluggedIn(serialNumber);
                     }
-                    item.BackColor = Color.Green; // Existing device
                 }
                 else
                 {
+                    var item = new ListViewItem(new[] { name, Manufacturer, serialNumber, deviceId });
                     item.BackColor = Color.Yellow; // New device
+                    listView1.Items.Add(item);
+                    previousDeviceDetails[deviceId] = item;
                 }
 
-                listView1.Items.Add(item);
                 currentDeviceIds.Add(deviceId);
-                previousDeviceDetails[deviceId] = item;
             }
 
             // Highlight removed devices in red
@@ -135,30 +124,34 @@ namespace USBDeviceInfoAPI
             {
                 if (previousDeviceDetails.TryGetValue(deviceId, out var item))
                 {
-                    item.BackColor = Color.Red;
-                    listView1.Items.Add(item);
+                    if (item.BackColor != Color.Red)
+                    {
+                        item.BackColor = Color.Red;
+                    }
+                    else
+                    {
+                        Plugable_DeviceManager.OnDeviceUnPlugged(previousDeviceDetails[deviceId].SubItems[2].Text);
+                        previousDeviceDetails.Remove(deviceId);
+                        listView1.Items.Remove(item);
+                    }
                 }
-            }
-
-            // Update previousDeviceDetails to only keep current devices
-            foreach (var deviceId in removedDeviceIds)
-            {
-                Plugable_DeviceManager.OnDeviceUnPlugged(previousDeviceDetails[deviceId].SubItems[2].Text);
-                previousDeviceDetails.Remove(deviceId);
             }
         }
 
         private string GetSerialNumber(ManagementObject device)
         {
             // Try different properties that might hold the serial number
-            string serial = "";
-            try
+//            string serial = "";
+            string serial = device?.Properties.Cast<PropertyData>().Any(p => p.Name == "SerialNumber") == true
+    ? device["SerialNumber"]?.ToString() ?? string.Empty
+    : string.Empty;
+/*            try
             {
                 serial = device["SerialNumber"]?.ToString();
             }
             catch (Exception)
             {
-            }
+            }*/
             if (string.IsNullOrEmpty(serial))
             {
                 try

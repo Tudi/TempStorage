@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using System.Timers;
 
 namespace FileExplorer
 {
@@ -14,18 +15,20 @@ namespace FileExplorer
     {
         private readonly List<int> _keys;
         private readonly Stopwatch _stopwatch;
-        private readonly System.Windows.Forms.Timer _timer;
-        private int Timeout = Int32.Parse(ConfigReader.GetConfigValue("RFIDCardReadTimeout")); // Timeout of 1 second
-        private int ChunkSize = Int32.Parse(ConfigReader.GetConfigValue("RFIDCardReadDigits")); // Chunk size of 10 digits
+        private readonly System.Timers.Timer _timer;
+        private int Timeout = ConfigReader.GetConfigValueInt("RFIDCardReadTimeout",1000); // Timeout of 1 second
+        private int ChunkSize = ConfigReader.GetConfigValueInt("RFIDCardReadDigits", 10); // Chunk size of 10 digits
 
-        public event EventHandler<string> CardPresented;
+//        public event EventHandler<string> CardPresented;
 
         public RFIDReader_keyboard()
         {
             _keys = new List<int>();
             _stopwatch = new Stopwatch();
-            _timer = new System.Windows.Forms.Timer { Interval = Timeout };
-            _timer.Tick += Timer_Tick;
+            _timer = new System.Timers.Timer(Timeout);
+            _timer.Elapsed += Timer_Tick;
+            _timer.AutoReset = true;
+            _timer.Enabled = true;
             HookKeyboard();
         }
 
@@ -47,6 +50,7 @@ namespace FileExplorer
             {
                 if (_keys.Count == 0 || _stopwatch.ElapsedMilliseconds > Timeout)
                 {
+                    LogWriter.WriteLog("RFIDReader_keyboard : starting a new card read session");
                     _stopwatch.Restart();
                     _keys.Clear();
                 }
@@ -57,11 +61,14 @@ namespace FileExplorer
                 {
                     _timer.Stop();
                     _stopwatch.Stop();
-                    OnCardPresented(new string(_keys.ConvertAll(k => (char)k).ToArray()));
+                    string cardDataRead = new string(_keys.ConvertAll(k => (char)k).ToArray());
+                    LogWriter.WriteLog("RFIDReader_keyboard : read card data : " + cardDataRead);
+                    OnCardPresented(cardDataRead);
                     _keys.Clear();
                 }
                 else
                 {
+                    LogWriter.WriteLog("RFIDReader_keyboard : failed to read all required digits : " + new string(_keys.ConvertAll(k => (char)k).ToArray()));
                     _timer.Start();
                 }
             }
@@ -90,11 +97,13 @@ namespace FileExplorer
 
         public static void Start()
         {
+            LogWriter.WriteLog("KeyboardHookManager : starting module");
             _hookID = SetHook(_proc);
         }
 
         public static void Stop()
         {
+            LogWriter.WriteLog("KeyboardHookManager : stopping module");
             UnhookWindowsHookEx(_hookID);
         }
 
