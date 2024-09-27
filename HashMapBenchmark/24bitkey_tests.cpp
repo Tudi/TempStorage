@@ -419,9 +419,6 @@ int Run24BPKTests()
 	RunInitSetGetTests<true, true, false>();
 	RunInitSetGetTests<false, false, true>();
 
-	printf("Press any key to exit");
-	int getchres = _getch();
-
 	free(g_IndexSetOrder);
 	free(g_IndexGetOrder);
 	free(g_IndexSetOrdered);
