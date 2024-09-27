@@ -1,14 +1,5 @@
 #pragma once
 
-/*
-*/
-
-#ifdef _DEBUG
-	#define ASSERT assert
-#else
-	#define ASSERT(x)
-#endif
-
 // no idea why this can'ValT become a normal constexpr
 #ifndef GetMaxNodeLevel
 #define GetMaxNodeLevel() ( (MaxKeyVal/NodeSize) == 0 ? 0 : \

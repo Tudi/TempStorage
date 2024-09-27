@@ -25,11 +25,11 @@ namespace Testing128bitKeys {
 
 #ifndef _DEBUG
 	#define maxKeyValue		0x7FFFFFFFFFFFFFFF
-	#define maxValueCount	200000
+	#define maxValueCount	2000000
 	const size_t REPEAT_TESTS_COUNT = 20; // if a test takes less than a second, that is unmeasurable
 #else
 	const size_t maxKeyValue = 0x7FFFFFFFFFFFFFFF;
-	#define maxValueCount	200000
+	#define maxValueCount	20000
 	const size_t REPEAT_TESTS_COUNT = 1; // if a test takes less than a second, that is unmeasurable
 #endif
 
@@ -40,7 +40,7 @@ namespace Testing128bitKeys {
 	std::map<ipv6key, TestStorageWithStruct>* g_StdMap_128;
 	std::unordered_map<ipv6key, TestStorageWithStruct, CustomHash1, ipv6EQTo>* g_StdUnorderedMap_128;
 	std::unordered_map<ipv6key, TestStorageWithStruct, CustomHash2, ipv6EQTo>* g_StdUnorderedMapNoHash_128;
-	ArrayStorage<TestStorageWithStruct, 0xFFFF, offsetof(TestStorageWithStruct, myipv6rowkey), sizeof(TestStorageWithStruct::myipv6rowkey)>* g_ArrayStorage_128;
+	ArrayStorage<ipv6key, TestStorageWithStruct, 0xFFFF>* g_ArrayStorage_128;
 
 	TestStorageWithStruct* g_useThisForStorageTest_128;
 
@@ -145,8 +145,7 @@ namespace Testing128bitKeys {
 		{
 			for (size_t i = 0; i < maxValueCount; i++)
 			{
-				const ipv6key getValForKey = g_IndexGetOrder_128[i];
-				auto itr = g_StdUnorderedMapNoHash_128->find(getValForKey);
+				auto itr = g_StdUnorderedMapNoHash_128->find(g_IndexGetOrder_128[i]);
 				if (itr != g_StdUnorderedMapNoHash_128->end())
 				{
 					result.AppendState(itr->second);
@@ -175,8 +174,9 @@ namespace Testing128bitKeys {
 			for (size_t i = 0; i < maxValueCount; i++)
 			{
 				g_useThisForStorageTest_128->mystate = i;
-				g_ArrayStorage_128->Set(i, *g_useThisForStorageTest_128);
+				g_ArrayStorage_128->Set(g_IndexSetOrder_128[i], *g_useThisForStorageTest_128);
 			}
+			ASSERT(g_ArrayStorage_128->size() == maxValueCount);
 		}
 
 		//search test
@@ -184,11 +184,24 @@ namespace Testing128bitKeys {
 		{
 			for (size_t i = 0; i < maxValueCount; i++)
 			{
-				const ipv6key getValForKey = g_IndexGetOrder_128[i];
-				const TestStorageWithStruct* val = g_ArrayStorage_128->Get(&getValForKey);
+				const TestStorageWithStruct* val = g_ArrayStorage_128->Get(g_IndexGetOrder_128[i]);
+				auto itr = g_StdUnorderedMapNoHash_128->find(g_IndexGetOrder_128[i]);
 				if (val != NULL)
 				{
+					if (itr == g_StdUnorderedMapNoHash_128->end())
+					{
+						i = i;
+						val = g_ArrayStorage_128->Get(g_IndexGetOrder_128[i]);
+					}
 					result.AppendState(*val);
+				}
+				else
+				{
+					if (itr != g_StdUnorderedMapNoHash_128->end())
+					{
+						i = i;
+						val = g_ArrayStorage_128->Get(g_IndexGetOrder_128[i]);
+					}
 				}
 			}
 		}
@@ -291,6 +304,8 @@ void SetSomeBitsOnKey(ipv6key* key, size_t seed)
 
 int Run128BPKTests()
 {
+	printf("Runnning 128 BKP tests \n\n");
+
 	g_useThisForStorageTest_128 = new TestStorageWithStruct();
 
 	g_IndexSetOrder_128 = (ipv6key*)malloc(maxValueCount * sizeof(ipv6key));
@@ -329,7 +344,7 @@ int Run128BPKTests()
 	printf("KBytes allocated while running RunUnorderedMapNoHashTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	memSnapshotBefore = GetHeapMemoryUsage();
-	g_ArrayStorage_128 = new ArrayStorage<TestStorageWithStruct, 0xFFFF, offsetof(TestStorageWithStruct, myipv6rowkey), sizeof(TestStorageWithStruct::myipv6rowkey)>();
+	g_ArrayStorage_128 = new ArrayStorage<ipv6key, TestStorageWithStruct, 0xFFFF>();
 	RunArrayStorageTest<true, true, true>();
 	memsnashotafter = GetHeapMemoryUsage();
 	printf("KBytes allocated while running RunArrayStorageTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);

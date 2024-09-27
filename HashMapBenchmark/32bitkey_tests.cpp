@@ -31,7 +31,7 @@ namespace Testing32bitKeys {
 	std::map<size_t, TestStorageWithStruct>* g_StdMap_32;
 	std::unordered_map<size_t, TestStorageWithStruct>* g_StdUnorderedMap_32;
 	std::unordered_map<size_t, TestStorageWithStruct, CustomHash>* g_StdUnorderedMapNoHash_32;
-	ArrayStorage<TestStorageWithStruct, 0xFFFF, offsetof(TestStorageWithStruct, myipv4rowkey), sizeof(TestStorageWithStruct::myipv4rowkey)>* g_ArrayStorage_32;
+	ArrayStorage<size_t, TestStorageWithStruct, 0xFFFF>* g_ArrayStorage_32;
 
 	TestStorageWithStruct* g_useThisForStorageTest_32;
 
@@ -206,7 +206,7 @@ namespace Testing32bitKeys {
 			for (size_t i = 0; i < maxValueCount; i++)
 			{
 				g_useThisForStorageTest_32->mystate = i;
-				g_ArrayStorage_32->Set(i, *g_useThisForStorageTest_32);
+				g_ArrayStorage_32->Set(g_IndexSetOrder_32[i], *g_useThisForStorageTest_32);
 			}
 		}
 
@@ -215,8 +215,7 @@ namespace Testing32bitKeys {
 		{
 			for (size_t i = 0; i < maxValueCount; i++)
 			{
-				const size_t getValForKey = g_IndexGetOrder_32[i];
-				const TestStorageWithStruct* val = g_ArrayStorage_32->Get(&getValForKey);
+				const TestStorageWithStruct* val = g_ArrayStorage_32->Get(g_IndexGetOrder_32[i]);
 				if (val != NULL)
 				{
 					result.AppendState(*val);
@@ -317,6 +316,9 @@ using namespace Testing32bitKeys;
 
 int Run32BPKTests()
 {
+	printf("Runnning 32 BKP tests \n\n");
+
+
 	g_useThisForStorageTest_32 = new TestStorageWithStruct();
 
 	g_IndexSetOrder_32 = (size_t*)malloc(maxValueCount * sizeof(size_t));
@@ -363,7 +365,7 @@ int Run32BPKTests()
 	printf("KBytes allocated while running RunTreeLookupTable32Test : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	memSnapshotBefore = GetHeapMemoryUsage();
-	g_ArrayStorage_32 = new ArrayStorage<TestStorageWithStruct, 0xFFFF, offsetof(TestStorageWithStruct, myipv4rowkey), sizeof(TestStorageWithStruct::myipv4rowkey)>();
+	g_ArrayStorage_32 = new ArrayStorage<size_t, TestStorageWithStruct, 0xFFFF>();
 	RunArrayStorageTest<true, true, true>();
 	memsnashotafter = GetHeapMemoryUsage();
 	printf("KBytes allocated while running RunArrayStorageTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);

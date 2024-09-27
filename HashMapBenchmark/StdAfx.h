@@ -6,6 +6,13 @@
 #include <conio.h>
 #include <assert.h>
 #include <string>
+
+#ifdef _DEBUG
+	#define ASSERT assert
+#else
+	#define ASSERT(x)
+#endif
+
 #include "FlatLookupMap.hpp"
 #include "ArrayStorage.hpp"
 #include "ConfigurableTranslationMap.hpp"

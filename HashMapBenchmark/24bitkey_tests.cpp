@@ -30,7 +30,7 @@ Indirect1LayerLookupMap<TestStorageWithStruct>* g_Indirect1LayerLookupMap;
 SQLResultCache<128, maxKeyValue, 0xFFFF, TestStorageWithStruct>* g_Tree32;
 std::map<size_t, TestStorageWithStruct>* g_StdMap;
 std::unordered_map<size_t, TestStorageWithStruct, CustomHash>* g_StdUnorderedMap;
-ArrayStorage<TestStorageWithStruct, 0xFFFF, offsetof(TestStorageWithStruct, myipv4rowkey), sizeof(TestStorageWithStruct::myipv4rowkey)>* g_ArrayStorage;
+ArrayStorage<size_t, TestStorageWithStruct, 0xFFFF>* g_ArrayStorage;
 
 TestStorageWithStruct* g_useThisForStorageTest;
 
@@ -252,8 +252,7 @@ __declspec(noinline) TestStorageWithStruct RunArrayStorageTest(size_t MaxCount)
 	{
 		for (size_t i = 0; i < MaxCount; i++)
 		{
-			const size_t getValForKey = g_IndexGetOrder[i];
-			const TestStorageWithStruct* val = g_ArrayStorage->Get(&getValForKey);
+			const TestStorageWithStruct* val = g_ArrayStorage->Get(g_IndexGetOrder[i]);
 			if (val != NULL)
 			{
 				result.AppendState(*val);
@@ -356,6 +355,7 @@ void RunInitSetGetTests()
 
 int Run24BPKTests()
 {
+	printf("Runnning 24 BKP tests \n\n");
 	g_useThisForStorageTest = new TestStorageWithStruct();
 
 	g_IndexSetOrder = (size_t*)malloc(maxKeyValue * sizeof(size_t));
@@ -410,7 +410,7 @@ int Run24BPKTests()
 	printf("KBytes allocated while running RunTreeLookupTable32Test : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	memSnapshotBefore = GetHeapMemoryUsage();
-	g_ArrayStorage = new ArrayStorage<TestStorageWithStruct, 0xFFFF, offsetof(TestStorageWithStruct, myipv4rowkey), sizeof(TestStorageWithStruct::myipv4rowkey)>();
+	g_ArrayStorage = new ArrayStorage<size_t, TestStorageWithStruct, 0xFFFF>();
 	RunArrayStorageTest<true, true, true>(maxKeyValue);
 	memsnashotafter = GetHeapMemoryUsage();
 	printf("KBytes allocated while running RunArrayStorageTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);

@@ -21,12 +21,6 @@ Obviously NodeSize should be as large as possible without allocating too much me
 ValCountReserve is a wild guess how many elements you might need
 */
 
-#ifdef _DEBUG
-#define ASSERT assert
-#else
-#define ASSERT(x)
-#endif
-
 // no idea why this can't become a normal constexpr
 #ifndef GetMaxNodeLevel
 #define GetMaxNodeLevel() ( (MaxKeyVal/NodeSize) == 0 ? 0 : \
