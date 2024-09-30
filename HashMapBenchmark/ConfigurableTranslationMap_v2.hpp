@@ -1,24 +1,7 @@
 #pragma once
 
 /*
-this was made to check how much worse it is compared to unordered_map
-
-I needed a tree to look up IPV4-String values.
-I needed the container to have the option to not use hashing
-I needed the container to be able to change the allocator
-
-!!!
-This tree is NOT threadsafe
-This tree does not have "unset" or "remove"
-This tree wastes a LOT of memory. Ex : for 65k node size and 300k values, worst case might use 300k*65k*8=156000MB for keys
-									  for 256 node size and 300k values, worst case might use 300k*256*8=614MB for keys
-									  for 64 node size and 300k values, worst case might use 300k*64*8=153MB for keys
-									  for 16 node size and 300k values, worst case might use 300k*16*8=38MB for keys
-!!!
-
-Obviously you want to guess your MaxKeyVal to be as small as possible
-Obviously NodeSize should be as large as possible without allocating too much memory ( depends on your maxKeyVal )
-ValCountReserve is a wild guess how many elements you might need
+weak implementation of a ktree
 */
 
 // no idea why this can't become a normal constexpr
@@ -42,10 +25,10 @@ ValCountReserve is a wild guess how many elements you might need
 #endif
 
 template <size_t NodeSize, size_t MaxKeyVal, size_t ValCountReserve, typename T>
-class SQLResultCache
+class KTree_v2
 {
 public:
-	SQLResultCache()
+	KTree_v2()
 	{
 		// sanity checks
 		ASSERT(NodeSize > 0 && NodeSize < 0xFFFF);
@@ -89,7 +72,7 @@ public:
 		ExtendValuesTable();
 		ValuesInserted = 1; // 0 is reserved for not inserted value
 	}
-	~SQLResultCache()
+	~KTree_v2()
 	{
 		clear(false);
 	}

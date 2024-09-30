@@ -17,6 +17,11 @@ namespace Testing128bitKeys {
 			return key.bytes8[0] ^ (key.bytes8[1] << 1);
 		}
 	};
+	struct CustomHash3 {
+		std::size_t operator()(const ipv6key& key) const {
+			return key.bytes8[0];
+		}
+	};
 	struct ipv6EQTo {
 		bool operator()(const ipv6key& lhs, const ipv6key& rhs) const {
 			return ((lhs.bytes8[0] == rhs.bytes8[0]) && (lhs.bytes8[1] == rhs.bytes8[1]));
@@ -40,7 +45,9 @@ namespace Testing128bitKeys {
 	std::map<ipv6key, TestStorageWithStruct>* g_StdMap_128;
 	std::unordered_map<ipv6key, TestStorageWithStruct, CustomHash1, ipv6EQTo>* g_StdUnorderedMap_128;
 	std::unordered_map<ipv6key, TestStorageWithStruct, CustomHash2, ipv6EQTo>* g_StdUnorderedMapNoHash_128;
+	std::unordered_multimap<ipv6key, TestStorageWithStruct, CustomHash3, ipv6EQTo>* g_StdUnorderedMultiMapNoHash_128;
 	ArrayStorage<ipv6key, TestStorageWithStruct, 0xFFFF>* g_ArrayStorage_128;
+	ArrayStorage_v2<ipv6key, TestStorageWithStruct, 0xFFFF>* g_ArrayStorage_v2_128;
 
 	TestStorageWithStruct* g_useThisForStorageTest_128;
 
@@ -159,6 +166,44 @@ namespace Testing128bitKeys {
 	}
 
 	template<bool bTestInit, bool bTestSet, bool bTestGet>
+	__declspec(noinline) TestStorageWithStruct RunUnorderedMultiMapNoHashTest()
+	{
+		TestStorageWithStruct result = {};	//needs to exist to avoid optimisations from compiler
+
+		if (bTestInit)
+		{
+			g_StdUnorderedMultiMapNoHash_128->clear();
+		}
+
+		//fill test
+		if (bTestSet)
+		{
+			for (size_t i = 0; i < maxValueCount; i++)
+			{
+				g_useThisForStorageTest_128->mystate = i;
+				g_StdUnorderedMultiMapNoHash_128->insert(std::make_pair(g_IndexSetOrder_128[i], *g_useThisForStorageTest_128));
+			}
+		}
+
+		//search test
+		if (bTestGet)
+		{
+			for (size_t i = 0; i < maxValueCount; i++)
+			{
+				auto itr = g_StdUnorderedMultiMapNoHash_128->find(g_IndexGetOrder_128[i]);
+				if (itr != g_StdUnorderedMultiMapNoHash_128->end())
+				{
+					result.AppendState(itr->second);
+				}
+			}
+		}
+
+		//anti optimisation dummy return
+		return result;
+
+	}
+
+	template<bool bTestInit, bool bTestSet, bool bTestGet>
 	__declspec(noinline) TestStorageWithStruct RunArrayStorageTest()
 	{
 		TestStorageWithStruct result = {};	//needs to exist to avoid optimisations from compiler
@@ -185,6 +230,10 @@ namespace Testing128bitKeys {
 			for (size_t i = 0; i < maxValueCount; i++)
 			{
 				const TestStorageWithStruct* val = g_ArrayStorage_128->Get(g_IndexGetOrder_128[i]);
+#ifndef _DEBUG
+				if (val != NULL)
+					result.AppendState(*val);
+#else
 				auto itr = g_StdUnorderedMapNoHash_128->find(g_IndexGetOrder_128[i]);
 				if (val != NULL)
 				{
@@ -203,6 +252,65 @@ namespace Testing128bitKeys {
 						val = g_ArrayStorage_128->Get(g_IndexGetOrder_128[i]);
 					}
 				}
+#endif
+			}
+		}
+
+		//anti optimisation dummy return
+		return result;
+	}
+
+	template<bool bTestInit, bool bTestSet, bool bTestGet>
+	__declspec(noinline) TestStorageWithStruct RunArrayStorage_v2_Test()
+	{
+		TestStorageWithStruct result = {};	//needs to exist to avoid optimisations from compiler
+
+		if (bTestInit)
+		{
+			g_ArrayStorage_v2_128->init();
+		}
+
+		//fill test
+		if (bTestSet)
+		{
+			for (size_t i = 0; i < maxValueCount; i++)
+			{
+				g_useThisForStorageTest_128->mystate = i;
+				g_ArrayStorage_v2_128->Set(g_IndexSetOrder_128[i], *g_useThisForStorageTest_128);
+			}
+			g_ArrayStorage_v2_128->BuildLookupKTree();
+			ASSERT(g_ArrayStorage_v2_128->size() == maxValueCount);
+		}
+
+		//search test
+		if (bTestGet)
+		{
+			for (size_t i = 0; i < maxValueCount; i++)
+			{
+				const TestStorageWithStruct* val = g_ArrayStorage_v2_128->Get(g_IndexGetOrder_128[i]);
+#ifndef _DEBUG
+				if (val != NULL)
+					result.AppendState(*val);
+#else
+				auto itr = g_StdUnorderedMapNoHash_128->find(g_IndexGetOrder_128[i]);
+				if (val != NULL)
+				{
+					if (itr == g_StdUnorderedMapNoHash_128->end())
+					{
+						i = i;
+						val = g_ArrayStorage_v2_128->Get(g_IndexGetOrder_128[i]);
+					}
+					result.AppendState(*val);
+				}
+				else
+				{
+					if (itr != g_StdUnorderedMapNoHash_128->end())
+					{
+						i = i;
+						val = g_ArrayStorage_v2_128->Get(g_IndexGetOrder_128[i]);
+					}
+				}
+#endif
 			}
 		}
 
@@ -232,13 +340,23 @@ namespace Testing128bitKeys {
 		}
 		else if (g_RunningTestIndex_128 == 2)
 		{
-			TestFuncName = "std::unordered_map";
-			junk = RunUnorderedMapTest<bTestInit, bTestSet, bTestGet>();
+			TestFuncName = "BinSearchArray_v2";
+			junk = RunArrayStorage_v2_Test<bTestInit, bTestSet, bTestGet>();
 		}
 		else if (g_RunningTestIndex_128 == 3)
 		{
+			TestFuncName = "std::unordered_map";
+			junk = RunUnorderedMapTest<bTestInit, bTestSet, bTestGet>();
+		}
+		else if (g_RunningTestIndex_128 == 4)
+		{
 			TestFuncName = "std::unordered_map_noHash";
 			junk = RunUnorderedMapNoHashTest<bTestInit, bTestSet, bTestGet>();
+		}
+		else if (g_RunningTestIndex_128 == 5)
+		{
+			TestFuncName = "std::unordered_multimap_noHash";
+			junk = RunUnorderedMultiMapNoHashTest<bTestInit, bTestSet, bTestGet>();
 		}
 
 		QueryPerformanceCounter(&EndingTime);
@@ -274,7 +392,7 @@ namespace Testing128bitKeys {
 		LONGLONG sumResultTimes[15] = {};
 		for (size_t i = 0; i < REPEAT_TESTS_COUNT; i++)
 		{
-			for (g_RunningTestIndex_128 = 0; g_RunningTestIndex_128 < 4; g_RunningTestIndex_128++)
+			for (g_RunningTestIndex_128 = 0; g_RunningTestIndex_128 < 6; g_RunningTestIndex_128++)
 			{
 				sumResultTimes[g_RunningTestIndex_128] += BenchmarkGenericTest<bTestInit, bTestSet, bTestGet>(i == (REPEAT_TESTS_COUNT - 1));
 			}
@@ -344,10 +462,22 @@ int Run128BPKTests()
 	printf("KBytes allocated while running RunUnorderedMapNoHashTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	memSnapshotBefore = GetHeapMemoryUsage();
+	g_StdUnorderedMultiMapNoHash_128 = new std::unordered_multimap<ipv6key, TestStorageWithStruct, CustomHash3, ipv6EQTo>();
+	RunUnorderedMultiMapNoHashTest<true, true, true>();
+	memsnashotafter = GetHeapMemoryUsage();
+	printf("KBytes allocated while running RunUnorderedMultiMapNoHashTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
+
+	memSnapshotBefore = GetHeapMemoryUsage();
 	g_ArrayStorage_128 = new ArrayStorage<ipv6key, TestStorageWithStruct, 0xFFFF>();
 	RunArrayStorageTest<true, true, true>();
 	memsnashotafter = GetHeapMemoryUsage();
 	printf("KBytes allocated while running RunArrayStorageTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
+
+	memSnapshotBefore = GetHeapMemoryUsage();
+	g_ArrayStorage_v2_128 = new ArrayStorage_v2<ipv6key, TestStorageWithStruct, 0xFFFF>();
+	RunArrayStorage_v2_Test<true, true, true>();
+	memsnashotafter = GetHeapMemoryUsage();
+	printf("KBytes allocated while running RunArrayStorage_v2_Test : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	// run the speed tests
 	RunInitSetGetTests<true, true, false>();
@@ -358,6 +488,7 @@ int Run128BPKTests()
 	delete g_useThisForStorageTest_128;
 	delete g_StdMap_128;
 	delete g_ArrayStorage_128;
+	delete g_ArrayStorage_v2_128;
 	delete g_StdUnorderedMap_128;
 
 	return 0;

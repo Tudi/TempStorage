@@ -1,5 +1,7 @@
 #pragma once
 
+// weak implementation of a ktree
+// 
 // no idea why this can'ValT become a normal constexpr
 #ifndef GetMaxNodeLevel
 #define GetMaxNodeLevel() ( (MaxKeyVal/NodeSize) == 0 ? 0 : \
@@ -21,7 +23,7 @@
 #endif
 
 template <typename KeyT, typename ValT>
-class SQLResultCache_v3
+class KTree_v3
 {
 private:
 	struct ElementStore
@@ -39,7 +41,7 @@ private:
 		uint8_t* values; // valueIndex = values[ partialkey * valueSize ] & valueMask;
 	};
 public:
-	SQLResultCache_v3()
+	KTree_v3()
 	{
 	}
 	void clear(bool bReinit = true)
@@ -48,7 +50,7 @@ public:
 	void init()
 	{
 	}
-	~SQLResultCache_v3()
+	~KTree_v3()
 	{
 	}
 

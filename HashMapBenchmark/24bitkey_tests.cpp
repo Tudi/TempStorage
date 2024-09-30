@@ -27,7 +27,7 @@ const size_t REPEAT_TESTS_COUNT = 1; // if a test takes less than a second, that
 
 DirectLookupMap<TestStorageWithStruct>* g_DirectLookupMap;
 Indirect1LayerLookupMap<TestStorageWithStruct>* g_Indirect1LayerLookupMap;
-SQLResultCache<128, maxKeyValue, 0xFFFF, TestStorageWithStruct>* g_Tree32;
+KTree_v2<128, maxKeyValue, 0xFFFF, TestStorageWithStruct>* g_Tree32;
 std::map<size_t, TestStorageWithStruct>* g_StdMap;
 std::unordered_map<size_t, TestStorageWithStruct, CustomHash>* g_StdUnorderedMap;
 ArrayStorage<size_t, TestStorageWithStruct, 0xFFFF>* g_ArrayStorage;
@@ -403,7 +403,7 @@ int Run24BPKTests()
 	printf("KBytes allocated while running RunLookupTableTest1Indirection : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	memSnapshotBefore = GetHeapMemoryUsage();
-	g_Tree32 = new SQLResultCache<128, maxKeyValue, 0xFFFF, TestStorageWithStruct>();
+	g_Tree32 = new KTree_v2<128, maxKeyValue, 0xFFFF, TestStorageWithStruct>();
 	RunTreeLookupTable32Test<true, true, true>(maxKeyValue);
 	//	RunTreeLookupTable32Test<false, false, true>(maxKeyValue);
 	memsnashotafter = GetHeapMemoryUsage();

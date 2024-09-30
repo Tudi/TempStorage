@@ -27,7 +27,7 @@ namespace Testing32bitKeys {
 	size_t* g_IndexSetOrder_32 = NULL;
 	size_t* g_IndexGetOrder_32 = NULL;
 
-	SQLResultCache<32, maxKeyValue, 0xFFFF, TestStorageWithStruct>* g_Tree32_32;
+	KTree_v2<32, maxKeyValue, 0xFFFF, TestStorageWithStruct>* g_Tree32_32;
 	std::map<size_t, TestStorageWithStruct>* g_StdMap_32;
 	std::unordered_map<size_t, TestStorageWithStruct>* g_StdUnorderedMap_32;
 	std::unordered_map<size_t, TestStorageWithStruct, CustomHash>* g_StdUnorderedMapNoHash_32;
@@ -358,7 +358,7 @@ int Run32BPKTests()
 	printf("KBytes allocated while running RunUnorderedMapNoHashTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	memSnapshotBefore = GetHeapMemoryUsage();
-	g_Tree32_32 = new SQLResultCache<32, maxKeyValue, 0xFFFF, TestStorageWithStruct>();
+	g_Tree32_32 = new KTree_v2<32, maxKeyValue, 0xFFFF, TestStorageWithStruct>();
 	RunTreeLookupTable32Test<true, true, true>();
 	//	RunTreeLookupTable32Test<false, false, true>(maxKeyValue);
 	memsnashotafter = GetHeapMemoryUsage();
