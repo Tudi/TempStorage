@@ -1,0 +1,19 @@
+- create a project here https://console.firebase.google.com
+- Install Node.js
+- npm install -g firebase-tools
+- create a dir where you will have your 'site'
+- firebase login
+- firebase init hosting
+- firebase deploy
+
+
+
+python deploy :
+	result = subprocess.run(['firebase', 'deploy'], capture_output=True, text=True)
+	if result.returncode == 0:
+		print("Deployment successful!")
+	else:
+		print("Deployment failed. Details:")
+		print(result.stdout)
+		print(result.stderr)
+	

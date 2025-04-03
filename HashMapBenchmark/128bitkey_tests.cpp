@@ -278,7 +278,7 @@ namespace Testing128bitKeys {
 				g_useThisForStorageTest_128->mystate = i;
 				g_ArrayStorage_v2_128->Set(g_IndexSetOrder_128[i], *g_useThisForStorageTest_128);
 			}
-			g_ArrayStorage_v2_128->BuildLookupKTree();
+//			g_ArrayStorage_v2_128->BuildLookupKTree();
 			ASSERT(g_ArrayStorage_v2_128->size() == maxValueCount);
 		}
 
