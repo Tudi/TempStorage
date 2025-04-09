@@ -45,7 +45,7 @@ def load_users(filename=FILENAME):
     """Load users from a JSON file. Returns a dictionary with user IDs as keys."""
     if not os.path.exists(filename):
         return {}
-    with open(filename, 'r') as file:
+    with open(file_name, 'r', encoding='utf-8') as file:
         try:
             data = json.load(file)
         except json.JSONDecodeError:
@@ -84,6 +84,7 @@ def get_user(users, user_id, copy_from_user):
             "quests_weekly_good": 0,
             "quests_weekly_fails": 0,
             "fame":0,
+            "guild_might_first": 0,
         }
     
     # check missing or incomplete fields
@@ -103,9 +104,11 @@ def get_user(users, user_id, copy_from_user):
         ret["TimeZone"] = copy_from_user.get("TimeZone", "")
     if ret.get("ChoosenLanguage","") == "" and copy_from_user.get("ChoosenLanguage", "") != "": 
         ret["ChoosenLanguage"] = copy_from_user.get("ChoosenLanguage", "")
-    if copy_from_user.get("guild_might", 0) != "": 
+    if (copy_from_user.get("guild_might", 0) or 0) != 0: 
         ret["guild_might"] = copy_from_user.get("guild_might", 0)
-    if copy_from_user.get("fame", 0) != "": 
+    if (copy_from_user.get("guild_might", 0) or 0) != 0 and (ret.get("guild_might_first",0) or 0) == 0: 
+        ret["guild_might_first"] = copy_from_user.get("guild_might", 0)
+    if (copy_from_user.get("fame", 0) or 0) != 0: 
         ret["fame"] = copy_from_user.get("fame", 0)
     
     return ret
@@ -127,7 +130,7 @@ def update_user(users, new_user):
         users[user_id] = new_user
     return users
 
-def merge_in_db_quest_status(users = {}):
+def merge_in_db_quest_status(users = {}, is_temp_data = False):
     if users == {}:
         users = load_users()
     input_file_name = "quest_stats.json"
@@ -165,13 +168,22 @@ def merge_in_db_quest_status(users = {}):
         db_user = get_user(users, quest_user.get("profile_id", ""), quest_user)
         
         # update with new values
-        db_user["quests_completed"] += quest_user.get("quests_completed", 0)
-        db_user["quests_dropped"] += quest_user.get("quests_dropped", 0)
-        db_user["score"] += quest_user.get("score", 0)
-        if quest_user.get("quests_completed", 0) < 10 or quest_user.get("score", 0) < 1000:
-            db_user["quests_weekly_fails"] += 1
+        if is_temp_data :
+            db_user["quests_completed_temp"] = quest_user.get("quests_completed", 0)
+            db_user["quests_dropped_temp"] = quest_user.get("quests_dropped", 0)
+            db_user["score_temp"] = quest_user.get("score", 0)
+            if quest_user.get("quests_completed_temp", 0) < 10 or quest_user.get("score_temp", 0) < 1000:
+                db_user["quests_weekly_fails_temp"] = 1
+            else:
+                db_user["quests_weekly_good_temp"] = 1
         else:
-            db_user["quests_weekly_good"] += 1
+            db_user["quests_completed"] += quest_user.get("quests_completed", 0)
+            db_user["quests_dropped"] += quest_user.get("quests_dropped", 0)
+            db_user["score"] += quest_user.get("score", 0)
+            if quest_user.get("quests_completed", 0) < 10 or quest_user.get("score", 0) < 1000:
+                db_user["quests_weekly_fails"] += 1
+            else:
+                db_user["quests_weekly_good"] += 1
           
         # save to inmem db
         users = update_user(users, db_user)
@@ -188,7 +200,7 @@ def merge_in_db_quest_status(users = {}):
     # return the updated users
     return users
 
-def merge_in_db_guild_members(users = {}):
+def merge_in_db_guild_members(users = {}, is_temp_data = False):
     if users == {}:
         users = load_users()
     input_file_name = "guild_members.json"
@@ -239,13 +251,23 @@ def merge_in_db_guild_members(users = {}):
         db_user = get_user(users, guild_member.get("profile_id", ""), guild_member)
         
         # update with new values
-        db_user["fame"] += guild_member.get("fame", 0)
-        db_user["spent_elixir"] += guild_member.get("spent_elixir", 0)
-        db_user["summary_power"] += guild_member.get("summary_power", 0)
-        if guild_member.get("summary_power", 0) == 0:
-            db_user["war_skipped"] += 1
+        if (guild_member.get("fame", 0) or 0) != 0:
+            db_user["fame"] = guild_member.get("fame", 0)
+            
+        if is_temp_data :
+            db_user["spent_elixir_temp"] = guild_member.get("spent_elixir", 0)
+            if guild_member.get("summary_power", 0) == 0:
+                db_user["war_skipped_temp"] = 1
+                db_user["war_played_temp"] = 0
+            else:
+                db_user["war_skipped_temp"] = 0
+                db_user["war_played_temp"] = 1
         else:
-            db_user["war_played"] += 1
+            db_user["spent_elixir"] += guild_member.get("spent_elixir", 0)
+            if guild_member.get("summary_power", 0) == 0:
+                db_user["war_skipped"] += 1
+            else:
+                db_user["war_played"] += 1
           
         # save to inmem db
         users = update_user(users, db_user)

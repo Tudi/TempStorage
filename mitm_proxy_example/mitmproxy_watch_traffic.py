@@ -114,6 +114,9 @@ def log_request_response(flow):
     Append the URL, request info and response body to a log file.
     Each unique URL is logged only 10 times.
     """
+    if flow.response.status_code != 200:
+        return  # Skip non-200 responses
+
     global logged_urls
     url = flow.request.pretty_url
 
