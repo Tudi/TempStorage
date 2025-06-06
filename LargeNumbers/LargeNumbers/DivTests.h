@@ -69,3 +69,4 @@ void DivTestFermatGen1();
 void DivTestGen_y_v1();
 void DivTestGen_y_v2();
 void DivTestGen_xyce();
+void DivTestGen_y_readjust();

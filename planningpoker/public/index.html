@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Planning Poker</title>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+	<div id="LoginOrCreateForm">
+	  <h1 style="text-align:center;">Planning Poker</h1>
+	  <table style="width:100%;">
+			<tr>
+				<td>Your name : <input id="voterName" placeholder="Your Name"></td>
+			</tr>
+			<tr>
+				<td>
+					Card types
+					<select id="cardType">
+						<option value="numeric">Fibonaci</option>
+						<option value="tshirt">T-Shirt Sizes</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				  <button id="createRoomBtn" onclick="handleCreateRoom()">Create Room</button>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				  <input id="roomIdInput" placeholder="Join Room ID">
+				  <button id="joinRoomBtn" onclick="handleJoinRoom()">Join Room</button>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+  <div id="room"></div>
+
+	<div id="toast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background-color:#333; color:white; padding:10px 20px; border-radius:5px; z-index:1000; opacity:0.9;">
+	  Link copied to clipboard!
+	</div>  
+</body>
+</html>

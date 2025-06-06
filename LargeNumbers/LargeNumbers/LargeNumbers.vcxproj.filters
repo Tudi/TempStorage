@@ -204,6 +204,9 @@
     <ClCompile Include="DivTest_gen_xyec.cpp">
       <Filter>DivTests</Filter>
     </ClCompile>
+    <ClCompile Include="DivTest_yreadjust.cpp">
+      <Filter>DivTests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">

@@ -199,6 +199,7 @@
     <ClCompile Include="DivTest_SqSq2.cpp" />
     <ClCompile Include="DivTest_SqSq3.cpp" />
     <ClCompile Include="DivTest_xytn.cpp" />
+    <ClCompile Include="DivTest_yreadjust.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />
     <ClCompile Include="testcases.cpp" />
