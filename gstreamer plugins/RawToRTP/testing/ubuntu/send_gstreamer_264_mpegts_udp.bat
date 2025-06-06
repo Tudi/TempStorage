@@ -1,0 +1,1 @@
+gst-launch-1.0 -v videotestsrc is-live=true pattern=smpte ! video/x-raw,width=160,height=120,framerate=30/1 ! x264enc tune=zerolatency speed-preset=ultrafast byte-stream=false key-int-max=30 intra-refresh=true ! video/x-h264,profile=baseline,stream-format=avc,alignment=au ! h264parse config-interval=-1 ! mpegtsmux ! udpsink host=127.0.0.1 port=5000

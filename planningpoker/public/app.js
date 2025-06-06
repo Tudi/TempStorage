@@ -25,12 +25,12 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // Firebase config
 const firebaseConfig = {
-    apiKey: "",
+    apiKey: "AIzaSyCWZnCICuraksaBEbqdOrxCBkp4eG_jvRM",
     authDomain: "planningpoker-18fcb.firebaseapp.com",
     projectId: "planningpoker-18fcb",
     storageBucket: "planningpoker-18fcb.firebasestorage.app",
-    messagingSenderId: "",
-    appId: "1::web:"
+    messagingSenderId: "274728253329",
+    appId: "1:274728253329:web:7ff8a0a9b36a19d0e78c30"
 };
 
 const app = initializeApp(firebaseConfig);

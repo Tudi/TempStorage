@@ -1,0 +1,1 @@
+gst-launch-1.0 -v rtspsrc location=rtsp://127.0.0.1:8554/av1withrawcombined latency=0 ! application/x-rtp,media=video,encoding-name=AV1,payload=96 ! rtpav1depay ! av1parse ! dav1ddec ! videoconvert ! autovideosink

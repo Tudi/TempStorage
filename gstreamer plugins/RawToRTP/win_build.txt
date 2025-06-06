@@ -1,0 +1,23 @@
+Requirements :
+	- VS 2022
+	- gstreamer development. ex : gstreamer-1.0-msvc-x86_64-1.24.0.msi
+	- gstreamer runtime. ex : gstreamer-1.0-msvc-x86_64-runtime-1.24.0.msi
+	- create environment variable GSTREAMER_ROOT_X86_64=C:\gstreamer\1.0\msvc_x86_64
+	
+Note to self project setting changes :
+	- include dirs :
+		$(GSTREAMER_ROOT_X86_64)\include\gstreamer-1.0
+		$(GSTREAMER_ROOT_X86_64)\include\glib-2.0
+		$(GSTREAMER_ROOT_X86_64)\lib\glib-2.0\include
+	- inlcude lib dirs :
+		$(GSTREAMER_ROOT_X86_64)\lib
+	- include libs :
+		gstreamer-1.0.lib
+		gobject-2.0.lib
+		glib-2.0.lib
+		gstrtp-1.0.lib
+
+Note to self how to check if plugin would register :
+	!!!! dll name must be lowercase !!!
+	set GST_PLUGIN_PATH=d:\GitHub\project_vast_gst\gst-av1ts\RawToRTP\x64\Release
+	run : gst-inspect-1.0 --gst-debug-level=4 rawtortp

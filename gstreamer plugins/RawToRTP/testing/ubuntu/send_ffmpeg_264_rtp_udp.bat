@@ -1,0 +1,1 @@
+ffmpeg -re -f lavfi -i testsrc=size=160x120:rate=30 -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -profile:v baseline -x264opts repeat-headers=1 -g 30 -keyint_min 30 -sc_threshold 0 -f rtp rtp://127.0.0.1:5000
