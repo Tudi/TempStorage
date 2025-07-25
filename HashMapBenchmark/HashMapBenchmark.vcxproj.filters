@@ -30,6 +30,9 @@
     <ClCompile Include="128bitkey_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FlowKey_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FlatLookupMap.hpp">
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ConfigurableTranslationMap_v3.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uthash.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

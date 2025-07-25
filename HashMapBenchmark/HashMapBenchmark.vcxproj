@@ -122,6 +122,7 @@
     <ClCompile Include="128bitkey_tests.cpp" />
     <ClCompile Include="24bitkey_tests.cpp" />
     <ClCompile Include="32bitkey_tests.cpp" />
+    <ClCompile Include="FlowKey_tests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -132,6 +133,7 @@
     <ClInclude Include="ConfigurableTranslationMap_v3.hpp" />
     <ClInclude Include="FlatLookupMap.hpp" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="uthash.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

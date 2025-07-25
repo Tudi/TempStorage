@@ -47,6 +47,21 @@ typedef struct ipv6key
 	}
 }ipv6key;
 
+#pragma pack(push, 1)
+typedef struct FlowKey
+{
+	uint64_t	ip1[2]; // v4 or v6
+	uint64_t	ip2[2]; // v4 or v6
+	uint16_t	port1, port2;
+	uint8_t		l4_proto, vlan;
+	uint8_t		padding[2];
+	inline bool operator<(const FlowKey& other) const {
+		return std::memcmp(this, &other, sizeof(FlowKey)) < 0;
+	}
+}FlowKey;
+#pragma pack(pop)
+static_assert((sizeof(FlowKey) % 8) == 0, "must be multiple of 8");
+
 struct TestStorageWithStruct
 {
 	void AppendState(const TestStorageWithStruct& addme)
@@ -63,3 +78,4 @@ SIZE_T GetHeapMemoryUsage();
 int Run24BPKTests();
 int Run32BPKTests();
 int Run128BPKTests();
+int RunFlowKey304BPKTests();
