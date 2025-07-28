@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "uthash.h"
+#include "khash.h"
 
 // very basic test to see order of magnitude differences between containers that use different number of indirections to get value based on key
 #pragma pack(push, 1)
@@ -21,8 +22,21 @@ typedef struct FlowKeyUTHashEntry
 }FlowKeyUTHashEntry;
 
 namespace Testing304bitKeys {
+
+	static inline size_t klib_flowhash(const void* key) {
+		const size_t size = sizeof(FlowKey);
+		const size_t* vals = (const size_t*)key;
+		size_t ret = ~0;
+		for (size_t i = 0; i < size / 8; ++i) {
+			ret ^= vals[i];
+		}
+		return ret;
+	}
+
 	const char* g_RunnedFunctionNames_304[15] = {};
 	size_t g_RunningTestIndex_304 = 0;
+
+	KHASH_MAP_INIT_INT64(KFlowHash, TestStorageWithStruct); // delare the name of the hash and the stored value
 
 	// Custom hash function for uint32_t
 	struct CustomHash1 {
@@ -66,10 +80,11 @@ namespace Testing304bitKeys {
 	FlowKey* g_IndexSetOrder_304 = NULL;
 	FlowKey* g_IndexGetOrder_304 = NULL;
 
-	std::map<FlowKey, TestStorageWithStruct>* g_StdMap_304;
-	std::unordered_map<FlowKey, TestStorageWithStruct, CustomHash1, FlowKeyEQTo>* g_StdUnorderedMap_304;
-	std::unordered_map<FlowKey, TestStorageWithStruct, CustomHash2, FlowKeyEQTo>* g_StdUnorderedMapNoHash_304;
-	FlowKeyUTHashEntry* g_utHash_304;
+	std::map<FlowKey, TestStorageWithStruct>* g_StdMap_304 = NULL;
+	std::unordered_map<FlowKey, TestStorageWithStruct, CustomHash1, FlowKeyEQTo>* g_StdUnorderedMap_304 = NULL;
+	std::unordered_map<FlowKey, TestStorageWithStruct, CustomHash2, FlowKeyEQTo>* g_StdUnorderedMapNoHash_304 = NULL;
+	FlowKeyUTHashEntry* g_utHash_304 = NULL;
+	khash_t(KFlowHash)* g_kFlowHash_304 = NULL;
 
 	TestStorageWithStruct* g_useThisForStorageTest_304;
 
@@ -232,6 +247,50 @@ namespace Testing304bitKeys {
 	}
 
 	template<bool bTestInit, bool bTestSet, bool bTestGet>
+	__declspec(noinline) TestStorageWithStruct RunKHashTest()
+	{
+		TestStorageWithStruct result = {};	//needs to exist to avoid optimisations from compiler
+
+		if (bTestInit)
+		{
+			kh_destroy(KFlowHash, g_kFlowHash_304);
+			g_kFlowHash_304 = kh_init(KFlowHash);
+		}
+
+		//fill test
+		if (bTestSet)
+		{
+			for (size_t i = 0; i < maxValueCount; i++)
+			{
+				g_useThisForStorageTest_304->mystate = i;
+
+				khiter_t kitr;
+				int ret;
+				const size_t key = klib_flowhash(&g_IndexSetOrder_304[i]);
+				kitr = kh_put(KFlowHash, g_kFlowHash_304, key, &ret);
+				kh_value(g_kFlowHash_304, kitr) = *g_useThisForStorageTest_304;
+			}
+		}
+
+		//search test
+		if (bTestGet)
+		{
+			for (size_t i = 0; i < maxValueCount; i++)
+			{
+				khiter_t kitr;
+				const size_t key = klib_flowhash(&g_IndexGetOrder_304[i]);
+				kitr = kh_get(KFlowHash, g_kFlowHash_304, key);
+				if (kitr != kh_end(g_kFlowHash_304)) {
+					result.AppendState(kh_value(g_kFlowHash_304, kitr));
+				}
+			}
+		}
+
+		//anti optimisation dummy return
+		return result;
+	}
+
+	template<bool bTestInit, bool bTestSet, bool bTestGet>
 	LONGLONG BenchmarkGenericTest(bool bPrintRes)
 	{
 		TestStorageWithStruct junk = {};
@@ -245,6 +304,11 @@ namespace Testing304bitKeys {
 		{
 			TestFuncName = "std::HashMap";
 			junk = RunHashTest<bTestInit, bTestSet, bTestGet>();
+		}
+		else if (g_RunningTestIndex_304 == 1)
+		{
+			TestFuncName = "khash";
+			junk = RunKHashTest<bTestInit, bTestSet, bTestGet>();
 		}
 		else if (g_RunningTestIndex_304 == 2)
 		{
@@ -374,6 +438,12 @@ int RunFlowKey304BPKTests()
 	RunUTHashTest<true, true, true>();
 	memsnashotafter = GetHeapMemoryUsage();
 	printf("KBytes allocated while running RunUTHashTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
+
+	memSnapshotBefore = GetHeapMemoryUsage();
+	g_kFlowHash_304 = kh_init(KFlowHash);
+	RunKHashTest<true, true, true>();
+	memsnashotafter = GetHeapMemoryUsage();
+	printf("KBytes allocated while running RunKHashTest : %lld\n", (memsnashotafter - memSnapshotBefore) / 1024);
 
 	// run the speed tests
 	RunInitSetGetTests<true, true, false>();

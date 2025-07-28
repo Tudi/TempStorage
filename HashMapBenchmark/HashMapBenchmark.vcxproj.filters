@@ -56,5 +56,8 @@
     <ClInclude Include="uthash.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="khash.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

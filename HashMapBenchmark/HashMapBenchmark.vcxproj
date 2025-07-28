@@ -132,6 +132,7 @@
     <ClInclude Include="ConfigurableTranslationMap_v2.hpp" />
     <ClInclude Include="ConfigurableTranslationMap_v3.hpp" />
     <ClInclude Include="FlatLookupMap.hpp" />
+    <ClInclude Include="khash.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="uthash.h" />
   </ItemGroup>
