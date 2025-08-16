@@ -1,0 +1,15 @@
+would be good to have :
+	- extend reporting done through logs/printf. It was planned to do REST calls to a frontend
+	- add generic external command support : config reload, db reload, filtering changes, flush logs ...
+	- add support for incomming data filtering to support load balancing / clustering
+	- support DB reload on external request
+	- add script to detect non app specific db content : SELECT sf.sni, a.name AS application_name FROM sni_fingerprints sf JOIN applications a ON sf.application_id = a.id GROUP BY sf.sni HAVING COUNT(DISTINCT sf.application_id) = 1 ORDER BY a.name;
+	- add complementary DNS data support : load DNS DB, than have a fingerprint that supports "contains" to support multi country IP fingerprinting
+	- add heuristic fingerprinting: for traffic where IP based detection is not an option
+	- add TLS session ID tracking : is this being done by nDPI already ? Or it's based on IP cachig ?
+	- packet defrag solution - libpcap might support it
+	- packet reorder solution - libpcap might support it
+	- move tls parser out of base dissectors and only use the actually used features instead of configs. Only if speed is critical
+	- connect dissector with higher level app that shows what we are detecting
+	- use binary form of ja3, ja4 for uthash
+	- unit tests : ja3, ja4 .. 

@@ -258,19 +258,35 @@ window.updateHideCard = async function (roomId) {
     });
 };
 
+function formatTopic(topic) {
+    const urlPattern = /^(https?:\/\/[^\s]+)$/i;
+    if (urlPattern.test(topic)) {
+        return `<a href="${topic}" target="_blank" rel="noopener noreferrer">${topic}</a>`;
+    }
+    return topic || "No topic set";
+}
+
 async function renderRoom(room, myParticipant, participants = []) {
     const roomId = room.name;
     const roomDiv = document.getElementById("room");
+    const topicDiv = document.getElementById("topicFrame");
+    const roomOptionsDiv = document.getElementById("roomOptionsFrame");
 
     //console.log("Rendering room:", room.name);
     //console.log("Room owner:", room.owner);
     //console.log("Current user:", currentUser?.uid);
 
-    let topicHTML = room.owner === currentUser.uid
-         ? `<p><strong>Topic:</strong></p>
-       <input id="topicInput" value="${room.topic || ""}" placeholder="Set topic..." />
-       <button onclick="updateTopic('${roomId}')">Update</button>`
-         : `<p><strong>Topic:</strong> ${room.topic || "No topic set"}</p>`;
+    if (topicDiv){
+		if(room.topic.length > 0)
+			topicDiv.innerHTML = `<p><strong>Topic:</strong> ${formatTopic(room.topic)}</p>`;
+		else
+			topicDiv.innerHTML = "";
+	}
+
+    let topicHTML = "";
+    if (room.owner === currentUser.uid)
+        topicHTML += `<input id="topicInput" value="${room.topic || ""}" placeholder="Set topic..." />
+						<button onclick="updateTopic('${roomId}')">Update</button>`;
 
     let voteButtons = "";
     if (room.state === "voting" && room.cardType) {
@@ -331,20 +347,16 @@ async function renderRoom(room, myParticipant, participants = []) {
 	  <span style="margin-left: 1em;"><a href="${window.location.origin}">Reset page</a></span>
 	`;
 
-    let roomOptions = `
-	  <details id="roomOptionsPanel" style="margin-bottom: 1em;">
-		<summary style="cursor: pointer; font-weight: bold;">🔧 Room Options</summary>
-		<div style="margin-top: 10px;">
+    if (roomOptionsDiv) {
+        roomOptionsDiv.innerHTML = `
 		  ${linkToJoin} <br/>
 		  ${changeNameHTML}
 		  ${topicHTML} <br/>
 		  ${hideCardOption}
-		</div>
-	  </details>
-	`;
+		`;
+    }
 
     let roomHTML = `
-    ${roomOptions}
     ${ownerControls}
     ${voteButtons}
   `;

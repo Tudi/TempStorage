@@ -1,0 +1,35 @@
+Architecture :
+	- offline classifier :
+		- takes pcap input to generate fingerprints for flows
+		- must have fingerprint plugins that can also be used by the active classifier
+		- saves fingerprints to a DB. The fingerprinted flows need to be manually labeled 
+	- active classifier :
+		- docker image that can be deployed on multiple Host OS
+		- host network traffic will be mirrored into the image ( would be great to also suppot pcap replay for testing and validation )
+		- image contains nDPI ( from ntop )
+		- based on used plugins, will load fingerprint information form DB
+		- engine will report findings using a rest API. In the beggining it will report to text file shared with the host
+
+Clasification strategy :
+	- needs to report all unclasified data to be investigated in an offline manner later and extend existing DB
+	- flow metadata should also be stored for later tagging ... a ML engine could be trained on it
+	- engine needs to have a DB that :
+		- have a ist of "ignore reporting for" data
+		- list of DNS ( and their mapped IP with TTL )
+		- each clasification method should provide a score to enforce or lower the overall clasification confidence
+		- investigate possibility of using a lightweight ML scoring system
+		- app DB needs to support versioning of applications. Some apps support multi versions ( or interfaces ) and classification should also support it
+		- applications might have sub applications. Add column to support grouping
+		- application is the row key, and will have fields ( note that multiple such entries should exist to identify multiple connections for same application ) :
+			- initial packet sizes ( set of packets size ranges expected within X seconds of a new connection  )
+			- packet bursts / idle times ( latency compensated packet timings )..
+			- DNS queries that should happen before handshakes are a hint for tuneled traffic content
+			- server response time ranges at handshake ( ex : client asks IP, server responds in avg 20 ms to the disector( not the client ) )
+			- avg bitrate of the flow over longer periods
+			- average heartbeat rate and type ( UDP / TCP / higher level protocol .. )
+			- used server ports ( preferably multiple server ports )
+			- used protocols ( combination of low and higher level protocols between client-server )
+			- for TLS : SNI, JA3, JA3S, possibly : TLS version, cipher suites, and extensions
+			- for http : User-Agent, Host, paths, content type, app specific headers, 
+			- for QUIC : version ? connection ID, 
+			- for RTP/RTSP/SSH/FTP/IRC.. : handshake specific information
