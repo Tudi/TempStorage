@@ -286,6 +286,14 @@ int main()
         RemainingColors = AvailableColors;
 
         bool HasColorOptions = false;
+        size_t CombinationsTried = 0;
+        size_t TotalCombinationsToCheck = 1;
+        for (size_t i = 0; i < N - 1; i++) {
+            TotalCombinationsToCheck *= states[i].possibleValues.size();
+        }
+        size_t PrintInterval = TotalCombinationsToCheck * 1 / 100;
+        printf("Need to check %llu combinations. Will print progress every %llu\n", TotalCombinationsToCheck, PrintInterval);
+
         do {
             HasColorOptions = CheckAndStoreValidColoringCombination(states, RemainingColors);
 
@@ -293,13 +301,19 @@ int main()
 //                char filename[255];
 //                sprintf_s(filename, "State_N%d_partial.txt", calculating_stage + 1);
 //                saveState(states, filename);
+#if 1
                 if (states[calculating_stage].possibleValues.size() == AvailableColors.size()) {
                     printf("Exhausted all available colors. Abandoning further search\n");
                     break;
                 }
+#endif
             }
 
+            CombinationsTried++;
             HasColorOptions = AdvanceStateMachine(states);
+            if ((CombinationsTried % PrintInterval) == 0) {
+                printf("\rtried %lld at %f", CombinationsTried, (double)CombinationsTried * 100.0 / (double)TotalCombinationsToCheck);
+            }
 
         } while (HasColorOptions == true);
 
