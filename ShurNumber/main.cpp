@@ -290,9 +290,9 @@ int main()
             HasColorOptions = CheckAndStoreValidColoringCombination(states, RemainingColors);
 
             if (HasColorOptions == true) {
-                char filename[255];
-                sprintf_s(filename, "State_N%d.txt", calculating_stage + 1);
-                saveState(states, filename);
+//                char filename[255];
+//                sprintf_s(filename, "State_N%d_partial.txt", calculating_stage + 1);
+//                saveState(states, filename);
                 if (states[calculating_stage].possibleValues.size() == AvailableColors.size()) {
                     printf("Exhausted all available colors. Abandoning further search\n");
                     break;
@@ -309,17 +309,26 @@ int main()
             states[calculating_stage].possibleValues = { calculating_stage };
             AvailableColors.insert(calculating_stage);
 
+//            PrintColoringCombination(states);
+        }
+
+        {
             char filename[255];
             sprintf_s(filename, "State_N%d.txt", calculating_stage + 1);
             saveState(states, filename);
-
-            PrintColoringCombination(states);
         }
+
         // info ..
         printf("We needed %d colors to color %d: ", (int)AvailableColors.size(), calculating_stage + 1);
         for (const auto &itr: AvailableColors) {
             printf("%d ", itr + 1);
         }
+        printf("\n");
+        size_t total_combinations_to_check = 1;
+        for (size_t i = 0; i < N; i++) {
+            total_combinations_to_check *= states[i].possibleValues.size();
+        }
+        printf("Combinations to check next time : %llu\n", total_combinations_to_check);
         printf("\n\n");
     }
     return 0;
