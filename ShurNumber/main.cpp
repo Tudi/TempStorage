@@ -278,7 +278,7 @@ int main()
 
         std::set<int> AvailableColors;
         std::set<int> RemainingColors;
-        for (size_t i = 0; i <= calculating_stage; i++) {
+        for (size_t i = 0; i < calculating_stage; i++) {
             for (size_t j = 0; j < states[i].possibleValues.size(); j++) {
                 AvailableColors.insert(states[i].possibleValues[j]);
             }
@@ -292,6 +292,9 @@ int main()
             TotalCombinationsToCheck *= states[i].possibleValues.size();
         }
         size_t PrintInterval = TotalCombinationsToCheck * 1 / 100;
+        if (PrintInterval == 0) {
+            PrintInterval = 100;
+        }
         printf("Need to check %llu combinations. Will print progress every %llu\n", TotalCombinationsToCheck, PrintInterval);
 
         do {
