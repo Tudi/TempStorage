@@ -10,11 +10,17 @@
 
 #define INVALID_COLOR_VALUE 0x7FFF
 
+// there is a reason why this is called temporary. After a while we might need those eliminated coloring combos
+//#define ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+
 // Represents the state of a single position.
 struct BackTrackState
 {
     int useValAtIndex = -1;
     std::vector<int> possibleValues;
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+    std::set<int> confirmedStilGoodValues; // after we try to color a new N, some values might become unfeasable
+#endif
     inline int getVal() { return possibleValues[useValAtIndex]; }
     inline bool AdvanceIndex() {
         if (useValAtIndex + 1 < possibleValues.size()) {
@@ -24,16 +30,6 @@ struct BackTrackState
         return false;
     }
     inline void ResetIndex() { useValAtIndex = 0; }
-    bool PushColorOption(int color) {
-        // did we add this already ?
-        for (size_t i = 0; i < possibleValues.size(); i++) {
-            if (possibleValues[i] == color) {
-                return false;
-            }
-        }
-        possibleValues.push_back(color);
-        return true;
-    }
     inline bool CanIncreaseIndex() { return useValAtIndex + 1 < possibleValues.size(); }
 };
 
@@ -61,9 +57,13 @@ bool saveState(const StateVector& states, const std::string& filename, const siz
         const BackTrackState& st = states[i];
         ofs << (i + 1) << " "          // 1-based index
             << st.useValAtIndex << " "
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+            << st.confirmedStilGoodValues.size();
+        for (int v : st.confirmedStilGoodValues)
+#else
             << st.possibleValues.size();
-
         for (int v : st.possibleValues)
+#endif
         {
             ofs << " " << v;
         }
@@ -206,11 +206,13 @@ bool CheckAndStoreValidColoringCombination(StateVector& states, std::set<int> &A
             // increase store
             states[calculating_stage].possibleValues.push_back(INVALID_COLOR_VALUE);
             temp_col_index++;
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+            states[calculating_stage].confirmedStilGoodValues.insert(try_this_color);
+#endif
             // let's not test this color anymore
             SkipCheckingThese.insert(try_this_color);
         }
     }
-
     // no need to spam for possible new color addition
     for (const auto& col : SkipCheckingThese) {
         AvailableColors.erase(col);
@@ -220,22 +222,45 @@ bool CheckAndStoreValidColoringCombination(StateVector& states, std::set<int> &A
     states[calculating_stage].possibleValues.pop_back();
     temp_col_index--;
 
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+    // let's mark the N-1 coloring options that are still valid. At the end we will eliminate non used colorings
+    if (CanColorWithCombination == true) {
+        for (size_t i = 0; i < calculating_stage; i++) {
+            int used_color = states[i].getVal();
+            states[i].confirmedStilGoodValues.insert(used_color);
+        }
+    }
+#endif
+
     return CanColorWithCombination;
 }
 
 int main()
 {
+    /*
+    * Note to self : this program is unfinished. 
+    * When we extend color count, for a while the number of possible combinations should increase.
+    * After a while the number of combinations start decreasing until we end up unable to color the next N
+    * This program lacks the ability to eliminate coloring combinations that became unfeasable for the future
+    * Every N can be written up as N/2 sums
+    */
     StateVector states(1);
     states[0].useValAtIndex = 0;
     states[0].possibleValues = { 1 - 1 };
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+    states[0].confirmedStilGoodValues.insert(0);
+#endif
     saveState(states, "state_N1.txt", 1);
 
     states.push_back({});
     states[1].useValAtIndex = 0;
     states[1].possibleValues = { 2 - 1 };
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+    states[1].confirmedStilGoodValues.insert(1);
+#endif
     saveState(states, "state_N2.txt", 2);
 
-    for (int N = 4; N < 161; N++) {
+    for (int N = 3; N < 161; N++) {
 
         printf("Checking coloring options for %d\n", N);
         char filename[255];
@@ -324,6 +349,13 @@ int main()
         if (states[calculating_stage].possibleValues.size() == 0) {
             states[calculating_stage].useValAtIndex = 0;
             states[calculating_stage].possibleValues = { calculating_stage };
+#ifdef ELIMINATE_TEMPORARELY_NON_VALID_COMBINATIONS
+            // mark all previous colors good. At this point we should be having 1 color for each number
+            for (size_t i = 0; i <= calculating_stage; i++) {
+                assert(states[i].possibleValues.size() == 1);
+                states[i].confirmedStilGoodValues.insert(states[i].possibleValues[0]);
+            }
+#endif
             AvailableColors.insert(calculating_stage);
 
 //            PrintColoringCombination(states);
